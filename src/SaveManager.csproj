@@ -17,4 +17,15 @@
       <OutputPath>../out/rel</OutputPath>
     </PropertyGroup>
 
+    <ItemGroup>
+      <None Remove="Assets\rsg_logo.png" />
+      <Resource Include="Assets\rsg_logo.png">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </Resource>
+      <None Remove="Assets\ubicon_logo.png" />
+      <Resource Include="Assets\ubicon_logo.png">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </Resource>
+    </ItemGroup>
+
 </Project>
