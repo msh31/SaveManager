@@ -18,12 +18,63 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <None Remove="Assets\rsg_logo.png" />
       <Resource Include="Assets\rsg_logo.png">
         <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       </Resource>
       <None Remove="Assets\ubicon_logo.png" />
       <Resource Include="Assets\ubicon_logo.png">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </Resource>
+      <None Remove="Assets\RGL\BULLY.png" />
+      <Resource Include="Assets\RGL\BULLY.png">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </Resource>
+      <None Remove="Assets\RGL\GTAIII.png" />
+      <Resource Include="Assets\RGL\GTAIII.png">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </Resource>
+      <None Remove="Assets\RGL\GTAIIIDE.png" />
+      <Resource Include="Assets\RGL\GTAIIIDE.png">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </Resource>
+      <None Remove="Assets\RGL\GTAIVCE.png" />
+      <Resource Include="Assets\RGL\GTAIVCE.png">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </Resource>
+      <None Remove="Assets\RGL\GTASA.png" />
+      <Resource Include="Assets\RGL\GTASA.png">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </Resource>
+      <None Remove="Assets\RGL\GTASADE.png" />
+      <Resource Include="Assets\RGL\GTASADE.png">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </Resource>
+      <None Remove="Assets\RGL\GTAV.png" />
+      <Resource Include="Assets\RGL\GTAV.png">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </Resource>
+      <None Remove="Assets\RGL\GTAVC.png" />
+      <Resource Include="Assets\RGL\GTAVC.png">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </Resource>
+      <None Remove="Assets\RGL\GTAVCDE.png" />
+      <Resource Include="Assets\RGL\GTAVCDE.png">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </Resource>
+      <None Remove="Assets\RGL\LANOIRE.png" />
+      <Resource Include="Assets\RGL\LANOIRE.png">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </Resource>
+      <None Remove="Assets\RGL\MANHUNT.png" />
+      <Resource Include="Assets\RGL\MANHUNT.png">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </Resource>
+      <None Remove="Assets\RGL\RDR.png" />
+      <Resource Include="Assets\RGL\RDR.png">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </Resource>
+      <None Remove="Assets\RGL\RDRII.png" />
+      <Resource Include="Assets\RGL\RDRII.png">
         <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       </Resource>
     </ItemGroup>
