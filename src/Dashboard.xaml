@@ -1,0 +1,27 @@
+﻿<Window x:Class="SaveManager.Dashboard"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Save Manager" Height="500" Width="800"
+        WindowStartupLocation="CenterScreen"
+        Background="White">
+
+    <Grid>
+        <!-- Frame to host pages -->
+        <Frame x:Name="WindowFrame" NavigationUIVisibility="Hidden" />
+        
+        <!-- Main content that can be hidden as a group -->
+        <Grid x:Name="MainWindowContent">
+            <Button x:Name="SetupButton"
+                    Cursor="Hand" 
+                    Width="80" 
+                    Height="24" 
+                    Click="Button_Click"
+                    VerticalAlignment="Top"
+                    HorizontalAlignment="Left"
+                    Margin="10,10,0,0">
+                Setup button
+            </Button>
+            <!-- Add any other MainWindow controls here -->
+        </Grid>
+    </Grid>
+</Window>
