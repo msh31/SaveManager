@@ -4,6 +4,11 @@
              xmlns:local="clr-namespace:SaveManager"
              StartupUri="MainWindow.xaml">
     <Application.Resources>
-         
+        <DropShadowEffect x:Key="DropShadowEffect"
+                          BlurRadius="10"
+                          Direction="270"
+                          ShadowDepth="2"
+                          Opacity="0.2"
+                          Color="#000000"/>
     </Application.Resources>
 </Application>
