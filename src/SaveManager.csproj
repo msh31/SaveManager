@@ -77,6 +77,10 @@
       <Resource Include="Assets\RGL\RDRII.png">
         <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       </Resource>
+      <None Remove="Assets\RGL\GTAVI.png" />
+      <Resource Include="Assets\RGL\GTAVI.png">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </Resource>
     </ItemGroup>
 
 </Project>
