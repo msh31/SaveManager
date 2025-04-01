@@ -1,18 +1,30 @@
 //ReSharper disable InconsistentNaming
 
+using System.Diagnostics;
+
 class Core
 {
-    private TerminalUI terminalUI;
+    private readonly TerminalUI _terminalUI;
+    private readonly Logger _logger;
 
     public Core()
     {
-        terminalUI = new TerminalUI();
-        
+        _terminalUI = new TerminalUI();
+        _logger = new Logger(Path.Combine(AppContext.BaseDirectory, "logs", "oops.log"), _terminalUI);
     }
     
     public void Initialize()
     {
-        terminalUI.WriteTextWithColor($"Welcome to SaveManager, {Environment.UserName}", ConsoleColor.Red, true, true);
+        _terminalUI.WriteTextWithColor($"Welcome to SaveManager, {Environment.UserName}", ConsoleColor.Red, true, true);
+        
+        // logger tests
+        try {
+            _logger.Info("Application started");
+        }
+        catch (Exception ex) {
+            _logger.Error($"Unhandled exception: {ex.Message}");
+        }
+        
         Console.ReadKey();
     }
 }
