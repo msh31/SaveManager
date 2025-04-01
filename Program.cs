@@ -1,2 +1,7 @@
-﻿// See https://aka.ms/new-console-template for more information
-Console.WriteLine("Hello, World!");
+﻿//ReSharper disable InconsistentNaming
+
+Console.Title = "SaveManager";
+Console.ForegroundColor = ConsoleColor.Gray;
+
+Core core = new Core();
+core.Initialize();
