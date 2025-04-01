@@ -1,0 +1,8 @@
+
+class Core
+{
+    public Core()
+    {
+        
+    }
+}
