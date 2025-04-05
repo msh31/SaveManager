@@ -19,7 +19,11 @@ class TerminalUI
         
         if (newLine)
         {
-            Console.WriteLine(string.Empty);
+            Console.WriteLine(text);
+        }
+        else
+        {
+            Console.Write(text);
         }
 
         Console.ForegroundColor = ConsoleColor.Gray;
@@ -107,7 +111,11 @@ class TerminalUI
         
         if (newLine)
         {
-            Console.WriteLine(string.Empty);
+            Console.WriteLine(text);
+        }
+        else
+        {
+            Console.Write(text);
         }
     }
 }
