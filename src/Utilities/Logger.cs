@@ -18,7 +18,7 @@ class Logger
     
     public Logger(string logFilePath, TerminalUI terminalUI)
     {
-        _terminalUI = new TerminalUI();
+        _terminalUI = terminalUI;
         _logFilePath = logFilePath;
         Directory.CreateDirectory(Path.GetDirectoryName(logFilePath));
     }
