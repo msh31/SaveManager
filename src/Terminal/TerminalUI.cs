@@ -10,20 +10,28 @@ class TerminalUI
     
     public void WriteTextWithColor(string text, ConsoleColor color, bool newLine, bool centered)
     {
-        if (centered) SetCenterCursorPosition(text.Length);
-        
+        if (centered)
+        {
+            SetCenterCursorPosition(text.Length);
+        }
+
         Console.ForegroundColor = color;
+        
         if (newLine)
-            Console.WriteLine(text);
-        else
-            Console.Write(text);
+        {
+            Console.WriteLine(string.Empty);
+        }
+
         Console.ForegroundColor = ConsoleColor.Gray;
     }
     
     public void WriteFormattedTextByType(string text, string type, bool newLine, bool centered)
     {
-        if (centered) SetCenterCursorPosition(text.Length);
-        
+        if (centered)
+        {
+            SetCenterCursorPosition(text.Length);
+        }
+
         switch (type)
         {
             case "err":
@@ -53,6 +61,30 @@ class TerminalUI
         }
     }
     
+    public void HighlightWordInText(string text, ConsoleColor color, string word, bool newLine, bool centered)
+    {
+        var startIndex = text.IndexOf(word, StringComparison.Ordinal);
+
+        if (centered)
+        {
+            Console.SetCursorPosition((Console.WindowWidth - text.Length) / 2, Console.CursorTop);
+        }
+
+        if (startIndex != -1)
+        {
+            Console.Write(text[..startIndex]);
+            Console.ForegroundColor = color;
+            Console.Write(word);
+            Console.ForegroundColor = ConsoleColor.Gray;
+            Console.Write(text[(startIndex + word.Length)..]);
+            
+            if (newLine)
+            {
+                Console.WriteLine(string.Empty);
+            }
+        }
+    }
+    
 // helpers    
     private void SetCenterCursorPosition(int textLength)
     {
@@ -72,9 +104,10 @@ class TerminalUI
         Console.ForegroundColor = color;
         Console.Write($"[{type}] ");
         Console.ForegroundColor = ConsoleColor.Gray;
+        
         if (newLine)
-            Console.WriteLine(text);
-        else
-            Console.Write(text);
+        {
+            Console.WriteLine(string.Empty);
+        }
     }
 }

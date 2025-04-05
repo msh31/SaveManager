@@ -5,14 +5,12 @@ using SaveManager.Commands;
 class CommandProcessor
 {
     private readonly TerminalUI _terminalUI;
-    private readonly Logger _logger;
     private readonly Dictionary<string, Command> commandDictionary;
     private readonly bool isRunning;
     
-    public CommandProcessor(TerminalUI terminalUI, Logger logger)
+    public CommandProcessor(TerminalUI terminalUI)
     {
         _terminalUI = terminalUI;
-        _logger = logger;
         commandDictionary = new Dictionary<string, Command>();
         isRunning = true;
         

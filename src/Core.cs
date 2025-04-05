@@ -5,21 +5,21 @@ using System.Diagnostics;
 class Core
 {
     private readonly TerminalUI _terminalUI;
-    private readonly Logger _logger;
+    //private readonly Logger _logger;
     private readonly CommandProcessor _commandProcessor;
 
     public Core()
     {
         _terminalUI = new TerminalUI();
-        _logger = new Logger(Path.Combine(AppContext.BaseDirectory, "logs", "oops.log"), _terminalUI);
-        _commandProcessor = new CommandProcessor(_terminalUI, _logger);
+        //_logger = new Logger(Path.Combine(AppContext.BaseDirectory, "logs", "oops.log"), _terminalUI);
+        _commandProcessor = new CommandProcessor(_terminalUI);
     }
     
     public void Initialize()
     {
         Console.Clear();
-        _terminalUI.WriteTextWithColor($"Welcome to SaveManager, {Environment.UserName}", ConsoleColor.Red, true, true);
-        _terminalUI.WriteTextWithColor($"Type 'help' to see available commands!\n", ConsoleColor.Yellow, true, true);
+        _terminalUI.HighlightWordInText($"Welcome to SaveManager, {Environment.UserName}", ConsoleColor.Red, $"{Environment.UserName}", true, true);
+        _terminalUI.HighlightWordInText($"Type 'help' to see available commands!\n", ConsoleColor.Yellow, "'help'", true, true);
         
         // start command loop
         _commandProcessor.Start();
