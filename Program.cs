@@ -1,6 +1,6 @@
 ﻿//ReSharper disable InconsistentNaming
 
-Console.Title = "SaveManager";
+Console.Title = Constants.AppName;
 Console.ForegroundColor = ConsoleColor.Gray;
 
 var core = new Core();
