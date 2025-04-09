@@ -19,10 +19,10 @@ class CommandProcessor
     
     private void RegisterCommands()
     {
-        RegisterCommand("help", "Displays available commands");
-        RegisterCommand("backup", "Creates a new backup");
-        RegisterCommand("restore", "Restores from a backup");
-        RegisterCommand("list", "Shows available saves");
+        RegisterCommand("help", "Displays available commands", "[command]");
+        RegisterCommand("backup", "Creates a new backup", "<game_id> <save_index>");
+        RegisterCommand("restore", "Restores from a backup", "<backup_id>");
+        RegisterCommand("list", "Shows available saves", "[ubisoft|u|rockstar|r]");
         RegisterCommand("rename", "Set a display name for a save file");
         RegisterCommand("export", "Exports a save file");
         RegisterCommand("import", "Imports a save file");
@@ -34,9 +34,9 @@ class CommandProcessor
         //RegisterCommand("test", "Exits SaveManager");
     }
     
-    private void RegisterCommand(string name, string description)
+    private void RegisterCommand(string name, string description, string usage = "")
     {
-        commandDictionary[name.ToLower()] = new Command(name, description);
+        commandDictionary[name.ToLower()] = new Command(name, description, usage);  
     }
     
     private void ProcessCommand(Command command)
@@ -50,7 +50,8 @@ class CommandProcessor
         switch (command.CommandWord)
         {
             case "help":
-                DisplayHelp();
+                if (command.HasArguments()) { DisplayHelpForCommand(command.GetArgument(0)); }
+                else { DisplayHelp(); }
                 break;
             case "exit":
                 Environment.Exit(0);
@@ -60,6 +61,28 @@ class CommandProcessor
                 break;
             case "reset":
             case "list":
+                if (command.HasArguments())
+                {
+                    var platform = command.GetArgument(0).ToLower();
+
+                    if (platform is "ubisoft" or "u")
+                    {
+                        //_ubiManager.ListSaves();
+                    }
+                    else if (platform is "rockstar" or "r")
+                    {
+                        //_rockstarManager.ListSaves();
+                    }
+                    else
+                    {
+                        _terminalUI.WriteFormattedTextByType($"Unknown platform: {platform}. Use 'ubisoft' or 'rockstar'", "err", true, false);
+                    }
+                }
+                else
+                {
+                    _terminalUI.WriteFormattedTextByType("Please specify platform: 'list ubisoft' or 'list rockstar'", "inf", true, false);
+                }
+                break;
             case "rename":
             case "backup":
             case "restore":
@@ -115,7 +138,8 @@ class CommandProcessor
             args = Array.Empty<string>();
         }
         
-        return new Command(commandWord, commandDictionary[commandWord].Description, args);
+        var cmd = commandDictionary[commandWord];
+        return new Command(commandWord, cmd.Description, cmd.Usage, args);
     }
     
     private bool IsValidCommand(string commandWord)
@@ -127,10 +151,31 @@ class CommandProcessor
     private void DisplayHelp()
     {
         _terminalUI.WriteFormattedTextByType("Available commands:", "inf", true, false);
-        
+    
         foreach (var command in commandDictionary.Values)
         {
             _terminalUI.WriteTextWithColor($"  {command.CommandWord.PadRight(8)} - {command.Description}", ConsoleColor.White, true, false);
+        }
+    
+        Console.WriteLine(string.Empty);
+        _terminalUI.WriteFormattedTextByType("Type 'help <command>' for usage information.", "inf", true, false);
+    }
+    
+    private void DisplayHelpForCommand(string commandName)
+    {
+        if (string.IsNullOrEmpty(commandName) || !commandDictionary.ContainsKey(commandName.ToLower()))
+        {
+            _terminalUI.WriteFormattedTextByType($"Unknown command: {commandName}", "err", true, false);
+            return;
+        }
+    
+        var command = commandDictionary[commandName.ToLower()];
+        _terminalUI.WriteFormattedTextByType($"Command: {command.CommandWord}", "inf", true, false);
+        _terminalUI.WriteTextWithColor($"  Description: {command.Description}", ConsoleColor.White, true, false);
+    
+        if (!string.IsNullOrEmpty(command.Usage))
+        {
+            _terminalUI.WriteTextWithColor($"  Usage: {command.CommandWord} {command.Usage}", ConsoleColor.White, true, false);
         }
     }
 }

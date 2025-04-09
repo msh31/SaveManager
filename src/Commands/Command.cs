@@ -5,11 +5,13 @@ public class Command
     public string CommandWord { get; }
     public string Description { get; }
     private string[] Arguments { get; }
+    public string Usage { get; }
     
-    public Command(string commandWord, string description, string[] args = null)
+    public Command(string commandWord, string description, string usage = "", string[] args = null)
     {
         CommandWord = commandWord;
         Description = description;
+        Usage = usage;
         
         if (args == null) { Arguments = new string[0]; }
         else { Arguments = args; }
