@@ -4,3 +4,4 @@ builds
 src/.idea
 *.lnk
 /publish
+/bin
