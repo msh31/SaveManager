@@ -2,3 +2,5 @@ obj
 builds
 .idea
 src/.idea
+*.lnk
+/publish
