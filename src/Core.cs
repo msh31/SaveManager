@@ -11,14 +11,16 @@ class Core
     private readonly UbiManager _ubiManager;
     private readonly Logger _logger;
     private readonly CommandProcessor _commandProcessor;
-
+    private readonly Globals _globals;
+    
     public Core()
     {
         _terminalUI = new TerminalUI();
-        _logger = new Logger(Path.Combine(Constants.LogsFolder, "oops.log"), _terminalUI);
-        _utilities = new Utilities(_terminalUI);
         _configManager = new ConfigManager();
-        _ubiManager = new UbiManager(_terminalUI, _configManager, _utilities);
+        _globals = new Globals(_configManager);
+        _logger = new Logger(_globals.LogFilePath, _terminalUI);
+        _utilities = new Utilities(_terminalUI);
+        _ubiManager = new UbiManager(_terminalUI, _configManager, _utilities, _globals);
         _commandProcessor = new CommandProcessor(_terminalUI, _ubiManager);
     }
     

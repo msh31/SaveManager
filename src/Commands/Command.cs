@@ -22,7 +22,6 @@ public class Command
         return CommandWord == null;
     }
     
-// soon™️
     public bool HasArguments()
     {
         return Arguments.Length > 0;

@@ -1,16 +1,19 @@
 //ReSharper disable InconsistentNaming
 
+using System.Diagnostics;
 using SaveManager.Commands;
 
 class CommandProcessor
 {
     private readonly TerminalUI _terminalUI;
+    private readonly UbiManager _ubiManager;
     private readonly Dictionary<string, Command> commandDictionary;
     private readonly bool isRunning;
     
-    public CommandProcessor(TerminalUI terminalUI)
+    public CommandProcessor(TerminalUI terminalUI, UbiManager ubiManager)
     {
         _terminalUI = terminalUI;
+        _ubiManager = ubiManager;
         commandDictionary = new Dictionary<string, Command>();
         isRunning = true;
         
@@ -60,6 +63,7 @@ class CommandProcessor
                 Console.Clear();
                 break;
             case "reset":
+                break;
             case "list":
                 if (command.HasArguments())
                 {
@@ -67,7 +71,7 @@ class CommandProcessor
 
                     if (platform is "ubisoft" or "u")
                     {
-                        //_ubiManager.ListSaves();
+                        _ubiManager.ListSaveGames();
                     }
                     else if (platform is "rockstar" or "r")
                     {
