@@ -8,21 +8,22 @@ using System.Text.Json;
 
 public class ConfigManager
 {
-    private readonly Globals _globals;
+    private readonly string _configFilePath;
     
     public ConfigData Data { get; private set; }
     
-    public ConfigManager()
+    public ConfigManager(string configFilePath)
     {
+        _configFilePath = configFilePath;
         Data = new ConfigData();
         Load();
     }
     
     private void Load()
     {
-        if (File.Exists(_globals.ConfigFilePath))
+        if (File.Exists(_configFilePath))
         {
-            var json = File.ReadAllText(_globals.ConfigFilePath);
+            var json = File.ReadAllText(_configFilePath);
             var loadedConfig = JsonSerializer.Deserialize<ConfigData>(json);
             
             if (loadedConfig != null)
@@ -39,6 +40,6 @@ public class ConfigManager
     public void Save()
     {
         var json = JsonSerializer.Serialize(Data, new JsonSerializerOptions { WriteIndented = true });
-        File.WriteAllText(_globals.ConfigFilePath, json);
+        File.WriteAllText(_configFilePath, json);
     }
 }

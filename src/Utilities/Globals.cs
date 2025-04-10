@@ -5,8 +5,6 @@ using SaveManager.Managers;
 
 public class Globals
 {
-    private readonly ConfigManager _configManager;
-    
     // General Folder paths
     private readonly string Documents;
     public string UbisoftRootFolder;
@@ -23,33 +21,20 @@ public class Globals
     public readonly string LogFilePath;
     public readonly string UbiSaveInfoFilePath;
     
-    public Globals(ConfigManager configManager)
+    public Globals()
     {
-        _configManager = configManager;
-        
         Documents = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
-        AppDataFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "SaveManager");
-        LogsFolder = Path.Combine(AppDataFolder, "logs");
-        DataFolder = Path.Combine(AppDataFolder, "data");
-        BackupsFolder = Path.Combine("data", "backups");
-        
-        ConfigFilePath = Path.Combine(DataFolder, "config.json");
-        LogFilePath = Path.Combine(LogsFolder, "oops.log");
-        UbiSaveInfoFilePath = Path.Combine(DataFolder, "ubi_save_info.json");
-        
         rockstarRootFolder = Path.Combine(Documents, "Rockstar Games"); // works when documents folder is placed on another drive :steamhappy:
-        
-        Directory.CreateDirectory(AppDataFolder);
-        Directory.CreateDirectory(LogsFolder);
-        Directory.CreateDirectory(DataFolder);
         
         if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
         {
             UbisoftRootFolder = @"C:\Program Files (x86)\Ubisoft\Ubisoft Game Launcher\savegames";
+            AppDataFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "SaveManager");
         }
         else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
         {
             var homeDir = Environment.GetEnvironmentVariable("HOME");
+            AppDataFolder = Path.Combine(homeDir, ".config", "SaveManager");
             
             var possiblePaths = new[]
             {
@@ -74,7 +59,22 @@ public class Globals
             }
         }
         
-        _configManager.Data.DetectedUbiPath = UbisoftRootFolder;
-        _configManager.Save();
+        LogsFolder = Path.Combine(AppDataFolder, "logs");
+        DataFolder = Path.Combine(AppDataFolder, "data");
+        BackupsFolder = Path.Combine(DataFolder, "backups");
+        
+        ConfigFilePath = Path.Combine(DataFolder, "config.json");
+        LogFilePath = Path.Combine(LogsFolder, "oops.log");
+        UbiSaveInfoFilePath = Path.Combine(DataFolder, "ubi_save_info.json");
+        
+        Directory.CreateDirectory(AppDataFolder);
+        Directory.CreateDirectory(LogsFolder);
+        Directory.CreateDirectory(DataFolder);
+    }
+    
+    public void UpdateConfig(ConfigManager configManager)
+    {
+        configManager.Data.DetectedUbiPath = UbisoftRootFolder;
+        configManager.Save();
     }
 }

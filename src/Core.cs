@@ -16,8 +16,9 @@ class Core
     public Core()
     {
         _terminalUI = new TerminalUI();
-        _configManager = new ConfigManager();
-        _globals = new Globals(_configManager);
+        _globals = new Globals();
+        _configManager = new ConfigManager(_globals.ConfigFilePath);
+        _globals.UpdateConfig(_configManager);
         _logger = new Logger(_globals.LogFilePath, _terminalUI);
         _utilities = new Utilities(_terminalUI);
         _ubiManager = new UbiManager(_terminalUI, _configManager, _utilities, _globals);
