@@ -13,7 +13,7 @@ internal class BaseManager
         _terminalUI = terminalUI;
         _globals = globals;
         
-        _backupDirectory = Path.Combine(_globals.BackupsFolder, publisherName, "Backups");
+        _backupDirectory = Path.Combine(_globals.BackupsFolder, publisherName);
         Directory.CreateDirectory(_backupDirectory);
     }
     

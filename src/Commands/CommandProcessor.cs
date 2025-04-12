@@ -2,18 +2,25 @@
 
 using System.Diagnostics;
 using SaveManager.Commands;
+using SaveManager.Managers;
 
 class CommandProcessor
 {
     private readonly TerminalUI _terminalUI;
     private readonly UbiManager _ubiManager;
+    private readonly ConfigManager _configManager;
+    private readonly Globals _globals;
+    private readonly Utilities _utilities;
     private readonly Dictionary<string, Command> commandDictionary;
     private readonly bool isRunning;
     
-    public CommandProcessor(TerminalUI terminalUI, UbiManager ubiManager)
+    public CommandProcessor(TerminalUI terminalUI, UbiManager ubiManager, ConfigManager configManager, Globals globals, Utilities utilities)
     {
         _terminalUI = terminalUI;
         _ubiManager = ubiManager;
+        _configManager = configManager;
+        _globals = globals;
+        _utilities = utilities;
         commandDictionary = new Dictionary<string, Command>();
         isRunning = true;
         
@@ -88,6 +95,44 @@ class CommandProcessor
                 }
                 break;
             case "rename":
+                if (command.HasArguments())
+                {
+                    var platform = command.GetArgument(0).ToLower();
+        
+                    if (platform is "ubisoft" or "u")
+                    {
+                        var gameId = command.GetArgument(1);
+                        if (gameId != null)
+                        {
+                            _ubiManager.RenameSaveFiles(gameId);
+                        }
+                        else
+                        {
+                            _terminalUI.WriteFormattedTextByType("Please specify a game ID. Available games:", "inf", true, false);
+                
+                            foreach (var gameID in _configManager.Data.DetectedUbiGames)
+                            {
+                                var gameName = _utilities.TranslateUbisoftGameId(Path.Combine(_globals.UbisoftRootFolder, _configManager.Data.DetectedUbiAccount, gameID)).Result;
+                                _terminalUI.WriteTextWithColor($"  {gameName} ({gameID})", ConsoleColor.Cyan, true, false);
+                            }
+                
+                            _terminalUI.WriteFormattedTextByType("Use 'rename ubisoft <game_id>' to rename a save for a specific game.", "inf", true, false);
+                        }
+                    }
+                    else if (platform is "rockstar" or "r")
+                    {
+                        _terminalUI.WriteFormattedTextByType("Rockstar rename feature not implemented yet.", "inf", true, false);
+                    }
+                    else
+                    {
+                        _terminalUI.WriteFormattedTextByType($"Unknown platform: {platform}. Use 'ubisoft' or 'rockstar'", "err", true, false);
+                    }
+                }
+                else
+                {
+                    _terminalUI.WriteFormattedTextByType("Please specify platform: 'rename ubisoft <game_id>' or 'rename rockstar <game_id>'", "inf", true, false);
+                }
+                break;
             case "backup":
             case "restore":
             case "export":

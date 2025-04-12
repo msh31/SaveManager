@@ -22,7 +22,7 @@ class Core
         _logger = new Logger(_globals.LogFilePath, _terminalUI);
         _utilities = new Utilities(_terminalUI);
         _ubiManager = new UbiManager(_terminalUI, _configManager, _utilities, _globals);
-        _commandProcessor = new CommandProcessor(_terminalUI, _ubiManager);
+        _commandProcessor = new CommandProcessor(_terminalUI, _ubiManager, _configManager, _globals, _utilities);
     }
     
     public void Initialize()
@@ -57,6 +57,9 @@ class Core
             Console.Clear();
             _terminalUI.HighlightWordInText($"Welcome to SaveManager, {Environment.UserName}", ConsoleColor.Red, $"{Environment.UserName}", true, true);
             _terminalUI.HighlightWordInText("Type 'help' to see available commands!\n", ConsoleColor.Yellow, "'help'", true, true);
+            
+            //_terminalUI.HighlightWordInText($"Ubi account: " + _configManager.Data.DetectedUbiAccount + "\n", ConsoleColor.Yellow, $"{_configManager.Data.DetectedUbiAccount}", true, true);
+            
             _commandProcessor.Start();
         }
         catch (Exception ex)
