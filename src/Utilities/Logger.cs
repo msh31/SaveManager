@@ -15,6 +15,7 @@ class Logger
     private readonly string _logFilePath;
     private LogLevel _minimumLogLevel = LogLevel.Info;
     private bool _includeTimestamp = true;
+    private readonly object _fileLock = new();
     
     public Logger(string logFilePath, TerminalUI terminalUI)
     {
@@ -60,22 +61,27 @@ class Logger
     
     private void WriteLogEntry(string message, string levelName, int indentLevel, ConsoleColor color)
     {
-        // look into locking the file
         try
         {
-            using (var writer = new StreamWriter(_logFilePath, true))
-            {
-                var logEntry = FormatLogEntry(message, levelName, indentLevel);
-                writer.WriteLine(logEntry);
-            }
+            var logEntry = FormatLogEntry(message, levelName, indentLevel);
             
-            var consoleMessage = FormatLogEntry(message, levelName, indentLevel);
-            _terminalUI.WriteTextWithColor(consoleMessage, color, true, false);
+            lock (_fileLock)
+            {
+                using (var writer = new StreamWriter(_logFilePath, true))
+                {
+                    writer.WriteLine(logEntry);
+                }
+            }
+        
+            _terminalUI.WriteTextWithColor(logEntry, color, true, false);
+        }
+        catch (IOException ex)
+        {
+            _terminalUI.WriteTextWithColor($"Failed to write to log file: {ex.Message}", ConsoleColor.Red, true, false);
         }
         catch (Exception ex)
         {
-            // Fallback to console output if file writing fails
-            _terminalUI.WriteTextWithColor($"Failed to write to log file: {ex.Message}", ConsoleColor.Red, true, false);
+            _terminalUI.WriteTextWithColor($"Unexpected error writing to log: {ex.Message}", ConsoleColor.Red, true, false);
         }
     }
     
