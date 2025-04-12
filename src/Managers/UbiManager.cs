@@ -24,13 +24,13 @@ class UbiManager : BaseManager
         _globals = globals;
     }
 
-    public void RenameSaveFiles(string id)
+    public async Task RenameSaveFilesAsync(string id)
     {
         if (Saves.Count == 0 && File.Exists(_globals.UbiSaveInfoFilePath))
         {
             try
             {
-                var json = File.ReadAllText(_globals.UbiSaveInfoFilePath);
+                var json = await File.ReadAllTextAsync(_globals.UbiSaveInfoFilePath);
                 Saves = JsonSerializer.Deserialize<Dictionary<string, List<SaveFileInfo>>>(json);
             }
             catch (Exception ex)
@@ -348,13 +348,13 @@ class UbiManager : BaseManager
         }
     }
 
-    public void ListSaveGames()
+    public async Task ListSaveGamesAsync()
     {
         if (Saves.Count == 0 && File.Exists(_globals.UbiSaveInfoFilePath))
         {
             try
             {
-                var json = File.ReadAllText(_globals.UbiSaveInfoFilePath);
+                var json = await File.ReadAllTextAsync(_globals.UbiSaveInfoFilePath);
                 Saves = JsonSerializer.Deserialize<Dictionary<string, List<SaveFileInfo>>>(json);
             }
             catch (Exception ex)

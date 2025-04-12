@@ -49,7 +49,7 @@ class CommandProcessor
         commandDictionary[name.ToLower()] = new Command(name, description, usage);  
     }
     
-    private void ProcessCommand(Command command)
+    private async Task ProcessCommandAsync(Command command)
     {
         if (command.IsUnknown())
         {
@@ -78,7 +78,7 @@ class CommandProcessor
 
                     if (platform is "ubisoft" or "u")
                     {
-                        _ubiManager.ListSaveGames();
+                        await _ubiManager.ListSaveGamesAsync();
                     }
                     else if (platform is "rockstar" or "r")
                     {
@@ -104,7 +104,7 @@ class CommandProcessor
                         var gameId = command.GetArgument(1);
                         if (gameId != null)
                         {
-                            _ubiManager.RenameSaveFiles(gameId);
+                            await _ubiManager.RenameSaveFilesAsync(gameId);
                         }
                         else
                         {
@@ -148,12 +148,12 @@ class CommandProcessor
     }
     
     // start the command processing loop
-    public void Start()
+    public async Task StartAsync()
     {
         while (isRunning)
         {
             var command = GetCommand();
-            ProcessCommand(command);
+            await ProcessCommandAsync(command);
         }
     }
     

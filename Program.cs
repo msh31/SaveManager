@@ -6,7 +6,7 @@ Console.ForegroundColor = ConsoleColor.Gray;
 try
 {
     var core = new Core();
-    core.Initialize();
+    await core.InitializeAsync();
 }
 catch (Exception ex)
 {

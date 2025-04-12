@@ -25,11 +25,6 @@ class Core
         _commandProcessor = new CommandProcessor(_terminalUI, _ubiManager, _configManager, _globals, _utilities);
     }
     
-    public void Initialize()
-    {
-        InitializeAsync().GetAwaiter().GetResult();
-    }
-    
     public async Task InitializeAsync()
     {
         try
@@ -41,16 +36,15 @@ class Core
                 try
                 {
                     await _ubiManager.InitializeSaveDetection();
-                    //awaait _ubiManager.InitiaalizeSaveDetection();
                 }
                 catch (Exception ex)
                 {
-                    _terminalUI.WriteFormattedTextByType($"Error during initialization: {ex.Message}", "err", true, false);
-                    _logger.Error($"Initialization error: {ex.Message}\n{ex.StackTrace}");
+                    _logger.Error($"Initialization error: {ex.Message}\n{ex.StackTrace}", 0, true);
                 }
                 
                 _configManager.Data.FirstRun = false;
                 _configManager.Save();
+                _logger.Info("Initialization complete!");
                 _terminalUI.WriteFormattedTextByType("Initialization complete!", "suc", true, false);
             }
             
@@ -58,14 +52,11 @@ class Core
             _terminalUI.HighlightWordInText($"Welcome to SaveManager, {Environment.UserName}", ConsoleColor.Red, $"{Environment.UserName}", true, true);
             _terminalUI.HighlightWordInText("Type 'help' to see available commands!\n", ConsoleColor.Yellow, "'help'", true, true);
             
-            //_terminalUI.HighlightWordInText($"Ubi account: " + _configManager.Data.DetectedUbiAccount + "\n", ConsoleColor.Yellow, $"{_configManager.Data.DetectedUbiAccount}", true, true);
-            
-            _commandProcessor.Start();
+            await _commandProcessor.StartAsync();
         }
         catch (Exception ex)
         {
-            _terminalUI.WriteFormattedTextByType($"Critical error: {ex.Message}", "err", true, false);
-            _logger.Fatal($"Critical error: {ex.Message}\n{ex.StackTrace}");
+            _logger.Fatal($"Critical error during initialization: {ex.Message}\n{ex.StackTrace}", 0, true);
             Console.WriteLine("Press any key to exit...");
             Console.ReadKey();
         }

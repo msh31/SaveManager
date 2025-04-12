@@ -29,37 +29,37 @@ class Logger
         _minimumLogLevel = level;
     }
     
-    public void Debug(string message, int indentLevel = 0)
+    public void Debug(string message, int indentLevel = 0, bool consoleOutput = false)
     {
         if (_minimumLogLevel <= LogLevel.Debug)
-            WriteLogEntry(message, "DEBUG", indentLevel, ConsoleColor.Gray);
+            WriteLogEntry(message, "DEBUG", indentLevel, ConsoleColor.Gray, consoleOutput);
     }
     
-    public void Info(string message, int indentLevel = 0)
+    public void Info(string message, int indentLevel = 0, bool consoleOutput = false)
     {
         if (_minimumLogLevel <= LogLevel.Info)
-            WriteLogEntry(message, "INFO", indentLevel, ConsoleColor.White);
+            WriteLogEntry(message, "INFO", indentLevel, ConsoleColor.White, consoleOutput);
     }
     
-    public void Warning(string message, int indentLevel = 0)
+    public void Warning(string message, int indentLevel = 0, bool consoleOutput = false)
     {
         if (_minimumLogLevel <= LogLevel.Warning)
-            WriteLogEntry(message, "WARN", indentLevel, ConsoleColor.Yellow);
+            WriteLogEntry(message, "WARN", indentLevel, ConsoleColor.Yellow, consoleOutput);
     }
     
-    public void Error(string message, int indentLevel = 0)
+    public void Error(string message, int indentLevel = 0, bool consoleOutput = false)
     {
         if (_minimumLogLevel <= LogLevel.Error)
-            WriteLogEntry(message, "ERROR", indentLevel, ConsoleColor.Red);
+            WriteLogEntry(message, "ERROR", indentLevel, ConsoleColor.Red, consoleOutput);
     }
     
-    public void Fatal(string message, int indentLevel = 0)
+    public void Fatal(string message, int indentLevel = 0, bool consoleOutput = false)
     {
         if (_minimumLogLevel <= LogLevel.Fatal)
-            WriteLogEntry(message, "FATAL", indentLevel, ConsoleColor.DarkRed);
+            WriteLogEntry(message, "FATAL", indentLevel, ConsoleColor.DarkRed, consoleOutput);
     }
     
-    private void WriteLogEntry(string message, string levelName, int indentLevel, ConsoleColor color)
+    private void WriteLogEntry(string message, string levelName, int indentLevel, ConsoleColor color, bool consoleOutput)
     {
         try
         {
@@ -72,8 +72,11 @@ class Logger
                     writer.WriteLine(logEntry);
                 }
             }
-        
-            _terminalUI.WriteTextWithColor(logEntry, color, true, false);
+
+            if (consoleOutput)
+            {
+                _terminalUI.WriteTextWithColor(logEntry, color, true, false);
+            }
         }
         catch (IOException ex)
         {
