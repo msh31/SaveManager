@@ -13,6 +13,8 @@ class Core
     private readonly CommandProcessor _commandProcessor;
     private readonly Globals _globals;
     
+    private readonly SaveManagerFactory _saveManagerFactory;
+    
     public Core()
     {
         _terminalUI = new TerminalUI();
@@ -21,7 +23,8 @@ class Core
         _globals.UpdateConfig(_configManager);
         _logger = new Logger(_globals.LogFilePath, _terminalUI);
         _utilities = new Utilities(_terminalUI);
-        _ubiManager = new UbiManager(_terminalUI, _configManager, _utilities, _globals);
+        _saveManagerFactory = new SaveManagerFactory(_terminalUI, _configManager, _globals, _utilities);
+        _ubiManager = (UbiManager)_saveManagerFactory.CreateManager("ubisoft");
         _commandProcessor = new CommandProcessor(_terminalUI, _ubiManager, _configManager, _globals, _utilities);
     }
     

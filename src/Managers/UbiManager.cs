@@ -1,17 +1,18 @@
 //ReSharper disable InconsistentNaming
+//ReSharper disable ConvertToPrimaryConstructor
+//ReSharper disable SuggestVarOrType_BuiltInTypes
 
 using System.Text.Json;
 using SaveManager.Managers;
 using SaveManager.Models;
-// ReSharper disable SuggestVarOrType_BuiltInTypes
+using SaveManager.Interfaces;
 
-class UbiManager : BaseManager
+class UbiManager : BaseManager, ISaveFileStorage
 {
     private readonly TerminalUI _terminalUI;
     private readonly ConfigManager _configManager;
     private readonly Utilities _utilities;
     private readonly Globals _globals;
-
     private Dictionary<string, List<SaveFileInfo>> Saves { get; set; } = new();
     private string accountRootFolder;
     private List<string> _accountFolders = new();
@@ -24,7 +25,152 @@ class UbiManager : BaseManager
         _globals = globals;
     }
 
-    public async Task RenameSaveFilesAsync(string id)
+    public async Task<string> GetSavePath(string gameId, string fileName)
+    {
+        return Path.Combine(Globals.UbisoftRootFolder, _configManager.Data.DetectedUbiAccount, gameId, fileName);
+    }
+    
+    public async Task<bool> ExportSave(string gameId, string fileName, string destinationPath)
+    {
+        // TODO
+        return true;
+    }
+    
+    public async Task<bool> ImportSave(string gameId, string filePath)
+    {
+        // TODO
+        return true;
+    }
+    
+    public override async Task RestoreSaveGame(string backupId)
+    {
+        // TODO
+        TerminalUI.WriteFormattedTextByType("Restore functionality not fully implemented yet.", "inf", true, false);
+    }
+    
+    public override async Task BackupSaveGame(string gameId, int saveIndex)
+    {
+        if (Saves.Count == 0 && File.Exists(Globals.UbiSaveInfoFilePath))
+        {
+            try
+            {
+                var json = await File.ReadAllTextAsync(Globals.UbiSaveInfoFilePath);
+                Saves = JsonSerializer.Deserialize<Dictionary<string, List<SaveFileInfo>>>(json);
+            }
+            catch (Exception ex)
+            {
+                TerminalUI.WriteFormattedTextByType($"Error loading save info: {ex.Message}", "err", true, false);
+                return;
+            }
+        }
+        
+        if (Saves == null || Saves.Count == 0)
+        {
+            TerminalUI.WriteFormattedTextByType("No saves found to backup.", "err", true, false);
+            return;
+        }
+        
+        var saveKey = $"{_configManager.Data.DetectedUbiAccount}_{gameId}";
+        
+        if (!Saves.ContainsKey(saveKey))
+        {
+            TerminalUI.WriteFormattedTextByType($"No saves found for game: {gameId}", "err", true, false);
+            return;
+        }
+        
+        if (saveIndex < 0 || saveIndex >= Saves[saveKey].Count)
+        {
+            TerminalUI.WriteFormattedTextByType($"Invalid save index: {saveIndex}", "err", true, false);
+            return;
+        }
+        
+        var saveFile = Saves[saveKey][saveIndex];
+        var savePath = Path.Combine(Globals.UbisoftRootFolder, _configManager.Data.DetectedUbiAccount, gameId, saveFile.FileName);
+        var saveName = saveFile.DisplayName == "CUSTOM_NAME_NOT_SET" ? saveFile.FileName : saveFile.DisplayName;
+        
+        var backupPath = await CreateBackup(savePath, gameId, saveName);
+        
+        if (backupPath != null)
+        {
+            TerminalUI.WriteFormattedTextByType($"Successfully backed up: {saveName}", "suc", true, false);
+        }
+    }
+    
+    public Task<List<SaveFileInfo>> GetSaveFiles(string gameId) 
+    {
+        // TODO
+        return null; //dont test this feature yet
+    }
+    
+    public Task<bool> SaveDisplayName(string gameId, string fileName, string displayName)
+    {
+        // TODO
+        return null; //dont test this feature yet
+    }
+    
+    public async Task SyncBetweenPlatformsAsync(string id)
+    {
+        if (Saves.Count == 0 && File.Exists(_globals.UbiSaveInfoFilePath))
+        {
+            try
+            {
+                var json = await File.ReadAllTextAsync(_globals.UbiSaveInfoFilePath);
+                Saves = JsonSerializer.Deserialize<Dictionary<string, List<SaveFileInfo>>>(json);
+            }
+            catch (Exception ex)
+            {
+                _terminalUI.WriteFormattedTextByType($"Error loading save info: {ex.Message}", "err", true, false);
+                _terminalUI.WriteFormattedTextByType("No saves found.", "warn", true, false);
+                return;
+            }
+        }
+
+        if (Saves == null || Saves.Count == 0)
+        {
+            _terminalUI.WriteFormattedTextByType("No saves found.", "warn", true, false);
+            return;
+        }
+        
+        try
+        {
+            _terminalUI.WriteFormattedTextByType($"\nProcessing {Saves.Count} game entries...", "inf", true, false);
+            
+            var groupedByName = Saves
+                .GroupBy(kvp => kvp.Value) 
+                .Where(group => group.Count() > 1); 
+            
+            var duplicateGameIds = groupedByName
+                .ToDictionary(group => group.Key,  
+                              group => group.Select(kvp => kvp.Key).ToList()); 
+
+
+            if (duplicateGameIds.Any())
+            {
+                Console.WriteLine("\nGames with the same name found and their corresponding IDs:");
+                foreach (var kvp in duplicateGameIds)
+                {
+                    Console.WriteLine($"  Game Name: '{kvp.Key}'");
+                    var sortedIds = kvp.Value.Select(int.Parse).OrderBy(id => id).Select(id => id.ToString());
+                    Console.WriteLine($"    IDs      : {string.Join(", ", sortedIds)}");
+                }
+            }
+            else
+            {
+                Console.WriteLine("\nNo games found with duplicate names in the list.");
+            }
+        }
+        catch (JsonException e)
+        {
+            Console.WriteLine($"\nError parsing JSON data: {e.Message}");
+            Console.WriteLine("The content fetched from the URL might not be valid JSON.");
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine($"\nAn unexpected error occurred: {e.Message}");
+        }
+    }
+    
+    public override async Task RenameSaveFilesAsync(string id)
     {
         if (Saves.Count == 0 && File.Exists(_globals.UbiSaveInfoFilePath))
         {
@@ -108,12 +254,11 @@ class UbiManager : BaseManager
 
         if (!gameFound)
         {
-            _terminalUI.WriteFormattedTextByType($"The ID: {id} was not found in the detected games list.", "err", true,
-                false);
+            _terminalUI.WriteFormattedTextByType($"The ID: {id} was not found in the detected games list.", "err", true, false);
         }
     }
 
-    public async Task InitializeSaveDetection()
+    public override async Task InitializeSaveDetection()
     {
         try
         {
@@ -259,8 +404,7 @@ class UbiManager : BaseManager
         }
         else
         {
-            _terminalUI.WriteFormattedTextByType($"Total games found: {_configManager.Data.DetectedUbiGames.Count}\n",
-                "suc", true, false);
+            _terminalUI.WriteFormattedTextByType($"Total games found: {_configManager.Data.DetectedUbiGames.Count}\n", "suc", true, false);
         }
 
         _configManager.Save();
@@ -305,12 +449,6 @@ class UbiManager : BaseManager
 
                 var fileInfo = new FileInfo(file);
 
-                // string displayName = fileName;
-                // if (fileName.EndsWith(".save", StringComparison.OrdinalIgnoreCase))
-                // {
-                //     displayName = fileName.Substring(0, fileName.Length - 5);
-                // }
-
                 var saveInfo = new SaveFileInfo
                 {
                     FileName = fileName,
@@ -341,14 +479,12 @@ class UbiManager : BaseManager
                 double sizeInKB = save.FileSize / 1024.0;
                 string timestamp = save.LastModified.ToString("yyyy-MM-dd HH:mm:ss");
                 string timestampCreated = save.DateCreated.ToString("yyyy-MM-dd HH:mm:ss");
-                _terminalUI.WriteTextWithColor(
-                    $"   - {save.FileName} | {sizeInKB:F1}KB | created: {timestampCreated} | updated: {timestamp}",
-                    ConsoleColor.DarkCyan, true, false);
+                _terminalUI.WriteTextWithColor($"   - {save.FileName} | {sizeInKB:F1}KB | created: {timestampCreated} | updated: {timestamp}", ConsoleColor.DarkCyan, true, false);
             }
         }
     }
 
-    public async Task ListSaveGamesAsync()
+    public override async Task ListSaveGamesAsync()
     {
         if (Saves.Count == 0 && File.Exists(_globals.UbiSaveInfoFilePath))
         {
@@ -379,8 +515,7 @@ class UbiManager : BaseManager
             var accountId = parts[0];
             var gameId = parts[1];
 
-            var gameName = _utilities
-                .TranslateUbisoftGameId(Path.Combine(_globals.UbisoftRootFolder, accountId, gameId)).Result;
+            var gameName = _utilities.TranslateUbisoftGameId(Path.Combine(_globals.UbisoftRootFolder, accountId, gameId)).Result;
 
             _terminalUI.WriteTextWithColor($"\n{gameName} - ", ConsoleColor.DarkCyan, false, false);
             _terminalUI.WriteTextWithColor($"{gameId} - ", ConsoleColor.Yellow, false, false);
@@ -394,9 +529,7 @@ class UbiManager : BaseManager
                 var timestampCreated = save.DateCreated.ToString("yyyy-MM-dd HH:mm:ss");
 
                 var displayName = save.DisplayName == "CUSTOM_NAME_NOT_SET" ? save.FileName : save.DisplayName;
-                _terminalUI.WriteTextWithColor(
-                    $"   - {displayName} | {sizeInKB:F1}KB | created: {timestampCreated} | modified: {timestamp}",
-                    ConsoleColor.Gray, true, false);
+                _terminalUI.WriteTextWithColor($"   - {displayName} | {sizeInKB:F1}KB | created: {timestampCreated} | modified: {timestamp}", ConsoleColor.Gray, true, false);
             }
         }
     }
