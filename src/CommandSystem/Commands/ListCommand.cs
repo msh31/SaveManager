@@ -1,40 +1,60 @@
 ﻿//ReSharper disable InconsistentNaming
 using SaveManager.Commands;
 using SaveManager.Managers;
+using Spectre.Console;
 
 class ListCommand : CommandBase
 {
     private readonly UbiManager _ubiManager;
-    private readonly TerminalUI _terminalUI;
     
-    public ListCommand(TerminalUI terminalUI, UbiManager ubiManager) : base("list", "Shows available saves", "[ubisoft|u|rockstar|r]", terminalUI)
+    public ListCommand(UbiManager ubiManager) : base("list", "Shows available saves", "[ubisoft|u|rockstar|r]")
     {
         _ubiManager = ubiManager;
-        _terminalUI = terminalUI;
     }
     
     public override async Task ExecuteAsync(string[] args)
     {
-        if (args.Length > 0)
+        var fruits = AnsiConsole.Prompt(
+            new MultiSelectionPrompt<string>()
+                .Title("Which [green]games[/] do you want to backup?")
+                .NotRequired() // Not required to have a favorite fruit
+                .PageSize(10)
+                .MoreChoicesText("[grey](Move up and down to reveal more games)[/]")
+                .InstructionsText(
+                    "[grey](Press [blue]<space>[/] to toggle a game, " + 
+                    "[green]<enter>[/] to accept)[/]")
+                .AddChoices(new[] {
+                    "Apple", "Apricot", "Avocado",
+                    "Banana", "Blackcurrant", "Blueberry",
+                    "Cherry", "Cloudberry", "Coconut",
+                }));
+
+// Write the selected fruits to the terminal
+        foreach (string fruit in fruits)
         {
-            var platform = args[0].ToLower();
-            
-            if (platform is "ubisoft" or "u")
-            {
-                await _ubiManager.ListSaveGamesAsync();
-            }
-            else if (platform is "rockstar" or "r")
-            {
-                _terminalUI.WriteFormattedTextByType("Rockstar list not implemented yet.", "inf", true, false);
-            }
-            else
-            {
-                _terminalUI.WriteFormattedTextByType($"Unknown platform: {platform}. Use 'ubisoft' or 'rockstar'", "err", true, false);
-            }
+            AnsiConsole.WriteLine(fruit);
         }
-        else
-        {
-            _terminalUI.WriteFormattedTextByType("Please specify platform: 'list ubisoft' or 'list rockstar'", "inf", true, false);
-        }
+        
+        // if (args.Length > 0)
+        // {
+        //     var platform = args[0].ToLower();
+        //     
+        //     if (platform is "ubisoft" or "u")
+        //     {
+        //         await _ubiManager.ListSaveGamesAsync();
+        //     }
+        //     else if (platform is "rockstar" or "r")
+        //     {
+        //         _terminalUI.WriteFormattedTextByType("Rockstar list not implemented yet.", "inf", true, false);
+        //     }
+        //     else
+        //     {
+        //         _terminalUI.WriteFormattedTextByType($"Unknown platform: {platform}. Use 'ubisoft' or 'rockstar'", "err", true, false);
+        //     }
+        // }
+        // else
+        // {
+        //     _terminalUI.WriteFormattedTextByType("Please specify platform: 'list ubisoft' or 'list rockstar'", "inf", true, false);
+        // }
     }
 }

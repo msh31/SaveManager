@@ -6,23 +6,24 @@ using System.Text.Json;
 using SaveManager.Managers;
 using SaveManager.Models;
 using SaveManager.Interfaces;
+using Spectre.Console;
 
 class UbiManager : BaseManager, ISaveFileStorage
 {
-    private readonly TerminalUI _terminalUI;
     private readonly ConfigManager _configManager;
     private readonly Utilities _utilities;
     private readonly Globals _globals;
+    private readonly Logger _logger;
     private Dictionary<string, List<SaveFileInfo>> Saves { get; set; } = new();
     private string accountRootFolder;
     private List<string> _accountFolders = new();
 
-    public UbiManager(TerminalUI terminalUI, ConfigManager configManager, Utilities utilities, Globals globals) : base(terminalUI, globals, "Ubisoft")
+    public UbiManager (ConfigManager configManager, Utilities utilities, Globals globals, Logger logger) : base(globals, "Ubisoft", logger)
     {
-        _terminalUI = terminalUI;
         _configManager = configManager;
         _utilities = utilities;
         _globals = globals;
+        _logger = logger;
     }
 
     public async Task<string> GetSavePath(string gameId, string fileName)
@@ -45,7 +46,7 @@ class UbiManager : BaseManager, ISaveFileStorage
     public override async Task RestoreSaveGame(string backupId)
     {
         // TODO
-        TerminalUI.WriteFormattedTextByType("Restore functionality not fully implemented yet.", "inf", true, false);
+        AnsiConsole.Write(new Markup("[cyan][[inf]][/] Restore functionality not fully implemented yet.\n"));
     }
     
     public override async Task BackupSaveGame(string gameId, int saveIndex)
@@ -59,14 +60,14 @@ class UbiManager : BaseManager, ISaveFileStorage
             }
             catch (Exception ex)
             {
-                TerminalUI.WriteFormattedTextByType($"Error loading save info: {ex.Message}", "err", true, false);
+                AnsiConsole.Write(new Markup($"[red][[err]][/] Error loading save info: {ex.Message}\n"));
                 return;
             }
         }
         
         if (Saves == null || Saves.Count == 0)
         {
-            TerminalUI.WriteFormattedTextByType("No saves found to backup.", "err", true, false);
+            AnsiConsole.Write(new Markup("[red][[err]][/] No saves found to backup.\n"));
             return;
         }
         
@@ -74,13 +75,13 @@ class UbiManager : BaseManager, ISaveFileStorage
         
         if (!Saves.ContainsKey(saveKey))
         {
-            TerminalUI.WriteFormattedTextByType($"No saves found for game: {gameId}", "err", true, false);
+            AnsiConsole.Write(new Markup($"[red][[err]][/] No saves found for game: {gameId}\n"));
             return;
         }
         
         if (saveIndex < 0 || saveIndex >= Saves[saveKey].Count)
         {
-            TerminalUI.WriteFormattedTextByType($"Invalid save index: {saveIndex}", "err", true, false);
+            AnsiConsole.Write(new Markup($"[red][[err]][/] Invalid save index: {saveIndex}\n"));
             return;
         }
         
@@ -92,7 +93,7 @@ class UbiManager : BaseManager, ISaveFileStorage
         
         if (backupPath != null)
         {
-            TerminalUI.WriteFormattedTextByType($"Successfully backed up: {saveName}", "suc", true, false);
+            AnsiConsole.Write(new Markup($"[green][[suc]][/] Successfully backed up: {saveName}\n"));
         }
     }
     
@@ -119,21 +120,20 @@ class UbiManager : BaseManager, ISaveFileStorage
             }
             catch (Exception ex)
             {
-                _terminalUI.WriteFormattedTextByType($"Error loading save info: {ex.Message}", "err", true, false);
-                _terminalUI.WriteFormattedTextByType("No saves found.", "warn", true, false);
+                AnsiConsole.Write(new Markup($"[red][[err]][/] Error loading save info: {ex.Message} \n"));
                 return;
             }
         }
 
         if (Saves == null || Saves.Count == 0)
         {
-            _terminalUI.WriteFormattedTextByType("No saves found.", "warn", true, false);
+            AnsiConsole.Write(new Markup($"[red][[err]][/] No saves found.\n"));
             return;
         }
         
         try
         {
-            _terminalUI.WriteFormattedTextByType($"\nProcessing {Saves.Count} game entries...", "inf", true, false);
+            AnsiConsole.Write(new Markup($"\n[cyan][[inf]][/] Processing {Saves.Count} game entries..."));
             
             var groupedByName = Saves
                 .GroupBy(kvp => kvp.Value) 
@@ -181,15 +181,14 @@ class UbiManager : BaseManager, ISaveFileStorage
             }
             catch (Exception ex)
             {
-                _terminalUI.WriteFormattedTextByType($"Error loading save info: {ex.Message}", "err", true, false);
-                _terminalUI.WriteFormattedTextByType("No saves found.", "warn", true, false);
+                AnsiConsole.Write(new Markup($"[red][[err]][/] Error loading save info: {ex.Message}\n"));
                 return;
             }
         }
 
         if (Saves == null || Saves.Count == 0)
         {
-            _terminalUI.WriteFormattedTextByType("No saves found.", "warn", true, false);
+            AnsiConsole.Write(new Markup($"[red][[err]][/] No saves found.\n"));
             return;
         }
         
@@ -205,30 +204,30 @@ class UbiManager : BaseManager, ISaveFileStorage
                 var accountId = parts[0];
                 var gameName = _utilities.TranslateUbisoftGameId(Path.Combine(_globals.UbisoftRootFolder, accountId, gameId)).Result;
 
-                _terminalUI.WriteFormattedTextByType($"All Savegames for: {gameName}\n", "suc", true, false);
+                AnsiConsole.Write(new Markup($"[green][[suc]][/] All Savegames for: {gameName}\n\n"));
                 
                 int index = 0;
                 foreach (var save in entry.Value)
                 {
                     var displayName = save.DisplayName == "CUSTOM_NAME_NOT_SET" ? save.FileName : save.DisplayName;
-                    _terminalUI.WriteTextWithColor($"[{index}] {displayName}", ConsoleColor.DarkCyan, true, false);
+                    AnsiConsole.Write(new Markup($"[[{index}]] {displayName}\n"));
                     index++;
                 }
                 
                 Console.WriteLine(string.Empty);
-                _terminalUI.WriteFormattedTextByType("Enter the index of the save file to rename ('cancel' or 'c' to abort): ", "inf", false, false);
+                AnsiConsole.Write(new Markup("[cyan][[inf]][/] Enter the index of the save file to rename ('cancel' or 'c' to abort):"));
                 var input = Console.ReadLine();
 
                 if (input.ToLower() is "cancel" or "c")
                 {
-                    _terminalUI.WriteFormattedTextByType("Operation cancelled.", "inf", true, false);
+                    AnsiConsole.Write(new Markup("[cyan][[inf]][/] Operation cancelled.\n"));
                     return;
                 }
 
                 if (int.TryParse(input, out int saveIndex) && saveIndex >= 0 && saveIndex < entry.Value.Count)
                 {
-                    _terminalUI.WriteFormattedTextByType($"Current name: {entry.Value[saveIndex].DisplayName}", "inf", true, false);
-                    _terminalUI.WriteFormattedTextByType("Enter new display name: ", "inf", false, false);
+                    AnsiConsole.Write(new Markup($"[cyan][[inf]][/] Current name: {entry.Value[saveIndex].DisplayName}\n"));
+                    AnsiConsole.Write(new Markup("[cyan][[inf]][/] Enter new display name: "));
                     var newName = Console.ReadLine();
 
                     if (!string.IsNullOrWhiteSpace(newName))
@@ -238,23 +237,23 @@ class UbiManager : BaseManager, ISaveFileStorage
                         var json = JsonSerializer.Serialize(Saves, new JsonSerializerOptions { WriteIndented = true });
                         File.WriteAllText(_globals.UbiSaveInfoFilePath, json);
 
-                        _terminalUI.WriteFormattedTextByType($"Save file renamed to: {newName}", "suc", true, false);
+                        AnsiConsole.Write(new Markup($"[green][[suc]][/] Save file renamed to: {newName}\n"));
                     }
                     else
                     {
-                        _terminalUI.WriteFormattedTextByType("Invalid name. Operation cancelled.", "err", true, false);
+                        AnsiConsole.Write(new Markup($"[red][[err]][/] Invalid name. Operation cancelled.\n"));
                     }
                 }
                 else
                 {
-                    _terminalUI.WriteFormattedTextByType("Invalid selection. Operation cancelled.", "err", true, false);
+                    AnsiConsole.Write(new Markup($"[red][[err]][/] Invalid selection. Operation cancelled.\n"));
                 }
             }
         }
 
         if (!gameFound)
         {
-            _terminalUI.WriteFormattedTextByType($"The ID: {id} was not found in the detected games list.", "err", true, false);
+            AnsiConsole.Write(new Markup($"[red][[err]][/] The ID: {id} was not found in the detected games list.\n"));
         }
     }
 
@@ -266,15 +265,14 @@ class UbiManager : BaseManager, ISaveFileStorage
 
             if (_accountFolders.Count == 0)
             {
-                _terminalUI.WriteFormattedTextByType(
-                    "No Ubisoft accounts found. Unable to proceed with game detection.", "err", true, false);
+                AnsiConsole.Write(new Markup("[red][[err]][/] No Ubisoft accounts found. Unable to proceed.\n"));
                 return;
             }
 
             foreach (var accountFolder in _accountFolders)
             {
                 var accountId = Path.GetFileName(accountFolder);
-                _terminalUI.WriteFormattedTextByType($"Processing account: {accountId}", "inf", true, false);
+                AnsiConsole.Write(new Markup($"[cyan][[inf]][/] Processing account: {accountId}\n"));
 
                 await FindGames(accountId);
                 await FindSaveGames();
@@ -282,7 +280,7 @@ class UbiManager : BaseManager, ISaveFileStorage
         }
         catch (Exception ex)
         {
-            _terminalUI.WriteFormattedTextByType($"Error in InitializeSaveDetection: {ex.Message}", "err", true, false);
+            _logger.Error($"[red][[err]][/] Error initializing save detection\n {ex.Message}", 0, true);
             throw;
         }
 
@@ -290,24 +288,24 @@ class UbiManager : BaseManager, ISaveFileStorage
 
         if (_accountFolders.Count == 0)
         {
-            _terminalUI.WriteFormattedTextByType("No Ubisoft accounts found. Unable to proceed with game detection.",
-                "err", true, false);
+            _logger.Error("[red][[err]][/] No Ubisoft accounts found. Unable to proceed with game detection.", 0, true);
             return;
         }
 
         foreach (var accountFolder in _accountFolders)
         {
             string accountId = Path.GetFileName(accountFolder);
-            _terminalUI.WriteFormattedTextByType($"Processing account: {accountId}", "inf", true, false);
+            AnsiConsole.Write(new Markup($"[cyan][[inf]][/] Processing account: {accountId}\n"));
 
             await FindGames(accountId);
             await FindSaveGames();
         }
     }
-
+    
+// helper methods    
     private List<string> GetAccountId()
     {
-        _terminalUI.WriteFormattedTextByType("Looking for accounts..", "inf", true, false);
+        AnsiConsole.Write(new Markup("[cyan][[inf]][/] Looking for accounts..\n"));
         var accountFolders = new List<string>();
 
         foreach (var folder in Directory.GetDirectories(_globals.UbisoftRootFolder))
@@ -320,66 +318,74 @@ class UbiManager : BaseManager, ISaveFileStorage
 
         if (accountFolders.Count == 0)
         {
-            _terminalUI.WriteFormattedTextByType("No Ubisoft accounts found!", "err", true, false);
+            AnsiConsole.Write(new Markup("[red][[err]][/] No Ubisoft accounts found!\n"));
             _configManager.Data.DetectedUbiAccount = string.Empty;
             _configManager.Save();
         }
-
-        // Check if we already have a valid selection
+        
         if (!string.IsNullOrEmpty(_configManager.Data.DetectedUbiAccount))
         {
-            if (_configManager.Data.DetectedUbiAccount != "all")
+            if (_configManager.Data.DetectedUbiAccount == "all")
             {
-                var existingAccount = Path.Combine(_globals.UbisoftRootFolder, _configManager.Data.DetectedUbiAccount);
-                if (Directory.Exists(existingAccount))
-                {
-                    return new List<string> { existingAccount };
-                }
+                return accountFolders;
             }
-
-            // If "all" is selected, return all accounts
+            
+            var existingAccount = Path.Combine(_globals.UbisoftRootFolder, _configManager.Data.DetectedUbiAccount);
+            
+            if (Directory.Exists(existingAccount))
+            {
+                return new List<string> { existingAccount };
+            }
             return accountFolders;
         }
 
         if (accountFolders.Count == 1)
         {
             string accountId = Path.GetFileName(accountFolders[0]);
-            _terminalUI.WriteFormattedTextByType($"Found Ubisoft account: {accountId}", "suc", true, false);
+            AnsiConsole.Write(new Markup($"[green][[suc]][/] Found Ubisoft account: {accountId}\n"));
             _configManager.Data.DetectedUbiAccount = accountId;
             _configManager.Save();
             return accountFolders;
         }
+        
+        AnsiConsole.MarkupLine($"[cyan][[inf]][/] Found {accountFolders.Count} Ubisoft accounts:");
+        var choices = new List<string>();
+        
+        foreach (var folder in accountFolders)
+        {
+            choices.Add(Path.GetFileName(folder));
+        }
+        
+        choices.Add("All accounts");
+        
+        var selectedOptions = AnsiConsole.Prompt(
+            new SelectionPrompt<string>()  // Using SelectionPrompt instead of MultiSelectionPrompt
+                .Title("Which [yellow]account[/] do you want to use?")
+                .PageSize(10)
+                .MoreChoicesText("[grey](Move up and down to reveal more accounts)[/]")
+                .AddChoices(choices));
 
-        // Multiple accounts - prompt for selection
-        _terminalUI.WriteFormattedTextByType($"Found {accountFolders.Count} Ubisoft accounts: ", "inf", true, false);
-
+// Process the selection
+        if (selectedOptions == "All accounts")
+        {
+            _configManager.Data.DetectedUbiAccount = "all";
+            _configManager.Save();
+            return accountFolders;
+        }
+        
         for (int i = 0; i < accountFolders.Count; i++)
         {
-            Console.WriteLine($"[{i + 1}] {Path.GetFileName(accountFolders[i])}");
-        }
-
-        Console.WriteLine($"[{accountFolders.Count + 1}] All accounts");
-
-        while (true)
-        {
-            _terminalUI.WriteFormattedTextByType("Select account (enter number): ", "inf", false, false);
-            if (int.TryParse(Console.ReadLine(), out int choice) && choice >= 1 && choice <= accountFolders.Count + 1)
+            if (Path.GetFileName(accountFolders[i]) == selectedOptions)
             {
-                if (choice == accountFolders.Count + 1)
-                {
-                    _configManager.Data.DetectedUbiAccount = "all";
-                    _configManager.Save();
-                    return accountFolders;
-                }
-
-                var selectedId = Path.GetFileName(accountFolders[choice - 1]);
-                _configManager.Data.DetectedUbiAccount = selectedId;
+                _configManager.Data.DetectedUbiAccount = selectedOptions;
                 _configManager.Save();
-                return new List<string> { accountFolders[choice - 1] };
+                return new List<string> { accountFolders[i] };
             }
-
-            _terminalUI.WriteFormattedTextByType("Invalid selection, try again", "err", true, false);
         }
+    
+        // This shouldn't happen unless there's a mismatch between the displayed options and accountFolders
+        AnsiConsole.MarkupLine($"[red][[err]][/] something went wrong! [error code: 0x0896]");
+        return new List<string>();
     }
 
     private async Task FindGames(string accountId)
@@ -387,7 +393,7 @@ class UbiManager : BaseManager, ISaveFileStorage
         accountRootFolder = Path.Combine(_globals.UbisoftRootFolder, accountId);
         _configManager.Data.DetectedUbiGames.Clear();
 
-        _terminalUI.WriteFormattedTextByType("Looking for games..", "inf", true, false);
+        AnsiConsole.Write(new Markup($"[cyan][[inf]][/] Looking for games..\n"));
 
         foreach (var gameFolder in Directory.GetDirectories(accountRootFolder))
         {
@@ -395,16 +401,16 @@ class UbiManager : BaseManager, ISaveFileStorage
             var gameName = await _utilities.TranslateUbisoftGameId(gameFolder);
 
             _configManager.Data.DetectedUbiGames.Add(gameId);
-            _terminalUI.HighlightWordInText($"Game found: {gameName}", ConsoleColor.Yellow, gameName, true, false);
+            AnsiConsole.Write(new Markup($"Game found: [yellow]{gameName}[/] \n"));
         }
 
         if (_configManager.Data.DetectedUbiGames.Count == 0)
         {
-            _terminalUI.WriteFormattedTextByType("No games found!", "warn", true, false);
+            AnsiConsole.Write(new Markup($"[red][[err]][/] No games found!\n"));
         }
         else
         {
-            _terminalUI.WriteFormattedTextByType($"Total games found: {_configManager.Data.DetectedUbiGames.Count}\n", "suc", true, false);
+            AnsiConsole.Write(new Markup($"[green][[suc]][/] Total games found: {{_configManager.Data.DetectedUbiGames.Count\n"));
         }
 
         _configManager.Save();
@@ -412,7 +418,7 @@ class UbiManager : BaseManager, ISaveFileStorage
 
     private async Task FindSaveGames(bool ignoreAutoSave = false)
     {
-        _terminalUI.WriteFormattedTextByType("Looking for savegames..", "inf", true, false);
+        AnsiConsole.Write(new Markup($"[cyan][[inf]][/] Looking for savegames..\n"));
 
         foreach (var gameId in _configManager.Data.DetectedUbiGames)
         {
@@ -471,15 +477,14 @@ class UbiManager : BaseManager, ISaveFileStorage
             var json = JsonSerializer.Serialize(Saves, new JsonSerializerOptions { WriteIndented = true });
             await File.WriteAllTextAsync(_globals.UbiSaveInfoFilePath, json);
 
-            _terminalUI.WriteTextWithColor($"{gameName} - {validSaves.Count} Detected Saves", ConsoleColor.Red, true,
-                false);
+            AnsiConsole.Write(new Markup($"[red][[err]] {gameName} - {validSaves.Count} Detected Saves[/] \n"));
 
             foreach (var save in validSaves)
             {
                 double sizeInKB = save.FileSize / 1024.0;
                 string timestamp = save.LastModified.ToString("yyyy-MM-dd HH:mm:ss");
                 string timestampCreated = save.DateCreated.ToString("yyyy-MM-dd HH:mm:ss");
-                _terminalUI.WriteTextWithColor($"   - {save.FileName} | {sizeInKB:F1}KB | created: {timestampCreated} | updated: {timestamp}", ConsoleColor.DarkCyan, true, false);
+                AnsiConsole.Write(new Markup($"[darkcyan]   - {save.FileName} | {sizeInKB:F1}KB | created: {timestampCreated} | updated: {timestamp}[/] \n"));
             }
         }
     }
@@ -495,19 +500,18 @@ class UbiManager : BaseManager, ISaveFileStorage
             }
             catch (Exception ex)
             {
-                _terminalUI.WriteFormattedTextByType($"Error loading save info: {ex.Message}", "err", true, false);
-                _terminalUI.WriteFormattedTextByType("No saves found.", "err", true, false);
+                AnsiConsole.Write(new Markup($"[red][[err]][/] Error loading save info: {ex.Message}\n"));
                 return;
             }
         }
 
         if (Saves == null || Saves.Count == 0)
         {
-            _terminalUI.WriteFormattedTextByType("No saves found.", "err", true, false);
+            AnsiConsole.Write(new Markup($"[red][[err]][/] No saves found.\n"));
             return;
         }
 
-        _terminalUI.WriteFormattedTextByType("Listing all Ubisoft saves:", "inf", true, false);
+        AnsiConsole.Write(new Markup($"[cyan][[inf]][/] Listing all Ubisoft saves:\n"));
 
         foreach (var entry in Saves)
         {
@@ -517,10 +521,10 @@ class UbiManager : BaseManager, ISaveFileStorage
 
             var gameName = _utilities.TranslateUbisoftGameId(Path.Combine(_globals.UbisoftRootFolder, accountId, gameId)).Result;
 
-            _terminalUI.WriteTextWithColor($"\n{gameName} - ", ConsoleColor.DarkCyan, false, false);
-            _terminalUI.WriteTextWithColor($"{gameId} - ", ConsoleColor.Yellow, false, false);
-            _terminalUI.WriteTextWithColor($"Account: {accountId} - ", ConsoleColor.Red, false, false);
-            _terminalUI.WriteTextWithColor($"Total Saves: {entry.Value.Count}", ConsoleColor.White, true, false);
+            AnsiConsole.Write(new Markup($"\n[darkcyan]{gameName} - [/]"));
+            AnsiConsole.Write(new Markup($"[yellow]{gameId} - [/]"));
+            AnsiConsole.Write(new Markup($"[red]Account: {accountId} - [/]"));
+            AnsiConsole.Write(new Markup($"[white]Total Saves: {entry.Value.Count}[/]\n"));
 
             foreach (var save in entry.Value)
             {
@@ -529,7 +533,7 @@ class UbiManager : BaseManager, ISaveFileStorage
                 var timestampCreated = save.DateCreated.ToString("yyyy-MM-dd HH:mm:ss");
 
                 var displayName = save.DisplayName == "CUSTOM_NAME_NOT_SET" ? save.FileName : save.DisplayName;
-                _terminalUI.WriteTextWithColor($"   - {displayName} | {sizeInKB:F1}KB | created: {timestampCreated} | modified: {timestamp}", ConsoleColor.Gray, true, false);
+                AnsiConsole.Write(new Markup($"[gray]   - {displayName} | {sizeInKB:F1}KB | created: {timestampCreated} | modified: {timestamp}[/] \n"));
             }
         }
     }

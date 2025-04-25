@@ -2,10 +2,10 @@
 
 using System.Diagnostics;
 using SaveManager.Managers;
+using Spectre.Console;
 
 class Core
 {
-    private readonly TerminalUI _terminalUI;
     private readonly Utilities _utilities;
     private readonly ConfigManager _configManager;
     private readonly UbiManager _ubiManager;
@@ -17,15 +17,14 @@ class Core
     
     public Core()
     {
-        _terminalUI = new TerminalUI();
         _globals = new Globals();
         _configManager = new ConfigManager(_globals.ConfigFilePath);
         _globals.UpdateConfig(_configManager);
-        _logger = new Logger(_globals.LogFilePath, _terminalUI);
-        _utilities = new Utilities(_terminalUI);
-        _saveManagerFactory = new SaveManagerFactory(_terminalUI, _configManager, _globals, _utilities);
+        _logger = new Logger(_globals.LogFilePath);
+        _utilities = new Utilities(_logger);
+        _saveManagerFactory = new SaveManagerFactory(_configManager, _globals, _utilities, _logger);
         _ubiManager = (UbiManager)_saveManagerFactory.CreateManager("ubisoft");
-        _commandProcessor = new CommandProcessor(_terminalUI, _ubiManager, _configManager, _globals, _utilities);
+        _commandProcessor = new CommandProcessor(_ubiManager, _configManager, _globals, _utilities);
     }
     
     public async Task InitializeAsync()
@@ -34,7 +33,7 @@ class Core
         {
             if (_configManager.Data.FirstRun)
             {
-                _terminalUI.WriteFormattedTextByType("First-time initialization in progress...", "inf", true, false);
+                _logger.Info("First-time initialization in progress...", 0, true);
                 
                 try
                 {
@@ -42,18 +41,17 @@ class Core
                 }
                 catch (Exception ex)
                 {
-                    _logger.Error($"Initialization error: {ex.Message}\n{ex.StackTrace}", 0, true);
+                    _logger.Error($"[red][[err]][/] Initialization error: {ex.Message}\n{ex.StackTrace}", 0, true);
                 }
                 
                 _configManager.Data.FirstRun = false;
                 _configManager.Save();
-                _logger.Info("Initialization complete!");
-                _terminalUI.WriteFormattedTextByType("Initialization complete!", "suc", true, false);
+                _logger.Info("Initialization complete!", 0, true);
             }
             
             Console.Clear();
-            _terminalUI.HighlightWordInText($"Welcome to SaveManager, {Environment.UserName}", ConsoleColor.Red, $"{Environment.UserName}", true, true);
-            _terminalUI.HighlightWordInText("Type 'help' to see available commands!\n", ConsoleColor.Yellow, "'help'", true, true);
+            AnsiConsole.Write(new FigletText("SaveManager").Centered().Color(Color.Cyan1));
+            AnsiConsole.Write(Align.Center(new Markup($"Welcome, [red]{Environment.UserName}[/]\nType [bold yellow]'help'[/] to see available commands!")));
             
             await _commandProcessor.StartAsync();
         }

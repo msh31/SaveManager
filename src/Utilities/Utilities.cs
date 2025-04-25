@@ -2,17 +2,19 @@
 
 using System.Text.Json;
 using System.Collections.Concurrent;
+using Spectre.Console;
 
 internal class Utilities
 {
-    private readonly TerminalUI _terminalUI;
+    private readonly Logger _logger;
+    
+    public Utilities(Logger logger)
+    {
+        _logger = logger;
+    }
+    
     private ConcurrentDictionary<string, string> gameNames;
     private readonly HttpClient client = new();
-    
-    public Utilities(TerminalUI terminalUI)
-    {
-        _terminalUI = terminalUI;
-    }
     
     public async Task<string> TranslateUbisoftGameId(string gameFolder)
     {
@@ -49,7 +51,7 @@ internal class Utilities
         }
         catch (Exception ex)
         {
-            _terminalUI.WriteFormattedTextByType($"{ex.Message}", "err", true, false); //replace with logger later
+            _logger.Fatal(ex.Message, 2, true);
             gameNames = new ConcurrentDictionary<string, string>();
         }
     }

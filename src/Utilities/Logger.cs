@@ -1,4 +1,5 @@
 using System.Text;
+using Spectre.Console;
 
 public enum LogLevel
 {
@@ -11,15 +12,13 @@ public enum LogLevel
 
 class Logger
 {
-    private readonly TerminalUI _terminalUI;
     private readonly string _logFilePath;
     private LogLevel _minimumLogLevel = LogLevel.Info;
     private bool _includeTimestamp = true;
     private readonly object _fileLock = new();
     
-    public Logger(string logFilePath, TerminalUI terminalUI)
+    public Logger(string logFilePath)
     {
-        _terminalUI = terminalUI;
         _logFilePath = logFilePath;
         Directory.CreateDirectory(Path.GetDirectoryName(logFilePath));
     }
@@ -32,34 +31,34 @@ class Logger
     public void Debug(string message, int indentLevel = 0, bool consoleOutput = false)
     {
         if (_minimumLogLevel <= LogLevel.Debug)
-            WriteLogEntry(message, "DEBUG", indentLevel, ConsoleColor.Gray, consoleOutput);
+            WriteLogEntry(message, "DEBUG", indentLevel, "chartreuse2", consoleOutput);
     }
     
     public void Info(string message, int indentLevel = 0, bool consoleOutput = false)
     {
         if (_minimumLogLevel <= LogLevel.Info)
-            WriteLogEntry(message, "INFO", indentLevel, ConsoleColor.White, consoleOutput);
+            WriteLogEntry(message, "INFO", indentLevel, "cyan", consoleOutput);
     }
     
     public void Warning(string message, int indentLevel = 0, bool consoleOutput = false)
     {
         if (_minimumLogLevel <= LogLevel.Warning)
-            WriteLogEntry(message, "WARN", indentLevel, ConsoleColor.Yellow, consoleOutput);
+            WriteLogEntry(message, "WARN", indentLevel, "yellow", consoleOutput);
     }
     
     public void Error(string message, int indentLevel = 0, bool consoleOutput = false)
     {
         if (_minimumLogLevel <= LogLevel.Error)
-            WriteLogEntry(message, "ERROR", indentLevel, ConsoleColor.Red, consoleOutput);
+            WriteLogEntry(message, "ERROR", indentLevel, "red", consoleOutput);
     }
     
     public void Fatal(string message, int indentLevel = 0, bool consoleOutput = false)
     {
         if (_minimumLogLevel <= LogLevel.Fatal)
-            WriteLogEntry(message, "FATAL", indentLevel, ConsoleColor.DarkRed, consoleOutput);
+            WriteLogEntry(message, "FATAL", indentLevel, "darkred_1", consoleOutput);
     }
     
-    private void WriteLogEntry(string message, string levelName, int indentLevel, ConsoleColor color, bool consoleOutput)
+    private void WriteLogEntry(string message, string levelName, int indentLevel, string color, bool consoleOutput)
     {
         try
         {
@@ -67,24 +66,21 @@ class Logger
             
             lock (_fileLock)
             {
-                using (var writer = new StreamWriter(_logFilePath, true))
-                {
-                    writer.WriteLine(logEntry);
-                }
+                using var writer = new StreamWriter(_logFilePath, true);
+                writer.WriteLine(logEntry);
             }
 
-            if (consoleOutput)
-            {
-                _terminalUI.WriteTextWithColor(logEntry, color, true, false);
-            }
+            if (!consoleOutput) return;
+            
+            AnsiConsole.Write(new Markup($"[{color}]{logEntry}[/]\n"));
         }
         catch (IOException ex)
         {
-            _terminalUI.WriteTextWithColor($"Failed to write to log file: {ex.Message}", ConsoleColor.Red, true, false);
+            AnsiConsole.Write(new Markup($"[red]Failed to write to log file:[/] {ex.Message}\n"));
         }
         catch (Exception ex)
         {
-            _terminalUI.WriteTextWithColor($"Unexpected error writing to log: {ex.Message}", ConsoleColor.Red, true, false);
+            AnsiConsole.Write(new Markup($"[red]Unexpected error writing to log:[/] {ex.Message}\n"));
         }
     }
     

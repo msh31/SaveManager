@@ -5,10 +5,10 @@
 using System.Diagnostics;
 using SaveManager.Commands;
 using SaveManager.Managers;
+using Spectre.Console;
 
 class CommandProcessor
 {
-    private readonly TerminalUI _terminalUI;
     private readonly UbiManager _ubiManager;
     private readonly ConfigManager _configManager;
     private readonly Globals _globals;
@@ -16,9 +16,8 @@ class CommandProcessor
     private readonly Dictionary<string, ICommand> _commands;
     private readonly bool _isRunning = true;
     
-    public CommandProcessor(TerminalUI terminalUI, UbiManager ubiManager, ConfigManager configManager, Globals globals, Utilities utilities)
+    public CommandProcessor(UbiManager ubiManager, ConfigManager configManager, Globals globals, Utilities utilities)
     {
-        _terminalUI = terminalUI;
         _ubiManager = ubiManager;
         _configManager = configManager;
         _globals = globals;
@@ -30,8 +29,8 @@ class CommandProcessor
     
     private void RegisterCommands()
     {
-        RegisterCommand(new HelpCommand(_terminalUI, _commands));
-        RegisterCommand(new ListCommand(_terminalUI, _ubiManager));
+        RegisterCommand(new HelpCommand(_commands));
+        RegisterCommand(new ListCommand(_ubiManager));
         RegisterCommand(new ExitCommand());
         RegisterCommand(new ClearCommand());
         // RegisterCommand(new RenameCommand(_terminalUI, _ubiManager, _configManager, _globals, _utilities));
@@ -47,7 +46,7 @@ class CommandProcessor
     {
         while (_isRunning)
         {
-            _terminalUI.WriteTextWithColor("> ", ConsoleColor.Green, false, false);
+            AnsiConsole.Write(new Markup("[green]> [/]"));
             var input = Console.ReadLine();
             
             if (string.IsNullOrEmpty(input))
@@ -65,7 +64,7 @@ class CommandProcessor
             }
             else
             {
-                _terminalUI.WriteFormattedTextByType("I don't know that command. Type 'help' to see available commands.", "warn", true, false);
+                AnsiConsole.Write(new Markup("[orange][[warn]][/] I don't know that command. Type 'help' to see available commands.\n"));
             }
         }
     }

@@ -1,5 +1,7 @@
 ﻿//ReSharper disable InconsistentNaming
 
+using Spectre.Console;
+
 Console.Title = "SaveManager";
 Console.ForegroundColor = ConsoleColor.Gray;
 
@@ -10,10 +12,8 @@ try
 }
 catch (Exception ex)
 {
-    Console.ForegroundColor = ConsoleColor.Red;
-    Console.WriteLine($"Fatal error in main program: {ex.Message}");
-    Console.WriteLine(ex.StackTrace);
-    Console.ForegroundColor = ConsoleColor.Gray;
-    Console.WriteLine("\nPress any key to exit...");
+    AnsiConsole.Write(new Markup($"[red]Fatal error in main program:[/] {ex.Message}\n"));
+    AnsiConsole.Write(new Markup($"[red bold underline]STACKTRACE:[/] {ex.StackTrace}\n"));
+    Console.WriteLine("Press any key to exit...");
     Console.ReadKey();
 }
