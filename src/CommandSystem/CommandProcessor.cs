@@ -36,7 +36,7 @@ class CommandProcessor
         RegisterCommand(new ExitCommand());
         RegisterCommand(new ClearCommand());
         // RegisterCommand(new BackupCommand(_ubiManager, _globals, _utilities, _configManager));
-        // RegisterCommand(new RefreshCommand(_ubiManager));
+        RegisterCommand(new RefreshCommand(_ubiManager));
     }
     
     private void RegisterCommand(ICommand command)
