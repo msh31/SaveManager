@@ -1,5 +1,6 @@
 ﻿//ReSharper disable InconsistentNaming
 using SaveManager.Interfaces;
+using Spectre.Console;
 
 // base class for platform managers
 abstract class BaseManager : ISaveManager
@@ -38,7 +39,7 @@ abstract class BaseManager : ISaveManager
     {
         if (!File.Exists(sourcePath))
         {
-            _logger.Error($"[red][[err]][/] File not found: {sourcePath}", 2, true);
+            AnsiConsole.MarkupLine($"[red][[err]][/] Source file not found: {Markup.Escape(sourcePath)}");
             return null;
         }
         
@@ -52,7 +53,7 @@ abstract class BaseManager : ISaveManager
         }
         catch (Exception ex)
         {
-            _logger.Error($"[red][[err]][/] Backup failed: {ex.Message}", 2, true);
+            AnsiConsole.MarkupLine($"[red][[err]][/] Backup failed: {ex.Message}");
             return null;
         }
     }
