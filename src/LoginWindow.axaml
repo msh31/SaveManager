@@ -1,0 +1,90 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d"
+        x:Class="SaveManagerGUI.LoginWindow"
+        Title="SaveManager"
+        Width="1270" Height="720"
+        Background="#1e1e1e"
+        WindowStartupLocation="CenterScreen">
+
+    <Grid>
+        <Border Width="400" Height="450"
+                Background="#252525"
+                CornerRadius="8"
+                BoxShadow="0 4 20 0 #121212">
+            
+            <StackPanel Margin="30">
+                <!-- Login Form Header -->
+                <TextBlock Text="Login to SaveManager"
+                           FontSize="24"
+                           FontWeight="Bold"
+                           Foreground="White"
+                           HorizontalAlignment="Center"
+                           Margin="0,0,0,40"/>
+                
+                <!-- Username Field -->
+                <TextBlock Text="Username"
+                           Foreground="#cccccc"
+                           Margin="0,0,0,8"/>
+                <TextBox x:Name="UsernameTextBox"
+                         Height="40"
+                         CornerRadius="4"
+                         Padding="12,8"
+                         Watermark="Enter your username"
+                         Margin="0,0,0,20"
+                         Background="#333333"
+                         Foreground="White"
+                         BorderBrush="#444444"
+                         BorderThickness="1"/>
+                
+                <!-- Password Field -->
+                <TextBlock Text="Password"
+                           Foreground="#cccccc"
+                           Margin="0,0,0,8"/>
+                <TextBox x:Name="PasswordTextBox"
+                         PasswordChar="•"
+                         Height="40"
+                         CornerRadius="4"
+                         Padding="12,8"
+                         Watermark="Enter your password"
+                         Margin="0,0,0,30"
+                         Background="#333333"
+                         Foreground="White"
+                         BorderBrush="#444444"
+                         BorderThickness="1"/>
+                
+                <!-- Login Button -->
+                <Button x:Name="LoginButton"
+                        Content="Login"
+                        Height="45"
+                        HorizontalAlignment="Stretch"
+                        HorizontalContentAlignment="Center"
+                        Background="#0078D7"
+                        Foreground="White"
+                        Padding="0,8"
+                        CornerRadius="4"
+                        Margin="0,0,0,20"
+                        Click="OnLoginClick"/>
+                
+                <!-- Forgot Password Text -->
+                <TextBlock Text="Forgot Password?"
+                           Foreground="#0078D7"
+                           HorizontalAlignment="Center"
+                           Cursor="Hand"
+                           Margin="0,0,0,20"/>
+                
+                <!-- Exit Button at the bottom -->
+                <Button x:Name="exitButton"
+                        Content="Exit"
+                        HorizontalAlignment="Center"
+                        Padding="20,8"
+                        Background="Transparent"
+                        Foreground="#cccccc"
+                        BorderThickness="0"
+                        Click="OnExitClick"/>
+            </StackPanel>
+        </Border>
+    </Grid>
+</Window>
