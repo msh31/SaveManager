@@ -3,6 +3,7 @@
 //ReSharper disable SuggestVarOrType_BuiltInTypes
 
 using SaveManager.Commands;
+using Spectre.Console;
 
 class ClearCommand : ICommand
 {
@@ -13,6 +14,7 @@ class ClearCommand : ICommand
     public Task ExecuteAsync(string[] args)
     {
         Console.Clear();
+        AnsiConsole.Write(new FigletText("SaveManager").Centered().Color(Color.Cyan1));
         return Task.CompletedTask;
     }
 }
