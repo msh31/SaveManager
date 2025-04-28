@@ -13,15 +13,17 @@ class CommandProcessor
     private readonly ConfigManager _configManager;
     private readonly Globals _globals;
     private readonly Utilities _utilities;
+    private readonly Logger _logger;
     private readonly Dictionary<string, ICommand> _commands;
     private readonly bool _isRunning = true;
     
-    public CommandProcessor(UbiManager ubiManager, ConfigManager configManager, Globals globals, Utilities utilities)
+    public CommandProcessor(UbiManager ubiManager, ConfigManager configManager, Globals globals, Utilities utilities, Logger logger)
     {
         _ubiManager = ubiManager;
         _configManager = configManager;
         _globals = globals;
         _utilities = utilities;
+        _logger = logger;
         _commands = new Dictionary<string, ICommand>();
         
         RegisterCommands();
@@ -33,7 +35,8 @@ class CommandProcessor
         RegisterCommand(new ListCommand(_ubiManager));
         RegisterCommand(new ExitCommand());
         RegisterCommand(new ClearCommand());
-        // RegisterCommand(new RenameCommand(_terminalUI, _ubiManager, _configManager, _globals, _utilities));
+        // RegisterCommand(new BackupCommand(_ubiManager, _globals, _utilities, _configManager));
+        // RegisterCommand(new RefreshCommand(_ubiManager));
     }
     
     private void RegisterCommand(ICommand command)
@@ -46,7 +49,7 @@ class CommandProcessor
     {
         while (_isRunning)
         {
-            AnsiConsole.Write(new Markup("[green]> [/]"));
+            AnsiConsole.Markup("[green]> [/]");
             var input = Console.ReadLine();
             
             if (string.IsNullOrEmpty(input))
@@ -64,7 +67,7 @@ class CommandProcessor
             }
             else
             {
-                AnsiConsole.Write(new Markup("[orange][[warn]][/] I don't know that command. Type 'help' to see available commands.\n"));
+                AnsiConsole.MarkupLine("[darkorange3][[warn]][/] I don't know that command. Type 'help' to see available commands.");
             }
         }
     }

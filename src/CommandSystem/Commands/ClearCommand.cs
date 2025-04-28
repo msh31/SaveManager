@@ -15,6 +15,7 @@ class ClearCommand : ICommand
     {
         Console.Clear();
         AnsiConsole.Write(new FigletText("SaveManager").Centered().Color(Color.Cyan1));
+        AnsiConsole.Write(Align.Center(new Markup("All clear!\nType [bold yellow]'help'[/] to see available commands!")));
         return Task.CompletedTask;
     }
 }

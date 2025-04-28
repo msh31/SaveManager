@@ -13,6 +13,6 @@ class ExitCommand : ICommand
     public Task ExecuteAsync(string[] args)
     {
         Environment.Exit(0);
-        return Task.CompletedTask; //lol
+        return Task.CompletedTask;
     }
 }
