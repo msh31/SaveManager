@@ -20,17 +20,17 @@ class HelpCommand : CommandBase
 
             if (string.IsNullOrEmpty(commandName) || !_commands.ContainsKey(commandName.ToLower()))
             {
-                AnsiConsole.Write(new Markup($"[orange][[warn]][/] Unknown command: {commandName}\n"));
+                AnsiConsole.Write(new Markup($"[darkorange3][[warn]][/] Unknown command: {commandName}\n"));
                 return;
             }
     
             var command = _commands[commandName.ToLower()];
             AnsiConsole.Write(new Markup($"[cyan][[inf]][/] Command: {command.Name}\n"));
-            AnsiConsole.Write(new Markup($"[white]  Description: {command.Description}[/]\n"));
+            AnsiConsole.Write(new Markup($"[white]  Description:[/] {command.Description}\n"));
     
             if (!string.IsNullOrEmpty(command.Usage))
             {
-                AnsiConsole.Write(new Markup($"[white]    Usage: {command.Name} {command.Usage}[/]\n"));
+                AnsiConsole.Write(new Markup($"[white]  Usage:[/] {command.Name} {command.Usage}\n"));
             }
         }
         else
