@@ -1,5 +1,6 @@
 using System.Text;
 using Spectre.Console;
+using System.Text.RegularExpressions;
 
 public enum LogLevel
 {
@@ -62,7 +63,8 @@ class Logger
     {
         try
         {
-            var logEntry = FormatLogEntry(message, levelName, indentLevel);
+            var cleanMessage = StripMarkup(message);
+            var logEntry = FormatLogEntry(cleanMessage, levelName, indentLevel);
             
             lock (_fileLock)
             {
@@ -72,15 +74,15 @@ class Logger
 
             if (!consoleOutput) return;
             
-            AnsiConsole.Write(new Markup($"[{color}]{logEntry}[/]\n"));
+            AnsiConsole.MarkupLine($"[{color}]{levelName}[/] {message}");
         }
         catch (IOException ex)
         {
-            AnsiConsole.Write(new Markup($"[red]Failed to write to log file:[/] {ex.Message}\n"));
+            AnsiConsole.MarkupLine($"[red]Failed to write to log file:[/] {ex.Message}");
         }
         catch (Exception ex)
         {
-            AnsiConsole.Write(new Markup($"[red]Unexpected error writing to log:[/] {ex.Message}\n"));
+            AnsiConsole.MarkupLine($"[red]Unexpected error writing to log:[/] {ex.Message}");
         }
     }
     
@@ -97,5 +99,22 @@ class Logger
         sb.Append($"[{levelName}] {message}");
         
         return sb.ToString();
+    }
+    
+// Helper method to strip Spectre.Console markup tags from text
+    private string StripMarkup(string text)
+    {
+        if (string.IsNullOrEmpty(text))
+        {
+            return text;
+        }
+            
+        // Remove [color]...[/] style tags
+        text = Regex.Replace(text, @"\[([^\]]*)\](.*?)\[\/\]", "$2");
+        
+        // Remove any remaining square bracket tags
+        text = Regex.Replace(text, @"\[(.*?)\]", "[$1]");
+        
+        return text;
     }
 }
