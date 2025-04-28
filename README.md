@@ -2,7 +2,7 @@
 
 # Save Manager
 
-Local savegame manager to help you easily manage all your savegames in one place.
+Local savegame manager to help you easily manage all your savegames in one place. *GUI edition*
 
 [Installation](#installation) •
 [Features](#-features) •
@@ -11,7 +11,7 @@ Local savegame manager to help you easily manage all your savegames in one place
 [License](#-license) •
 [References](#-references)
 
-![App Image](https://i.imgur.com/PXl75Bv.png)
+![App Image](https://i.imgur.com/NkdIfU5.png)
 </div>
 
 ## Installation
@@ -32,9 +32,8 @@ Simply download and run the latest release from the [releases page](https://gith
 
 
 ## 🛠 Technical Details
-Built with modern technologies and best practices: \
-![C#](https://img.shields.io/badge/c%23-%23239120.svg?style=for-the-badge&logo=csharp&logoColor=white)
 ![.Net](https://img.shields.io/badge/.NET-5C2D91?style=for-the-badge&logo=.net&logoColor=white)
+![AvaloniaUI](https://img.shields.io/badge/Avalonia_UI-8B0000?style=for-the-badge)
 
 
 ## 🤝 Contributing
