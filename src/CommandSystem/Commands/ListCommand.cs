@@ -1,40 +1,35 @@
 ﻿//ReSharper disable InconsistentNaming
 using SaveManager.Commands;
 using SaveManager.Managers;
+using Spectre.Console;
 
 class ListCommand : CommandBase
 {
     private readonly UbiManager _ubiManager;
-    private readonly TerminalUI _terminalUI;
     
-    public ListCommand(TerminalUI terminalUI, UbiManager ubiManager) : base("list", "Shows available saves", "[ubisoft|u|rockstar|r]", terminalUI)
+    public ListCommand(UbiManager ubiManager) : base("list", "Shows available saves", "")
     {
         _ubiManager = ubiManager;
-        _terminalUI = terminalUI;
     }
     
     public override async Task ExecuteAsync(string[] args)
     {
-        if (args.Length > 0)
+        var platform = AnsiConsole.Prompt(
+            new SelectionPrompt<string>()
+                .Title("Which [green]platform[/] do you want to list saves for?")
+                .PageSize(5)
+                .AddChoices(new[] {
+                    "Ubisoft",
+                    "Rockstar"
+                }));
+
+        if (platform == "Ubisoft")
         {
-            var platform = args[0].ToLower();
-            
-            if (platform is "ubisoft" or "u")
-            {
-                await _ubiManager.ListSaveGamesAsync();
-            }
-            else if (platform is "rockstar" or "r")
-            {
-                _terminalUI.WriteFormattedTextByType("Rockstar list not implemented yet.", "inf", true, false);
-            }
-            else
-            {
-                _terminalUI.WriteFormattedTextByType($"Unknown platform: {platform}. Use 'ubisoft' or 'rockstar'", "err", true, false);
-            }
+            await _ubiManager.ListSaveGamesAsync();
         }
         else
         {
-            _terminalUI.WriteFormattedTextByType("Please specify platform: 'list ubisoft' or 'list rockstar'", "inf", true, false);
+            AnsiConsole.MarkupLine("[cyan][[inf]][/] Rockstar list not implemented yet.");
         }
     }
 }

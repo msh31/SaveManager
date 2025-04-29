@@ -5,6 +5,6 @@ namespace SaveManager.Interfaces;
 
 public interface ISaveFileStorage
 {
-    Task<List<SaveFileInfo>> GetSaveFiles(string gameId);
-    Task<bool> SaveDisplayName(string gameId, string fileName, string displayName);
+    // Task<List<SaveFileInfo>> GetSaveFiles(string gameId);
+    // Task<bool> SaveDisplayName(string gameId, string fileName, string displayName);
 }

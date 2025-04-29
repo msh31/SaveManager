@@ -5,3 +5,5 @@ src/.idea
 *.lnk
 /publish
 /bin
+logic-flowchart.drawio
+feat-todo.cs

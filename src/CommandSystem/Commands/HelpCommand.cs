@@ -1,15 +1,14 @@
 ﻿//ReSharper disable InconsistentNaming
 using SaveManager.Commands;
 using SaveManager.Managers;
+using Spectre.Console;
 
 class HelpCommand : CommandBase
 {
-    private readonly TerminalUI _terminalUI;
     private readonly Dictionary<string, ICommand> _commands;
     
-    public HelpCommand(TerminalUI terminalUI, Dictionary<string, ICommand> commands) : base("help", "Displays available commands", "[command]", terminalUI)
+    public HelpCommand(Dictionary<string, ICommand> commands) : base("help", "Displays available commands", "[command]")
     {
-        _terminalUI = terminalUI;
         _commands = commands;
     }
     
@@ -21,30 +20,29 @@ class HelpCommand : CommandBase
 
             if (string.IsNullOrEmpty(commandName) || !_commands.ContainsKey(commandName.ToLower()))
             {
-                _terminalUI.WriteFormattedTextByType($"Unknown command: {commandName}", "err", true, false);
+                AnsiConsole.Write(new Markup($"[darkorange3][[warn]][/] Unknown command: {commandName}\n"));
                 return;
             }
     
             var command = _commands[commandName.ToLower()];
-            _terminalUI.WriteFormattedTextByType($"Command: {command.Name}", "inf", true, false);
-            _terminalUI.WriteTextWithColor($"  Description: {command.Description}", ConsoleColor.White, true, false);
+            AnsiConsole.Write(new Markup($"[cyan][[inf]][/] Command: {command.Name}\n"));
+            AnsiConsole.Write(new Markup($"[white]  Description:[/] {command.Description}\n"));
     
             if (!string.IsNullOrEmpty(command.Usage))
             {
-                _terminalUI.WriteTextWithColor($"  Usage: {command.Name} {command.Usage}", ConsoleColor.White, true, false);
+                AnsiConsole.Write(new Markup($"[white]  Usage:[/] {command.Name} {command.Usage}\n"));
             }
         }
         else
         {
-            _terminalUI.WriteFormattedTextByType("Available commands:", "inf", true, false);
+            AnsiConsole.Write(new Markup("[cyan][[inf]][/] Available commands:\n"));
             
             foreach (var command in _commands.Values)
             {
-                _terminalUI.WriteTextWithColor($"  {command.Name.PadRight(8)} - {command.Description}", ConsoleColor.White, true, false);
+                AnsiConsole.Write(new Markup($"[white] {command.Name.PadRight(8)} - {command.Description}[/]\n"));
             }
-    
-            Console.WriteLine(string.Empty);
-            _terminalUI.WriteFormattedTextByType("Type 'help <command>' for usage information.", "inf", true, false);
+            
+            AnsiConsole.Write(new Markup("\n[cyan][[inf]][/] Type 'help <command>' for usage information.\n"));
         }
     }
 }

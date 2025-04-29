@@ -18,4 +18,10 @@
     <OutputPath>builds/rel/</OutputPath>
   </PropertyGroup>
 
+  <ItemGroup>
+    <PackageReference Include="Spectre.Console" Version="0.50.1-preview.0.5" />
+    <PackageReference Include="Spectre.Console.Cli" Version="0.50.1-preview.0.5" />
+    <PackageReference Include="Spectre.Console.ImageSharp" Version="0.50.1-preview.0.5" />
+  </ItemGroup>
+
 </Project>
