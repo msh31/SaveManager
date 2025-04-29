@@ -32,11 +32,12 @@ class CommandProcessor
     private void RegisterCommands()
     {
         RegisterCommand(new HelpCommand(_commands));
-        RegisterCommand(new ListCommand(_ubiManager, _utilities, _globals));
+        RegisterCommand(new ListCommand(_ubiManager));//, _utilities, _globals));
         RegisterCommand(new ExitCommand());
         RegisterCommand(new ClearCommand());
         // RegisterCommand(new BackupCommand(_ubiManager, _globals, _utilities, _configManager));
         RegisterCommand(new RefreshCommand(_ubiManager));
+        RegisterCommand(new SyncCommand(_ubiManager));
     }
     
     private void RegisterCommand(ICommand command)
