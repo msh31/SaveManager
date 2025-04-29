@@ -32,7 +32,7 @@ class CommandProcessor
     private void RegisterCommands()
     {
         RegisterCommand(new HelpCommand(_commands));
-        RegisterCommand(new ListCommand(_ubiManager));
+        RegisterCommand(new ListCommand(_ubiManager, _utilities, _globals));
         RegisterCommand(new ExitCommand());
         RegisterCommand(new ClearCommand());
         // RegisterCommand(new BackupCommand(_ubiManager, _globals, _utilities, _configManager));
@@ -49,25 +49,45 @@ class CommandProcessor
     {
         while (_isRunning)
         {
-            AnsiConsole.Markup("[green]> [/]");
-            var input = Console.ReadLine();
-            
-            if (string.IsNullOrEmpty(input))
+            try
             {
-                continue;
+                AnsiConsole.Markup("[green]> [/]");
+                var input = Console.ReadLine();
+                
+                if (string.IsNullOrEmpty(input))
+                {
+                    continue;
+                }
+                
+                string[] parts = input.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+                string commandName = parts[0].ToLower();
+                string[] args = parts.Length > 1 ? parts.Skip(1).ToArray() : Array.Empty<string>();
+                
+                if (_commands.TryGetValue(commandName, out var command))
+                {
+                    try
+                    {
+                        await command.ExecuteAsync(args);
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"Error executing command: {ex.Message}");
+                        
+                        try
+                        {
+                            _logger.Error($"Command execution error: {ex.Message}", 2);
+                        }
+                        catch {  }
+                    }
+                }
+                else
+                {
+                    Console.WriteLine("Unknown command. Type 'help' to see available commands.");
+                }
             }
-            
-            string[] parts = input.Split(' ', StringSplitOptions.RemoveEmptyEntries);
-            string commandName = parts[0].ToLower();
-            string[] args = parts.Length > 1 ? parts.Skip(1).ToArray() : Array.Empty<string>();
-            
-            if (_commands.TryGetValue(commandName, out var command))
+            catch (Exception ex)
             {
-                await command.ExecuteAsync(args);
-            }
-            else
-            {
-                AnsiConsole.MarkupLine("[darkorange3][[warn]][/] I don't know that command. Type 'help' to see available commands.");
+                Console.WriteLine($"Error in command processor: {ex.Message}");
             }
         }
     }
