@@ -37,11 +37,6 @@ class UbiManager : BaseManager, ISaveFileStorage
     {
         AnsiConsole.MarkupLine("[red][[err]][/] Restore functionality is not fully implemented yet.");
     }
-
-    public override async Task RenameSaveFilesAsync(string id)
-    {
-        AnsiConsole.MarkupLine("[red][[err]][/] Restore functionality is not fully implemented yet.");
-    }
     
     #endregion
     
@@ -192,6 +187,71 @@ class UbiManager : BaseManager, ISaveFileStorage
         }
     }
 
+    public override async Task RenameSaveFilesAsync(string gameId, string saveFileName, string newDisplayName)
+    {
+        if (Saves.Count == 0 && File.Exists(_globals.UbiSaveInfoFilePath))
+        {
+            try
+            {
+                var json = await File.ReadAllTextAsync(_globals.UbiSaveInfoFilePath);
+                Saves = JsonSerializer.Deserialize<Dictionary<string, List<SaveFileInfo>>>(json);
+            }
+            catch (Exception ex)
+            {
+                AnsiConsole.MarkupLine($"[red][[err]][/] Error loading save info: {ex.Message}");
+                return;
+            }
+        }
+
+        if (Saves == null || Saves.Count == 0)
+        {
+            AnsiConsole.MarkupLine("[red][[err]][/] No saves found. Try running 'refresh ubisoft' first.");
+            return;
+        }
+        
+        bool foundGame = false;
+        bool foundSave = false;
+        
+        foreach (var entry in Saves)
+        {
+            string[] parts = entry.Key.Split('_');
+            var accountId = parts[0];
+            var entryGameId = parts[1];
+            
+            if (entryGameId == gameId)
+            {
+                foundGame = true;
+                var gameName = await _utilities.TranslateUbisoftGameId(Path.Combine(_globals.UbisoftRootFolder, accountId, gameId));
+                
+                var saveFile = entry.Value.FirstOrDefault(s => s.FileName.Equals(saveFileName, StringComparison.OrdinalIgnoreCase));
+                
+                if (saveFile != null)
+                {
+                    foundSave = true;
+                    string oldDisplayName = saveFile.DisplayName == "CUSTOM_NAME_NOT_SET" ? saveFile.FileName : saveFile.DisplayName;
+                    saveFile.DisplayName = newDisplayName;
+                    
+                    var json = JsonSerializer.Serialize(Saves, new JsonSerializerOptions { WriteIndented = true });
+                    await File.WriteAllTextAsync(_globals.UbiSaveInfoFilePath, json);
+                    
+                    AnsiConsole.MarkupLine($"[green][[suc]][/] Renamed save in [darkcyan]{Markup.Escape(gameName)}[/]");
+                    AnsiConsole.MarkupLine($"[gray]   From: {Markup.Escape(oldDisplayName)}[/]");
+                    AnsiConsole.MarkupLine($"[gray]   To: {Markup.Escape(newDisplayName)}[/]");
+                    return;
+                }
+            }
+        }
+        
+        if (!foundGame)
+        {
+            AnsiConsole.MarkupLine($"[red][[err]][/] Game with ID '{gameId}' not found.");
+        }
+        else if (!foundSave)
+        {
+            AnsiConsole.MarkupLine($"[red][[err]][/] Save file '{saveFileName}' not found in game with ID '{gameId}'.");
+        }
+    }
+    
     #endregion
 
     public override async Task InitializeSaveDetection()
