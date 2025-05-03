@@ -401,6 +401,35 @@ class UbiManager : BaseManager, ISaveFileStorage
     {
         AnsiConsole.MarkupLine("[cyan][[inf]][/] Looking for savegames..");
 
+        Dictionary<string, Dictionary<string, string>> existingDisplayNames = new Dictionary<string, Dictionary<string, string>>();
+        if (File.Exists(_globals.UbiSaveInfoFilePath))
+        {
+            try
+            {
+                var json = await File.ReadAllTextAsync(_globals.UbiSaveInfoFilePath);
+                var existingSaves = JsonSerializer.Deserialize<Dictionary<string, List<SaveFileInfo>>>(json);
+            
+                if (existingSaves != null)
+                {
+                    foreach (var saveKey in existingSaves.Keys)
+                    {
+                        existingDisplayNames[saveKey] = new Dictionary<string, string>();
+                        foreach (var save in existingSaves[saveKey])
+                        {
+                            if (save.DisplayName != "CUSTOM_NAME_NOT_SET")
+                            {
+                                existingDisplayNames[saveKey][save.FileName] = save.DisplayName;
+                            }
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.Warning($"Could not load existing save display names: {ex.Message}", 0, true);
+            }
+        }
+        
         foreach (var gameId in _configManager.Data.DetectedUbiGames)
         {
             var gameFolder = Path.Combine(accountRootFolder, gameId);
@@ -445,6 +474,12 @@ class UbiManager : BaseManager, ISaveFileStorage
                     DisplayName = "CUSTOM_NAME_NOT_SET"
                 };
 
+                var saveDisplayNameKey = $"{Path.GetFileName(accountRootFolder)}_{gameId}";
+                if (existingDisplayNames.ContainsKey(saveDisplayNameKey) && existingDisplayNames[saveDisplayNameKey].ContainsKey(fileName))
+                {
+                    saveInfo.DisplayName = existingDisplayNames[saveDisplayNameKey][fileName];
+                }
+
                 validSaves.Add(saveInfo);
             }
 
@@ -467,8 +502,8 @@ class UbiManager : BaseManager, ISaveFileStorage
                 string timestampCreated = save.DateCreated.ToString("yyyy-MM-dd HH:mm:ss");
 
                 var escapedFileName = Markup.Escape(save.FileName);
-                AnsiConsole.MarkupLine(
-                    $"[darkcyan]   - {escapedFileName} | {sizeInKB:F1}KB | created: {timestampCreated} | updated: {timestamp}[/]");
+                
+                AnsiConsole.MarkupLine($"[darkcyan]   - {escapedFileName} | {sizeInKB:F1}KB | created: {timestampCreated} | updated: {timestamp}[/]");
             }
         }
     }
