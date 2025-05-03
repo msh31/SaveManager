@@ -1,9 +1,130 @@
 ﻿<Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+        xmlns:fa="clr-namespace:FluentAvalonia.UI.Controls;assembly=FluentAvalonia"
         x:Class="SaveManagerGUI.MainWindow"
-        Title="MainWindow">
-    Welcome to Avalonia!
+        Title="SaveManager"
+        Width="1270" Height="720"
+        Background="#1E1E1E"
+        WindowStartupLocation="CenterScreen">
+
+    <Window.Styles>
+        <!-- Sidebar Button Style -->
+        <Style Selector="Button.sidebar">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Foreground" Value="#DDDDDD"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="HorizontalAlignment" Value="Stretch"/>
+            <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Padding" Value="0"/>
+        </Style>
+
+        <Style Selector="Button.sidebar:pointerover">
+            <Setter Property="Background" Value="#3a3a3a"/>
+            <Setter Property="Foreground" Value="#00BFFF"/>
+        </Style>
+    </Window.Styles>
+
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="240"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+
+        <!-- Sidebar -->
+        <Grid Background="#2b2b2b">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+
+            <!-- Top content -->
+            <StackPanel Grid.Row="0" Spacing="10">
+                <TextBlock Text="SaveManager"
+                           FontSize="22"
+                           FontWeight="Bold"
+                           Foreground="White"
+                           Margin="20,20,0,30"/>
+
+                <!-- Sidebar Buttons -->
+                <Button Classes="sidebar" Click="OnDashboardClick">
+                    <StackPanel Orientation="Horizontal" Spacing="10" Margin="20,5">
+                        <fa:FontIcon Glyph="&#xE80F;" FontSize="18" FontFamily="Segoe MDL2 Assets"/>
+                        <TextBlock Text="Dashboard"/>
+                    </StackPanel>
+                </Button>
+
+                <Button Classes="sidebar" Click="OnBackupsClick">
+                    <StackPanel Orientation="Horizontal" Spacing="10" Margin="20,5">
+                        <fa:FontIcon Glyph="&#xE7C3;" FontSize="18" FontFamily="Segoe MDL2 Assets"/>
+                        <TextBlock Text="Backups"/>
+                    </StackPanel>
+                </Button>
+
+                <Button Classes="sidebar" Click="OnSyncClick">
+                    <StackPanel Orientation="Horizontal" Spacing="10" Margin="20,5">
+                        <fa:FontIcon Glyph="&#xE895;" FontSize="18" FontFamily="Segoe MDL2 Assets"/>
+                        <TextBlock Text="Sync"/>
+                    </StackPanel>
+                </Button>
+
+                <Button Classes="sidebar" Click="OnSettingsClick">
+                    <StackPanel Orientation="Horizontal" Spacing="10" Margin="20,5">
+                        <fa:FontIcon Glyph="&#xE713;" FontSize="18" FontFamily="Segoe MDL2 Assets"/>
+                        <TextBlock Text="Settings"/>
+                    </StackPanel>
+                </Button>
+            </StackPanel>
+
+            <!-- Bottom Exit Button -->
+            <Button Grid.Row="2" Classes="sidebar" Foreground="#DD5555" Click="OnExitClick" 
+                    VerticalAlignment="Bottom" Margin="0,0,0,15">
+                <StackPanel Orientation="Horizontal" Spacing="10" Margin="20,5">
+                    <fa:FontIcon Glyph="&#xE8BB;" FontSize="18" FontFamily="Segoe MDL2 Assets"/>
+                    <TextBlock Text="Exit"/>
+                </StackPanel>
+            </Button>
+        </Grid>
+
+        <!-- Main Content -->
+        <Grid Grid.Column="1" Margin="20">
+            <StackPanel Spacing="20">
+                <TextBlock Text="Welcome to SaveManager"
+                           FontSize="28"
+                           FontWeight="Bold"
+                           Foreground="White"/>
+
+                <StackPanel Orientation="Horizontal" Spacing="20">
+                    <Border Background="#2D2D2D" CornerRadius="12" Width="220">
+                        <StackPanel Margin="20">
+                            <TextBlock Text="Total Saves" FontSize="14" Foreground="#aaa"/>
+                            <TextBlock Text="42" FontSize="26" FontWeight="Bold" Foreground="White"/>
+                        </StackPanel>
+                    </Border>
+
+                    <Border Background="#2D2D2D" CornerRadius="12" Width="220">
+                        <StackPanel Margin="20">
+                            <TextBlock Text="Backups Made" FontSize="14" Foreground="#aaa"/>
+                            <TextBlock Text="19" FontSize="26" FontWeight="Bold" Foreground="White"/>
+                        </StackPanel>
+                    </Border>
+
+                    <Border Background="#2D2D2D" CornerRadius="12" Width="220">
+                        <StackPanel Margin="20">
+                            <TextBlock Text="Last Sync" FontSize="14" Foreground="#aaa"/>
+                            <TextBlock Text="2 days ago" FontSize="26" FontWeight="Bold" Foreground="White"/>
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
+
+                <Border Background="#292929" CornerRadius="10">
+                    <TextBlock Text="Your saves will appear here..."
+                               Foreground="#888"
+                               FontSize="16"
+                               Margin="20"/>
+                </Border>
+            </StackPanel>
+        </Grid>
+    </Grid>
 </Window>

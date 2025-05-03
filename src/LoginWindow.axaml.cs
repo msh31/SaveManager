@@ -32,7 +32,7 @@ public partial class LoginWindow : Window
     
     private async void OnExitClick(object sender, RoutedEventArgs e)
     {
-        var result = await _utils.ShowConfirmationBox("Are you sure you want to exit?", "Exit Application");
+        var result = await _utils.ShowConfirmationBox("Are you sure you want to exit?", "Exit");
     
         if (result == ButtonResult.Yes) Close();
     }
