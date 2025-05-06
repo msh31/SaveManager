@@ -11,7 +11,7 @@ Local savegame manager to help you easily manage all your savegames in one place
 [License](#-license) •
 [References](#-references)
 
-![App Image](https://i.imgur.com/PXl75Bv.png)
+![App Image](https://i.imgur.com/8nMZWfn.png)
 </div>
 
 ## Installation
