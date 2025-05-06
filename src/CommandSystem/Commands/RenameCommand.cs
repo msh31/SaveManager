@@ -1,5 +1,6 @@
 ﻿
 using System.Text.Json;
+using SaveManager;
 using SaveManager.Commands;
 using SaveManager.Models;
 using Spectre.Console;
@@ -27,7 +28,11 @@ class RenameCommand : CommandBase
                 try
                 {
                     var json = await File.ReadAllTextAsync(_globals.UbiSaveInfoFilePath);
-                    saves = JsonSerializer.Deserialize<Dictionary<string, List<SaveFileInfo>>>(json);
+                    var options = new JsonSerializerOptions { 
+                        WriteIndented = true,
+                        TypeInfoResolver = JsonContext.Default 
+                    };
+                    saves = JsonSerializer.Deserialize<Dictionary<string, List<SaveFileInfo>>>(json, options);
                 }
                 catch (Exception ex)
                 {

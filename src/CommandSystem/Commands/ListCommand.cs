@@ -4,6 +4,7 @@ using SaveManager.Managers;
 using SaveManager.Models;
 using Spectre.Console;
 using System.Text.Json;
+using SaveManager;
 
 class ListCommand : CommandBase
 {
@@ -429,14 +430,18 @@ class ListCommand : CommandBase
             if (File.Exists(_globals.UbiSaveInfoFilePath))
             {
                 var json = await File.ReadAllTextAsync(_globals.UbiSaveInfoFilePath);
-                return JsonSerializer.Deserialize<Dictionary<string, List<SaveFileInfo>>>(json);
+                var options = new JsonSerializerOptions { 
+                    WriteIndented = true,
+                    TypeInfoResolver = JsonContext.Default 
+                };
+                return JsonSerializer.Deserialize<Dictionary<string, List<SaveFileInfo>>>(json, options);
             }
         }
         catch (Exception ex)
         {
             Console.WriteLine($"Error loading save info: {ex.Message}");
         }
-        
+    
         return new Dictionary<string, List<SaveFileInfo>>();
     }
 }

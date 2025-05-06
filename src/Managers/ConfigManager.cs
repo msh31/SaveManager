@@ -23,12 +23,24 @@ public class ConfigManager
     {
         if (File.Exists(_configFilePath))
         {
-            var json = File.ReadAllText(_configFilePath);
-            var loadedConfig = JsonSerializer.Deserialize<ConfigData>(json);
-            
-            if (loadedConfig != null)
+            try
             {
-                Data = loadedConfig;
+                var json = File.ReadAllText(_configFilePath);
+                var options = new JsonSerializerOptions { 
+                    WriteIndented = true,
+                    TypeInfoResolver = JsonContext.Default 
+                };
+                var loadedConfig = JsonSerializer.Deserialize<ConfigData>(json, options);
+            
+                if (loadedConfig != null)
+                {
+                    Data = loadedConfig;
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error loading config: {ex.Message}");
+                Save();
             }
         }
         else
@@ -36,10 +48,21 @@ public class ConfigManager
             Save();
         }
     }
-    
+
     public void Save()
     {
-        var json = JsonSerializer.Serialize(Data, new JsonSerializerOptions { WriteIndented = true });
-        File.WriteAllText(_configFilePath, json);
+        try
+        {
+            var options = new JsonSerializerOptions { 
+                WriteIndented = true,
+                TypeInfoResolver = JsonContext.Default 
+            };
+            var json = JsonSerializer.Serialize(Data, options);
+            File.WriteAllText(_configFilePath, json);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error saving config: {ex.Message}");
+        }
     }
 }

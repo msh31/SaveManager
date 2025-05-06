@@ -8,6 +8,7 @@
     <Authors>Marco H.</Authors>
     <Description>A local savemanager to easily organize and backup your savefiles</Description>
     <RepositoryUrl>https://github.com/msh31/SaveManager</RepositoryUrl>
+    <JsonSerializerIsReflectionEnabledByDefault>true</JsonSerializerIsReflectionEnabledByDefault>
   </PropertyGroup>
 
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">

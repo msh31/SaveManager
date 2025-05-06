@@ -3,6 +3,7 @@
 //ReSharper disable SuggestVarOrType_BuiltInTypes
 
 using System.Text.Json;
+using SaveManager;
 using SaveManager.Managers;
 using SaveManager.Models;
 using SaveManager.Interfaces;
@@ -49,7 +50,11 @@ class UbiManager : BaseManager, ISaveFileStorage
             try
             {
                 var json = await File.ReadAllTextAsync(_globals.UbiSaveInfoFilePath);
-                Saves = JsonSerializer.Deserialize<Dictionary<string, List<SaveFileInfo>>>(json);
+                var options = new JsonSerializerOptions { 
+                    WriteIndented = true,
+                    TypeInfoResolver = JsonContext.Default 
+                };
+                Saves = JsonSerializer.Deserialize<Dictionary<string, List<SaveFileInfo>>>(json, options);
             }
             catch (Exception ex)
             {
@@ -100,7 +105,11 @@ class UbiManager : BaseManager, ISaveFileStorage
             try
             {
                 var json = await File.ReadAllTextAsync(_globals.UbiSaveInfoFilePath);
-                Saves = JsonSerializer.Deserialize<Dictionary<string, List<SaveFileInfo>>>(json);
+                var options = new JsonSerializerOptions { 
+                    WriteIndented = true,
+                    TypeInfoResolver = JsonContext.Default 
+                };
+                Saves = JsonSerializer.Deserialize<Dictionary<string, List<SaveFileInfo>>>(json, options);
             }
             catch (Exception ex)
             {
@@ -194,7 +203,11 @@ class UbiManager : BaseManager, ISaveFileStorage
             try
             {
                 var json = await File.ReadAllTextAsync(_globals.UbiSaveInfoFilePath);
-                Saves = JsonSerializer.Deserialize<Dictionary<string, List<SaveFileInfo>>>(json);
+                var options = new JsonSerializerOptions { 
+                    WriteIndented = true,
+                    TypeInfoResolver = JsonContext.Default 
+                };
+                Saves = JsonSerializer.Deserialize<Dictionary<string, List<SaveFileInfo>>>(json, options);
             }
             catch (Exception ex)
             {
@@ -231,7 +244,11 @@ class UbiManager : BaseManager, ISaveFileStorage
                     string oldDisplayName = saveFile.DisplayName == "CUSTOM_NAME_NOT_SET" ? saveFile.FileName : saveFile.DisplayName;
                     saveFile.DisplayName = newDisplayName;
                     
-                    var json = JsonSerializer.Serialize(Saves, new JsonSerializerOptions { WriteIndented = true });
+                    var options = new JsonSerializerOptions { 
+                        WriteIndented = true,
+                        TypeInfoResolver = JsonContext.Default 
+                    };
+                    var json = JsonSerializer.Serialize(Saves, options);
                     await File.WriteAllTextAsync(_globals.UbiSaveInfoFilePath, json);
                     
                     AnsiConsole.MarkupLine($"[green][[suc]][/] Renamed save in [darkcyan]{Markup.Escape(gameName)}[/]");
@@ -407,8 +424,12 @@ class UbiManager : BaseManager, ISaveFileStorage
             try
             {
                 var json = await File.ReadAllTextAsync(_globals.UbiSaveInfoFilePath);
-                var existingSaves = JsonSerializer.Deserialize<Dictionary<string, List<SaveFileInfo>>>(json);
-            
+                var options = new JsonSerializerOptions { 
+                    WriteIndented = true,
+                    TypeInfoResolver = JsonContext.Default 
+                };
+                var existingSaves = JsonSerializer.Deserialize<Dictionary<string, List<SaveFileInfo>>>(json, options);
+        
                 if (existingSaves != null)
                 {
                     foreach (var saveKey in existingSaves.Keys)
@@ -490,7 +511,11 @@ class UbiManager : BaseManager, ISaveFileStorage
 
             var saveKey = $"{Path.GetFileName(accountRootFolder)}_{gameId}";
             Saves[saveKey] = validSaves;
-            var json = JsonSerializer.Serialize(Saves, new JsonSerializerOptions { WriteIndented = true });
+            var options = new JsonSerializerOptions { 
+                WriteIndented = true,
+                TypeInfoResolver = JsonContext.Default 
+            };
+            var json = JsonSerializer.Serialize(Saves, options);
             await File.WriteAllTextAsync(_globals.UbiSaveInfoFilePath, json);
 
             AnsiConsole.MarkupLine($"[red]{Markup.Escape(gameName)} - {validSaves.Count} Detected Saves[/]");
@@ -701,7 +726,11 @@ class UbiManager : BaseManager, ISaveFileStorage
                         platforms[destPlatformIndex].SaveList.Add(newSaveInfo);
                     }
                     
-                    var json = JsonSerializer.Serialize(Saves, new JsonSerializerOptions { WriteIndented = true });
+                    var options = new JsonSerializerOptions { 
+                        WriteIndented = true,
+                        TypeInfoResolver = JsonContext.Default 
+                    };
+                    var json = JsonSerializer.Serialize(Saves, options);
                     await File.WriteAllTextAsync(_globals.UbiSaveInfoFilePath, json);
 
                     ctx.Status("Save file copied successfully!");
