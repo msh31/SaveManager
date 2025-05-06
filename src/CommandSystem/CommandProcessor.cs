@@ -11,15 +11,17 @@ class CommandProcessor
 {
     private readonly UbiManager _ubiManager;
     private readonly ConfigManager _configManager;
+    //private readonly RockstarManager _rockstarManager;
     private readonly Globals _globals;
     private readonly Utilities _utilities;
     private readonly Logger _logger;
     private readonly Dictionary<string, ICommand> _commands;
     private readonly bool _isRunning = true;
     
-    public CommandProcessor(UbiManager ubiManager, ConfigManager configManager, Globals globals, Utilities utilities, Logger logger)
+    public CommandProcessor(UbiManager ubiManager, ConfigManager configManager, Globals globals, Utilities utilities, Logger logger)//, RockstarManager rockstarManager)
     {
         _ubiManager = ubiManager;
+        //_rockstarManager = rockstarManager;
         _configManager = configManager;
         _globals = globals;
         _utilities = utilities;
@@ -32,12 +34,13 @@ class CommandProcessor
     private void RegisterCommands()
     {
         RegisterCommand(new HelpCommand(_commands));
-        RegisterCommand(new ListCommand(_ubiManager));//, _utilities, _globals));
+        RegisterCommand(new ListCommand(_ubiManager, _utilities, _globals));//, _rockstarManager));
         RegisterCommand(new ExitCommand());
         RegisterCommand(new ClearCommand());
-        // RegisterCommand(new BackupCommand(_ubiManager, _globals, _utilities, _configManager));
+        //RegisterCommand(new BackupCommand(_ubiManager));//, _globals, _utilities, _configManager));
         RegisterCommand(new RefreshCommand(_ubiManager));
         RegisterCommand(new SyncCommand(_ubiManager));
+        RegisterCommand(new RenameCommand(_ubiManager, _globals, _utilities));
     }
     
     private void RegisterCommand(ICommand command)

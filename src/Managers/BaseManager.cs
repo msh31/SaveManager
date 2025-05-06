@@ -23,7 +23,7 @@ abstract class BaseManager : ISaveManager
     // abstract methods that all managers must implement
     public abstract Task InitializeSaveDetection();
     public abstract Task ListSaveGamesAsync();
-    public abstract Task RenameSaveFilesAsync(string id);
+    public abstract Task RenameSaveFilesAsync(string gameId, string saveFileName, string newDisplayName);
     public abstract Task BackupSaveGame(string gameId, int saveIndex);
     public abstract Task RestoreSaveGame(string backupId);
     

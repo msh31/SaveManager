@@ -5,5 +5,5 @@ public interface ISaveManager
 {
     Task InitializeSaveDetection();
     Task ListSaveGamesAsync();
-    Task RenameSaveFilesAsync(string id);
+    Task RenameSaveFilesAsync(string gameId, string saveFileName, string newDisplayName);
 }

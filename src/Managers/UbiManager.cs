@@ -3,6 +3,7 @@
 //ReSharper disable SuggestVarOrType_BuiltInTypes
 
 using System.Text.Json;
+using SaveManager;
 using SaveManager.Managers;
 using SaveManager.Models;
 using SaveManager.Interfaces;
@@ -37,11 +38,6 @@ class UbiManager : BaseManager, ISaveFileStorage
     {
         AnsiConsole.MarkupLine("[red][[err]][/] Restore functionality is not fully implemented yet.");
     }
-
-    public override async Task RenameSaveFilesAsync(string id)
-    {
-        AnsiConsole.MarkupLine("[red][[err]][/] Restore functionality is not fully implemented yet.");
-    }
     
     #endregion
     
@@ -54,7 +50,11 @@ class UbiManager : BaseManager, ISaveFileStorage
             try
             {
                 var json = await File.ReadAllTextAsync(_globals.UbiSaveInfoFilePath);
-                Saves = JsonSerializer.Deserialize<Dictionary<string, List<SaveFileInfo>>>(json);
+                var options = new JsonSerializerOptions { 
+                    WriteIndented = true,
+                    TypeInfoResolver = JsonContext.Default 
+                };
+                Saves = JsonSerializer.Deserialize<Dictionary<string, List<SaveFileInfo>>>(json, options);
             }
             catch (Exception ex)
             {
@@ -105,7 +105,11 @@ class UbiManager : BaseManager, ISaveFileStorage
             try
             {
                 var json = await File.ReadAllTextAsync(_globals.UbiSaveInfoFilePath);
-                Saves = JsonSerializer.Deserialize<Dictionary<string, List<SaveFileInfo>>>(json);
+                var options = new JsonSerializerOptions { 
+                    WriteIndented = true,
+                    TypeInfoResolver = JsonContext.Default 
+                };
+                Saves = JsonSerializer.Deserialize<Dictionary<string, List<SaveFileInfo>>>(json, options);
             }
             catch (Exception ex)
             {
@@ -192,6 +196,79 @@ class UbiManager : BaseManager, ISaveFileStorage
         }
     }
 
+    public override async Task RenameSaveFilesAsync(string gameId, string saveFileName, string newDisplayName)
+    {
+        if (Saves.Count == 0 && File.Exists(_globals.UbiSaveInfoFilePath))
+        {
+            try
+            {
+                var json = await File.ReadAllTextAsync(_globals.UbiSaveInfoFilePath);
+                var options = new JsonSerializerOptions { 
+                    WriteIndented = true,
+                    TypeInfoResolver = JsonContext.Default 
+                };
+                Saves = JsonSerializer.Deserialize<Dictionary<string, List<SaveFileInfo>>>(json, options);
+            }
+            catch (Exception ex)
+            {
+                AnsiConsole.MarkupLine($"[red][[err]][/] Error loading save info: {ex.Message}");
+                return;
+            }
+        }
+
+        if (Saves == null || Saves.Count == 0)
+        {
+            AnsiConsole.MarkupLine("[red][[err]][/] No saves found. Try running 'refresh ubisoft' first.");
+            return;
+        }
+        
+        bool foundGame = false;
+        bool foundSave = false;
+        
+        foreach (var entry in Saves)
+        {
+            string[] parts = entry.Key.Split('_');
+            var accountId = parts[0];
+            var entryGameId = parts[1];
+            
+            if (entryGameId == gameId)
+            {
+                foundGame = true;
+                var gameName = await _utilities.TranslateUbisoftGameId(Path.Combine(_globals.UbisoftRootFolder, accountId, gameId));
+                
+                var saveFile = entry.Value.FirstOrDefault(s => s.FileName.Equals(saveFileName, StringComparison.OrdinalIgnoreCase));
+                
+                if (saveFile != null)
+                {
+                    foundSave = true;
+                    string oldDisplayName = saveFile.DisplayName == "CUSTOM_NAME_NOT_SET" ? saveFile.FileName : saveFile.DisplayName;
+                    saveFile.DisplayName = newDisplayName;
+                    
+                    var options = new JsonSerializerOptions { 
+                        WriteIndented = true,
+                        TypeInfoResolver = JsonContext.Default 
+                    };
+                    var json = JsonSerializer.Serialize(Saves, options);
+                    await File.WriteAllTextAsync(_globals.UbiSaveInfoFilePath, json);
+                    
+                    AnsiConsole.MarkupLine($"[green][[suc]][/] Renamed save in [darkcyan]{Markup.Escape(gameName)}[/]");
+                    AnsiConsole.MarkupLine($"[gray]   From: {Markup.Escape(oldDisplayName)}[/]");
+                    AnsiConsole.MarkupLine($"[gray]   To: {Markup.Escape(newDisplayName)}[/]");
+                    return;
+                }
+            }
+        }
+        
+        if (!foundGame)
+        {
+            AnsiConsole.MarkupLine($"[red][[err]][/] Game with ID '{gameId}' not found.");
+        }
+        else if (!foundSave)
+        {
+            AnsiConsole.MarkupLine($"[red][[err]][/] Save file '{saveFileName}' not found in game with ID '{gameId}'.");
+        }
+    }
+    
     #endregion
 
     public override async Task InitializeSaveDetection()
@@ -341,6 +418,39 @@ class UbiManager : BaseManager, ISaveFileStorage
     {
         AnsiConsole.MarkupLine("[cyan][[inf]][/] Looking for savegames..");
 
+        Dictionary<string, Dictionary<string, string>> existingDisplayNames = new Dictionary<string, Dictionary<string, string>>();
+        if (File.Exists(_globals.UbiSaveInfoFilePath))
+        {
+            try
+            {
+                var json = await File.ReadAllTextAsync(_globals.UbiSaveInfoFilePath);
+                var options = new JsonSerializerOptions { 
+                    WriteIndented = true,
+                    TypeInfoResolver = JsonContext.Default 
+                };
+                var existingSaves = JsonSerializer.Deserialize<Dictionary<string, List<SaveFileInfo>>>(json, options);
+        
+                if (existingSaves != null)
+                {
+                    foreach (var saveKey in existingSaves.Keys)
+                    {
+                        existingDisplayNames[saveKey] = new Dictionary<string, string>();
+                        foreach (var save in existingSaves[saveKey])
+                        {
+                            if (save.DisplayName != "CUSTOM_NAME_NOT_SET")
+                            {
+                                existingDisplayNames[saveKey][save.FileName] = save.DisplayName;
+                            }
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.Warning($"Could not load existing save display names: {ex.Message}", 0, true);
+            }
+        }
+        
         foreach (var gameId in _configManager.Data.DetectedUbiGames)
         {
             var gameFolder = Path.Combine(accountRootFolder, gameId);
@@ -385,6 +495,12 @@ class UbiManager : BaseManager, ISaveFileStorage
                     DisplayName = "CUSTOM_NAME_NOT_SET"
                 };
 
+                var saveDisplayNameKey = $"{Path.GetFileName(accountRootFolder)}_{gameId}";
+                if (existingDisplayNames.ContainsKey(saveDisplayNameKey) && existingDisplayNames[saveDisplayNameKey].ContainsKey(fileName))
+                {
+                    saveInfo.DisplayName = existingDisplayNames[saveDisplayNameKey][fileName];
+                }
+
                 validSaves.Add(saveInfo);
             }
 
@@ -395,7 +511,11 @@ class UbiManager : BaseManager, ISaveFileStorage
 
             var saveKey = $"{Path.GetFileName(accountRootFolder)}_{gameId}";
             Saves[saveKey] = validSaves;
-            var json = JsonSerializer.Serialize(Saves, new JsonSerializerOptions { WriteIndented = true });
+            var options = new JsonSerializerOptions { 
+                WriteIndented = true,
+                TypeInfoResolver = JsonContext.Default 
+            };
+            var json = JsonSerializer.Serialize(Saves, options);
             await File.WriteAllTextAsync(_globals.UbiSaveInfoFilePath, json);
 
             AnsiConsole.MarkupLine($"[red]{Markup.Escape(gameName)} - {validSaves.Count} Detected Saves[/]");
@@ -407,8 +527,8 @@ class UbiManager : BaseManager, ISaveFileStorage
                 string timestampCreated = save.DateCreated.ToString("yyyy-MM-dd HH:mm:ss");
 
                 var escapedFileName = Markup.Escape(save.FileName);
-                AnsiConsole.MarkupLine(
-                    $"[darkcyan]   - {escapedFileName} | {sizeInKB:F1}KB | created: {timestampCreated} | updated: {timestamp}[/]");
+                
+                AnsiConsole.MarkupLine($"[darkcyan]   - {escapedFileName} | {sizeInKB:F1}KB | created: {timestampCreated} | updated: {timestamp}[/]");
             }
         }
     }
@@ -606,7 +726,11 @@ class UbiManager : BaseManager, ISaveFileStorage
                         platforms[destPlatformIndex].SaveList.Add(newSaveInfo);
                     }
                     
-                    var json = JsonSerializer.Serialize(Saves, new JsonSerializerOptions { WriteIndented = true });
+                    var options = new JsonSerializerOptions { 
+                        WriteIndented = true,
+                        TypeInfoResolver = JsonContext.Default 
+                    };
+                    var json = JsonSerializer.Serialize(Saves, options);
                     await File.WriteAllTextAsync(_globals.UbiSaveInfoFilePath, json);
 
                     ctx.Status("Save file copied successfully!");
