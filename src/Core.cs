@@ -6,44 +6,48 @@ using Spectre.Console;
 
 class Core
 {
-    private readonly Utilities _utilities;
-    private readonly ConfigManager _configManager;
-    private readonly UbiManager _ubiManager;
-    private readonly Logger _logger;
-    private readonly CommandProcessor _commandProcessor;
-    private readonly Globals _globals;
-    
-    private readonly SaveManagerFactory _saveManagerFactory;
-    
+    private readonly Utilities utilities;
+    private readonly ConfigManager configManager;
+    private readonly UbiManager ubiManager;
+    private readonly Logger logger;
+    private readonly CommandLoop commandLoop;
+    private readonly Globals globals;
+
     public Core()
     {
-        _globals = new Globals();
-        _configManager = new ConfigManager(_globals.ConfigFilePath);
-        _globals.UpdateConfig(_configManager);
-        _logger = new Logger(_globals.LogFilePath);
-        _utilities = new Utilities(_logger);
-        _saveManagerFactory = new SaveManagerFactory(_configManager, _globals, _utilities, _logger);
-        _ubiManager = (UbiManager)_saveManagerFactory.CreateManager("ubisoft");
-        _commandProcessor = new CommandProcessor(_ubiManager, _configManager, _globals, _utilities, _logger);
+        globals = new Globals();
+        configManager = new ConfigManager(globals.ConfigFilePath);
+        globals.UpdateConfig(configManager);
+        logger = new Logger(globals.LogFilePath);
+        utilities = new Utilities(logger);
+        
+        // Direct instantiation - no factory needed
+        ubiManager = new UbiManager(configManager, utilities, globals, logger);
+        commandLoop = new CommandLoop(ubiManager);
     }
-    
+
     public async Task InitializeAsync()
     {
         try
         {
-            _logger.Info("Initializing Application");
-            await _ubiManager.InitializeSaveDetection();
-            
-            if(!Debugger.IsAttached) Console.Clear();
-            AnsiConsole.Write(new FigletText("SaveManager").Centered().Color(Color.Cyan1));
-            AnsiConsole.Write(Align.Center(new Markup($"Welcome, [red]{Environment.UserName}[/]\nType [bold yellow]'help'[/] to see available commands!")));
-            
-            await _commandProcessor.StartAsync();
+            logger.Info("Initializing Application");
+            await ubiManager.InitializeSaveDetection();
+
+            if (!Debugger.IsAttached) Console.Clear();
+            ShowWelcomeMessage();
+
+            await commandLoop.StartAsync();
         }
         catch (Exception ex)
         {
-            _logger.Fatal($"Error during initialization: {ex.Message}\n{ex.StackTrace}\n\nPress any key to exit", 1, true);
+            logger.Fatal($"Error during initialization: {ex.Message}\n{ex.StackTrace}\n\nPress any key to exit", 1, true);
             Console.ReadKey();
         }
+    }
+
+    private static void ShowWelcomeMessage()
+    {
+        AnsiConsole.Write(new FigletText("SaveManager").Centered().Color(Color.Cyan1));
+        AnsiConsole.Write(Align.Center(new Markup($"Welcome, [red]{Environment.UserName}[/]\nType [bold yellow]'help'[/] to see available commands!")));
     }
 }
