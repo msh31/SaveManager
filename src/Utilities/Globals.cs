@@ -51,14 +51,37 @@ public class Globals
                     break;
                 }
             }
+        }
+        else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+        {
+            var homeDir = Environment.GetEnvironmentVariable("HOME");
+            AppDataFolder = Path.Combine(homeDir, ".config", "SaveManager");
+            
+            var possiblePaths = new[]
+            {
+                Path.Combine(homeDir, "Library", "Application Support", "Ubisoft", "Ubisoft Game Launcher",
+                    "savegames"),
+                Path.Combine(homeDir, "Library", "Containers", "com.ubisoft.uplay", "Data", "Library",
+                    "Application Support", "Ubisoft", "Ubisoft Game Launcher", "savegames"),
+                Path.Combine(homeDir, "Documents", "Ubisoft", "savegames") // Fallback
+            };
 
-            // Optional fallback if nothing found
+            foreach (var path in possiblePaths)
+            {
+                if (Directory.Exists(path))
+                {
+                    UbisoftRootFolder = path;
+                    break;
+                }
+            }
+            
             if (UbisoftRootFolder == null)
             {
-                Console.WriteLine("Ubisoft savegames folder not found. Please specify the location manually in the config.");
+                UbisoftRootFolder = Path.Combine(homeDir, "Documents", "SaveManager", "DummyUbisoftSaves");
+                Directory.CreateDirectory(UbisoftRootFolder);
             }
         }
-        
+
         LogsFolder = Path.Combine(AppDataFolder, "logs");
         DataFolder = Path.Combine(AppDataFolder, "data");
         BackupsFolder = Path.Combine(DataFolder, "backups");
