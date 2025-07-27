@@ -14,9 +14,11 @@ A local savegame manager to help you easily manage all your savegames in one pla
 </div>
 
 ## Installation
+<p>
 <img src="https://img.shields.io/badge/Windows-0078D6?style=for-the-badge&logo=windows&logoColor=white" alt="Windows"/>
 <img src="https://img.shields.io/badge/Linux-FCC624?style=for-the-badge&logo=linux&logoColor=black" alt="MacOS"/>
 <img src="https://img.shields.io/badge/MacOS-f0f0f0?logo=apple&logoColor=black&style=for-the-badge" alt="MacOS"/> 
+</p>
 
 Simply download and run the latest release from the [releases page](https://github.com/msh31/SaveManager/releases) for your desired operating system.
 
