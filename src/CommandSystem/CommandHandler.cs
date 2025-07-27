@@ -1,27 +1,27 @@
 using Spectre.Console;
 
-class CommandHandler
+namespace SaveManager.CommandSystem;
+
+internal class CommandHandler(SaveManager.Utilities.SaveManager saveManager)
 {
-    private readonly UbiManager ubiManager;
-
-    public CommandHandler(UbiManager ubiManager)
-    {
-        this.ubiManager = ubiManager;
-    }
-
     public async Task ExecuteAsync(string input)
     {
-        if (string.IsNullOrWhiteSpace(input))
+        if (string.IsNullOrWhiteSpace(input)) {
             return;
+        }
 
-        var parts = input.Trim().Split(' ', StringSplitOptions.RemoveEmptyEntries);
-        var command = parts[0].ToLower();
-        var args = parts.Length > 1 ? parts[1..] : Array.Empty<string>();
+        input = input.Trim();
+        string[] parts = input.Split(' ', StringSplitOptions.RemoveEmptyEntries);
 
-        try
-        {
-            switch (command)
-            {
+        string command = parts[0].ToLower();
+        string[] args = new string[0];
+
+        if (parts.Length > 1) {
+            args = parts.Skip(1).ToArray();
+        }
+
+        try {
+            switch (command) {
                 case "help" or "h":
                     ShowHelp(args);
                     break;
@@ -54,17 +54,54 @@ class CommandHandler
                     ShowUnknownCommand(command);
                     break;
             }
-        }
-        catch (Exception ex)
-        {
+        } catch (Exception ex) {
             AnsiConsole.MarkupLine($"[red]Error executing command:[/] {ex.Message}");
         }
+    }
+    
+    private async Task ListSaves()
+    {
+        await AnsiConsole.Status()
+            .StartAsync("Loading save games...", async ctx =>
+            {
+                ctx.Spinner(Spinner.Known.Dots);
+                ctx.SpinnerStyle = new Style(Color.Green);
+                
+                await saveManager.ListSaves("Ubisoft");
+            });
+    }
+
+    private async Task RenameSave(string[] args)
+    {
+        //direct
+        if (args.Length >= 3) {
+            await saveManager.RenameSave("Ubisoft", args[0], args[1], string.Join(" ", args[2..]));
+        }
+
+        //interactive
+        // TODO: Implement
+    }
+
+    private async Task RefreshSaves()
+    {
+        await AnsiConsole.Status()
+            .StartAsync("Scanning for save files...", async ctx =>
+            {
+                ctx.Spinner(Spinner.Known.Dots);
+                ctx.SpinnerStyle = new Style(Color.Green);
+            
+                await saveManager.InitializeAsync();
+            });
+    }
+
+    private async Task SyncSaves()
+    {
+        //TODO: Implement
     }
 
     private void ShowHelp(string[] args)
     {
-        if (args.Length > 0)
-        {
+        if (args.Length > 0) {
             ShowSpecificHelp(args[0]);
             return;
         }
@@ -91,13 +128,13 @@ class CommandHandler
 
             case "rename" or "r":
                 AnsiConsole.MarkupLine("[cyan]rename[/] - Rename a save file");
-                AnsiConsole.MarkupLine("Usage: [yellow]rename [gameId] [fileName] [newName][/]");
-                AnsiConsole.MarkupLine("If no arguments provided, starts interactive rename process.");
+                AnsiConsole.MarkupLine("Usage: [yellow]rename <gameId> <fileName> <newName>[/]");
+                AnsiConsole.MarkupLine("If no arguments provided an interactive rename process starts.");
                 break;
 
             case "refresh":
                 AnsiConsole.MarkupLine("[cyan]refresh[/] - Refresh save games list");
-                AnsiConsole.MarkupLine("Rescans for save games and updates the internal database.");
+                AnsiConsole.MarkupLine("Rescans for new save games and updates the internal database.");
                 break;
 
             case "sync" or "s":
@@ -119,56 +156,7 @@ class CommandHandler
         }
     }
 
-    private async Task ListSaves()
-    {
-        await AnsiConsole.Status()
-            .StartAsync("Loading save games...", async ctx =>
-            {
-                ctx.Spinner(Spinner.Known.Dots);
-                ctx.SpinnerStyle = new Style(Color.Green);
-                await Task.Delay(500); // Small delay for visual feedback
-            });
-
-        await ubiManager.ListSaveGamesAsync();
-    }
-
-    private async Task RenameSave(string[] args)
-    {
-        if (args.Length >= 3)
-        {
-            // Direct rename with arguments
-            var gameId = args[0];
-            var fileName = args[1];
-            var newDisplayName = string.Join(" ", args[2..]);
-            await ubiManager.RenameSaveFilesAsync(gameId, fileName, newDisplayName);
-        }
-        else
-        {
-            // Interactive rename
-            await ubiManager.RenameSaveFilesAsync("", "", "");
-        }
-    }
-
-    private async Task RefreshSaves()
-    {
-        AnsiConsole.MarkupLine("[cyan]Refreshing save games...[/]");
-        
-        await AnsiConsole.Status()
-            .StartAsync("Scanning for save files...", async ctx =>
-            {
-                ctx.Spinner(Spinner.Known.Dots);
-                ctx.SpinnerStyle = new Style(Color.Green);
-                await ubiManager.InitializeSaveDetection();
-            });
-        
-        AnsiConsole.MarkupLine("[green]Save games refreshed successfully![/]");
-    }
-
-    private async Task SyncSaves()
-    {
-        await ubiManager.SyncBetweenPlatformsAsync();
-    }
-
+    
     private void ClearScreen()
     {
         Console.Clear();

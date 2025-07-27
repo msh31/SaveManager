@@ -14,6 +14,7 @@ catch (Exception ex)
 {
     AnsiConsole.Write(new Markup($"[red]Fatal error in main program:[/] {ex.Message}\n"));
     AnsiConsole.Write(new Markup($"[red bold underline]STACKTRACE:[/] {ex.StackTrace}\n"));
+    
     Console.WriteLine("Press any key to exit...");
     Console.ReadKey();
 }

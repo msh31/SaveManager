@@ -1,8 +1,6 @@
 ﻿using System.Text.Json.Serialization;
 using SaveManager.Models;
 
-namespace SaveManager;
-
 [JsonSourceGenerationOptions(WriteIndented = true)]
 [JsonSerializable(typeof(ConfigData))]
 [JsonSerializable(typeof(List<SaveFileInfo>))]

@@ -7,3 +7,4 @@ src/.idea
 /bin
 logic-flowchart.drawio
 feat-todo.cs
+root/*

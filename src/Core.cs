@@ -1,15 +1,16 @@
 //ReSharper disable InconsistentNaming
 
 using System.Diagnostics;
-using SaveManager.Managers;
 using Spectre.Console;
+using SaveManager.Utilities;
+using SaveManager.Managers;
 
 class Core
 {
     private readonly Utilities utilities;
     private readonly ConfigManager configManager;
-    private readonly UbiManager ubiManager;
     private readonly Logger logger;
+    private readonly SaveManager.Utilities.SaveManager saveManager;
     private readonly CommandLoop commandLoop;
     private readonly Globals globals;
 
@@ -20,26 +21,26 @@ class Core
         globals.UpdateConfig(configManager);
         logger = new Logger(globals.LogFilePath);
         utilities = new Utilities(logger);
-        
-        // Direct instantiation - no factory needed
-        ubiManager = new UbiManager(configManager, utilities, globals, logger);
-        commandLoop = new CommandLoop(ubiManager);
+        saveManager = new SaveManager.Utilities.SaveManager(globals, utilities, configManager, logger);
+
+        commandLoop = new CommandLoop(saveManager);
     }
 
     public async Task InitializeAsync()
     {
-        try
-        {
+        try {
             logger.Info("Initializing Application");
-            await ubiManager.InitializeSaveDetection();
+        
+            await saveManager.InitializeAsync();
 
-            if (!Debugger.IsAttached) Console.Clear();
+            if (!Debugger.IsAttached) {
+                Console.Clear();
+            }
             ShowWelcomeMessage();
-
+            
             await commandLoop.StartAsync();
         }
-        catch (Exception ex)
-        {
+        catch (Exception ex) {
             logger.Fatal($"Error during initialization: {ex.Message}\n{ex.StackTrace}\n\nPress any key to exit", 1, true);
             Console.ReadKey();
         }
@@ -48,6 +49,6 @@ class Core
     private static void ShowWelcomeMessage()
     {
         AnsiConsole.Write(new FigletText("SaveManager").Centered().Color(Color.Cyan1));
-        AnsiConsole.Write(Align.Center(new Markup($"Welcome, [red]{Environment.UserName}[/]\nType [bold yellow]'help'[/] to see available commands!")));
+        AnsiConsole.Write(Align.Center(new Markup($"Welcome, [red]{Environment.UserName}[/] | Version: [bold red]TEST[/]\nType [bold yellow]'help'[/] to see available commands!")));
     }
 }
