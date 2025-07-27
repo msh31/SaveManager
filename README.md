@@ -2,11 +2,10 @@
 
 # Save Manager
 
-Local savegame manager to help you easily manage all your savegames in one place.
+A local savegame manager to help you easily manage all your savegames in one place.
 
 [Installation](#installation) •
 [Features](#-features) •
-[Technical Details](#-technical-details) •
 [Contributing](#-contributing) •
 [License](#-license) •
 [References](#-references)
@@ -15,27 +14,28 @@ Local savegame manager to help you easily manage all your savegames in one place
 </div>
 
 ## Installation
-Simply download and run the latest release from the [releases page](https://github.com/msh31/SaveManager/releases)
+<img src="https://img.shields.io/badge/Windows-0078D6?style=for-the-badge&logo=windows&logoColor=white" alt="Windows"/>
+<img src="https://img.shields.io/badge/Linux-FCC624?style=for-the-badge&logo=linux&logoColor=black" alt="MacOS"/>
+<img src="https://img.shields.io/badge/MacOS-f0f0f0?logo=apple&logoColor=black&style=for-the-badge" alt="MacOS"/> 
+
+Simply download and run the latest release from the [releases page](https://github.com/msh31/SaveManager/releases) for your desired operating system.
 
 ## ✨ Features
 - 🔒 Robust Backup System
-  - Create and restore backups with a single click
-  - Configureable automated backup system
-  - Import/Export functionality for portability
+  - Create and restore backups with simple commands
+  - Configureable automated backup system _(planned)_
+  - Import/Export functionality for portability _(planned)_
 
 - 📊 Smart Organization
   - Intuitive listing of saves by name and unique ID
-  - Quick search and filter capabilities
+  - Quick search and filter capabilities _(planned)_
+  
+- 🔄 Cross-Platform Sync _(planned)_
+  - Seamless synchronization with all game versions 
 
-- 🔄 Cross-Platform Sync
-  - Seamless synchronization with all game versions
-
-
-## 🛠 Technical Details
-Built with modern technologies and best practices: \
-![C#](https://img.shields.io/badge/c%23-%23239120.svg?style=for-the-badge&logo=csharp&logoColor=white)
-![.Net](https://img.shields.io/badge/.NET-5C2D91?style=for-the-badge&logo=.net&logoColor=white)
-
+## Note:
+- SaveManager as of 28-07-2025 only supports Ubisoft save files
+- Next platform I plan to support: ``Rockstar Games Launcher``
 
 ## 🤝 Contributing
 Contributions are welcome! Feel free to:
