@@ -10,7 +10,7 @@ A local savegame manager to help you easily manage all your savegames in one pla
 [License](#-license) •
 [References](#-references)
 
-![App Image](https://i.imgur.com/8nMZWfn.png)
+![App Image](https://i.imgur.com/VEYUffE.png)
 </div>
 
 ## Installation
@@ -21,6 +21,8 @@ A local savegame manager to help you easily manage all your savegames in one pla
 </p>
 
 Simply download and run the latest release from the [releases page](https://github.com/msh31/SaveManager/releases) for your desired operating system.
+
+- For MacOS you need to allow it to run by going to Settings -> Privacy & Security -> Scroll to bottom -> click Allow
 
 ## ✨ Features
 - 🔒 Robust Backup System
