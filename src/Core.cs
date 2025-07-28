@@ -39,6 +39,14 @@ class Core
             ShowWelcomeMessage();
             
             await commandLoop.StartAsync();
+        } catch (InvalidOperationException ex) when (ex.Message.Contains("Ubisoft savegame folder")) {
+            Console.Error.WriteLine("[error] Could not find any Ubisoft savegame data on this system.");
+            Console.WriteLine("This may happen if Ubisoft Connect is not installed or no games have been launched yet.");
+            // Console.WriteLine("If you're sure it's installed, you can manually specify the path:");
+            // Console.WriteLine("  ./SaveManager --ubi-path \"/your/custom/path\"");
+            Console.WriteLine();
+            Console.WriteLine("Press any key to exit...");
+            Console.ReadKey();
         }
         catch (Exception ex) {
             logger.Fatal($"Error during initialization: {ex.Message}\n{ex.StackTrace}\n\nPress any key to exit", 1, true);

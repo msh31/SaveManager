@@ -54,6 +54,10 @@ public class Utilities(Logger logger)
     
     public List<string> GetAccountId(Globals globals, ConfigManager configManager)
     {
+        if (string.IsNullOrWhiteSpace(globals.UbisoftRootFolder) || !Directory.Exists(globals.UbisoftRootFolder)) {
+            throw new InvalidOperationException("Ubisoft savegame folder could not be found or is invalid.");
+        }
+        
         AnsiConsole.MarkupLine("[cyan][[inf]][/] Looking for accounts..");
         var accountFolders = new List<string>();
 
@@ -74,21 +78,18 @@ public class Utilities(Logger logger)
 
         if (!string.IsNullOrEmpty( configManager.Data.DetectedUbiAccount))
         {
-            if ( configManager.Data.DetectedUbiAccount == "all")
-            {
+            if (configManager.Data.DetectedUbiAccount == "all") {
                 return accountFolders;
             }
 
             var existingAccount = Path.Combine(globals.UbisoftRootFolder,  configManager.Data.DetectedUbiAccount);
 
-            if (Directory.Exists(existingAccount))
-            {
+            if (Directory.Exists(existingAccount)) {
                 return new List<string> { existingAccount };
             }
         }
 
-        if (accountFolders.Count == 1)
-        {
+        if (accountFolders.Count == 1) {
             string accountId = Path.GetFileName(accountFolders[0]);
             AnsiConsole.MarkupLine($"[green][[suc]][/] Found Ubisoft account: {accountId}");
             configManager.Data.DetectedUbiAccount = accountId;
@@ -98,6 +99,7 @@ public class Utilities(Logger logger)
         }
 
         AnsiConsole.MarkupLine($"[cyan][[inf]][/] Found {accountFolders.Count} Ubisoft accounts:");
+        
         var choices = new List<string>();
 
         foreach (var folder in accountFolders) {
