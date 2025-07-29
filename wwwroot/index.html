@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="style.css">
+    <title>SaveManager - Web Interface</title>
+</head>
+
+<body>
+<header class="header">
+    <h1>🎮 SaveManager</h1>
+    <p>Manage your game saves across all platforms</p>
+</header>
+
+<nav class="navbar">
+    <div class="nav-section">
+        <button class="nav-btn refresh-btn" onclick="loadSaves()">
+            <span class="btn-icon">🔄</span>
+            Refresh
+        </button>
+        <span class="save-count" id="totalSaves">Loading...</span>
+    </div>
+
+    <div class="nav-section">
+        <button class="nav-btn backup-btn" onclick="backupSaves()">
+            <span class="btn-icon">💾</span>
+            Backup All
+        </button>
+        <button class="nav-btn restore-btn" onclick="restoreSaves()">
+            <span class="btn-icon">📂</span>
+            Restore
+        </button>
+        <button class="nav-btn sync-btn" onclick="syncSaves()">
+            <span class="btn-icon">🔄</span>
+            Sync
+        </button>
+        <button class="nav-btn delete-btn" onclick="deleteSelected()">
+            <span class="btn-icon">🗑️</span>
+            Delete
+        </button>
+    </div>
+</nav>
+
+<main id="content">
+    <div class="loading">
+        <div class="spinner"></div>
+        <p>Loading save games...</p>
+    </div>
+</main>
+
+<script src="script.js"></script>
+</body>
+</html>

@@ -4,26 +4,14 @@ using SaveManager.Managers;
 
 namespace SaveManager.Utilities;
 
-public class SaveManager
+public class SaveManager(Globals globals, Utilities utilities, ConfigManager configManager, Logger logger)
 {
-    private readonly Globals _globals;
-    private readonly Utilities _utilities;
-    private readonly ConfigManager _configManager;
-    private readonly Logger _logger;
-    
     private const string DefaultDisplayName = "CUSTOM_NAME_NOT_SET";
     private const double BytesToKb = 1024.0;
 
-    public SaveManager(Globals globals, Utilities utilities, ConfigManager configManager, Logger logger) {
-        _globals = globals;
-        _utilities = utilities;
-        _configManager = configManager;
-        _logger = logger;
-    }
-
     public async Task InitializeAsync()
     {
-        var accountFolders = _utilities.GetAccountId(_globals, _configManager);
+        var accountFolders = utilities.GetAccountId(globals, configManager);
         
         if (accountFolders.Count == 0) {
             AnsiConsole.MarkupLine("[red][[err]][/] No Ubisoft accounts found.");
@@ -51,7 +39,7 @@ public class SaveManager
         var existingNames = await LoadExistingDisplayNames();
         var allSaves = new Dictionary<string, List<SaveFileInfo>>();
 
-        foreach (var gameId in _configManager.Data.DetectedUbiGames) {
+        foreach (var gameId in configManager.Data.DetectedUbiGames) {
             var saves = await ScanGameFolder(accountId, gameId, existingNames);
 
             if (!saves.Any()) {
@@ -68,7 +56,7 @@ public class SaveManager
 
     private async Task<List<SaveFileInfo>> ScanGameFolder(string accountId, string gameId, Dictionary<string, Dictionary<string, Dictionary<string, string>>> existingNames)
     {
-        var gameFolder = Path.Combine(_globals.UbisoftRootFolder, accountId, gameId);
+        var gameFolder = Path.Combine(globals.UbisoftRootFolder, accountId, gameId);
 
         if (!Directory.Exists(gameFolder)) {
             return new List<SaveFileInfo>();
@@ -106,8 +94,8 @@ public class SaveManager
     public async Task ListSaves(string platform)
     {
         var dataFilePath = platform.ToLower() switch {
-            "ubisoft" => _globals.UbiSaveInfoFilePath,
-            _ => _globals.UbiSaveInfoFilePath 
+            "ubisoft" => globals.UbiSaveInfoFilePath,
+            _ => globals.UbiSaveInfoFilePath 
         };
         
         if (!File.Exists(dataFilePath)) {
@@ -134,7 +122,7 @@ public class SaveManager
                 string gameName = gameId;
                 
                 if (platform.Equals("Ubisoft", StringComparison.OrdinalIgnoreCase)) {
-                    gameName = await _utilities.TranslateUbisoftGameId(Path.Combine(_globals.UbisoftRootFolder, accountId, gameId));
+                    gameName = await utilities.TranslateUbisoftGameId(Path.Combine(globals.UbisoftRootFolder, accountId, gameId));
                 }
 
                 AnsiConsole.Markup($"\n[darkcyan]{Markup.Escape(gameName)} - [/]");
@@ -147,11 +135,11 @@ public class SaveManager
                 AnsiConsole.MarkupLine($"[white]Total Saves: {entry.Value.Count}[/]");
 
                 foreach (var save in entry.Value) {
-                    var sizeInKB = save.FileSizeBytes / BytesToKb;
+                    var sizeInKb = save.FileSizeBytes / BytesToKb;
                     var timestamp = save.LastModified.ToString("yyyy-MM-dd HH:mm:ss");
                     var displayName = save.DisplayName == DefaultDisplayName ? save.FileName : save.DisplayName;
                     
-                    AnsiConsole.MarkupLine($"[gray]   - {Markup.Escape(displayName)} | {sizeInKB:F1}KB | modified: {timestamp}[/]");
+                    AnsiConsole.MarkupLine($"[gray]   - {Markup.Escape(displayName)} | {sizeInKb:F1}KB | modified: {timestamp}[/]");
                 }
             }
         } catch (Exception ex) {
@@ -171,7 +159,7 @@ public class SaveManager
                 var gameData = accountEntry.Value[gameId];
                 if (gameData.ContainsKey(fileName))
                 {
-                    var gameName = await _utilities.TranslateUbisoftGameId(Path.Combine(_globals.UbisoftRootFolder, accountEntry.Key, gameId));
+                    var gameName = await utilities.TranslateUbisoftGameId(Path.Combine(globals.UbisoftRootFolder, accountEntry.Key, gameId));
                     string oldDisplayName = gameData[fileName] == DefaultDisplayName ? fileName : gameData[fileName];
                     gameData[fileName] = newName;
                     updated = true;
@@ -194,7 +182,7 @@ public class SaveManager
     private async Task<Dictionary<string, Dictionary<string, Dictionary<string, string>>>> LoadExistingDisplayNames()
     {
         var result = new Dictionary<string, Dictionary<string, Dictionary<string, string>>>();
-        var dataFile = Path.Combine(Path.GetDirectoryName(_globals.ConfigFilePath) ?? "", _globals.UbiSaveInfoFilePath);
+        var dataFile = Path.Combine(Path.GetDirectoryName(globals.ConfigFilePath) ?? "", globals.UbiSaveInfoFilePath);
 
         if (!File.Exists(dataFile)) {
             return result;
@@ -227,7 +215,7 @@ public class SaveManager
                 }
             }
         } catch (Exception ex) {
-            _logger.Error($"Error loading display names: {ex.Message}");
+            logger.Error($"Error loading display names: {ex.Message}");
         }
 
         return result;
@@ -240,27 +228,28 @@ public class SaveManager
         }
 
         var accountId = saves.First().AccountId;
-        var gameName = await _utilities.TranslateUbisoftGameId(Path.Combine(_globals.UbisoftRootFolder, accountId, gameId));
+        var gameName = await utilities.TranslateUbisoftGameId(Path.Combine(globals.UbisoftRootFolder, accountId, gameId));
 
         AnsiConsole.MarkupLine($"[red]{Markup.Escape(gameName)} - {saves.Count} Detected Saves[/]");
 
         foreach (var save in saves) {
             var sizeInKb = save.FileSizeBytes / 1024.0;
             var timestamp = save.LastModified.ToString("yyyy-MM-dd HH:mm:ss");
-            var escapedFileName = Markup.Escape(save.FileName);
+            var displayName = save.DisplayName == DefaultDisplayName ? save.FileName : save.DisplayName;
+            var escapedDisplayName = Markup.Escape(displayName);
             
-            AnsiConsole.MarkupLine($"[darkcyan]   - {escapedFileName} | {sizeInKb:F1}KB | created: {timestamp} | updated: {timestamp}[/]");
+            AnsiConsole.MarkupLine($"[darkcyan]   - {escapedDisplayName} | {sizeInKb:F1}KB | created: {timestamp} | updated: {timestamp}[/]");
         }
     }
 
     private async Task SaveToFile(Dictionary<string, List<SaveFileInfo>> allSaves)
     {
         try {
-            var dataFile = Path.Combine(Path.GetDirectoryName(_globals.ConfigFilePath) ?? "", _globals.UbiSaveInfoFilePath);
+            var dataFile = Path.Combine(Path.GetDirectoryName(globals.ConfigFilePath) ?? "", globals.UbiSaveInfoFilePath);
             var json = System.Text.Json.JsonSerializer.Serialize(allSaves, JsonContext.Default.DictionaryStringListSaveFileInfo);
             await File.WriteAllTextAsync(dataFile, json);
         } catch (Exception ex) {
-            _logger.Error($"Error saving to file: {ex.Message}");
+            logger.Error($"Error saving to file: {ex.Message}");
             AnsiConsole.MarkupLine($"[red][[err]][/] Error saving data: {ex.Message}");
         }
     }
@@ -290,7 +279,7 @@ public class SaveManager
     private async Task SaveDisplayNames(Dictionary<string, Dictionary<string, Dictionary<string, string>>> savesData)
     {
         try {
-            var dataFile = Path.Combine(Path.GetDirectoryName(_globals.ConfigFilePath) ?? "", _globals.UbiSaveInfoFilePath);
+            var dataFile = Path.Combine(Path.GetDirectoryName(globals.ConfigFilePath) ?? "", globals.UbiSaveInfoFilePath);
             var allSaves = new Dictionary<string, List<SaveFileInfo>>();
 
             foreach (var accountEntry in savesData) {
@@ -314,35 +303,32 @@ public class SaveManager
             var json = System.Text.Json.JsonSerializer.Serialize(allSaves, JsonContext.Default.DictionaryStringListSaveFileInfo);
             await File.WriteAllTextAsync(dataFile, json);
         } catch (Exception ex) {
-            _logger.Error($"Error saving display names: {ex.Message}");
+            logger.Error($"Error saving display names: {ex.Message}");
         }
     }
 
     private async Task FindGames(string accountId)
     {
-        var accountRootFolder = Path.Combine(_globals.UbisoftRootFolder, accountId);
-        _configManager.Data.DetectedUbiGames.Clear();
+        var accountRootFolder = Path.Combine(globals.UbisoftRootFolder, accountId);
+        configManager.Data.DetectedUbiGames.Clear();
 
         AnsiConsole.MarkupLine("[cyan][[inf]][/] Looking for games..");
 
-        foreach (var gameFolder in Directory.GetDirectories(accountRootFolder))
-        {
+        foreach (var gameFolder in Directory.GetDirectories(accountRootFolder)) {
             var gameId = Path.GetFileName(gameFolder);
-            var gameName = await _utilities.TranslateUbisoftGameId(gameFolder);
+            var gameName = await utilities.TranslateUbisoftGameId(gameFolder);
 
-            _configManager.Data.DetectedUbiGames.Add(gameId);
+            configManager.Data.DetectedUbiGames.Add(gameId);
             AnsiConsole.MarkupLine($"Game found: [yellow]{Markup.Escape(gameName)}[/]");
         }
 
-        if (_configManager.Data.DetectedUbiGames.Count == 0)
-        {
+        if (configManager.Data.DetectedUbiGames.Count == 0) {
             AnsiConsole.MarkupLine("[darkorange3][[warn]][/] No games found!");
         }
-        else
-        {
-            AnsiConsole.MarkupLine($"[green][[suc]][/] Total games found: {_configManager.Data.DetectedUbiGames.Count}");
+        else {
+            AnsiConsole.MarkupLine($"[green][[suc]][/] Total games found: {configManager.Data.DetectedUbiGames.Count}");
         }
 
-        _configManager.Save();
+        configManager.Save();
     }
 }

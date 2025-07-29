@@ -20,9 +20,18 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Content Include="wwwroot/**/*">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </Content>
+  </ItemGroup>
+  
+  <ItemGroup>
     <PackageReference Include="Spectre.Console" Version="0.50.1-preview.0.5" />
     <PackageReference Include="Spectre.Console.Cli" Version="0.50.1-preview.0.5" />
     <PackageReference Include="Spectre.Console.ImageSharp" Version="0.50.1-preview.0.5" />
+
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
   </ItemGroup>
 
 </Project>
