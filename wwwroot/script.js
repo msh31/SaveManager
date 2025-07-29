@@ -1,5 +1,4 @@
-﻿// Platform configuration with proper SVG icons
-const PLATFORMS = {
+﻿const PLATFORMS = {
     Steam: {
         color: '#171a21',
         icon: `<svg viewBox="0 0 24 24" fill="white">

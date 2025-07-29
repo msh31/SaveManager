@@ -12,7 +12,7 @@ public class Globals
     // public readonly string rockstarRootFolder;
     
     // Program Folder paths
-    private readonly string AppDataFolder;
+    private readonly string HomeDirectory;
     private readonly string LogsFolder;
     private readonly string DataFolder;
     public readonly string BackupsFolder;
@@ -27,18 +27,18 @@ public class Globals
         // Documents = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
         // rockstarRootFolder = Path.Combine(Documents, "Rockstar Games"); // works when documents folder is placed on another drive :steamhappy:
 
-        AppDataFolder = GetApplicationDataFolder();
+        HomeDirectory = GetApplicationDataFolder();
         UbisoftRootFolder = GetUbisoftRootFolder();
         
-        LogsFolder = Path.Combine(AppDataFolder, "logs");
-        DataFolder = Path.Combine(AppDataFolder, "data");
+        LogsFolder = Path.Combine(HomeDirectory, "logs");
+        DataFolder = Path.Combine(HomeDirectory, "data");
         BackupsFolder = Path.Combine(DataFolder, "backups");
         
         ConfigFilePath = Path.Combine(DataFolder, "config.json");
         LogFilePath = Path.Combine(LogsFolder, "oops.log");
         UbiSaveInfoFilePath = Path.Combine(DataFolder, "ubisoft_save_information.json");
         
-        Directory.CreateDirectory(AppDataFolder);
+        Directory.CreateDirectory(HomeDirectory);
         Directory.CreateDirectory(LogsFolder);
         Directory.CreateDirectory(DataFolder);
     }
@@ -51,13 +51,13 @@ public class Globals
     
     private static string GetUbisoftRootFolder()
     {
+        string homeDir = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+
         if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows)) {
             return @"C:\Program Files (x86)\Ubisoft\Ubisoft Game Launcher\savegames";
         }
-        
-        if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux)) {
-            var homeDir = Environment.GetEnvironmentVariable("HOME");
 
+        if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux)) {
             var possiblePaths = new[] {
                 Path.Combine(homeDir, ".wine", "drive_c", "Program Files (x86)", "Ubisoft", "Ubisoft Game Launcher", "savegames"),
                 Path.Combine(homeDir, ".local", "share", "wineprefixes", "default", "drive_c", "Program Files (x86)", "Ubisoft", "Ubisoft Game Launcher", "savegames"),
@@ -70,10 +70,8 @@ public class Globals
                 }
             }
         }
-        
+
         if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX)) {
-            var homeDir = Environment.GetEnvironmentVariable("HOME");
-            
             var possiblePaths = new[] {
                 Path.Combine(homeDir, "Library", "Application Support", "Ubisoft", "Ubisoft Game Launcher", "savegames"),
                 Path.Combine(homeDir, "Library", "Containers", "com.ubisoft.uplay", "Data", "Library", "Application Support", "Ubisoft", "Ubisoft Game Launcher", "savegames")
@@ -86,7 +84,8 @@ public class Globals
             }
         }
 
-        return string.Empty; //should NOT happen
+        Console.Error.WriteLine("[error] Ubisoft savegames folder not found.");
+        return string.Empty;
     }
 
     private static string GetApplicationDataFolder()
@@ -94,13 +93,12 @@ public class Globals
         if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows)) {
             return Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "SaveManager");
         }
-        
+
         if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux) || RuntimeInformation.IsOSPlatform(OSPlatform.OSX)) {
-            var homeDir = Environment.GetEnvironmentVariable("HOME");
-            
+            string homeDir = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
             return Path.Combine(homeDir, ".config", "SaveManager");
         }
-        
-        return string.Empty;
+
+        throw new PlatformNotSupportedException("Unsupported operating system.");
     }
 }

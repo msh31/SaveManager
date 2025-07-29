@@ -8,3 +8,4 @@ src/.idea
 logic-flowchart.drawio
 feat-todo.cs
 root/*
+.DS_Store
