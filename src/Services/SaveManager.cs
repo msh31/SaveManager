@@ -17,7 +17,10 @@ public class SaveManager(Globals globals, Utilities.Utilities utilities, ConfigM
         }
 
         foreach (var accountFolder in accountFolders) {
-            var accountId = Path.GetFileName(accountFolder) ?? string.Empty;
+            var accountId = Path.GetFileName(accountFolder);
+            if (string.IsNullOrEmpty(accountId)) {
+                accountId = string.Empty;
+            }
             AnsiConsole.MarkupLine(string.Format(Globals.ProcessingAccountMessage, accountId));
             
             await ScanAccount(accountId);
@@ -76,9 +79,10 @@ public class SaveManager(Globals globals, Utilities.Utilities utilities, ConfigM
 
     private bool IsValidSaveFile(string filePath)
     {
-        var fileName = Path.GetFileName(filePath) ?? string.Empty;
-
-        if (fileName.Contains(Globals.OptionsFilePattern, StringComparison.OrdinalIgnoreCase)) {
+        var fileName = Path.GetFileName(filePath);
+        if (string.IsNullOrEmpty(fileName)) {
+            fileName = string.Empty;
+        }        if (fileName.Contains(Globals.OptionsFilePattern, StringComparison.OrdinalIgnoreCase)) {
             return false;
         }
 
@@ -207,14 +211,17 @@ public class SaveManager(Globals globals, Utilities.Utilities utilities, ConfigM
                 var destinationPath = Path.Combine(gameBackupFolder, save.FileName);
                 File.Copy(save.FilePath, destinationPath, overwrite: true);
                 
-                AnsiConsole.MarkupLine($"[green]Copied:[/] {save.FileName}");
+                AnsiConsole.MarkupLine($"[green]Copied:[/] {Markup.Escape(save.FileName)}");
             }
         }
     }
 
     private async Task<Dictionary<string, List<SaveFileInfo>>?> LoadAllSavesData()
     {
-        var dataFilePath = Path.Combine(Path.GetDirectoryName(globals.ConfigFilePath) ?? "", globals.UbiSaveInfoFilePath);
+        var configDir = Path.GetDirectoryName(globals.ConfigFilePath);
+        if (string.IsNullOrEmpty(configDir)) {
+            configDir = string.Empty;
+        }        var dataFilePath = Path.Combine(configDir, globals.UbiSaveInfoFilePath);
         
         if (!File.Exists(dataFilePath)) {
             AnsiConsole.MarkupLine("[red][[err]][/] No saves found.");
@@ -387,41 +394,38 @@ public class SaveManager(Globals globals, Utilities.Utilities utilities, ConfigM
         }
     }
     
-    public async Task RenameSave(string gameId, string fileName, string newName)    {        var savesData = await LoadExistingDisplayNames();
-        bool updated = false;
-
-        foreach (var accountEntry in savesData)
-        {
-            if (accountEntry.Value.ContainsKey(gameId))
-            {
-                var gameData = accountEntry.Value[gameId];
-                if (gameData.ContainsKey(fileName))
-                {
-                    var gameName = await utilities.TranslateUbisoftGameId(Path.Combine(globals.UbisoftRootFolder, accountEntry.Key, gameId));
-                    string oldDisplayName = gameData[fileName] == Globals.DefaultDisplayName ? fileName : gameData[fileName];
-                    gameData[fileName] = newName;
-                    updated = true;
-                    
-                    AnsiConsole.MarkupLine($"[green][[suc]][/] Renamed save in [darkcyan]{Markup.Escape(gameName)}[/]");
-                    AnsiConsole.MarkupLine($"[gray]   From: {Markup.Escape(oldDisplayName)}[/]");
-                    AnsiConsole.MarkupLine($"[gray]   To: {Markup.Escape(newName)}[/]");
-                    break;
-                }
+    public async Task RenameSave(string gameId, string fileName, string newName) 
+    {
+        var savesData = await LoadExistingDisplayNames();
+        
+        foreach (var (accountId, games) in savesData) {
+            if (!games.TryGetValue(gameId, out var gameData) || !gameData.ContainsKey(fileName)) {
+                continue;
             }
-        }
-
-        if (updated) {
+                
+            var gameName = await utilities.TranslateUbisoftGameId(Path.Combine(globals.UbisoftRootFolder, accountId, gameId));
+            var oldDisplayName = gameData[fileName] == Globals.DefaultDisplayName ? fileName : gameData[fileName];
+            
+            gameData[fileName] = newName;
             await SaveDisplayNames(savesData);
-        } else {
-            AnsiConsole.MarkupLine($"[red][[err]][/] Save file '{fileName}' not found in game with ID '{gameId}'.");
+            
+            AnsiConsole.MarkupLine($"[green][[suc]][/] Renamed save in [darkcyan]{Markup.Escape(gameName)}[/]");
+            AnsiConsole.MarkupLine($"[gray]   From: {Markup.Escape(oldDisplayName)}[/]");
+            AnsiConsole.MarkupLine($"[gray]   To: {Markup.Escape(newName)}[/]");
+            return;
         }
+        
+        AnsiConsole.MarkupLine($"[red][[err]][/] Save file '{fileName}' not found in game with ID '{gameId}'.");
     }
-
+    
     private async Task<Dictionary<string, Dictionary<string, Dictionary<string, string>>>> LoadExistingDisplayNames()
     {
         var result = new Dictionary<string, Dictionary<string, Dictionary<string, string>>>();
-        var dataFile = Path.Combine(Path.GetDirectoryName(globals.ConfigFilePath) ?? "", globals.UbiSaveInfoFilePath);
-
+        var configDir = Path.GetDirectoryName(globals.ConfigFilePath);
+        if (string.IsNullOrEmpty(configDir)) {
+            configDir = string.Empty;
+        }
+        var dataFile = Path.Combine(configDir, globals.UbiSaveInfoFilePath);
         if (!File.Exists(dataFile)) {
             return result;
         }
@@ -483,7 +487,11 @@ public class SaveManager(Globals globals, Utilities.Utilities utilities, ConfigM
     private async Task SaveToFile(Dictionary<string, List<SaveFileInfo>> allSaves)
     {
         try {
-            var dataFile = Path.Combine(Path.GetDirectoryName(globals.ConfigFilePath) ?? "", globals.UbiSaveInfoFilePath);
+            var configDir = Path.GetDirectoryName(globals.ConfigFilePath);
+            if (string.IsNullOrEmpty(configDir)) {
+                configDir = string.Empty;
+            }
+            var dataFile = Path.Combine(configDir, globals.UbiSaveInfoFilePath);
             var json = JsonSerializer.Serialize(allSaves, JsonContext.Default.DictionaryStringListSaveFileInfo);
             await File.WriteAllTextAsync(dataFile, json);
         } catch (Exception ex) {
@@ -494,7 +502,10 @@ public class SaveManager(Globals globals, Utilities.Utilities utilities, ConfigM
 
     private SaveFileInfo CreateSaveInfo(string filePath, string accountId, string gameId, Dictionary<string, Dictionary<string, Dictionary<string, string>>> existingNames)
     {
-        var fileName = Path.GetFileName(filePath) ?? string.Empty;
+        var fileName = Path.GetFileName(filePath);
+        if (string.IsNullOrEmpty(fileName)) {
+            fileName = string.Empty;
+        }
         var fileInfo = new FileInfo(filePath);
         
         var displayName = Globals.DefaultDisplayName;
@@ -517,7 +528,11 @@ public class SaveManager(Globals globals, Utilities.Utilities utilities, ConfigM
     private async Task SaveDisplayNames(Dictionary<string, Dictionary<string, Dictionary<string, string>>> savesData)
     {
         try {
-            var dataFile = Path.Combine(Path.GetDirectoryName(globals.ConfigFilePath) ?? "", globals.UbiSaveInfoFilePath);
+            var configDir = Path.GetDirectoryName(globals.ConfigFilePath);
+            if (string.IsNullOrEmpty(configDir)) {
+                configDir = string.Empty;
+            }
+            var dataFile = Path.Combine(configDir, globals.UbiSaveInfoFilePath);
             var allSaves = new Dictionary<string, List<SaveFileInfo>>();
 
             foreach (var accountEntry in savesData) {
@@ -553,7 +568,10 @@ public class SaveManager(Globals globals, Utilities.Utilities utilities, ConfigM
         AnsiConsole.MarkupLine("[cyan][[inf]][/] Looking for games..");
 
         foreach (var gameFolder in Directory.GetDirectories(accountRootFolder)) {
-            var gameId = Path.GetFileName(gameFolder) ?? string.Empty;
+            var gameId = Path.GetFileName(gameFolder);
+            if (string.IsNullOrEmpty(gameId)) {
+                gameId = string.Empty;
+            }
             var gameName = await utilities.TranslateUbisoftGameId(gameFolder);
 
             configManager.Data.DetectedUbiGames.Add(gameId);
