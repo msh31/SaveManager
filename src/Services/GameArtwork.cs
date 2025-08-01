@@ -23,23 +23,20 @@ public class GameArtwork : IDisposable
         if (!isEnabled || string.IsNullOrEmpty(gameName)) {
             return null;
         }
-
-        // Check cache first
+        
         if (cache.ContainsKey(gameName)) {
             return cache[gameName];
         }
 
         try {
-            // Search for the game
             var gameId = await SearchGameAsync(gameName);
             if (gameId > 0) {
-                // Get hero image
                 var artworkUrl = await GetHeroImageAsync(gameId);
                 cache[gameName] = artworkUrl;
                 return artworkUrl;
             }
         } catch {
-            // Silently fail
+            //shh
         }
 
         cache[gameName] = null;
@@ -55,9 +52,7 @@ public class GameArtwork : IDisposable
             if (result != null && result.data != null && result.data.Length > 0) {
                 return result.data[0].id;
             }
-        } catch {
-            // Silently fail
-        }
+        } catch { }
 
         return 0;
     }
@@ -71,9 +66,7 @@ public class GameArtwork : IDisposable
             if (result != null && result.data != null && result.data.Length > 0) {
                 return result.data[0].url;
             }
-        } catch {
-            // Silently fail
-        }
+        } catch { }
 
         return null;
     }
@@ -84,7 +77,6 @@ public class GameArtwork : IDisposable
     }
 }
 
-// Simple data classes
 public class SearchResult
 {
     public GameInfo[] data { get; set; }
@@ -92,7 +84,7 @@ public class SearchResult
 
 public class GameInfo
 {
-    public int id { get; set; }
+    public int id { get; }
     public string name { get; set; }
 }
 

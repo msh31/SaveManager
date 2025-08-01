@@ -1,29 +1,16 @@
 using System.Diagnostics;
-using Spectre.Console;
+using System.Text.Json;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using SaveManager.Models;
 using SaveManager.Services;
+using Spectre.Console;
 
 namespace SaveManager.CommandSystem;
 
-internal class CommandHandler
+internal class CommandHandler(Services.SaveManager saveManager, Globals globals, SaveManager.Utilities.Utilities utilities, GameArtwork artwork)
 {
-    private readonly SaveManager.Utilities.SaveManager saveManager;
-    private readonly Globals globals;
-    private readonly Utilities.Utilities utilities;
-    private readonly GameArtwork artwork;
-
-    public CommandHandler(SaveManager.Utilities.SaveManager saveManager, Globals globals, Utilities.Utilities utilities, GameArtwork artwork)
-    {
-        this.saveManager = saveManager;
-        this.globals = globals;
-        this.utilities = utilities;
-        this.artwork = artwork;
-    }
-
     public async Task ExecuteAsync(string input)
     {
         if (string.IsNullOrWhiteSpace(input)) 
@@ -41,6 +28,9 @@ internal class CommandHandler
                 case "list" or "l":
                     await ListSaves();
                     break;
+                case "backup" or "b":
+                    await HandleBackupCommand(args);
+                    break;                
                 case "rename" or "r":
                     await RenameSave(args);
                     break;
@@ -57,7 +47,6 @@ internal class CommandHandler
                     ExitApp();
                     break;
                 case "serve":
-                    // Check for background flag - this is about running the server in background
                     bool runInBackground = args.Contains("--background") || args.Contains("-b");
                     await StartWebServer(runInBackground);
                     break;
@@ -69,8 +58,138 @@ internal class CommandHandler
             AnsiConsole.MarkupLine($"[red]Error executing command:[/] {ex.Message}");
         }
     }
+    
+    private async Task ListSaves()
+    {
+        await AnsiConsole.Status()
+            .StartAsync("Loading save games...", async ctx =>
+            {
+                ctx.Spinner(Spinner.Known.Dots);
+                ctx.SpinnerStyle = new Style(Color.Green);
+                await saveManager.ListSaves("Ubisoft");
+            });
+    }
 
-    private async Task StartWebServer(bool runInBackground) {
+    private async Task HandleBackupCommand(string[] args)
+    {
+        if (args.Length > 0) {
+            switch (args[0].ToLower()) {
+                case "list" or "l":
+                    await saveManager.ListBackupSelections();
+                    break;
+                default:
+                    AnsiConsole.MarkupLine($"[red]Unknown backup option:[/] '{args[0]}'");
+                    AnsiConsole.MarkupLine("[yellow]Available options:[/] list (l)");
+                    break;
+            }
+        } else {
+            await saveManager.PrepareBackup();
+        }
+    }
+
+    private async Task RenameSave(string[] args) 
+    {
+        if (args.Length >= 3) {
+            await saveManager.RenameSave(args[0], args[1], string.Join(" ", args[2..]));
+        } else {
+            AnsiConsole.MarkupLine("[yellow]Usage: rename <gameId> <fileName> <newName>[/]");
+        }
+    }
+
+    private async Task RefreshSaves()
+    {
+        await AnsiConsole.Status().StartAsync("Scanning for save files...", async ctx => {
+                ctx.Spinner(Spinner.Known.Dots);
+                ctx.SpinnerStyle = new Style(Color.Green);
+                await saveManager.InitializeAsync();
+            });
+    }
+
+    private async Task SyncSaves()
+    {
+        AnsiConsole.MarkupLine("[yellow]Sync functionality coming soon![/]");
+    }
+
+    private void ShowHelp(string[] args) 
+    {
+        if (args.Length > 0) {
+            ShowSpecificHelp(args[0]);
+            return;
+        }
+
+        AnsiConsole.MarkupLine("[cyan]Available commands:[/]");
+        AnsiConsole.MarkupLine("  [yellow]backup[/] (b)    - Backup saves or manage backup selections");
+        AnsiConsole.MarkupLine("  [yellow]list[/] (l)      - List all save games");
+        AnsiConsole.MarkupLine("  [yellow]rename[/] (r)    - Rename a save file");
+        AnsiConsole.MarkupLine("  [yellow]refresh[/]       - Refresh save games list");
+        AnsiConsole.MarkupLine("  [yellow]serve[/]         - Start web interface");
+        AnsiConsole.MarkupLine("  [yellow]sync[/] (s)      - Sync saves between platforms");
+        AnsiConsole.MarkupLine("  [yellow]clear[/] (cls)   - Clear the console");
+        AnsiConsole.MarkupLine("  [yellow]exit[/] (q)      - Exit the application");
+        AnsiConsole.MarkupLine("  [yellow]help[/] (h)      - Show this help");
+        AnsiConsole.MarkupLine("\n[cyan]Tip:[/] Type [yellow]'help <command>'[/] for detailed usage.");
+    }
+
+    private void ShowSpecificHelp(string command) 
+    {
+        switch (command.ToLower()) {
+            case "list" or "l":
+                AnsiConsole.MarkupLine("[cyan]list[/] - List all save games");
+                AnsiConsole.MarkupLine("Shows all detected save games organized by game and platform.");
+                break;
+            case "backup" or "b":
+                AnsiConsole.MarkupLine("[cyan]backup[/] - Backup save files");
+                AnsiConsole.MarkupLine("Usage: [yellow]backup[/] - Start backup selection");
+                AnsiConsole.MarkupLine("       [yellow]backup list[/] (l) - List current backup selections");
+                break;            case "rename" or "r":
+                AnsiConsole.MarkupLine("[cyan]rename[/] - Rename a save file");
+                AnsiConsole.MarkupLine("Usage: [yellow]rename <gameId> <fileName> <newName>[/]");
+                break;
+            case "refresh":
+                AnsiConsole.MarkupLine("[cyan]refresh[/] - Refresh save games list");
+                AnsiConsole.MarkupLine("Rescans for new save games and updates the database.");
+                break;
+            case "serve":
+                AnsiConsole.MarkupLine("[cyan]serve[/] - Start web interface");
+                AnsiConsole.MarkupLine("Starts the web interface at http://localhost:5000");
+                AnsiConsole.MarkupLine("Use [yellow]serve --background[/] to run in background.");
+                break;
+            case "sync" or "s":
+                AnsiConsole.MarkupLine("[cyan]sync[/] - Sync saves between platforms");
+                AnsiConsole.MarkupLine("Copy save files between Steam and Ubisoft versions.");
+                break;
+            case "clear" or "cls":
+                AnsiConsole.MarkupLine("[cyan]clear[/] - Clear the console screen");
+                break;
+            case "exit" or "quit" or "q":
+                AnsiConsole.MarkupLine("[cyan]exit[/] - Exit the application");
+                break;
+            default:
+                AnsiConsole.MarkupLine($"[red]Unknown command:[/] {command}");
+                break;
+        }
+    }
+
+    private void ClearScreen()
+    {
+        Console.Clear();
+        AnsiConsole.Write(new FigletText("SaveManager").Centered().Color(Color.Cyan1));
+        AnsiConsole.Write(Align.Center(new Markup("All clear!\nType [bold yellow]'help'[/] to see available commands!")));
+    }
+
+    private void ExitApp()
+    {
+        AnsiConsole.MarkupLine("[cyan]Thanks for using SaveManager![/]");
+        Environment.Exit(0);
+    }
+
+    private void ShowUnknownCommand(string command)
+    {
+        AnsiConsole.MarkupLine($"[red]Unknown command:[/] '{command}'");
+        AnsiConsole.MarkupLine("Type [yellow]'help'[/] to see available commands.");
+    }
+    
+        private async Task StartWebServer(bool runInBackground) {
         if (runInBackground) {
             StartBackgroundServer();
             return;
@@ -100,7 +219,7 @@ internal class CommandHandler
 
         try {
             var json = await File.ReadAllTextAsync(globals.UbiSaveInfoFilePath);
-            var rawData = System.Text.Json.JsonSerializer.Deserialize(json, JsonContext.Default.DictionaryStringListSaveFileInfo);
+            var rawData = JsonSerializer.Deserialize(json, JsonContext.Default.DictionaryStringListSaveFileInfo);
 
             if (rawData == null) {
                 return Results.Json(new { error = "Invalid save data" });
@@ -159,110 +278,4 @@ internal class CommandHandler
         AnsiConsole.MarkupLine("[cyan]Type 'help' to continue using CLI commands[/]");
     }
     
-    private async Task ListSaves()
-    {
-        await AnsiConsole.Status()
-            .StartAsync("Loading save games...", async ctx =>
-            {
-                ctx.Spinner(Spinner.Known.Dots);
-                ctx.SpinnerStyle = new Style(Color.Green);
-                await saveManager.ListSaves("Ubisoft");
-            });
-    }
-
-    private async Task RenameSave(string[] args) {
-        if (args.Length >= 3) {
-            await saveManager.RenameSave("Ubisoft", args[0], args[1], string.Join(" ", args[2..]));
-        } else {
-            AnsiConsole.MarkupLine("[yellow]Usage: rename <gameId> <fileName> <newName>[/]");
-        }
-    }
-
-    private async Task RefreshSaves()
-    {
-        await AnsiConsole.Status().StartAsync("Scanning for save files...", async ctx => {
-                ctx.Spinner(Spinner.Known.Dots);
-                ctx.SpinnerStyle = new Style(Color.Green);
-                await saveManager.InitializeAsync();
-            });
-    }
-
-    private async Task SyncSaves()
-    {
-        AnsiConsole.MarkupLine("[yellow]Sync functionality coming soon![/]");
-    }
-
-    private void ShowHelp(string[] args) 
-    {
-        if (args.Length > 0) {
-            ShowSpecificHelp(args[0]);
-            return;
-        }
-
-        AnsiConsole.MarkupLine("[cyan]Available commands:[/]");
-        AnsiConsole.MarkupLine("  [yellow]list[/] (l)      - List all save games");
-        AnsiConsole.MarkupLine("  [yellow]rename[/] (r)    - Rename a save file");
-        AnsiConsole.MarkupLine("  [yellow]refresh[/]       - Refresh save games list");
-        AnsiConsole.MarkupLine("  [yellow]serve[/]         - Start web interface");
-        AnsiConsole.MarkupLine("  [yellow]sync[/] (s)      - Sync saves between platforms");
-        AnsiConsole.MarkupLine("  [yellow]clear[/] (cls)   - Clear the console");
-        AnsiConsole.MarkupLine("  [yellow]exit[/] (q)      - Exit the application");
-        AnsiConsole.MarkupLine("  [yellow]help[/] (h)      - Show this help");
-        AnsiConsole.MarkupLine("\n[cyan]Tip:[/] Type [yellow]'help <command>'[/] for detailed usage.");
-    }
-
-    private void ShowSpecificHelp(string command) 
-    {
-        switch (command.ToLower()) {
-            case "list" or "l":
-                AnsiConsole.MarkupLine("[cyan]list[/] - List all save games");
-                AnsiConsole.MarkupLine("Shows all detected save games organized by game and platform.");
-                break;
-            case "rename" or "r":
-                AnsiConsole.MarkupLine("[cyan]rename[/] - Rename a save file");
-                AnsiConsole.MarkupLine("Usage: [yellow]rename <gameId> <fileName> <newName>[/]");
-                break;
-            case "refresh":
-                AnsiConsole.MarkupLine("[cyan]refresh[/] - Refresh save games list");
-                AnsiConsole.MarkupLine("Rescans for new save games and updates the database.");
-                break;
-            case "serve":
-                AnsiConsole.MarkupLine("[cyan]serve[/] - Start web interface");
-                AnsiConsole.MarkupLine("Starts the web interface at http://localhost:5000");
-                AnsiConsole.MarkupLine("Use [yellow]serve --background[/] to run in background.");
-                break;
-            case "sync" or "s":
-                AnsiConsole.MarkupLine("[cyan]sync[/] - Sync saves between platforms");
-                AnsiConsole.MarkupLine("Copy save files between Steam and Ubisoft versions.");
-                break;
-            case "clear" or "cls":
-                AnsiConsole.MarkupLine("[cyan]clear[/] - Clear the console screen");
-                break;
-            case "exit" or "quit" or "q":
-                AnsiConsole.MarkupLine("[cyan]exit[/] - Exit the application");
-                break;
-            default:
-                AnsiConsole.MarkupLine($"[red]Unknown command:[/] {command}");
-                break;
-        }
-    }
-
-    private void ClearScreen()
-    {
-        Console.Clear();
-        AnsiConsole.Write(new FigletText("SaveManager").Centered().Color(Color.Cyan1));
-        AnsiConsole.Write(Align.Center(new Markup("All clear!\nType [bold yellow]'help'[/] to see available commands!")));
-    }
-
-    private void ExitApp()
-    {
-        AnsiConsole.MarkupLine("[cyan]Thanks for using SaveManager![/]");
-        Environment.Exit(0);
-    }
-
-    private void ShowUnknownCommand(string command)
-    {
-        AnsiConsole.MarkupLine($"[red]Unknown command:[/] '{command}'");
-        AnsiConsole.MarkupLine("Type [yellow]'help'[/] to see available commands.");
-    }
 }

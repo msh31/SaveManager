@@ -1,4 +1,4 @@
-﻿namespace SaveManager.Models;
+namespace SaveManager.Models;
 
 public class SaveFileInfo
 {
@@ -9,4 +9,7 @@ public class SaveFileInfo
     public string DisplayName { get; set; } = string.Empty;
     public long FileSizeBytes { get; set; }
     public DateTime LastModified { get; set; }
+    
+    public string GameName { get; set; }
+    public string BackupPath { get; set; }
 }

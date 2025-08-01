@@ -10,5 +10,7 @@ public class ConfigData
     public List<string> DetectedUbiGames { get; set; } = [];
     public List<string> DetectedRockstarGames { get; set; } = [];
     
+    public List<string> BackedUpGames { get; set; } = [];
+    
     public string SteamGridDbApiKey { get; set; } = string.Empty;
 }

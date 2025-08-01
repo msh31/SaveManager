@@ -1,33 +1,31 @@
 //ReSharper disable InconsistentNaming
 
 using System.Diagnostics;
-using Spectre.Console;
-using SaveManager.Utilities;
 using SaveManager.Managers;
 using SaveManager.Services;
+using SaveManager.Services;
+using SaveManager.Utilities;
+using Spectre.Console;
 
 class Core : IDisposable
 {
     private readonly Utilities utilities;
     private readonly ConfigManager configManager;
     private readonly Logger logger;
-    private readonly SaveManager.Utilities.SaveManager saveManager;
+    private readonly SaveManager.Services.SaveManager saveManager;
     private readonly CommandLoop commandLoop;
     private readonly Globals globals;
     private readonly GameArtwork artworkService;
 
     public Core()
     {
-        // var apiKey = configManager.Data.SteamGridDbApiKey ?? string.Empty;
-        
         globals = new Globals();
         configManager = new ConfigManager(globals.ConfigFilePath);
         globals.UpdateConfig(configManager);
         logger = new Logger(globals.LogFilePath);
         utilities = new Utilities(logger);
-        saveManager = new SaveManager.Utilities.SaveManager(globals, utilities, configManager, logger);
-        // artworkService = new GameArtwork(apiKey);
-        artworkService = new GameArtwork("01b8e27efe8f5599af5b165bf41aad4f");
+        saveManager = new SaveManager.Services.SaveManager(globals, utilities, configManager, logger);
+        artworkService = new GameArtwork(configManager.Data.SteamGridDbApiKey);
         
         commandLoop = new CommandLoop(saveManager, globals, utilities, artworkService);
     }
@@ -48,8 +46,6 @@ class Core : IDisposable
         } catch (InvalidOperationException ex) when (ex.Message.Contains("Ubisoft savegame folder")) {
             Console.Error.WriteLine("[error] Could not find any Ubisoft savegame data on this system.");
             Console.WriteLine("This may happen if Ubisoft Connect is not installed or no games have been launched yet.");
-            // Console.WriteLine("If you're sure it's installed, you can manually specify the path:");
-            // Console.WriteLine("  ./SaveManager --ubi-path \"/your/custom/path\"");
             Console.WriteLine();
             Console.WriteLine("Press any key to exit...");
             Console.ReadKey();
@@ -69,5 +65,4 @@ class Core : IDisposable
     
     public void Dispose() {
         artworkService?.Dispose();
-    }
-}
+    }}

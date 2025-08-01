@@ -1,6 +1,6 @@
 // ReSharper disable FunctionNeverReturns (command handler handles exit)
+
 using SaveManager.CommandSystem;
-using SaveManager.Managers;
 using SaveManager.Services;
 using SaveManager.Utilities;
 using Spectre.Console;
@@ -9,7 +9,7 @@ class CommandLoop
 {
     private readonly CommandHandler _commandHandler;
 
-    public CommandLoop(SaveManager.Utilities.SaveManager saveManager, Globals globals, Utilities utilities, GameArtwork artwork) {
+    public CommandLoop(SaveManager.Services.SaveManager saveManager, Globals globals, Utilities utilities, GameArtwork artwork) {
         _commandHandler = new CommandHandler(saveManager, globals, utilities, artwork);
     }
 

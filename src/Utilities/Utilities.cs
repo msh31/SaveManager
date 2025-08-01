@@ -1,7 +1,6 @@
 //ReSharper disable InconsistentNaming
 
-using System.Collections.Concurrent;
-using System.Runtime.InteropServices;
+
 using System.Text.Json;
 using SaveManager.Managers;
 using Spectre.Console;
@@ -10,26 +9,35 @@ namespace SaveManager.Utilities;
 
 public class Utilities(Logger logger)
 {
-    private ConcurrentDictionary<string, string> gameNames;
+    private Dictionary<string, string> gameNames = new();
+    private Dictionary<string, string> gameNameCache = new();
     private readonly HttpClient client = new();
-    bool areUbisoftTranslationsLoaded;
+    bool areUbisoftTranslationsLoaded;    
     
     public async Task<string> TranslateUbisoftGameId(string gameFolder)
     {
+        var gameId = Path.GetFileName(gameFolder);
+        if (string.IsNullOrEmpty(gameId))
+        {
+            gameId = string.Empty;
+        }        
+        if (gameNameCache.ContainsKey(gameId)) {
+            return gameNameCache[gameId];
+        }
+        
         if (!areUbisoftTranslationsLoaded) {
             await LoadUbisoftGameTranslations();
             areUbisoftTranslationsLoaded = true;
         }
 
-        var gameId = Path.GetFileName(gameFolder);
-
-        if (gameNames.TryGetValue(gameId, out string fullName)) {
-            return fullName;
+        if (gameNames.ContainsKey(gameId)) {
+            gameNameCache[gameId] = gameNames[gameId];
+            return gameNames[gameId];
         }
-
+        
+        gameNameCache[gameId] = gameId;
         return gameId;
-    }
-    
+    }    
     private async Task LoadUbisoftGameTranslations()
     {
         try { 
@@ -38,17 +46,16 @@ public class Utilities(Logger logger)
 
             if (franchises != null)
             {
-                gameNames = new ConcurrentDictionary<string, string>();
+                gameNames = new Dictionary<string, string>();
                 
                 foreach (var franchise in franchises.Values) {
                     foreach (var game in franchise) {
                         gameNames[game.Key] = game.Value;
                     }
                 }
-            }
-        } catch (Exception ex) {
+            }        } catch (Exception ex) {
             logger.Fatal(ex.Message, 2, true);
-            gameNames = new ConcurrentDictionary<string, string>();
+            gameNames = new Dictionary<string, string>();
         }
     }
     
@@ -62,11 +69,11 @@ public class Utilities(Logger logger)
         var accountFolders = new List<string>();
 
         foreach (var folder in Directory.GetDirectories(globals.UbisoftRootFolder)) {
-            if (Path.GetFileName(folder).Length > 20) {
+            var folderName = Path.GetFileName(folder);
+            if (!string.IsNullOrEmpty(folderName) && folderName.Length > Globals.MinimumAccountIdLength) {
                 accountFolders.Add(folder);
             }
         }
-
         if (accountFolders.Count == 0)
         {
             AnsiConsole.MarkupLine("[red][[err]][/] No Ubisoft accounts found!");
@@ -78,7 +85,7 @@ public class Utilities(Logger logger)
 
         if (!string.IsNullOrEmpty( configManager.Data.DetectedUbiAccount))
         {
-            if (configManager.Data.DetectedUbiAccount == "all") {
+            if (configManager.Data.DetectedUbiAccount == Globals.AllAccountsOption) {
                 return accountFolders;
             }
 
@@ -91,7 +98,10 @@ public class Utilities(Logger logger)
 
         if (accountFolders.Count == 1) {
             string accountId = Path.GetFileName(accountFolders[0]);
-            AnsiConsole.MarkupLine($"[green][[suc]][/] Found Ubisoft account: {accountId}");
+            if (string.IsNullOrEmpty(accountId))
+            {
+                accountId = string.Empty;
+            }            AnsiConsole.MarkupLine($"[green][[suc]][/] Found Ubisoft account: {accountId}");
             configManager.Data.DetectedUbiAccount = accountId;
             configManager.Save();
             
@@ -103,9 +113,9 @@ public class Utilities(Logger logger)
         var choices = new List<string>();
 
         foreach (var folder in accountFolders) {
-            choices.Add(Path.GetFileName(folder));
+            var folderName = Path.GetFileName(folder);
+            choices.Add(string.IsNullOrEmpty(folderName) ? string.Empty : folderName);
         }
-
         choices.Add("All accounts");
 
         var selectedOption = AnsiConsole.Prompt(
@@ -116,15 +126,15 @@ public class Utilities(Logger logger)
                 .AddChoices(choices));
         
         if (selectedOption == "All accounts") {
-             configManager.Data.DetectedUbiAccount = "all";
+             configManager.Data.DetectedUbiAccount = Globals.AllAccountsOption;
              configManager.Save();
              
             return accountFolders;
         }
 
         for (int i = 0; i < accountFolders.Count; i++) {
-            if (Path.GetFileName(accountFolders[i]) == selectedOption) {
-                 configManager.Data.DetectedUbiAccount = selectedOption;
+            var folderName = Path.GetFileName(accountFolders[i]);
+            if ((string.IsNullOrEmpty(folderName) ? string.Empty : folderName) == selectedOption) {                 configManager.Data.DetectedUbiAccount = selectedOption;
                  configManager.Save();
                  
                 return new List<string> { accountFolders[i] };

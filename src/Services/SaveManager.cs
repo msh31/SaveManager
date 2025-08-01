@@ -1,26 +1,24 @@
-﻿using Spectre.Console;
-using SaveManager.Models;
+using System.Text.Json;
 using SaveManager.Managers;
+using SaveManager.Models;
+using Spectre.Console;
+namespace SaveManager.Services;
 
-namespace SaveManager.Utilities;
-
-public class SaveManager(Globals globals, Utilities utilities, ConfigManager configManager, Logger logger)
+public class SaveManager(Globals globals, Utilities.Utilities utilities, ConfigManager configManager, Logger logger)
 {
-    private const string DefaultDisplayName = "CUSTOM_NAME_NOT_SET";
-    private const double BytesToKb = 1024.0;
 
     public async Task InitializeAsync()
     {
         var accountFolders = utilities.GetAccountId(globals, configManager);
         
         if (accountFolders.Count == 0) {
-            AnsiConsole.MarkupLine("[red][[err]][/] No Ubisoft accounts found.");
+            AnsiConsole.MarkupLine(Globals.NoAccountsFoundMessage);
             return;
         }
 
         foreach (var accountFolder in accountFolders) {
-            var accountId = Path.GetFileName(accountFolder);
-            AnsiConsole.MarkupLine($"[cyan][[inf]][/] Processing account: {accountId}");
+            var accountId = Path.GetFileName(accountFolder) ?? string.Empty;
+            AnsiConsole.MarkupLine(string.Format(Globals.ProcessingAccountMessage, accountId));
             
             await ScanAccount(accountId);
         }
@@ -34,7 +32,7 @@ public class SaveManager(Globals globals, Utilities utilities, ConfigManager con
 
     private async Task FindSaveFiles(string accountId)
     {
-        AnsiConsole.MarkupLine("[cyan][[inf]][/] Looking for savegames..");
+        AnsiConsole.MarkupLine(Globals.LookingForSavesMessage);
         
         var existingNames = await LoadExistingDisplayNames();
         var allSaves = new Dictionary<string, List<SaveFileInfo>>();
@@ -78,16 +76,15 @@ public class SaveManager(Globals globals, Utilities utilities, ConfigManager con
 
     private bool IsValidSaveFile(string filePath)
     {
-        var fileName = Path.GetFileName(filePath);
+        var fileName = Path.GetFileName(filePath) ?? string.Empty;
 
-        if (fileName.Contains("[Options]", StringComparison.OrdinalIgnoreCase)) {
+        if (fileName.Contains(Globals.OptionsFilePattern, StringComparison.OrdinalIgnoreCase)) {
             return false;
         }
 
-        if (!fileName.EndsWith(".save", StringComparison.OrdinalIgnoreCase)) {
+        if (!fileName.EndsWith(Globals.SaveFileExtension, StringComparison.OrdinalIgnoreCase)) {
             return false;
-        }
-    
+        }    
         return true;
     }
 
@@ -105,7 +102,7 @@ public class SaveManager(Globals globals, Utilities utilities, ConfigManager con
 
         try {
             var json = await File.ReadAllTextAsync(dataFilePath);
-            var allSaves = System.Text.Json.JsonSerializer.Deserialize<Dictionary<string, List<SaveFileInfo>>>(json, JsonContext.Default.DictionaryStringListSaveFileInfo);
+            var allSaves = JsonSerializer.Deserialize(json, JsonContext.Default.DictionaryStringListSaveFileInfo);
             
             if (allSaves == null || allSaves.Count == 0) {
                 AnsiConsole.MarkupLine($"[red][[err]][/] No {platform} saves found.");
@@ -135,9 +132,9 @@ public class SaveManager(Globals globals, Utilities utilities, ConfigManager con
                 AnsiConsole.MarkupLine($"[white]Total Saves: {entry.Value.Count}[/]");
 
                 foreach (var save in entry.Value) {
-                    var sizeInKb = save.FileSizeBytes / BytesToKb;
+                    var sizeInKb = save.FileSizeBytes / Globals.BytesToKb;
                     var timestamp = save.LastModified.ToString("yyyy-MM-dd HH:mm:ss");
-                    var displayName = save.DisplayName == DefaultDisplayName ? save.FileName : save.DisplayName;
+                    var displayName = save.DisplayName == Globals.DefaultDisplayName ? save.FileName : save.DisplayName;
                     
                     AnsiConsole.MarkupLine($"[gray]   - {Markup.Escape(displayName)} | {sizeInKb:F1}KB | modified: {timestamp}[/]");
                 }
@@ -147,9 +144,250 @@ public class SaveManager(Globals globals, Utilities utilities, ConfigManager con
         }
     }
 
-    public async Task RenameSave(string platform, string gameId, string fileName, string newName)
+    public async Task PrepareBackup()
     {
-        var savesData = await LoadExistingDisplayNames();
+        try
+        {
+            var allSaves = await LoadAllSavesData();
+            if (allSaves == null) {
+                return;
+            }
+
+            var (individualChoices, gameChoices) = await BuildSaveChoices(allSaves);
+            if (individualChoices.Count == 0) {
+                AnsiConsole.MarkupLine("[red][[err]][/] No saves available for backup.");
+                return;
+            }
+
+            var selectedSaves = PromptForSaveSelection(individualChoices, gameChoices);
+            if (selectedSaves == null) {
+                AnsiConsole.MarkupLine("[yellow][[warn]][/] Backup cancelled.");
+                return;
+            }
+
+            var finalSaves = ProcessSaveSelections(selectedSaves, individualChoices);
+            await SaveBackupSelections(finalSaves);
+            await AddSavesToBackedUpGames(finalSaves, allSaves);
+
+            AnsiConsole.MarkupLine($"[green][[suc]][/] Selected {finalSaves.Count} saves for backup:");
+            foreach (string save in finalSaves) {
+                AnsiConsole.WriteLine($"  - {save}");
+            }
+
+            await CreateBackup();
+        } catch (Exception ex) {
+            AnsiConsole.MarkupLine($"[red][[err]][/] Error loading saves: {ex.Message}");
+        }
+    }
+
+    private async Task CreateBackup()
+    {
+        var backupFolder = Path.Combine(globals.BackupsFolder, $"{DateTime.Now.ToString("yyyy-MM-dd HH-mm-ss")}");
+        var json = await File.ReadAllTextAsync(globals.UbiSaveInfoFilePath);
+        var allSaves = JsonSerializer.Deserialize(json, JsonContext.Default.DictionaryStringListSaveFileInfo);
+        
+        Directory.CreateDirectory(backupFolder);
+        var accountBackupFolder = Path.Combine(backupFolder, configManager.Data.DetectedUbiAccount);
+        Directory.CreateDirectory(accountBackupFolder);
+
+        foreach (var gameId in configManager.Data.BackedUpGames) {
+            var saveKey = $"{configManager.Data.DetectedUbiAccount}_{gameId}";
+
+            if (!allSaves.ContainsKey(saveKey)) {
+                continue;
+            }
+            
+            var saves = allSaves[saveKey];
+            var gameBackupFolder = Path.Combine(accountBackupFolder, gameId);
+                
+            AnsiConsole.MarkupLine($"[cyan][[inf]][/] Creating backup for {gameId}");
+            Directory.CreateDirectory(gameBackupFolder);
+                
+            foreach (var save in saves) {
+                var destinationPath = Path.Combine(gameBackupFolder, save.FileName);
+                File.Copy(save.FilePath, destinationPath, overwrite: true);
+                
+                AnsiConsole.MarkupLine($"[green]Copied:[/] {save.FileName}");
+            }
+        }
+    }
+
+    private async Task<Dictionary<string, List<SaveFileInfo>>?> LoadAllSavesData()
+    {
+        var dataFilePath = Path.Combine(Path.GetDirectoryName(globals.ConfigFilePath) ?? "", globals.UbiSaveInfoFilePath);
+        
+        if (!File.Exists(dataFilePath)) {
+            AnsiConsole.MarkupLine("[red][[err]][/] No saves found.");
+            return null;
+        }
+
+        var json = await File.ReadAllTextAsync(dataFilePath);
+        var allSaves = JsonSerializer.Deserialize(json, JsonContext.Default.DictionaryStringListSaveFileInfo);
+        
+        if (allSaves == null || allSaves.Count == 0) {
+            AnsiConsole.MarkupLine("[red][[err]][/] No saves found.");
+            return null;
+        }
+
+        return allSaves;
+    }
+
+    private async Task<(List<string> individualChoices, List<string> gameChoices)> BuildSaveChoices(Dictionary<string, List<SaveFileInfo>> allSaves)
+    {
+        var individualChoices = new List<string>();
+        var gameChoices = new List<string>();
+
+        foreach (var saveGroup in allSaves) {
+            var parts = saveGroup.Key.Split('_', 2);
+            var accountId = parts[0];
+            var gameId = parts[1];
+            
+            var gameName = await utilities.TranslateUbisoftGameId(Path.Combine(globals.UbisoftRootFolder, accountId, gameId));
+            gameChoices.Add($"[[All from {Markup.Escape(gameName)}]]");
+            
+            foreach (var save in saveGroup.Value) {
+                var displayName = save.DisplayName == Globals.DefaultDisplayName ? save.FileName : save.DisplayName;
+                var sizeInKb = save.FileSizeBytes / Globals.BytesToKb;
+                var timestamp = save.LastModified.ToString("yyyy-MM-dd HH:mm");
+                
+                individualChoices.Add($"{Markup.Escape(gameName)} | {Markup.Escape(displayName)} | {sizeInKb:F1}KB | {timestamp}");
+            }
+        }
+
+        return (individualChoices, gameChoices);
+    }
+
+    private List<string>? PromptForSaveSelection(List<string> individualChoices, List<string> gameChoices)
+    {
+        var allChoices = new List<string> { "[[All saves]]", "[[Cancel]]" };
+        
+        if (gameChoices.Count > 0) {
+            allChoices.Add("─── Game Groups ───");
+            allChoices.AddRange(gameChoices);
+        }
+        
+        if (individualChoices.Count > 0) {
+            allChoices.Add("─── Individual Saves ───");
+            allChoices.AddRange(individualChoices);
+        }
+        var selectedSaves = AnsiConsole.Prompt(
+            new MultiSelectionPrompt<string>()
+                .Title("Select saves to [green]backup[/]:")
+                .NotRequired()
+                .PageSize(20)
+                .MoreChoicesText("[grey](Move up and down to reveal more saves)[/]")
+                .InstructionsText(
+                    "[grey](Press [blue]<space>[/] to toggle, " + 
+                    "[green]<enter>[/] to accept)[/]")
+                .AddChoices(allChoices.Where(c => !c.StartsWith("───")).ToArray()));
+
+        if (selectedSaves.Count == 0 || selectedSaves.Contains("[[Cancel]]")) {
+            return null;
+        }
+
+        return selectedSaves;
+    }
+
+    private List<string> ProcessSaveSelections(List<string> selectedSaves, List<string> individualChoices)
+    {
+        var finalSaves = new List<string>();
+
+        if (selectedSaves.Contains("[[All saves]]")) {
+            finalSaves.AddRange(individualChoices);
+        } else {
+            foreach (var selection in selectedSaves) {
+                if (selection == "[[Cancel]]") {
+                } else if (selection.StartsWith("[[All from ") && selection.EndsWith("]]")) {
+                    var gameNameInBrackets = selection.Substring(11, selection.Length - 13);
+                    var matchingGameSaves = individualChoices.Where(c => c.StartsWith(gameNameInBrackets + " |")).ToList();
+                    finalSaves.AddRange(matchingGameSaves);
+                } else if (!selection.StartsWith("[[")) {
+                    finalSaves.Add(selection);
+                }
+            }
+        }
+
+        return finalSaves.Distinct().ToList();
+    }
+
+    private async Task AddSavesToBackedUpGames(List<string> finalSaves, Dictionary<string, List<SaveFileInfo>> allSaves)
+    {
+        var gameIds = new HashSet<string>();
+
+        foreach (var save in finalSaves) {
+            foreach (var saveGroup in allSaves) {
+                var parts = saveGroup.Key.Split('_', 2);
+                
+                if (parts.Length != 2) {
+                    continue;
+                }
+                
+                var gameId = parts[1];
+                var gameName = await utilities.TranslateUbisoftGameId(Path.Combine(globals.UbisoftRootFolder, parts[0], gameId));
+
+                if (!save.StartsWith(gameName + " |")) {
+                    continue;
+                }
+                    
+                gameIds.Add(gameId);
+                break;
+            }
+        }
+
+        foreach (var gameId in gameIds) {
+            if (!configManager.Data.BackedUpGames.Contains(gameId)) {
+                configManager.Data.BackedUpGames.Add(gameId);
+            }
+        }
+
+        configManager.Save();
+        
+        if (gameIds.Count > 0) {
+            AnsiConsole.MarkupLine($"[cyan][[inf]][/] Added {gameIds.Count} games to backed up games list.");
+        }
+    }
+
+    private async Task SaveBackupSelections(List<string> selections)
+    {
+        try {
+            var selectionsData = new BackupSelections {
+                LastUpdated = DateTime.Now,
+                Selections = selections
+            };
+            
+            var json = JsonSerializer.Serialize(selectionsData, JsonContext.Default.BackupSelections);
+            await File.WriteAllTextAsync(globals.BackupSelectionsFilePath, json);
+        } catch (Exception ex) {
+            logger.Error($"Error saving backup selections: {ex.Message}");
+        }
+    }
+    public async Task ListBackupSelections()
+    {
+        if (!File.Exists(globals.BackupSelectionsFilePath)) {
+            AnsiConsole.MarkupLine("[yellow][[warn]][/] No backup selections found. Run 'backup' first to select saves.");
+            return;
+        }
+
+        try {
+            var json = await File.ReadAllTextAsync(globals.BackupSelectionsFilePath);
+            var data = JsonSerializer.Deserialize<BackupSelections>(json, JsonContext.Default.BackupSelections);
+            
+            if (data == null || data.Selections == null) {
+                AnsiConsole.MarkupLine("[red][[err]][/] Invalid backup selections data.");
+                return;
+            }
+
+            AnsiConsole.MarkupLine($"[cyan][[inf]][/] Current backup selections ({data.Selections.Count} saves):");
+            AnsiConsole.MarkupLine($"[gray]Last updated: {data.LastUpdated:yyyy-MM-dd HH:mm:ss}[/]\n");
+
+            foreach (var selection in data.Selections) {
+                AnsiConsole.WriteLine($"  - {selection}");
+            }        } catch (Exception ex) {
+            AnsiConsole.MarkupLine($"[red][[err]][/] Error loading backup selections: {ex.Message}");
+        }
+    }
+    
+    public async Task RenameSave(string gameId, string fileName, string newName)    {        var savesData = await LoadExistingDisplayNames();
         bool updated = false;
 
         foreach (var accountEntry in savesData)
@@ -160,7 +398,7 @@ public class SaveManager(Globals globals, Utilities utilities, ConfigManager con
                 if (gameData.ContainsKey(fileName))
                 {
                     var gameName = await utilities.TranslateUbisoftGameId(Path.Combine(globals.UbisoftRootFolder, accountEntry.Key, gameId));
-                    string oldDisplayName = gameData[fileName] == DefaultDisplayName ? fileName : gameData[fileName];
+                    string oldDisplayName = gameData[fileName] == Globals.DefaultDisplayName ? fileName : gameData[fileName];
                     gameData[fileName] = newName;
                     updated = true;
                     
@@ -190,7 +428,7 @@ public class SaveManager(Globals globals, Utilities utilities, ConfigManager con
 
         try {
             var json = await File.ReadAllTextAsync(dataFile);
-            var allSaves = System.Text.Json.JsonSerializer.Deserialize<Dictionary<string, List<SaveFileInfo>>>(json, JsonContext.Default.DictionaryStringListSaveFileInfo);
+            var allSaves = JsonSerializer.Deserialize(json, JsonContext.Default.DictionaryStringListSaveFileInfo);
             
             if (allSaves != null) {
                 foreach (var saveGroup in allSaves) {
@@ -235,7 +473,7 @@ public class SaveManager(Globals globals, Utilities utilities, ConfigManager con
         foreach (var save in saves) {
             var sizeInKb = save.FileSizeBytes / 1024.0;
             var timestamp = save.LastModified.ToString("yyyy-MM-dd HH:mm:ss");
-            var displayName = save.DisplayName == DefaultDisplayName ? save.FileName : save.DisplayName;
+            var displayName = save.DisplayName == Globals.DefaultDisplayName ? save.FileName : save.DisplayName;
             var escapedDisplayName = Markup.Escape(displayName);
             
             AnsiConsole.MarkupLine($"[darkcyan]   - {escapedDisplayName} | {sizeInKb:F1}KB | created: {timestamp} | updated: {timestamp}[/]");
@@ -246,7 +484,7 @@ public class SaveManager(Globals globals, Utilities utilities, ConfigManager con
     {
         try {
             var dataFile = Path.Combine(Path.GetDirectoryName(globals.ConfigFilePath) ?? "", globals.UbiSaveInfoFilePath);
-            var json = System.Text.Json.JsonSerializer.Serialize(allSaves, JsonContext.Default.DictionaryStringListSaveFileInfo);
+            var json = JsonSerializer.Serialize(allSaves, JsonContext.Default.DictionaryStringListSaveFileInfo);
             await File.WriteAllTextAsync(dataFile, json);
         } catch (Exception ex) {
             logger.Error($"Error saving to file: {ex.Message}");
@@ -256,10 +494,10 @@ public class SaveManager(Globals globals, Utilities utilities, ConfigManager con
 
     private SaveFileInfo CreateSaveInfo(string filePath, string accountId, string gameId, Dictionary<string, Dictionary<string, Dictionary<string, string>>> existingNames)
     {
-        var fileName = Path.GetFileName(filePath);
+        var fileName = Path.GetFileName(filePath) ?? string.Empty;
         var fileInfo = new FileInfo(filePath);
         
-        var displayName = DefaultDisplayName;
+        var displayName = Globals.DefaultDisplayName;
         
         if (existingNames.ContainsKey(accountId) && existingNames[accountId].ContainsKey(gameId) && existingNames[accountId][gameId].ContainsKey(fileName)) {
             displayName = existingNames[accountId][gameId][fileName];
@@ -300,7 +538,7 @@ public class SaveManager(Globals globals, Utilities utilities, ConfigManager con
                 }
             }
 
-            var json = System.Text.Json.JsonSerializer.Serialize(allSaves, JsonContext.Default.DictionaryStringListSaveFileInfo);
+            var json = JsonSerializer.Serialize(allSaves, JsonContext.Default.DictionaryStringListSaveFileInfo);
             await File.WriteAllTextAsync(dataFile, json);
         } catch (Exception ex) {
             logger.Error($"Error saving display names: {ex.Message}");
@@ -315,7 +553,7 @@ public class SaveManager(Globals globals, Utilities utilities, ConfigManager con
         AnsiConsole.MarkupLine("[cyan][[inf]][/] Looking for games..");
 
         foreach (var gameFolder in Directory.GetDirectories(accountRootFolder)) {
-            var gameId = Path.GetFileName(gameFolder);
+            var gameId = Path.GetFileName(gameFolder) ?? string.Empty;
             var gameName = await utilities.TranslateUbisoftGameId(gameFolder);
 
             configManager.Data.DetectedUbiGames.Add(gameId);

@@ -1,4 +1,5 @@
-﻿//ReSharper disable InconsistentNaming
+//ReSharper disable InconsistentNaming
+
 using System.Text.Json;
 using SaveManager.Models;
 
@@ -27,8 +28,7 @@ public class ConfigManager
                     TypeInfoResolver = JsonContext.Default 
                 };
                 
-                var loadedConfig = JsonSerializer.Deserialize<ConfigData>(json, options);
-            
+                var loadedConfig = JsonSerializer.Deserialize<ConfigData>(json, options);            
                 if (loadedConfig != null) {
                     Data = loadedConfig;
                 }
@@ -50,8 +50,7 @@ public class ConfigManager
                 TypeInfoResolver = JsonContext.Default 
             };
             
-            var json = JsonSerializer.Serialize(Data, options);
-            
+            var json = JsonSerializer.Serialize(Data, options);            
             File.WriteAllText(_configFilePath, json);
         } catch (Exception ex) {
             Console.WriteLine($"Error saving config: {ex.Message}");

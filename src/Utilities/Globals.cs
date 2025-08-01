@@ -1,8 +1,7 @@
 //ReSharper disable InconsistentNaming
-using System;
+
 using System.Runtime.InteropServices;
 using SaveManager.Managers;
-using SaveManager.Utilities;
 
 public class Globals
 {
@@ -21,9 +20,23 @@ public class Globals
     public readonly string ConfigFilePath;
     public readonly string LogFilePath;
     public readonly string UbiSaveInfoFilePath;
+    public readonly string BackupLogFilePath;
+    public readonly string BackupSelectionsFilePath;
     
-    public Globals()
-    {
+    // Constants
+    public const string DefaultDisplayName = "CUSTOM_NAME_NOT_SET";
+    public const string SaveFileExtension = ".save";
+    public const string OptionsFilePattern = "[Options]";
+    public const int MinimumAccountIdLength = 20;
+    public const string AllAccountsOption = "all";
+    public const double BytesToKb = 1024.0;
+    
+    // Messages
+    public const string NoAccountsFoundMessage = "[red][[err]][/] No Ubisoft accounts found!";
+    public const string ProcessingAccountMessage = "[cyan][[inf]][/] Processing account: {0}";
+    public const string LookingForSavesMessage = "[cyan][[inf]][/] Looking for savegames..";
+    
+    public Globals()    {
         // Documents = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
         // rockstarRootFolder = Path.Combine(Documents, "Rockstar Games"); // works when documents folder is placed on another drive :steamhappy:
 
@@ -37,10 +50,13 @@ public class Globals
         ConfigFilePath = Path.Combine(DataFolder, "config.json");
         LogFilePath = Path.Combine(LogsFolder, "oops.log");
         UbiSaveInfoFilePath = Path.Combine(DataFolder, "ubisoft_save_information.json");
+        BackupLogFilePath = Path.Combine(LogsFolder, "backup_log.json");
+        BackupSelectionsFilePath = Path.Combine(DataFolder, "backup_selections.json");        
         
         Directory.CreateDirectory(HomeDirectory);
         Directory.CreateDirectory(LogsFolder);
         Directory.CreateDirectory(DataFolder);
+        Directory.CreateDirectory(BackupsFolder);
     }
     
     public void UpdateConfig(ConfigManager configManager)
