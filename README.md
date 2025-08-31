@@ -17,6 +17,8 @@
 <br/>
 </div>
 
+looking for the CLI version? you can find that [here](https://github.com/msh31/SaveManager/tree/cli/src)
+
 ---
 
 ## 🖥️ Supported Platforms
