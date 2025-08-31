@@ -1,0 +1,145 @@
+﻿<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="SaveManagerr.SettingsView">
+
+  <ScrollViewer Background="#1a1a1a">
+    <StackPanel Margin="40,30,40,30">
+      
+      <TextBlock Text="Settings" FontSize="28" FontWeight="Bold" Foreground="White" Margin="0,0,0,30"/>
+      
+      <!-- Platform Settings -->
+      <StackPanel Margin="0,0,0,30">
+        <TextBlock Text="Platforms" FontSize="20" FontWeight="Bold" Foreground="White" Margin="0,0,0,15"/>
+        
+        <Border Background="#2d2d2d" CornerRadius="8" Padding="20">
+          <StackPanel Spacing="20">
+            
+            <!-- Ubisoft -->
+            <Grid>
+              <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+              </Grid.ColumnDefinitions>
+              
+              <TextBlock Grid.Column="0" Text="🎮" FontSize="20" Margin="0,0,15,0" VerticalAlignment="Center"/>
+              
+              <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                <TextBlock Text="Ubisoft Connect" FontSize="14" FontWeight="Medium" Foreground="White"/>
+                <TextBlock Text="C:\Program Files (x86)\Ubisoft\Ubisoft Game Launcher\savegames" FontSize="12" Foreground="#aaa"/>
+              </StackPanel>
+              
+              <ToggleSwitch Grid.Column="2" IsChecked="True" VerticalAlignment="Center">
+                <ToggleSwitch.Styles>
+                  <Style Selector="ToggleSwitch:checked /template/ ContentPresenter#PART_ContentPresenter">
+                    <Setter Property="Content" Value=""/>
+                  </Style>
+                  <Style Selector="ToggleSwitch:unchecked /template/ ContentPresenter#PART_ContentPresenter">
+                    <Setter Property="Content" Value=""/>
+                  </Style>
+                </ToggleSwitch.Styles>
+              </ToggleSwitch>
+            </Grid>
+            
+            <Separator Background="#444"/>
+            
+            <!-- Unreal Engine -->
+            <Grid>
+              <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+              </Grid.ColumnDefinitions>
+              
+              <TextBlock Grid.Column="0" Text="🎮" FontSize="20" Margin="0,0,15,0" VerticalAlignment="Center"/>
+              
+              <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                <TextBlock Text="Unreal Engine Games" FontSize="14" FontWeight="Medium" Foreground="White"/>
+                <TextBlock Text="Not configured" FontSize="12" Foreground="#aaa"/>
+              </StackPanel>
+              
+              <ToggleSwitch Grid.Column="2" IsChecked="False" VerticalAlignment="Center">
+                <ToggleSwitch.Styles>
+                  <Style Selector="ToggleSwitch:checked /template/ ContentPresenter#PART_ContentPresenter">
+                    <Setter Property="Content" Value=""/>
+                  </Style>
+                  <Style Selector="ToggleSwitch:unchecked /template/ ContentPresenter#PART_ContentPresenter">
+                    <Setter Property="Content" Value=""/>
+                  </Style>
+                </ToggleSwitch.Styles>
+              </ToggleSwitch>
+            </Grid>
+            
+            <Separator Background="#444"/>
+            
+            <!-- Rockstar Games -->
+            <Grid>
+              <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+              </Grid.ColumnDefinitions>
+              
+              <TextBlock Grid.Column="0" Text="🎮" FontSize="20" Margin="0,0,15,0" VerticalAlignment="Center"/>
+              
+              <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                <TextBlock Text="Rockstar Games Launcher" FontSize="14" FontWeight="Medium" Foreground="White"/>
+                <TextBlock Text="Not configured" FontSize="12" Foreground="#aaa"/>
+              </StackPanel>
+              
+              <ToggleSwitch Grid.Column="2" IsChecked="False" VerticalAlignment="Center">
+                <ToggleSwitch.Styles>
+                  <Style Selector="ToggleSwitch:checked /template/ ContentPresenter#PART_ContentPresenter">
+                    <Setter Property="Content" Value=""/>
+                  </Style>
+                  <Style Selector="ToggleSwitch:unchecked /template/ ContentPresenter#PART_ContentPresenter">
+                    <Setter Property="Content" Value=""/>
+                  </Style>
+                </ToggleSwitch.Styles>
+              </ToggleSwitch>
+            </Grid>
+            
+          </StackPanel>
+        </Border>
+      </StackPanel>
+      
+      <!-- Backup Settings -->
+      <StackPanel>
+        <TextBlock Text="Backup" FontSize="20" FontWeight="Bold" Foreground="White" Margin="0,0,0,15"/>
+        
+        <Border Background="#2d2d2d" CornerRadius="8" Padding="20">
+          <StackPanel Spacing="15">
+            <!-- <Grid> -->
+            <!--   <Grid.ColumnDefinitions> -->
+            <!--     <ColumnDefinition Width="*"/> -->
+            <!--     <ColumnDefinition Width="Auto"/> -->
+            <!--   </Grid.ColumnDefinitions> -->
+            <!--    -->
+            <!--   <TextBlock Grid.Column="0" Text="Auto-backup interval" FontSize="14" Foreground="White"  -->
+            <!--              VerticalAlignment="Center"/> -->
+            <!--   <ComboBox Grid.Column="1" Width="150" VerticalAlignment="Center"> -->
+            <!--     <ComboBoxItem Content="Disabled"/> -->
+            <!--     <ComboBoxItem Content="Daily" IsSelected="True"/> -->
+            <!--     <ComboBoxItem Content="Weekly"/> -->
+            <!--   </ComboBox> -->
+            <!-- </Grid> -->
+            
+            <Grid>
+              <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+              </Grid.ColumnDefinitions>
+              
+              <TextBlock Grid.Column="0" Text="Backup location" FontSize="14" Foreground="White" 
+                         VerticalAlignment="Center"/>
+              <Button Grid.Column="1" Content="Browse..." Width="100" 
+                      VerticalAlignment="Center"/>
+            </Grid>
+          </StackPanel>
+        </Border>
+      </StackPanel>
+
+    </StackPanel>
+  </ScrollViewer>
+
+</UserControl>

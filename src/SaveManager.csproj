@@ -30,4 +30,15 @@
         <AvaloniaResource Include="assets\sm_icon.ico" />
         <AvaloniaResource Include="assets\sm_icon.png" />
     </ItemGroup>
+
+    <ItemGroup>
+      <Folder Include="Modules\" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Compile Update="UI\MainWindow.axaml.cs">
+        <DependentUpon>MainWindow.axaml</DependentUpon>
+        <SubType>Code</SubType>
+      </Compile>
+    </ItemGroup>
 </Project>

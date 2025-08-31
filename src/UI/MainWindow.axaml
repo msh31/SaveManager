@@ -1,0 +1,139 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:sys="clr-namespace:System;assembly=System.Runtime"
+        mc:Ignorable="d" d:DesignWidth="1200" d:DesignHeight="700"
+        x:Class="SaveManagerr.MainWindow"
+        Title="SaveManager"
+        Width="1200"
+        Height="700"
+        MinWidth="800"
+        MinHeight="600"
+        Background="#1a1a1a"
+        Icon="/assets/sm_icon.ico">
+
+  <Grid>
+    <Grid.ColumnDefinitions>
+      <ColumnDefinition Width="220"/>
+      <ColumnDefinition Width="*"/>
+    </Grid.ColumnDefinitions>
+
+    <!-- Sidebar Navigation -->
+    <Border Grid.Column="0" Background="#2d2d2d" BorderBrush="#444" BorderThickness="0,0,1,0">
+      <Grid>
+        <Grid.RowDefinitions>
+          <RowDefinition Height="Auto"/>
+          <RowDefinition Height="*"/>
+          <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- Top Section with Logo and Navigation -->
+        <StackPanel Grid.Row="0" Margin="0,20,0,0">
+          
+          <!-- App Logo/Title - Centered -->
+          <StackPanel Orientation="Vertical" HorizontalAlignment="Center" Margin="20,0,20,30">
+            <Image Height="64" Width="64" Source="avares://SaveManager/assets/sm_icon.png" HorizontalAlignment="Center"/>
+            <TextBlock Text="SaveManager" FontSize="18" FontWeight="Bold" Foreground="White" 
+                       HorizontalAlignment="Center" Margin="0,10,0,0"/>
+          </StackPanel>
+
+          <!-- Navigation Items -->
+          <Button Name="DashboardBtn" Classes="nav-item active" Margin="10,0,10,5" Height="44" Click="NavigateTo">
+            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+              <TextBlock Text="🏠" FontSize="16" Margin="0,0,12,0" VerticalAlignment="Center"/>
+              <TextBlock Text="Dashboard" FontSize="14" FontWeight="Medium" VerticalAlignment="Center"/>
+            </StackPanel>
+          </Button>
+
+          <Button Name="SavesBtn" Classes="nav-item" Margin="10,0,10,5" Height="44" Click="NavigateTo">
+            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+              <TextBlock Text="💾" FontSize="16" Margin="0,0,12,0" VerticalAlignment="Center"/>
+              <TextBlock Text="Saves" FontSize="14" FontWeight="Medium" VerticalAlignment="Center"/>
+            </StackPanel>
+          </Button>
+
+          <Button Name="BackupBtn" Classes="nav-item" Margin="10,0,10,5" Height="44" Click="NavigateTo">
+            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+              <TextBlock Text="📦" FontSize="16" Margin="0,0,12,0" VerticalAlignment="Center"/>
+              <TextBlock Text="Backup" FontSize="14" FontWeight="Medium" VerticalAlignment="Center"/>
+            </StackPanel>
+          </Button>
+
+          <Button Name="RestoreBtn" Classes="nav-item" Margin="10,0,10,5" Height="44" Click="NavigateTo">
+            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+              <TextBlock Text="📥" FontSize="16" Margin="0,0,12,0" VerticalAlignment="Center"/>
+              <TextBlock Text="Restore" FontSize="14" FontWeight="Medium" VerticalAlignment="Center"/>
+            </StackPanel>
+          </Button>
+
+          <Button Name="SyncBtn" Classes="nav-item" Margin="10,0,10,5" Height="44" Click="NavigateTo">
+            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+              <TextBlock Text="🔄" FontSize="16" Margin="0,0,12,0" VerticalAlignment="Center"/>
+              <TextBlock Text="Synchronize" FontSize="14" FontWeight="Medium" VerticalAlignment="Center"/>
+            </StackPanel>
+          </Button>
+
+          <Button Name="LogsBtn" Classes="nav-item" Margin="10,0,10,5" Height="44" Click="NavigateTo">
+            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+              <TextBlock Text="📋" FontSize="16" Margin="0,0,12,0" VerticalAlignment="Center"/>
+              <TextBlock Text="Logs" FontSize="14" FontWeight="Medium" VerticalAlignment="Center"/>
+            </StackPanel>
+          </Button>
+          
+        </StackPanel>
+
+        <!-- Bottom Section -->
+        <StackPanel Grid.Row="2" Margin="0,0,0,15">
+          <Button Name="LoginBtn" Classes="nav-item" Margin="10,0,10,5" Height="44" Click="NavigateTo">
+            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+              <TextBlock Text="👤" FontSize="16" Margin="0,0,12,0" VerticalAlignment="Center"/>
+              <TextBlock Text="Log in" FontSize="14" FontWeight="Medium" VerticalAlignment="Center"/>
+            </StackPanel>
+          </Button>
+
+          <Button Name="SettingsBtn" Classes="nav-item" Margin="10,0,10,5" Height="44" Click="NavigateTo">
+            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+              <TextBlock Text="⚙️" FontSize="16" Margin="0,0,12,0" VerticalAlignment="Center"/>
+              <TextBlock Text="Settings" FontSize="14" FontWeight="Medium" VerticalAlignment="Center"/>
+            </StackPanel>
+          </Button>
+        </StackPanel>
+
+      </Grid>
+    </Border>
+
+    <!-- Main Content Area - This is where views will swap -->
+    <ContentControl Name="MainContent" Grid.Column="1" Background="#1a1a1a"/>
+
+  </Grid>
+
+  <!-- Styles -->
+  <Window.Styles>
+    <Style Selector="Button.nav-item">
+      <Setter Property="Background" Value="Transparent"/>
+      <Setter Property="BorderThickness" Value="0"/>
+      <Setter Property="Padding" Value="15,12"/>
+      <Setter Property="HorizontalAlignment" Value="Stretch"/>
+      <Setter Property="HorizontalContentAlignment" Value="Left"/>
+      <Setter Property="Foreground" Value="#aaa"/>
+      <Setter Property="Margin" Value="10,0,10,2"/>
+      <Setter Property="Cursor" Value="Hand"/>
+    </Style>
+    
+    <Style Selector="Button.nav-item:pointerover">
+      <Setter Property="Background" Value="#20589C"/>
+      <Setter Property="Foreground" Value="White"/>
+    </Style>
+    
+    <Style Selector="Button.nav-item.active">
+      <Setter Property="Background" Value="#2A78D7"/>
+      <Setter Property="Foreground" Value="White"/>
+    </Style>
+    
+    <Style Selector="Button.nav-item.active:pointerover">
+      <Setter Property="Background" Value="#2A78D7"/>
+      <Setter Property="Foreground" Value="White"/>
+    </Style>
+  </Window.Styles>
+</Window>
