@@ -32,10 +32,6 @@
     </ItemGroup>
 
     <ItemGroup>
-      <Folder Include="Modules\" />
-    </ItemGroup>
-
-    <ItemGroup>
       <Compile Update="UI\MainWindow.axaml.cs">
         <DependentUpon>MainWindow.axaml</DependentUpon>
         <SubType>Code</SubType>
