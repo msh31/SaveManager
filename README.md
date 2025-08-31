@@ -4,17 +4,11 @@
 
 **A lightweight local savegame manager to help you organize and manage your save files with ease.**
 
+[Features](#-features) • [Supported Platforms](#-supported-platforms) • [Installation](#-installation) • [Contributing](#-contributing) • [License](#-license) • [References](#-references)
+
 ![Status](https://img.shields.io/badge/status-alpha-orange)
 ![Development](https://img.shields.io/badge/status-in%20development-yellow)
 ![Feedback](https://img.shields.io/badge/feedback-welcome-brightgreen)
-
-[Features](#-features) •
-[Supported Platforms](#-supported-platforms) •
-[Installation](#-installation) •
-[Contributing](#-contributing) •
-[License](#-license) •
-[References](#-references)
-
 <br/>
 
 ![App Preview](https://i.imgur.com/TJAszND.png)  
@@ -22,9 +16,6 @@
 
 <br/>
 </div>
-
-# CLI
-Looking for the CLI version? You can find that [here](https://github.com/msh31/SaveManager/tree/cli) (Unfinished as of 31/08/2025)
 
 ---
 
@@ -38,7 +29,7 @@ Looking for the CLI version? You can find that [here](https://github.com/msh31/S
 
 > **Currently Supported:**  
 > ✅ Ubisoft Connect save files (as of 28-07-2025)  
-> 🔜 Next planned: **Unreal Engine 4/5 saves**  
+> 🔜 Next planned: **Unreal Engine 4/5 save files**  
 > 🔮 Future: **Rockstar Games Launcher**
 
 ---
@@ -54,19 +45,19 @@ Looking for the CLI version? You can find that [here](https://github.com/msh31/S
 
 ---
 
-## ✨ Features
+## ✨ Features (Planned)
 
 ### 🔒 Robust Backup System
-- Create and restore backups with ease.
+- Create and restore backups with ease using 7zip functionality built-in.
 - Configurable automatic backups.
-- Rsync compatibility.
+- Rsync support for remote backups.
 
 ### 📊 Smart Save Organization
-- Lists saves by game name and unique ID. (Ubisoft)
+- Lists saves by game name and unique ID. (Ubisoft Games only)
 - Search & filter for faster navigation.
 
-### 🔄 Cross-Platform Sync 
-- Sync save files across platforms and devices.  
+### 🔄 Cross-Platform Sync
+- Sync save files across platforms and devices.
 
 ---
 
