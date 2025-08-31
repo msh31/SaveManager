@@ -61,12 +61,20 @@
 
 ---
 
+## ❓ Information
+
+This project uses Avalonia UI with ``.axaml`` for the front-end interface. The UI layout was auto-generated using Claude based on a design that I made in Figma.
+> ⚠️ Note: Front-end design is not the primary focus at the moment. If you enjoy working with UI/UX or Avalonia, contributions are very welcome!
+
+---
+
 ## 🤝 Contributing
 
 We welcome contributions of all kinds:
 
 - 🐞 Bug reports  
 - 💡 Feature suggestions  
+- 🌴 Front-end improvements
 - 🔧 Code contributions via pull requests  
 
 Feel free to open an issue or fork the repo to get started!
