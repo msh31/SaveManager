@@ -46,3 +46,8 @@ COMMIT_ID | COMMIT_MSG | DATE
 - Create blank Sync/Backup Manager classes
 - Create Globals class 
 > _Note: user must select the right account in the ubi selection themselves_
+
+## ``5d40611`` | fix: ubisoft account folder selection | Sep 1 03:48:25 2025
+- Fix ubisoft account folder selection
+- Revert 'Not Configured' text & toggle when no account is set
+- IT WORKS, idk what i was doing before lol trippin
