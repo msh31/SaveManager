@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using System.Threading.Tasks;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
@@ -25,8 +26,10 @@ public partial class SettingsView : UserControl
     {
         var ubiPath = _ubisoftManager.GetUbisoftPath();
         UbisoftPathText.Text = ubiPath;
-        
+
+        // Toggle ON only if path is configured AND user has platform enabled
         UbisoftToggle.IsChecked = (ubiPath != "Not configured") && _configManager.Data.Platforms.Ubi;
+        
         UnrealToggle.IsChecked = _configManager.Data.Platforms.Unreal;
         RockstarToggle.IsChecked = _configManager.Data.Platforms.Rockstar;
 
@@ -54,10 +57,14 @@ public partial class SettingsView : UserControl
                             return;
                         }
                     }
+
                     _configManager.Data.Platforms.Ubi = true;
                 } else {
+                    _configManager.Data.UbisoftFolderPath = String.Empty;
                     _configManager.Data.Platforms.Ubi = false;
                 }
+
+                // Always refresh displayed path text after change
                 UbisoftPathText.Text = _ubisoftManager.GetUbisoftPath();
                 break;
 
@@ -75,7 +82,6 @@ public partial class SettingsView : UserControl
 
     private void OnBrowseBackupLocation(object sender, RoutedEventArgs e)
     {
-        //TODO
         if (Directory.Exists(_configManager.Data.BackupLocation)) {
             System.Diagnostics.Process.Start("explorer.exe", _configManager.Data.BackupLocation);
         }
@@ -93,7 +99,7 @@ public partial class SettingsView : UserControl
         if (string.IsNullOrEmpty(result) || !Directory.Exists(result)) {
             return false;
         }
-        
+
         _configManager.Data.UbisoftFolderPath = result;
         _configManager.Save(_configManager.Data);
         return true;
