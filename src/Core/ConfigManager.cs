@@ -1,6 +1,9 @@
 ﻿using System;
 using System.IO;
 using System.Text.Json;
+using Serilog;
+
+namespace SaveManager.Core;
 
 public class AppConfig
 {
@@ -9,6 +12,8 @@ public class AppConfig
     public bool RsyncEnabled { get; set; }
     
     public string Username { get; } = Environment.UserName;
+    
+    public string UbisoftFolderPath { get; set; }
     public string BackupLocation { get; } = Path.Combine(Directory.GetCurrentDirectory(), "Backups");
 }
 
@@ -42,9 +47,10 @@ public class ConfigManager
         var loadedConfig = JsonSerializer.Deserialize<AppConfig>(json);
 
         if (loadedConfig != null) {
+            Log.Information("Successfully loaded config.");
             return loadedConfig;
         }
-
+        
         return new AppConfig();
     }
     
@@ -53,5 +59,6 @@ public class ConfigManager
         var options = new JsonSerializerOptions { WriteIndented = true };
         var json = JsonSerializer.Serialize(config, options);
         File.WriteAllText(_path, json);
+        Log.Information("Config saved.");
     }
 }

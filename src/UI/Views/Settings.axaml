@@ -51,7 +51,7 @@
               </StackPanel>
               
               <ToggleSwitch Name="UnrealToggle" Grid.Column="2" IsChecked="False" VerticalAlignment="Center" 
-                            IsCheckedChanged="OnToggleChanged"/>
+                            IsCheckedChanged="OnToggleChanged" IsEnabled="False"/>
             </Grid>
             
             <Separator Background="#444"/>
@@ -72,7 +72,7 @@
               </StackPanel>
               
               <ToggleSwitch Name="RockstarToggle" Grid.Column="2" IsChecked="False" VerticalAlignment="Center" 
-                            IsCheckedChanged="OnToggleChanged"/>
+                            IsCheckedChanged="OnToggleChanged" IsEnabled="False"/>
             </Grid>
             
           </StackPanel>

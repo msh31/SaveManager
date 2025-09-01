@@ -84,3 +84,9 @@ Feel free to open an issue or fork the repo to get started!
 ## 📜 License
 
 This project is licensed under the [MIT License](LICENSE).
+
+---
+
+## 👯 Dependencies
+- [Serilog](https://github.com/serilog/serilog) | Logging system
+- 
