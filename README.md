@@ -47,18 +47,18 @@ looking for the CLI version? you can find that [here](https://github.com/msh31/S
 
 ---
 
-## ✨ Features (Planned)
+## Features (Planned)
 
 ### 🔒 Robust Backup System
 - Create and restore backups with ease using 7zip functionality built-in.
 - Configurable automatic backups.
 - Rsync support for remote backups.
 
-### 📊 Smart Save Organization
+### Smart Save Organization
 - Lists saves by game name and unique ID. (Ubisoft Games only)
 - Search & filter for faster navigation.
 
-### 🔄 Cross-Platform Sync
+### Cross-Platform Sync
 - Sync save files across platforms and devices.
 
 ---
@@ -74,10 +74,10 @@ This project uses Avalonia UI with ``.axaml`` for the front-end interface. The U
 
 We welcome contributions of all kinds:
 
-- 🐞 Bug reports  
-- 💡 Feature suggestions  
-- 🌴 Front-end improvements
-- 🔧 Code contributions via pull requests  
+- Bug reports  
+- Feature suggestions  
+- Front-end improvements
+- Code contributions via pull requests  
 
 Feel free to open an issue or fork the repo to get started!
 
