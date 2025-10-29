@@ -26,6 +26,7 @@ set(IMGUI_SRC
 add_executable(savemanager
     src/gui/main.cpp
     src/gui/theme_manager/theme_manager.cpp
+    src/gui/ui_manager/ui_manager.cpp
     ${IMGUI_SRC}
 )
 

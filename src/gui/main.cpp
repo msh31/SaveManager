@@ -1,15 +1,12 @@
-#include <GLFW/glfw3.h>
-#include "imgui.h"
-#include "imgui_stdlib.h"
-#include "imgui_impl_opengl3.h"
-#include "imgui_impl_glfw.h"
-#include <sentinel/core/logger.h>
-
 //#include "../core/savemanager.hpp"
 #include "theme_manager/theme_manager.hpp"
+#include "includes.hpp"
+#include "ui_manager/ui_manager.hpp"
 
 int main() {
     logger logger;
+    UIManager uiManager;
+
     logger.fileLoggingEnabled = false;
 
     if(!glfwInit()) {
@@ -65,13 +62,8 @@ int main() {
             ImGuiWindowFlags_NoBringToFrontOnFocus |
             ImGuiWindowFlags_NoNavFocus;
 
-        ImGui::Begin("Main Window", nullptr, window_flags);
-        ImGui::Text("SaveManager");
-        ImGui::Separator();
-        ImGui::Dummy(ImVec2(0, 15));
-        ImGui::Text("Another piece of text");
+        uiManager.Render(window_flags);
 
-        ImGui::End();
         ImGui::Render();
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
         glfwSwapBuffers(window);
