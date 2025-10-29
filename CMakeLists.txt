@@ -24,6 +24,17 @@ set(IMGUI_SRC
     ${IMGUI_DIR}/imgui_demo.cpp
 )
 
+add_library(savemanager_core STATIC
+    src/core/backup/backup.cpp
+    src/core/config/config.cpp
+    src/core/profile/profile.cpp
+    src/core/utils/save_parser.cpp
+)
+
+target_include_directories(savemanager_core PUBLIC
+    src/core
+)
+
 add_executable(savemanager
     src/gui/main.cpp
     src/gui/theme_manager/theme_manager.cpp
@@ -46,8 +57,8 @@ target_include_directories(savemanager PRIVATE
 
 find_package(OpenGL REQUIRED)
 
-target_link_libraries(
-    savemanager
+target_link_libraries(savemanager
+    savemanager_core
     glfw
     OpenGL::GL
     sentinel
