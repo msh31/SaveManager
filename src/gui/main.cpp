@@ -23,7 +23,7 @@ int main() {
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE); // no old OpenGL
 
     GLFWwindow* window;
-    window = glfwCreateWindow(750, 550, "SaveManager", NULL, NULL);
+    window = glfwCreateWindow(1250, 750, "SaveManager", NULL, NULL);
 
     if(window == NULL) {
         logger.error("Failed to create GLFW window. OpenGL 3.3 support is required!");
@@ -68,6 +68,8 @@ int main() {
             ImGuiWindowFlags_NoNavFocus;
 
         uiManager.Render(window_flags);
+        bool showDemoWindow = true;
+        ImGui::ShowDemoWindow(&showDemoWindow);
 
         ImGui::Render();
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
