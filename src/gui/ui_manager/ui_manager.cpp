@@ -3,8 +3,7 @@
 // member initializer list
 // initiialzes those variables bebfore the constructor runs, like magic
 UIManager::UIManager()
-    : currentTab(0)
-    , selectedGameIndex(-1)
+    : selectedGameIndex(-1)
 {
     //ImGui::OpenPopup("Setup");
 }
@@ -44,7 +43,6 @@ void UIManager::Render(ImGuiWindowFlags window_flags) {
             ImGui::Text("Detected games will show here");
             ImGui::EndTabItem();
         }
-
         if (ImGui::BeginTabItem("Backups")) {
             ImGui::EndTabItem();
         }

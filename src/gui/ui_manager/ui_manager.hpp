@@ -3,7 +3,6 @@
 
 class UIManager {
   public:
-    int currentTab;
     int selectedGameIndex;
 
     UIManager();
