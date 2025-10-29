@@ -1,7 +1,8 @@
 //#include "../core/savemanager.hpp"
-#include "theme_manager/theme_manager.hpp"
 #include "includes.hpp"
+#include "theme_manager/theme_manager.hpp"
 #include "ui_manager/ui_manager.hpp"
+#include "fonts/rubik.h"
 
 int main() {
     logger logger;
@@ -38,6 +39,10 @@ int main() {
     ImGuiIO& io = ImGui::GetIO();
     io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
     io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;
+
+    ImFontConfig cfg16;
+    cfg16.FontDataOwnedByAtlas = false;
+    ImFont* font16 = io.Fonts->AddFontFromMemoryTTF((void*)Rubik, Rubik_len, 16.0f, &cfg16);
 
     ImGui_ImplGlfw_InitForOpenGL(window, true);
     ImGui_ImplOpenGL3_Init();
