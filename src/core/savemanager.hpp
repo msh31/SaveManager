@@ -5,7 +5,7 @@
 #include <filesystem>
 
 #include <sentinel/core/sentinel.h>
-#include "profile/profile.hpp"
+#include "detection/profile.hpp"
 
 namespace fs = std::filesystem;
 

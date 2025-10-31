@@ -27,7 +27,9 @@ set(IMGUI_SRC
 add_library(savemanager_core STATIC
     src/core/backup/backup.cpp
     src/core/config/config.cpp
-    src/core/profile/profile.cpp
+    src/core/detection/profile.cpp
+    src/core/detection/games.cpp
+    src/core/detection/saves.cpp
     src/core/utils/save_parser.cpp
 )
 
