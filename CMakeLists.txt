@@ -33,6 +33,11 @@ add_library(savemanager_core STATIC
 
 target_include_directories(savemanager_core PUBLIC
     src/core
+    ${SENTINEL_DIR}/include
+)
+
+target_link_libraries(savemanager_core
+    sentinel
 )
 
 add_executable(savemanager
@@ -61,5 +66,4 @@ target_link_libraries(savemanager
     savemanager_core
     glfw
     OpenGL::GL
-    sentinel
 )
