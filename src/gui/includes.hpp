@@ -6,4 +6,6 @@
 #include "imgui_impl_opengl3.h"
 #include "imgui_impl_glfw.h"
 
-#include <sentinel/core/logger.h>
+#include <sentinel/core/sentinel.h>
+
+#include "../core/savemanager.hpp"

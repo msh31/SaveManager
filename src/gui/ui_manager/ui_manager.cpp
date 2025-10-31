@@ -23,6 +23,11 @@ void UIManager::Render(ImGuiWindowFlags window_flags) {
                 ImGui::OpenPopup("Setup");
             }
 
+            auto ids = profile::detectUserIds();
+            for (const auto& id : ids) {
+                ImGui::Text("Profile ID found: %s\n", id.c_str());
+            }
+
             if (ImGui::BeginPopupModal("Setup", NULL, ImGuiWindowFlags_NoResize)) {
                 ImGui::Text("Hi there, Welcome to SaveManager!\n\nFirst, the application will perform some profile, game and save detection.");
 
