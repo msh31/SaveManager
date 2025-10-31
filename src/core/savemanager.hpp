@@ -2,8 +2,12 @@
 #include <string>
 #include <vector>
 #include <chrono>
+#include <filesystem>
 
-#include <sentinel/core/logger.h>
+#include <sentinel/core/sentinel.h>
+#include "profile/profile.hpp"
+
+namespace fs = std::filesystem;
 
 enum class PlatformTypes {
     Ubisoft,
@@ -41,6 +45,4 @@ class SaveManager {
     public:
         SaveManager();
         ~SaveManager();
-
-
 };
