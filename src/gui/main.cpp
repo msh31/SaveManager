@@ -6,8 +6,9 @@
 int main() {
     logger logger;
     UIManager uiManager;
+    Config config; //auto calls load, destructor ccalls save :)
 
-    logger.fileLoggingEnabled = false;
+    logger.fileLoggingEnabled = true;
 
     if(!glfwInit()) {
         logger.error("Failed to initialize GLFW.");

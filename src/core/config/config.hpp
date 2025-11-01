@@ -1,3 +1,4 @@
+#pragma once
 #include "../savemanager.hpp"
 #include <fstream>
 
@@ -13,6 +14,7 @@ class Config {
         ~Config();
 
         void save();
+        void load();
     private:
         std::string getConfigPath();
 };

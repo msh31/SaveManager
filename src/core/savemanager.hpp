@@ -8,6 +8,7 @@
 #include <json.hpp>
 
 #include "detection/profile.hpp"
+#include "config/config.hpp"
 
 namespace fs = std::filesystem;
 using json = nlohmann::json;
