@@ -21,10 +21,7 @@ void UIManager::Render(ImGuiWindowFlags window_flags) {
         if (ImGui::BeginTabItem("Home")) {
             ImGui::Text("Welcome to SaveManager!");
 
-            auto ids = profile::detectUserIds();
-            for (const auto& id : ids) {
-                ImGui::Text("Profile ID found: %s\n", id.c_str());
-            }
+            ImGui::Text("Profile: %s\n", getSelectedProfile().c_str());
 
             if (ImGui::Button("test setup modal")) {
                 ImGui::OpenPopup("Setup");

@@ -23,8 +23,12 @@ int main() {
             uiManager.detectedProfiles = detectedProfiles;
             uiManager.selectedProfileIndex = 0;
         } else {
-            log.error("No profiles were found!");
+            log.error("No Ubisoft profiles found!");
         }
+    }
+
+    if (!config.cfgData.selectedProfileID.empty()) {
+        uiManager.currentProfileID = config.cfgData.selectedProfileID;
     }
 
     if(!glfwInit()) {
@@ -88,6 +92,7 @@ int main() {
 
         if (uiManager.hasValidSelection() && config.cfgData.selectedProfileID.empty()) {
             config.cfgData.selectedProfileID = uiManager.getSelectedProfile();
+            uiManager.currentProfileID = config.cfgData.selectedProfileID;
             config.save();
             log.info("Profile selected and saved: " + config.cfgData.selectedProfileID);
         }
