@@ -10,6 +10,7 @@
 #include "detection/profile.hpp"
 
 namespace fs = std::filesystem;
+using json = nlohmann::json;
 
 enum class PlatformTypes {
     Ubisoft,
