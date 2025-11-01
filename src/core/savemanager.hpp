@@ -5,6 +5,8 @@
 #include <filesystem>
 
 #include <sentinel/core/sentinel.h>
+#include <json.hpp>
+
 #include "detection/profile.hpp"
 
 namespace fs = std::filesystem;

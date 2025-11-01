@@ -9,6 +9,7 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set(IMGUI_DIR ${CMAKE_SOURCE_DIR}/external/imgui)
 set(GLFW_DIR ${CMAKE_SOURCE_DIR}/external/glfw)
 set(SENTINEL_DIR ${CMAKE_SOURCE_DIR}/external/sentinel)
+set(JSON_DIR ${CMAKE_SOURCE_DIR}/external/nlohmann)
 
 add_subdirectory(${GLFW_DIR})
 add_subdirectory(${SENTINEL_DIR})
@@ -36,6 +37,7 @@ add_library(savemanager_core STATIC
 target_include_directories(savemanager_core PUBLIC
     src/core
     ${SENTINEL_DIR}/include
+    ${JSON_DIR}
 )
 
 target_link_libraries(savemanager_core
