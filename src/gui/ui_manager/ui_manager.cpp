@@ -21,7 +21,7 @@ void UIManager::Render(ImGuiWindowFlags window_flags) {
         if (ImGui::BeginTabItem("Home")) {
             ImGui::Text("Welcome to SaveManager!");
 
-            ImGui::Text("Profile: %s\n", getSelectedProfile().c_str());
+            ImGui::Text("Profile: %s\n", currentProfileID.c_str());
 
             if (ImGui::Button("test setup modal")) {
                 ImGui::OpenPopup("Setup");
