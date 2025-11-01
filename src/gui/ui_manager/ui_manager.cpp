@@ -2,10 +2,9 @@
 
 // member initializer list
 // initiialzes those variables bebfore the constructor runs, like magic
-UIManager::UIManager()
-    : selectedGameIndex(-1)
-    , selectedProfileIndex(0)
-    , needsProfileSelection(false)
+UIManager::UIManager(Config& cfg)
+    : config(cfg)
+    , selectedGameIndex(-1)
 {
     //ImGui::OpenPopup("Setup");
 }
@@ -17,49 +16,81 @@ UIManager::~UIManager() {
 void UIManager::Render(ImGuiWindowFlags window_flags) {
     ImGui::Begin("SaveManager", nullptr, window_flags);
 
+    static std::vector<std::string> modalProfiles;
+    static int modalSelection = 0;
+    static bool modalInitialized = false;
+
+    static bool needsStartupSelection = false;
+    static bool checkedStartup = false;
+
+
+    if (!checkedStartup) {
+        checkedStartup = true;
+        if (config.cfgData.selectedProfileID.empty()) {
+            auto profiles = profile::detectUserIds();
+            if (profiles.size() > 1) {
+                needsStartupSelection = true;
+            }
+        }
+    }
+
     if (ImGui::BeginTabBar("MainTabs")) {
         if (ImGui::BeginTabItem("Home")) {
+            if (needsStartupSelection) {
+                ImGui::OpenPopup("Select A Profile");
+                needsStartupSelection = false;
+            }
+
             ImGui::Text("Welcome to SaveManager!");
 
-            ImGui::Text("Profile: %s\n", currentProfileID.c_str());
+            ImGui::Text("Profile: %s\n", config.cfgData.selectedProfileID.c_str());
 
             if (ImGui::Button("test setup modal")) {
                 ImGui::OpenPopup("Setup");
             }
             ImGui::SameLine();
 // profile selection modal
-            if(ImGui::Button("test profile modal") || needsProfileSelection) {
+
+            if(ImGui::Button("test profile modal")) {
                 ImGui::OpenPopup("Select A Profile");
             }
 
             if (ImGui::BeginPopupModal("Select A Profile", NULL, ImGuiWindowFlags_NoResize)) {
+                if (!modalInitialized) {
+                    modalProfiles = profile::detectUserIds();
+                    modalSelection = 0;
+                    modalInitialized = true;
+                }
+
                 ImGui::Text("Select a ubisoft account profile:");
 
                 ImGui::Separator();
                 ImGui::Dummy(ImVec2(0, 2));
 
-                const char* preview = detectedProfiles.empty() ? "No profiles"
-                                    : detectedProfiles[selectedProfileIndex].c_str();
+                const char* preview = modalProfiles.empty() ? "No profiles"
+                                    : modalProfiles[modalSelection].c_str();
 
-                if (ImGui::BeginCombo("##profile", preview)) {
-                    for (int n = 0; n < detectedProfiles.size(); n++) {
-                        const bool is_selected = (selectedProfileIndex == n);
+                 if (ImGui::BeginCombo("##profile", preview)) {
+                     for (int n = 0; n < modalProfiles.size(); n++) {
+                         const bool is_selected = (modalSelection == n);
 
-                        if (ImGui::Selectable(detectedProfiles[n].c_str(), is_selected)) {
-                            selectedProfileIndex = n;
-                        }
+                         if (ImGui::Selectable(modalProfiles[n].c_str(), is_selected)) {
+                             modalSelection = n;
+                         }
 
-                        if (is_selected) {
-                            ImGui::SetItemDefaultFocus();
-                        }
-                    }
-                    ImGui::EndCombo();
-                }
+                         if (is_selected) {
+                             ImGui::SetItemDefaultFocus();
+                         }
+                     }
+                     ImGui::EndCombo();
+                 }
 
-                if (ImGui::Button("Confirm")) {
-                    needsProfileSelection = false;
-                    ImGui::CloseCurrentPopup();
-                }
+                 if (ImGui::Button("Confirm")) {
+                     config.cfgData.selectedProfileID = modalProfiles[modalSelection];
+                     config.save();
+                     ImGui::CloseCurrentPopup();
+                     modalInitialized = false;
+                 }
                 ImGui::EndPopup();
             }
 
@@ -98,15 +129,4 @@ void UIManager::Render(ImGuiWindowFlags window_flags) {
     }
 
     ImGui::End();
-}
-
-std::string UIManager::getSelectedProfile() {
-    if (selectedProfileIndex >= 0 && selectedProfileIndex < detectedProfiles.size()) {
-        return detectedProfiles[selectedProfileIndex];
-    }
-    return "";
-}
-
-bool UIManager::hasValidSelection() {
-    return !needsProfileSelection && !detectedProfiles.empty() && selectedProfileIndex >= 0;
 }

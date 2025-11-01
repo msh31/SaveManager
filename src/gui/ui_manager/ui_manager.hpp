@@ -5,15 +5,12 @@
 class UIManager {
   public:
     int selectedGameIndex;
-    int selectedProfileIndex;
-    std::string currentProfileID;
-    std::string getSelectedProfile();
-    std::vector<std::string> detectedProfiles;
-    bool needsProfileSelection = false;
-    bool hasValidSelection();
 
-    UIManager();
+    UIManager(Config& cfg);
     ~UIManager();
 
     void Render(ImGuiWindowFlags window_flags);
+
+  private:
+    Config& config;
 };

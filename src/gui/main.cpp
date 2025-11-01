@@ -5,31 +5,10 @@
 
 int main() {
     logger log;
-    UIManager uiManager;
     Config config; //auto calls load, destructor ccalls save :)
+    UIManager uiManager(config);
 
     log.fileLoggingEnabled = false;
-
-    if (config.cfgData.selectedProfileID.empty()) {
-        std::vector<std::string> detectedProfiles = profile::detectUserIds();
-
-        if (detectedProfiles.size() == 1) {
-            config.cfgData.selectedProfileID = detectedProfiles[0];
-            config.save();
-            log.info("Auto-selected profile: " + detectedProfiles[0]);
-            uiManager.needsProfileSelection = false;
-        } else if (detectedProfiles.size() > 1) {
-            uiManager.needsProfileSelection = true;
-            uiManager.detectedProfiles = detectedProfiles;
-            uiManager.selectedProfileIndex = 0;
-        } else {
-            log.error("No Ubisoft profiles found!");
-        }
-    }
-
-    if (!config.cfgData.selectedProfileID.empty()) {
-        uiManager.currentProfileID = config.cfgData.selectedProfileID;
-    }
 
     if(!glfwInit()) {
         log.error("Failed to initialize GLFW.");
@@ -89,13 +68,6 @@ int main() {
             ImGuiWindowFlags_NoNavFocus;
 
         uiManager.Render(window_flags);
-
-        if (uiManager.hasValidSelection() && config.cfgData.selectedProfileID.empty()) {
-            config.cfgData.selectedProfileID = uiManager.getSelectedProfile();
-            uiManager.currentProfileID = config.cfgData.selectedProfileID;
-            config.save();
-            log.info("Profile selected and saved: " + config.cfgData.selectedProfileID);
-        }
 
         bool showDemoWindow = true;
         ImGui::ShowDemoWindow(&showDemoWindow);
