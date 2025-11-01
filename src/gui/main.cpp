@@ -4,18 +4,35 @@
 #include "fonts/rubik.h"
 
 int main() {
-    logger logger;
+    logger log;
     UIManager uiManager;
     Config config; //auto calls load, destructor ccalls save :)
 
-    logger.fileLoggingEnabled = true;
+    log.fileLoggingEnabled = false;
+
+    if (config.cfgData.selectedProfileID.empty()) {
+        std::vector<std::string> detectedProfiles = profile::detectUserIds();
+
+        if (detectedProfiles.size() == 1) {
+            config.cfgData.selectedProfileID = detectedProfiles[0];
+            config.save();
+            log.info("Auto-selected profile: " + detectedProfiles[0]);
+            uiManager.needsProfileSelection = false;
+        } else if (detectedProfiles.size() > 1) {
+            uiManager.needsProfileSelection = true;
+            uiManager.detectedProfiles = detectedProfiles;
+            uiManager.selectedProfileIndex = 0;
+        } else {
+            log.error("No profiles were found!");
+        }
+    }
 
     if(!glfwInit()) {
-        logger.error("Failed to initialize GLFW.");
+        log.error("Failed to initialize GLFW.");
         return -1;
     }
 
-    logger.success("wassup world");
+    log.success("wassup world");
 
     glfwWindowHint(GLFW_SAMPLES, 4); // 4x antialiasing
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
@@ -26,7 +43,7 @@ int main() {
     window = glfwCreateWindow(1250, 750, "SaveManager", NULL, NULL);
 
     if(window == NULL) {
-        logger.error("Failed to create GLFW window. OpenGL 3.3 support is required!");
+        log.error("Failed to create GLFW window. OpenGL 3.3 support is required!");
         glfwTerminate();
         return -1;
     }
@@ -68,6 +85,13 @@ int main() {
             ImGuiWindowFlags_NoNavFocus;
 
         uiManager.Render(window_flags);
+
+        if (uiManager.hasValidSelection() && config.cfgData.selectedProfileID.empty()) {
+            config.cfgData.selectedProfileID = uiManager.getSelectedProfile();
+            config.save();
+            log.info("Profile selected and saved: " + config.cfgData.selectedProfileID);
+        }
+
         bool showDemoWindow = true;
         ImGui::ShowDemoWindow(&showDemoWindow);
 
@@ -85,6 +109,6 @@ int main() {
     ImGui::DestroyContext();
     glfwDestroyWindow(window);
     glfwTerminate();
-    logger.success("bye world");
+    log.success("bye world");
     return 0;
 }

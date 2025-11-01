@@ -5,6 +5,11 @@
 class UIManager {
   public:
     int selectedGameIndex;
+    int selectedProfileIndex;
+    std::string getSelectedProfile();
+    std::vector<std::string> detectedProfiles;
+    bool needsProfileSelection = false;
+    bool hasValidSelection();
 
     UIManager();
     ~UIManager();
