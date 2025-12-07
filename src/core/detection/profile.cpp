@@ -4,7 +4,7 @@
 #ifdef _WIN32
 #define UBI_PROFILE_PATH "C:\\Program Files (x86)\\Ubisoft\\Ubisoft Game Launcher\\savegames" 
 #elif defined(__linux__)
-#define UBI_PROFILE_PATH "/home/todo/Ubisoft/Ubisoft Game Launcher/savegames"
+#define UBI_PROFILE_PATH "THIS IS A MANUAL ENTRY"
 #else
 #error "Unsupported OS"
 #endif
