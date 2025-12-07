@@ -73,7 +73,9 @@ std::vector<GameInfo> game_detection::scanSteamLibrary(const std::string &librar
 
                 int count = 0;
                 for (const auto& saveFile : fs::directory_iterator(savePath)) {
-                    if (saveFile.is_regular_file()) count++;
+                    if (saveFile.is_regular_file()) {
+                        count++;
+                    }
                 }
 
                 game.saveCount = count;
