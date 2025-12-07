@@ -10,6 +10,12 @@ int main() {
 
     log.fileLoggingEnabled = false;
 
+    if (game_detection::loadGameDatabase("./data/games.json")) {
+        log.success("Game database loaded successfully");
+    } else {
+        log.error("Failed to load game database");
+    }
+
     if(!glfwInit()) {
         log.error("Failed to initialize GLFW.");
         return -1;

@@ -7,9 +7,6 @@
 #include <sentinel/core/sentinel.h>
 #include <json.hpp>
 
-#include "detection/profile.hpp"
-#include "config/config.hpp"
-
 namespace fs = std::filesystem;
 using json = nlohmann::json;
 
@@ -28,9 +25,10 @@ enum class BackupStatus {
 struct GameInfo {
     std::string gameName;
     std::string savePath;
-
+    std::string documentFolder;
+    
     PlatformTypes platform;
-
+    
     int gameID;
     int saveCount;
 
@@ -38,15 +36,12 @@ struct GameInfo {
 };
 
 struct BackupRecord {
-    int gameID; //linked to gameinfo's gameid
+    int gameID;
     int filesBackedUp;
     BackupStatus status;
     std::chrono::system_clock::time_point backupDate;
     std::string backupPath;
 };
 
-class SaveManager {
-    public:
-        SaveManager();
-        ~SaveManager();
-};
+#include "detection/profile.hpp"
+#include "detection/games.hpp"

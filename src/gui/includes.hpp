@@ -9,3 +9,4 @@
 #include <sentinel/core/sentinel.h>
 
 #include "../core/savemanager.hpp"
+#include "../core/config/config.hpp" 
