@@ -32,7 +32,7 @@ struct GameInfo {
     int gameID;
     int saveCount;
 
-    std::chrono::system_clock::time_point lastModified;
+    fs::file_time_type lastModified;
 };
 
 struct BackupRecord {
