@@ -71,3 +71,13 @@ target_link_libraries(savemanager
     glfw
     OpenGL::GL
 )
+
+# CLI
+
+add_executable(savemanager-cli
+    src/cli/main.cpp
+)
+
+target_link_libraries(savemanager-cli
+    savemanager_core
+)
