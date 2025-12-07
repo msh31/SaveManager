@@ -28,12 +28,13 @@ enum class BackupStatus {
 struct GameInfo {
     std::string gameName;
     std::string savePath;
-
+    std::string documentFolder; //since saves are stored in the documents folder on windows
+    
     PlatformTypes platform;
-
-    int gameID;
+    
+    int gameID;                     // Steam appID for Proton games / ubi ids for windows?
     int saveCount;
-
+    
     std::chrono::system_clock::time_point lastModified;
 };
 
@@ -43,10 +44,4 @@ struct BackupRecord {
     BackupStatus status;
     std::chrono::system_clock::time_point backupDate;
     std::string backupPath;
-};
-
-class SaveManager {
-    public:
-        SaveManager();
-        ~SaveManager();
 };
