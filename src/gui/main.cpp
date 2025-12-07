@@ -1,3 +1,4 @@
+#include "detection/games.hpp"
 #include "includes.hpp"
 #include "theme_manager/theme_manager.hpp"
 #include "ui_manager/ui_manager.hpp"
@@ -15,6 +16,8 @@ int main() {
     } else {
         log.error("Failed to load game database");
     }
+
+    // game_detection::scanSteamLibrary("/mnt/games/", const std::string &profileID)
 
     if(!glfwInit()) {
         log.error("Failed to initialize GLFW.");
