@@ -69,8 +69,8 @@ int main() {
 
         uiManager.Render(window_flags);
 
-        bool showDemoWindow = true;
-        ImGui::ShowDemoWindow(&showDemoWindow);
+        // bool showDemoWindow = true;
+        // ImGui::ShowDemoWindow(&showDemoWindow);
 
         ImGui::Render();
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());

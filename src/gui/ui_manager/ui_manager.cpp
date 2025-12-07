@@ -43,7 +43,7 @@ void UIManager::Render(ImGuiWindowFlags window_flags) {
 
             ImGui::Text("Welcome to SaveManager!");
 
-            ImGui::Text("Profile: %s\n", config.cfgData.selectedProfileID.c_str());
+            // ImGui::Text("Profile: %s\n", config.cfgData.selectedProfileID.c_str());
 
             if (ImGui::Button("test setup modal")) {
                 ImGui::OpenPopup("Setup");
