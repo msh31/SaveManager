@@ -1,2 +1,2 @@
 *.hpp linguist-language=C++
-src/gui/fonts/*.h linguist-generated=false
+src/gui/fonts/*.h linguist-generated=true
