@@ -18,4 +18,16 @@ This project is still under development, and features may be subject to change.
 - PSP / PPSSPP (Planned)
 
 ### Dependencies
-None right now
+1. [nlohmann/json](https://github.com/nlohmann/json) - Working with json files
+2. [ubisoft_game_ids](https://git.marco007.dev/marco/Ubisoft-Game-Ids) - Ubisoft gameID translations
+3. [lipzip](https://github.com/winlibs/libzip) - Creating zip archives crossplatform
+
+```bash
+# INFO
+# make sure to install libzip on your system to be able to build this project!
+
+#arch
+sudo pacman -S libzip
+
+#MacOS
+brew install libzip
