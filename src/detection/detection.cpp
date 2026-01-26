@@ -1,4 +1,5 @@
 #include "detection.hpp"
+#include <filesystem>
 
 //linux only for now
 std::optional<fs::path> Detection::getSteamLocation() {
@@ -52,4 +53,56 @@ std::vector<fs::path> Detection::getLibraryFolders() {
 
     file.close();
     return libraries;
+}
+
+std::vector<Detection::UbiGame> Detection::findSaves() {
+    auto libraries = Detection::getLibraryFolders();
+    std::vector<UbiGame> games;
+    std::string found_uuid;
+
+    if(libraries.empty()) {
+        std::cerr << "No steam libraries found!\n";
+        return {};
+    }
+
+    for (auto library : libraries) {
+        // std::cout << "Found libraries:\n";
+        fs::path compatdata_path = library / "steamapps/compatdata";
+
+        if(!fs::exists(compatdata_path)) {
+            continue;
+        }
+        
+        for(const auto& entry : fs::directory_iterator(compatdata_path)) {
+            // std::cout << game << "\n";
+            fs::path appid_folder = entry.path();
+            fs::path ubi_save_path = appid_folder / "pfx/drive_c/Program Files (x86)/Ubisoft/Ubisoft Game Launcher/savegames";
+
+            if(fs::exists(ubi_save_path)) {
+                for(const auto& uuid_entry : fs::directory_iterator(ubi_save_path)) {
+                    fs::path uuid_folder = uuid_entry.path();
+
+                    if(found_uuid.empty()) {
+                        found_uuid = uuid_folder.filename().string();
+                        std::cout << "Found profile: " << found_uuid << "\n";
+                    }
+
+                    for(const auto& game_entry : fs::directory_iterator(uuid_folder)) {
+                        fs::path game_id_folder = game_entry.path();
+                        // std::cout << "Found game ID: " << game_id_folder.filename() << "\n";
+
+                        UbiGame game;
+                        game.appid = appid_folder.filename().string();
+                        game.uuid = uuid_folder.filename().string();
+                        game.game_id = game_id_folder.filename().string();
+                        game.save_path = game_id_folder;
+
+                        games.push_back(game);
+                    }
+                }
+            }
+        }
+    }
+
+    return games;
 }
