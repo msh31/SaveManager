@@ -1,5 +1,7 @@
-#include "detection.hpp"
 #include <filesystem>
+
+#include "detection.hpp"
+#include "../helpers/ubi_name_translations.hpp"
 
 //linux only for now
 std::optional<fs::path> Detection::getSteamLocation() {
@@ -91,6 +93,7 @@ Detection::DetectionResult Detection::findSaves() {
                         game.appid = appid_folder.filename().string();
                         game.game_id = game_id_folder.filename().string();
                         game.save_path = game_id_folder;
+                        game.game_name = getGameName(game.game_id).value_or("Unknown Game");
 
                         games.push_back(game);
                     }

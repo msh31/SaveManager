@@ -18,6 +18,7 @@ int main(int argc, char* argv[]) {
     std::cout << COLOR_GREEN << "Found profile: " << COLOR_RESET << result.uuid << "\n";
 
     for(const auto& g : result.games) {
+        std::cout << COLOR_RED << "Game Name: " << COLOR_RESET << g.game_name << "\n";
         std::cout << COLOR_BLUE << "Game ID: " << COLOR_RESET << g.game_id;
         std::cout << COLOR_GREEN << " Appid: " << COLOR_RESET << g.appid;
         std::cout << COLOR_YELLOW << " Path: " << COLOR_RESET << g.save_path << "\n\n";
