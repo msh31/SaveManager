@@ -1,2 +1,2 @@
 main:
-	g++ src/main.cpp -o savemanager
+	g++ src/main.cpp src/detection/detection.cpp -o savemanager
