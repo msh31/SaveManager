@@ -12,14 +12,18 @@ class Detection {
 public:
     struct UbiGame {
         std::string appid;
-        std::string uuid;
         std::string game_id;
         std::string game_name;
         fs::path save_path;
     };
 
+    struct DetectionResult {
+        std::string uuid;
+        std::vector<UbiGame> games;
+    };
+
     static std::vector<fs::path> getLibraryFolders();
-    static std::vector<UbiGame> findSaves();
+    static DetectionResult findSaves();
 private:
     static std::optional<fs::path> getSteamLocation();
 };
