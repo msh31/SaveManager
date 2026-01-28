@@ -188,7 +188,7 @@ int main(int argc, char* argv[]) {
         }
 
         zip_close(archive);
-        // std::cout << "\nbackup for: " << selected_game.game_name << " has been restored!\n";
+        std::cout << "\nbackup for: " << selected_game.game_name << " has been restored!\n";
     }
     else {
         std::cout << "Unknown command: " << command << "\n";
