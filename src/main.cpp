@@ -1,3 +1,5 @@
+#include <filesystem>
+#include <fstream>
 #include <iostream>
 
 #include "detection/detection.hpp"
@@ -5,6 +7,9 @@
 #include "helpers/ascii_art.hpp"
 #include "helpers/startup.hpp"
 #include "helpers/utils.hpp"
+
+
+std::string backup_dir = std::string(std::getenv("HOME")) + "/.config/savemanager/backup/";
 
 #include <zip.h>
 
@@ -41,7 +46,7 @@ int main(int argc, char* argv[]) {
     }
     else if (command == "backup") {
         if(result.games.empty()) {
-            std::cerr << "No Ubisoft savegames found!\n";
+            std::cerr << "No Ubisoft savegames found, exiting..\n";
             return 1;
         }
 
@@ -55,9 +60,9 @@ int main(int argc, char* argv[]) {
         std::cout << "Select game to backup (1-" << count << "): ";
         std::cin >> selection;
 
-        if (selection < 1 || selection > count) {
-            std::cerr << "Invalid selection\n";
-            return 1;
+        while (selection < 1 || selection > count) {
+            std::cerr << "Invalid selection\n > ";
+            std::cin >> selection;
         }
 
         const auto& selected_game = result.games[selection - 1];
@@ -67,7 +72,6 @@ int main(int argc, char* argv[]) {
         //
 
         int zip_error;
-        std::string backup_dir = std::string(std::getenv("HOME")) + "/.config/savemanager/backup/";
         std::string zip_name = backup_dir + construct_backup_name(selected_game);
         zip_t* archive = zip_open(zip_name.c_str(), ZIP_CREATE | ZIP_TRUNCATE, &zip_error);
 
@@ -94,7 +98,97 @@ int main(int argc, char* argv[]) {
         std::cout << "\nbackup has been created!\n";
     }
     else if (command == "restore") {
-        std::cout << command << " is a work in progress!" << "\n";
+        if(result.games.empty()) {
+            std::cerr << "No Ubisoft savegames found, exiting..\n";
+            return 1;
+        }
+
+        if(fs::is_empty(backup_dir)) {
+            std::cerr << "No backups were found, exiting..\n";
+            return 1;
+        }
+
+        std::vector<fs::path> backups;
+        int count = 0;
+        for(const auto& g : result.games) {
+            count += 1;
+            std::cout << count << ". " << COLOR_RED << "Game Name: " << COLOR_RESET << g.game_name << "\n";
+        }
+
+        int selection = 0;
+        std::cout << "Select a game (1-" << count << "): ";
+        std::cin >> selection;
+
+        while (selection < 1 || selection > count) {
+            std::cerr << "Invalid selection\n > ";
+            std::cin >> selection;
+        }
+
+        const auto& selected_game = result.games[selection - 1];
+
+        for (const auto& entry : fs::recursive_directory_iterator(backup_dir)) {
+            if (entry.is_regular_file() && entry.path().extension() == ".zip") {
+                const auto& full_path = entry.path();
+                // std::cout << full_path << "\n";
+
+                const std::string fileName = entry.path().filename().string();
+                if (fileName.find(selected_game.game_id) != std::string::npos)
+                {
+                    backups.emplace_back(full_path);
+                }
+            }
+        }
+
+        int backup_count = 0;
+        for(const auto& b : backups) {
+            backup_count += 1;
+            std::cout << backup_count << ". " << COLOR_RED << "Backup: " << COLOR_RESET << b << "\n";
+        }
+
+        int backup_selection = 0;
+        std::cout << "Select a backup (1-" << backup_count << "): ";
+        std::cin >> backup_selection;
+
+        while (backup_selection < 1 || backup_selection > backup_count) {
+            std::cerr << "Invalid selection\n > ";
+            std::cin >> backup_selection;
+        }
+
+        const auto& selected_backup = backups[backup_selection - 1];
+
+        std::cout << "Restoring backup for: " << COLOR_BLUE << selected_game.game_name << COLOR_RESET << "\n\n";
+        //TODO
+
+        int zip_error;
+        zip_t* archive = zip_open(selected_backup.c_str(), 0, &zip_error);
+        int file_count = zip_get_num_entries(archive, 0);
+
+        for (int i = 0; i < file_count; i++) {
+            struct zip_stat fileInfo;
+            zip_stat_init(&fileInfo); 
+
+            if (zip_stat_index(archive, i, 0, &fileInfo) == 0) {
+                std::cout << "File Name: " << fileInfo.name << "\n Saving to: \n";
+                const auto& output_path = selected_game.save_path / fileInfo.name;
+                std::cout << output_path << "\n";
+
+                zip_file* file = zip_fopen_index(archive, i, 0);
+                if (file) {
+                    char buffer[1024];
+
+                    ssize_t bytes_read;
+                    fs::create_directories(output_path.parent_path());
+                    std::ofstream save_file(output_path, std::ios::binary);
+                    while ((bytes_read = zip_fread(file, buffer, sizeof(buffer))) > 0) {
+                        save_file.write(buffer, bytes_read);
+                    }
+                    zip_fclose(file);
+                }
+            }
+        }
+
+        zip_close(archive);
+        // std::cout << "\nbackup for: " << selected_game.game_name << " has been restored!\n";
     }
     else {
         std::cout << "Unknown command: " << command << "\n";
