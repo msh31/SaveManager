@@ -1,7 +1,7 @@
 #pragma once
 #include <string>
 
-inline std::string printTitle()
+inline std::string print_title()
 {
     return R"(
   ██████  ▄▄▄    ██▒   █▓▓█████     ███▄ ▄███▓ ▄▄▄       ███▄    █  ▄▄▄        ▄████ ▓█████  ██▀███  

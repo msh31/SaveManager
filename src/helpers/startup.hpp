@@ -4,7 +4,7 @@
 
 namespace fs = std::filesystem;
 
-inline bool configExists() {
+inline bool config_exists() {
     std::string home = std::getenv("HOME");
     std::string backupPath = home + "/.config/savemanager/backup";
 
