@@ -30,7 +30,7 @@ std::vector<fs::path> Detection::getLibraryFolders() {
         return {};
     }
 
-    std::ifstream file = vdf_file.value();
+    std::ifstream file(vdf_file.value().string());
     std::string line;
 
     if(!file.is_open()) {
