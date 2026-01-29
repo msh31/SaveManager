@@ -12,7 +12,8 @@ void print_menu() {
 
 void handle_list(const Detection::DetectionResult& result) {
     if(result.games.empty()) {
-        std::cerr << "No Ubisoft savegames found!\n";
+        std::cerr << "No Ubisoft savegames found, exiting..\n";
+        return;
     }
 
     std::cout << COLOR_GREEN << "Found profile: " << COLOR_RESET << result.uuid << "\n";
@@ -29,6 +30,7 @@ void handle_backup(const Detection::DetectionResult& result) {
 
     if(result.games.empty()) {
         std::cerr << "No Ubisoft savegames found, exiting..\n";
+        return;
     }
 
     int count = 0;
@@ -82,10 +84,12 @@ void handle_backup(const Detection::DetectionResult& result) {
 void handle_restore(const Detection::DetectionResult& result) {
     if(result.games.empty()) {
         std::cerr << "No Ubisoft savegames found, exiting..\n";
+        return;
     }
 
-    if(fs::is_empty(backup_dir)) {
+    if(fs::is_empty(backup_dir)) { //this sucks
         std::cerr << "No backups were found, exiting..\n";
+        return;
     }
 
     std::vector<fs::path> backups;
