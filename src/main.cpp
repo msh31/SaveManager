@@ -1,9 +1,7 @@
+#include <cctype>
 #include <iostream>
 
 #include "detection/detection.hpp"
-#include "helpers/colors.hpp"
-#include "helpers/ascii_art.hpp"
-#include "helpers/startup.hpp"
 #include "helpers/utils.hpp"
 #include "command/command.hpp"
 
@@ -25,6 +23,13 @@ int main() {
         print_menu();
         int selection = 0;
         std::cin >> selection;
+
+        if (std::cin.fail()) {
+            std::cin.clear();
+            std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+            std::cout << "Invalid input, try again.\n";
+            continue;
+        }
 
         switch(selection) {
             case LIST: handle_list(result); break;

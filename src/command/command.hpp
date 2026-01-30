@@ -2,7 +2,6 @@
 #include <zip.h>
 
 #include "../detection/detection.hpp"
-#include "../helpers/colors.hpp"
 #include "../helpers/utils.hpp"
 
 void print_menu();
