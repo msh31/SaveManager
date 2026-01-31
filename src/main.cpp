@@ -1,4 +1,3 @@
-#include <cctype>
 #include <iostream>
 
 #include "detection/detection.hpp"
@@ -6,7 +5,7 @@
 #include "command/command.hpp"
 
 int main() {
-    auto result = Detection::findSaves();
+    auto result = Detection::find_saves();
     std::cout << COLOR_RED << print_title() << COLOR_RESET << "\n\n";
 
     if(!config_exists()) {

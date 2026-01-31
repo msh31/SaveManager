@@ -22,10 +22,10 @@ public:
         std::vector<UbiGame> games;
     };
 
-    static std::vector<fs::path> getLibraryFolders();
-    static DetectionResult findSaves();
+    static std::vector<fs::path> get_library_folders();
+    static DetectionResult find_saves();
 
 private:
-    static std::vector<std::string> getPlatformSteamPaths();
-    static std::optional<fs::path> getSteamLocation();
+    static std::vector<std::string> get_platform_steam_paths();
+    static std::optional<fs::path> get_steam_location();
 };
