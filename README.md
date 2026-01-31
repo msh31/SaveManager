@@ -31,3 +31,7 @@ sudo pacman -S libzip
 
 #MacOS
 brew install libzip
+
+#Windows (Using [vcpkg](https://vcpkg.io/en/index.html))
+vcpkg integrate install
+vcpkg install libzip

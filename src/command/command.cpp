@@ -1,7 +1,5 @@
 #include "command.hpp"
 
-std::string backup_dir = std::string(std::getenv("HOME")) + "/.config/savemanager/backup/";
-
 void print_menu() {
     std::cout << "1. List saves\n";
     std::cout << "2. Backup\n";
@@ -55,8 +53,9 @@ void handle_backup(const Detection::DetectionResult& result) {
     //
 
     int zip_error;
-    std::string zip_name = backup_dir + construct_backup_name(selected_game);
-    zip_t* archive = zip_open(zip_name.c_str(), ZIP_CREATE | ZIP_TRUNCATE, &zip_error);
+    fs::path zip_name = backup_dir / construct_backup_name(selected_game);
+    std::string zip_name_utf8 = zip_name.u8string();
+    zip_t* archive = zip_open(zip_name_utf8.c_str(), ZIP_CREATE | ZIP_TRUNCATE, &zip_error);
 
     if(!archive) {
         std::cout << COLOR_RED << "Could not create backup!\n" << COLOR_RESET;
@@ -66,12 +65,13 @@ void handle_backup(const Detection::DetectionResult& result) {
     int file_count = 0;
     for (const auto& entry : fs::recursive_directory_iterator(selected_game.save_path)) {
         if (entry.is_regular_file()) {
-            fs::path relative = fs::relative(entry.path(), selected_game.save_path);
+            std::string entry_utf8 = entry.path().u8string();
+            fs::path relative = fs::relative(entry_utf8.c_str(), selected_game.save_path);
             std::cout << "Adding: " << relative << " to the backup for " << selected_game.game_name << "\n";
 
-            zip_source_t* source = zip_source_file(archive, entry.path().c_str(), 0, 0);
+            zip_source_t* source = zip_source_file(archive, entry_utf8.c_str(), 0, 0);
             if (!source) {
-                std::cerr << "Failed to create source for: " << entry.path() << "\n";
+                std::cerr << "Failed to create source for: " << entry_utf8.c_str() << "\n";
                 continue;
             }
 
@@ -149,14 +149,15 @@ void handle_restore(const Detection::DetectionResult& result) {
     std::cout << "Restoring backup for: " << COLOR_BLUE << selected_game.game_name << COLOR_RESET << "\n\n";
 
     int zip_error;
-    zip_t* archive = zip_open(selected_backup.c_str(), 0, &zip_error);
-    int file_count = zip_get_num_entries(archive, 0);
+    std::string selected_backup_utf8 = selected_backup.u8string();
+    zip_t* archive = zip_open(selected_backup_utf8.c_str(), 0, &zip_error);
 
     if(!archive) {
         std::cout << COLOR_RED << "Could not open backup for restoration process!\n" << COLOR_RESET;
         return;
     }
 
+    int file_count = zip_get_num_entries(archive, 0);
     for (int i = 0; i < file_count; i++) {
         struct zip_stat fileInfo;
         zip_stat_init(&fileInfo); 
@@ -174,7 +175,7 @@ void handle_restore(const Detection::DetectionResult& result) {
             }
             char buffer[1024];
 
-            ssize_t bytes_read;
+            zip_int64_t bytes_read;
             fs::create_directories(output_path.parent_path());
             std::ofstream save_file(output_path, std::ios::binary);
 
@@ -186,7 +187,6 @@ void handle_restore(const Detection::DetectionResult& result) {
     }
 
     zip_close(archive);
-
     if (!failed_files.empty()) {
         std::cerr << COLOR_RED << "Failed to restore:\n" << COLOR_RESET;
         for (const auto& f : failed_files) {
