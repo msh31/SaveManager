@@ -12,7 +12,7 @@ languages = ["CXX"]
 # TODO: define a target for each of your executables/libraries like this:
 [target.savemanager]
 type = "executable" # static, shared
-sources = ["src/*.cpp"]
+sources = ["src/**.cpp"]
 include-directories = ["external"]
 compile-features = ["cxx_std_17"]
 windows.link-libraries = ["zip"]
