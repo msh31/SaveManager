@@ -55,7 +55,7 @@ void handle_backup(const Detection::DetectionResult& result) {
     int zip_error;
     fs::path zip_name = backup_dir / construct_backup_name(selected_game);
     std::string zip_name_utf8 = zip_name.u8string();
-    zip_t* archive = zip_open(zip_name.c_str(), ZIP_CREATE | ZIP_TRUNCATE, &zip_error);
+    zip_t* archive = zip_open(zip_name_utf8.c_str(), ZIP_CREATE | ZIP_TRUNCATE, &zip_error);
 
     if(!archive) {
         std::cout << COLOR_RED << "Could not create backup!\n" << COLOR_RESET;
@@ -149,7 +149,8 @@ void handle_restore(const Detection::DetectionResult& result) {
     std::cout << "Restoring backup for: " << COLOR_BLUE << selected_game.game_name << COLOR_RESET << "\n\n";
 
     int zip_error;
-    zip_t* archive = zip_open(selected_backup.c_str(), 0, &zip_error);
+    std::string selected_backup_utf8 = selected_backup.u8string();
+    zip_t* archive = zip_open(selected_backup_utf8.c_str(), 0, &zip_error);
 
     if(!archive) {
         std::cout << COLOR_RED << "Could not open backup for restoration process!\n" << COLOR_RESET;
