@@ -24,6 +24,8 @@ public:
 
     static std::vector<fs::path> getLibraryFolders();
     static DetectionResult findSaves();
+
 private:
+    static std::vector<std::string> getPlatformSteamPaths();
     static std::optional<fs::path> getSteamLocation();
 };

@@ -3,18 +3,30 @@
 #include "detection.hpp"
 #include "../helpers/ubi_name_translations.hpp"
 
-//linux only for now
+std::vector<std::string> Detection::getPlatformSteamPaths() {
+    #ifdef __linux__
+        return {
+            std::string(std::getenv("HOME")) + "/.steam/steam/steamapps/libraryfolders.vdf",
+            std::string(std::getenv("HOME")) + "/.local/share/Steam/steamapps/libraryfolders.vdf"
+        };
+    #endif
+    
+    #ifdef _WIN32
+        return {
+            "C:\\Program Files (x86)\\Steam\\steamapps\\libraryfolders.vdf",
+        };
+    #endif
+    
+    #ifdef __APPLE__
+        return "macOS";
+    #endif
+}
+
 std::optional<fs::path> Detection::getSteamLocation() {
-    std::string home = std::getenv("HOME");
-    std::string path1 = home + "/.steam/steam/steamapps/libraryfolders.vdf";
-    std::string path2 = home + "/.local/share/Steam/steamapps/libraryfolders.vdf";
-
-    if(fs::exists(path1)) {
-        return path1;
-    }
-
-    if(fs::exists(path2)) {
-        return path2;
+    for (auto entry : getPlatformSteamPaths()) {
+        if(fs::exists(entry)) {
+            return entry;
+        }
     }
 
     return std::nullopt;
