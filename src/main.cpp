@@ -6,7 +6,9 @@
 
 int main() {
     auto result = Detection::find_saves();
+    #ifndef _WIN32
     std::cout << COLOR_RED << print_title() << COLOR_RESET << "\n\n";
+    #endif
 
     if(!config_exists()) {
         std::cerr << "Config is missing and could not be generated!\n";
