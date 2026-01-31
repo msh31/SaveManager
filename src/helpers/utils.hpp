@@ -1,5 +1,6 @@
 #pragma once
 #include <zip.h>
+#include <curl/curl.h>
 
 #include <ctime>
 #include <string>
@@ -68,11 +69,50 @@ inline std::string print_title()
     )";
 }
 
+inline size_t write_callback(void* ptr, size_t size, size_t nmemb, FILE* stream) {
+    return fwrite(ptr, size, nmemb, stream);
+}
+
+inline bool download_file(const std::string& url, const std::string& output_path) {
+    CURL* curl = curl_easy_init();
+    if (!curl) return false;
+    
+    FILE* fp = fopen(output_path.c_str(), "wb");
+    if (!fp) { curl_easy_cleanup(curl); return false; }
+    
+    curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
+    curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, write_callback);
+    curl_easy_setopt(curl, CURLOPT_WRITEDATA, fp);
+    
+    CURLcode res = curl_easy_perform(curl);
+    
+    fclose(fp);
+    curl_easy_cleanup(curl);
+    
+    return res == CURLE_OK;
+}
+
+inline bool download_ubi_translations() {
+    fs::path output_path = config_dir / "gameids.json";
+    return download_file(
+        "https://git.marco007.dev/marco/Ubisoft-Game-Ids/raw/branch/master/gameids.json", 
+        output_path.string()
+    );
+}
 
 inline bool config_exists() {
     if(!fs::exists(backup_dir)) {
-        return fs::create_directories(backup_dir);
+        if(!fs::create_directories(backup_dir)) {
+            return false;
+        }
     }
-   
+
+    fs::path json_file = config_dir / "gameids.json";
+    if(!fs::exists(json_file)) {
+        if(!download_ubi_translations()) {
+            return false;
+        }
+    }
+
     return true;
 }

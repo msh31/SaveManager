@@ -19,7 +19,7 @@ This project is still under development, and features may be subject to change.
 
 ### Dependencies
 1. [nlohmann/json](https://github.com/nlohmann/json) - Working with json files
-2. [ubisoft_game_ids](https://git.marco007.dev/marco/Ubisoft-Game-Ids) - Ubisoft gameID translations
+2. [ubisoft_game_ids](https://git.marco007.dev/marco/Ubisoft-Game-Ids) - Ubisoft gameID translations | downloaded once on startup of the program
 3. [lipzip](https://github.com/winlibs/libzip) - Creating zip archives crossplatform
 
 ```bash

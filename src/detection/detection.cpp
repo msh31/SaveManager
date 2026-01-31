@@ -120,8 +120,6 @@ Detection::DetectionResult Detection::find_saves() {
     fs::path ubi_save_path = "C:\\Program Files (x86)\\Ubisoft\\Ubisoft Game Launcher\\savegames";
 
     if (fs::exists(ubi_save_path)) {
-        std::cout << "Windows support is a work in progress!\n";
-
         for (const auto& uuid_entry : fs::directory_iterator(ubi_save_path)) {
             fs::path uuid_folder = uuid_entry.path();
 

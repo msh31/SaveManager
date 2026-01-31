@@ -52,23 +52,10 @@ target_include_directories(savemanager PRIVATE
 	external
 )
 
-if(WIN32) # windows
-	target_link_libraries(savemanager PRIVATE
-		zip
-	)
-endif()
-
-if(CMAKE_SYSTEM_NAME MATCHES "Linux") # linux
-	target_link_libraries(savemanager PRIVATE
-		zip
-	)
-endif()
-
-if(CMAKE_SYSTEM_NAME MATCHES "Darwin") # macos
-	target_link_libraries(savemanager PRIVATE
-		zip
-	)
-endif()
+target_link_libraries(savemanager PRIVATE
+	zip
+	curl
+)
 
 get_directory_property(CMKR_VS_STARTUP_PROJECT DIRECTORY ${PROJECT_SOURCE_DIR} DEFINITION VS_STARTUP_PROJECT)
 if(NOT CMKR_VS_STARTUP_PROJECT)

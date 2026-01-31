@@ -15,8 +15,8 @@ inline std::optional<std::string> getGameName(const std::string& game_id) {
     
     if (!loaded) {
         fs::path json_path = config_dir / "gameids.json";
-        std::string json_utf8 = json_path.u8string();
-        std::ifstream file(json_utf8.c_str());
+        // std::string json_utf8 = json_path.u8string();
+        std::ifstream file(json_path.c_str());
         if (!file.is_open()) {
             std::cerr << "Failed to open JSON file\n";
             return std::nullopt;

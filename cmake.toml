@@ -15,6 +15,4 @@ type = "executable" # static, shared
 sources = ["src/**.cpp"]
 include-directories = ["external"]
 compile-features = ["cxx_std_17"]
-windows.link-libraries = ["zip"]
-linux.link-libraries = ["zip"]
-macos.link-libraries = ["zip"]
+link-libraries = ["zip", "curl"]
