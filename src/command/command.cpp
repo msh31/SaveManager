@@ -58,6 +58,11 @@ void handle_backup(const Detection::DetectionResult& result) {
     std::string zip_name = backup_dir + construct_backup_name(selected_game);
     zip_t* archive = zip_open(zip_name.c_str(), ZIP_CREATE | ZIP_TRUNCATE, &zip_error);
 
+    if(!archive) {
+        std::cout << COLOR_RED << "Could not create backup!\n" << COLOR_RESET;
+        return;
+    }
+
     int file_count = 0;
     for (const auto& entry : fs::recursive_directory_iterator(selected_game.save_path)) {
         if (entry.is_regular_file()) {
@@ -87,12 +92,14 @@ void handle_restore(const Detection::DetectionResult& result) {
         return;
     }
 
-    if(fs::is_empty(backup_dir)) { //this sucks
+    if(fs::is_empty(backup_dir)) {
         std::cerr << "No backups were found, exiting..\n";
         return;
     }
 
     std::vector<fs::path> backups;
+    std::vector<std::string> failed_files;
+
     int count = 0;
     for(const auto& g : result.games) {
         count += 1;
@@ -116,8 +123,7 @@ void handle_restore(const Detection::DetectionResult& result) {
             // std::cout << full_path << "\n";
 
             const std::string fileName = entry.path().filename().string();
-            if (fileName.find(selected_game.game_id) != std::string::npos)
-            {
+            if (fileName.find(selected_game.game_id) != std::string::npos) {
                 backups.emplace_back(full_path);
             }
         }
@@ -141,11 +147,15 @@ void handle_restore(const Detection::DetectionResult& result) {
     const auto& selected_backup = backups[backup_selection - 1];
 
     std::cout << "Restoring backup for: " << COLOR_BLUE << selected_game.game_name << COLOR_RESET << "\n\n";
-    //TODO
 
     int zip_error;
     zip_t* archive = zip_open(selected_backup.c_str(), 0, &zip_error);
     int file_count = zip_get_num_entries(archive, 0);
+
+    if(!archive) {
+        std::cout << COLOR_RED << "Could not open backup for restoration process!\n" << COLOR_RESET;
+        return;
+    }
 
     for (int i = 0; i < file_count; i++) {
         struct zip_stat fileInfo;
@@ -157,20 +167,32 @@ void handle_restore(const Detection::DetectionResult& result) {
             std::cout << output_path << "\n";
 
             zip_file* file = zip_fopen_index(archive, i, 0);
-            if (file) {
-                char buffer[1024];
 
-                ssize_t bytes_read;
-                fs::create_directories(output_path.parent_path());
-                std::ofstream save_file(output_path, std::ios::binary);
-                while ((bytes_read = zip_fread(file, buffer, sizeof(buffer))) > 0) {
-                    save_file.write(buffer, bytes_read);
-                }
-                zip_fclose(file);
+            if (!file) {
+                failed_files.push_back(fileInfo.name);
+                continue;
             }
+            char buffer[1024];
+
+            ssize_t bytes_read;
+            fs::create_directories(output_path.parent_path());
+            std::ofstream save_file(output_path, std::ios::binary);
+
+            while ((bytes_read = zip_fread(file, buffer, sizeof(buffer))) > 0) {
+                save_file.write(buffer, bytes_read);
+            }
+            zip_fclose(file);
         }
     }
 
     zip_close(archive);
-    std::cout << "\nbackup for: " << selected_game.game_name << " has been restored!\n";
+
+    if (!failed_files.empty()) {
+        std::cerr << COLOR_RED << "Failed to restore:\n" << COLOR_RESET;
+        for (const auto& f : failed_files) {
+            std::cerr << "  - " << f << "\n";
+        }
+    } else {
+        std::cout << "\nbackup for: " << selected_game.game_name << " has been restored!\n";
+    }
 }
