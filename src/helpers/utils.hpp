@@ -9,11 +9,19 @@
 
 namespace fs = std::filesystem;
 
-#define COLOR_RED R"(\e[0;31m)"
-#define COLOR_GREEN R"(\033[1;32m)"
-#define COLOR_BLUE R"(\033[1;34m)"
-#define COLOR_YELLOW R"(\033[1;33m)"
-#define COLOR_RESET R"(\033[0m)"
+#ifdef _WIN32
+#define COLOR_RED ""
+#define COLOR_GREEN ""
+#define COLOR_BLUE ""
+#define COLOR_YELLOW ""
+#define COLOR_RESET ""
+#else
+#define COLOR_RED "\e[0;31m"
+#define COLOR_GREEN "\033[1;32m"
+#define COLOR_BLUE "\033[1;34m"
+#define COLOR_YELLOW "\033[1;33m"
+#define COLOR_RESET "\033[0m"
+#endif
 
 #if defined(__linux__) || defined(__APPLE__)
 inline fs::path backup_dir = fs::path(std::getenv("HOME"))
