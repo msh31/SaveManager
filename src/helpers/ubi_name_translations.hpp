@@ -5,6 +5,7 @@
 #include <iostream>
 
 #include "../../external/json.hpp"
+#include "utils.hpp"
 
 using json = nlohmann::json;
 
@@ -13,7 +14,9 @@ inline std::optional<std::string> getGameName(const std::string& game_id) {
     static bool loaded = false;
     
     if (!loaded) {
-        std::ifstream file("external/ubi_game_ids/gameids.json");
+        fs::path json_path = config_dir / "gameids.json";
+        std::string json_utf8 = json_path.u8string();
+        std::ifstream file(json_utf8.c_str());
         if (!file.is_open()) {
             std::cerr << "Failed to open JSON file\n";
             return std::nullopt;

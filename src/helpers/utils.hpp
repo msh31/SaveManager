@@ -29,11 +29,16 @@ inline fs::path backup_dir = fs::path(std::getenv("HOME"))
            / "savemanager"
            / "backup";
 
+inline fs::path config_dir = fs::path(std::getenv("HOME"))
+           / ".config"
+           / "savemanager";
 #elif defined(_WIN32)
 inline fs::path backup_dir = fs::path(std::getenv("APPDATA"))
            / "savemanager"
            / "backup";
 
+inline fs::path config_dir = fs::path(std::getenv("APPDATA"))
+           / "savemanager";
 #else
 #error "Unsupported platform"
 #endif
