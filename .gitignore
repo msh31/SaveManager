@@ -1,1 +1,7 @@
 savemanager
+
+# cmkr
+build*/
+cmake-build*/
+CMakerLists.txt
+CMakeLists.txt.user
