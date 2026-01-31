@@ -1,7 +1,5 @@
 #include "command.hpp"
 
-std::string backup_dir = std::string(std::getenv("HOME")) + "/.config/savemanager/backup/";
-
 void print_menu() {
     std::cout << "1. List saves\n";
     std::cout << "2. Backup\n";
@@ -55,7 +53,7 @@ void handle_backup(const Detection::DetectionResult& result) {
     //
 
     int zip_error;
-    std::string zip_name = backup_dir + construct_backup_name(selected_game);
+    fs::path zip_name = backup_dir / construct_backup_name(selected_game);
     zip_t* archive = zip_open(zip_name.c_str(), ZIP_CREATE | ZIP_TRUNCATE, &zip_error);
 
     if(!archive) {
@@ -186,7 +184,6 @@ void handle_restore(const Detection::DetectionResult& result) {
     }
 
     zip_close(archive);
-
     if (!failed_files.empty()) {
         std::cerr << COLOR_RED << "Failed to restore:\n" << COLOR_RESET;
         for (const auto& f : failed_files) {

@@ -15,6 +15,21 @@ namespace fs = std::filesystem;
 #define COLOR_YELLOW "\033[1;33m"
 #define COLOR_RESET "\033[0m"
 
+#if defined(__linux__) || defined(__APPLE__)
+inline fs::path backup_dir = fs::path(std::getenv("HOME"))
+           / ".config"
+           / "savemanager"
+           / "backup";
+
+#elif defined(_WIN32)
+inline fs::path backup_dir = fs::path(std::getenv("APPDATA"))
+           / "savemanager"
+           / "backup";
+
+#else
+#error "Unsupported platform"
+#endif
+
 inline std::string construct_backup_name(const Detection::UbiGame& game) {
     auto now = std::time(nullptr);
     auto tm = *std::localtime(&now);
@@ -42,11 +57,8 @@ inline std::string print_title()
 
 
 inline bool config_exists() {
-    std::string home = std::getenv("HOME");
-    std::string backupPath = home + "/.config/savemanager/backup";
-
-    if(!fs::exists(backupPath)) {
-        return fs::create_directories(backupPath);
+    if(!fs::exists(backup_dir)) {
+        return fs::create_directories(backup_dir);
     }
    
     return true;
