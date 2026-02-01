@@ -5,7 +5,6 @@
 #include "command/command.hpp"
 
 int main() {
-    auto result = Detection::find_saves();
     #ifndef _WIN32
     std::cout << COLOR_RED << print_title() << COLOR_RESET << "\n\n";
     #endif
@@ -15,6 +14,8 @@ int main() {
         return 1;
     }
 
+
+    auto result = Detection::find_saves();
     if(result.games.empty()) {
         std::cerr << "No Ubisoft savegames found, exiting..\n";
         return 1;
