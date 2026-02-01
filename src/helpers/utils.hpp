@@ -116,3 +116,9 @@ inline bool config_exists() {
 
     return true;
 }
+
+inline void wait_for_key() {
+    std::cout << "\nPress any key to continue...";
+    std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+    std::cin.get();
+}

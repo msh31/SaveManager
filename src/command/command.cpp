@@ -22,6 +22,7 @@ void handle_list(const Detection::DetectionResult& result) {
         std::cout << COLOR_GREEN << " Appid: " << COLOR_RESET << g.appid;
         std::cout << COLOR_YELLOW << " Path: " << COLOR_RESET << g.save_path << "\n\n";
     }
+    wait_for_key();
 }
 
 void handle_backup(const Detection::DetectionResult& result) {
@@ -84,6 +85,7 @@ void handle_backup(const Detection::DetectionResult& result) {
     std::cout << "Added " << file_count << " files\n";
     zip_close(archive);
     std::cout << "\nbackup has been created!\n";
+    wait_for_key();
 }
 
 void handle_restore(const Detection::DetectionResult& result) {
@@ -195,4 +197,5 @@ void handle_restore(const Detection::DetectionResult& result) {
     } else {
         std::cout << "\nbackup for: " << selected_game.game_name << " has been restored!\n";
     }
+    wait_for_key();
 }

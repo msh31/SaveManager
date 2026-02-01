@@ -14,7 +14,6 @@ int main() {
         return 1;
     }
 
-
     auto result = Detection::find_saves();
     if(result.games.empty()) {
         std::cerr << "No Ubisoft savegames found, exiting..\n";
@@ -22,6 +21,10 @@ int main() {
     }
 
     while(true) {
+        std::cout << "\033[2J\033[H";  // clear + move to top
+#ifndef _WIN32
+        std::cout << COLOR_RED << print_title() << COLOR_RESET << "\n\n";
+#endif
         print_menu();
         int selection = 0;
         std::cin >> selection;
