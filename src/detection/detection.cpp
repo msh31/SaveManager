@@ -32,44 +32,7 @@ std::optional<fs::path> Detection::get_steam_location() {
     return std::nullopt;
 }
 
-//PUBLIC
-
-std::vector<fs::path> Detection::get_library_folders() {
-    auto vdf_file = get_steam_location();
-    std::vector<fs::path> libraries;
-
-    if(!vdf_file) {
-        return {};
-    }
-
-    std::ifstream file(vdf_file.value().string());
-    std::string line;
-
-    if(!file.is_open()) {
-        return {};
-    }
-
-    while (std::getline(file, line)) {
-        if(line.find("\"path\"") != std::string::npos) {
-            size_t first_quote = line.find('"');
-            size_t second_quote = line.find('"', first_quote + 1);
-            size_t third_quote = line.find('"', second_quote + 1);
-            size_t fourth_quote = line.find('"', third_quote + 1);
-
-            if(fourth_quote == std::string::npos) {
-                continue;
-            }
-
-            std::string path_value = line.substr(third_quote + 1, fourth_quote - third_quote - 1);
-            libraries.push_back(path_value);
-        }
-    }
-
-    file.close();
-    return libraries;
-}
-
-Detection::DetectionResult Detection::find_saves() {
+Detection::DetectionResult Detection::find_ubi_saves() {
     std::vector<Game> games;
     std::string found_uuid;
 
@@ -143,4 +106,54 @@ Detection::DetectionResult Detection::find_saves() {
     }
 #endif // _WIN32
     return {found_uuid, games};
+}
+//PUBLIC
+
+std::vector<fs::path> Detection::get_library_folders() {
+    auto vdf_file = get_steam_location();
+    std::vector<fs::path> libraries;
+
+    if(!vdf_file) {
+        return {};
+    }
+
+    std::ifstream file(vdf_file.value().string());
+    std::string line;
+
+    if(!file.is_open()) {
+        return {};
+    }
+
+    while (std::getline(file, line)) {
+        if(line.find("\"path\"") != std::string::npos) {
+            size_t first_quote = line.find('"');
+            size_t second_quote = line.find('"', first_quote + 1);
+            size_t third_quote = line.find('"', second_quote + 1);
+            size_t fourth_quote = line.find('"', third_quote + 1);
+
+            if(fourth_quote == std::string::npos) {
+                continue;
+            }
+
+            std::string path_value = line.substr(third_quote + 1, fourth_quote - third_quote - 1);
+            libraries.push_back(path_value);
+        }
+    }
+
+    file.close();
+    return libraries;
+}
+
+
+Detection::DetectionResult Detection::find_saves() {
+    DetectionResult result;
+    auto ubi_result = Detection::find_ubi_saves();
+
+    if(ubi_result.games.empty()) {
+        std::cerr << "No Ubisoft savegames found!\n";
+    }
+
+    result.uuid = ubi_result.uuid;
+    result.games = ubi_result.games;
+    return result;
 }

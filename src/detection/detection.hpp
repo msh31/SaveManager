@@ -39,8 +39,8 @@ private:
     static std::vector<std::string> get_platform_steam_paths();
     static std::optional<fs::path> get_steam_location();
 
-    static void find_ubi_saves();
-    // static void find_rsg_saves();
-    // static void find_ue_saves();
-    // static void find_psp_saves();
+    static DetectionResult find_ubi_saves();
+    // static DetectionResult find_rsg_saves();
+    // static DetectionResult find_ue_saves();
+    // static DetectionResult find_psp_saves();
 };
