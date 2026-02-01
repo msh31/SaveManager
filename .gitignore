@@ -1,4 +1,5 @@
 savemanager
+vcpkg_installed/
 
 # cmkr
 build*/

@@ -18,9 +18,3 @@ compile-features = ["cxx_std_17"]
 windows.link-libraries = ["zip"]
 linux.link-libraries = ["zip"]
 macos.link-libraries = ["zip"]
-
-# [vcpkg]
-# condition = "windows"
-# version = "2024.11.16"
-# url = "https://github.com/microsoft/vcpkg/archive/refs/tags/2024.11.16.tar.gz"
-# packages = ["libzip"]
