@@ -44,13 +44,13 @@ inline fs::path config_dir = fs::path(std::getenv("APPDATA"))
 #error "Unsupported platform"
 #endif
 
-inline std::string construct_backup_name(const Detection::UbiGame& game) {
+inline std::string construct_backup_name(const Game& game) {
     auto now = std::time(nullptr);
     auto tm = *std::localtime(&now);
     char time_buf[20];
     std::strftime(time_buf, sizeof(time_buf), "%Y%m%d_%H%M%S", &tm);
 
-    return "backup_" + game.game_id + "_" + std::string(time_buf) + ".zip";
+    return "backup_" + game.game_name + "_" + std::string(time_buf) + ".zip";
 }
 
 inline std::string print_title()

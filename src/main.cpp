@@ -3,6 +3,7 @@
 #include "detection/detection.hpp"
 #include "helpers/utils.hpp"
 #include "command/command.hpp"
+#include "ui/menu.hpp"
 
 int main() {
     #ifndef _WIN32
@@ -20,28 +21,14 @@ int main() {
         return 1;
     }
 
-    while(true) {
-        std::cout << "\033[2J\033[H";  // clear + move to top
-#ifndef _WIN32
-        std::cout << COLOR_RED << print_title() << COLOR_RESET << "\n\n";
-#endif
-        print_menu();
-        int selection = 0;
-        std::cin >> selection;
+    Menu main_menu("Save Manager");
+    main_menu.add_item("List games", handle_list);
+    main_menu.add_item("Backup", handle_backup);
+    main_menu.add_item("Restore", handle_restore);
+    main_menu.add_exit_item("Quit");
 
-        if (std::cin.fail()) {
-            std::cin.clear();
-            std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-            std::cout << "Invalid input, try again.\n";
-            continue;
-        }
+    while(main_menu.run(result)) {
 
-        switch(selection) {
-            case LIST: handle_list(result); break;
-            case BACKUP: handle_backup(result); break;
-            case RESTORE: handle_restore(result); break;
-            case QUIT: return 0;
-        }
     }
     return 0;
 }

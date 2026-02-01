@@ -1,24 +1,18 @@
 #include "command.hpp"
-
-void print_menu() {
-    std::cout << "1. List saves\n";
-    std::cout << "2. Backup\n";
-    std::cout << "3. Restore\n";
-    std::cout << "4. Quit\n";
-    std::cout << "> ";
-}
+#include "../ui/input_validator.hpp"
 
 void handle_list(const Detection::DetectionResult& result) {
     if(result.games.empty()) {
         std::cerr << "No Ubisoft savegames found, exiting..\n";
+        wait_for_key();
         return;
     }
 
-    std::cout << COLOR_GREEN << "Found profile: " << COLOR_RESET << result.uuid << "\n";
+    std::cout << COLOR_GREEN << "Found profile: " << COLOR_RESET << result.uuid.value() << "\n";
 
     for(const auto& g : result.games) {
         std::cout << COLOR_RED << "Game Name: " << COLOR_RESET << g.game_name << "\n";
-        std::cout << COLOR_BLUE << "Game ID: " << COLOR_RESET << g.game_id;
+        std::cout << COLOR_BLUE << "Game ID: " << COLOR_RESET << g.game_id.value();
         std::cout << COLOR_GREEN << " Appid: " << COLOR_RESET << g.appid;
         std::cout << COLOR_YELLOW << " Path: " << COLOR_RESET << g.save_path << "\n\n";
     }
@@ -28,7 +22,8 @@ void handle_list(const Detection::DetectionResult& result) {
 void handle_backup(const Detection::DetectionResult& result) {
 
     if(result.games.empty()) {
-        std::cerr << "No Ubisoft savegames found, exiting..\n";
+        std::cerr << "No Ubisoft savegames found!\n";
+        wait_for_key();
         return;
     }
 
@@ -38,14 +33,16 @@ void handle_backup(const Detection::DetectionResult& result) {
         std::cout << count << ". " << COLOR_RED << "Game Name: " << COLOR_RESET << g.game_name << "\n";
     }
 
-    int selection = 0;
-    std::cout << "Select game to backup (1-" << count << "): ";
-    std::cin >> selection;
-
-    while (selection < 1 || selection > count) {
-        std::cerr << "Invalid selection\n > ";
-        std::cin >> selection;
+    if(count <= 0) {
+        std::cerr << "No valid games found!\n";
+        wait_for_key();
+        return;
     }
+
+    int selection = get_int(
+        "Select game to backup (1-" + std::to_string(count) + "): ",
+        1, count
+    );
 
     const auto& selected_game = result.games[selection - 1];
 
@@ -90,12 +87,14 @@ void handle_backup(const Detection::DetectionResult& result) {
 
 void handle_restore(const Detection::DetectionResult& result) {
     if(result.games.empty()) {
-        std::cerr << "No Ubisoft savegames found, exiting..\n";
+        std::cerr << "No Ubisoft savegames found!\n";
+        wait_for_key();
         return;
     }
 
     if(fs::is_empty(backup_dir)) {
-        std::cerr << "No backups were found, exiting..\n";
+        std::cerr << "No backups were found!\n";
+        wait_for_key();
         return;
     }
 
@@ -108,14 +107,10 @@ void handle_restore(const Detection::DetectionResult& result) {
         std::cout << count << ". " << COLOR_RED << "Game Name: " << COLOR_RESET << g.game_name << "\n";
     }
 
-    int selection = 0;
-    std::cout << "Select a game (1-" << count << "): ";
-    std::cin >> selection;
-
-    while (selection < 1 || selection > count) {
-        std::cerr << "Invalid selection\n > ";
-        std::cin >> selection;
-    }
+    int selection = get_int(
+        "Select a game (1-" + std::to_string(count) + "): ",
+        1, count
+    );
 
     const auto& selected_game = result.games[selection - 1];
 
@@ -125,7 +120,7 @@ void handle_restore(const Detection::DetectionResult& result) {
             // std::cout << full_path << "\n";
 
             const std::string fileName = entry.path().filename().string();
-            if (fileName.find(selected_game.game_id) != std::string::npos) {
+            if (fileName.find(selected_game.game_name) != std::string::npos) {
                 backups.emplace_back(full_path);
             }
         }
@@ -137,14 +132,16 @@ void handle_restore(const Detection::DetectionResult& result) {
         std::cout << backup_count << ". " << COLOR_RED << "Backup: " << COLOR_RESET << b << "\n";
     }
 
-    int backup_selection = 0;
-    std::cout << "Select a backup (1-" << backup_count << "): ";
-    std::cin >> backup_selection;
-
-    while (backup_selection < 1 || backup_selection > backup_count) {
-        std::cerr << "Invalid selection\n > ";
-        std::cin >> backup_selection;
+    if(backup_count <= 0) {
+        std::cerr << COLOR_RED << "No backups found!\n" << COLOR_RESET;
+        wait_for_key();
+        return;
     }
+
+    int backup_selection = get_int(
+        "Select a backup (1-" + std::to_string(backup_count) + "): ",
+        1, backup_count
+    );
 
     const auto& selected_backup = backups[backup_selection - 1];
 
@@ -156,6 +153,7 @@ void handle_restore(const Detection::DetectionResult& result) {
 
     if(!archive) {
         std::cout << COLOR_RED << "Could not open backup for restoration process!\n" << COLOR_RESET;
+        wait_for_key();
         return;
     }
 
@@ -193,6 +191,7 @@ void handle_restore(const Detection::DetectionResult& result) {
         std::cerr << COLOR_RED << "Failed to restore:\n" << COLOR_RESET;
         for (const auto& f : failed_files) {
             std::cerr << "  - " << f << "\n";
+            wait_for_key();
         }
     } else {
         std::cout << "\nbackup for: " << selected_game.game_name << " has been restored!\n";

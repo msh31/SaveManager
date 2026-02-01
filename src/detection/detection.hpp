@@ -8,18 +8,28 @@
 
 namespace fs = std::filesystem;
 
+enum PlatformType {
+    UBISOFT = 1,
+    ROCKSTAR,
+    UNREAL,
+    PSP,
+    PPSSPP
+};
+
+// for now we assume everything is through steam
+struct Game {
+    PlatformType type;
+    std::string appid;
+    std::optional<std::string> game_id; 
+    std::string game_name;
+    fs::path save_path;
+};
+
 class Detection {
 public:
-    struct UbiGame {
-        std::string appid;
-        std::string game_id;
-        std::string game_name;
-        fs::path save_path;
-    };
-
     struct DetectionResult {
-        std::string uuid;
-        std::vector<UbiGame> games;
+        std::optional<std::string> uuid;  // ubi only 
+        std::vector<Game> games;
     };
 
     static std::vector<fs::path> get_library_folders();
@@ -28,4 +38,9 @@ public:
 private:
     static std::vector<std::string> get_platform_steam_paths();
     static std::optional<fs::path> get_steam_location();
+
+    static void find_ubi_saves();
+    // static void find_rsg_saves();
+    // static void find_ue_saves();
+    // static void find_psp_saves();
 };

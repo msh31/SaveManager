@@ -70,7 +70,7 @@ std::vector<fs::path> Detection::get_library_folders() {
 }
 
 Detection::DetectionResult Detection::find_saves() {
-    std::vector<UbiGame> games;
+    std::vector<Game> games;
     std::string found_uuid;
 
 #ifdef __linux__
@@ -81,6 +81,7 @@ Detection::DetectionResult Detection::find_saves() {
     }
 
     for (auto library : libraries) {
+        #ifdef __linux__
         fs::path compatdata_path = library / "steamapps/compatdata";
 
         if(!fs::exists(compatdata_path)) {
@@ -102,17 +103,47 @@ Detection::DetectionResult Detection::find_saves() {
                     for(const auto& game_entry : fs::directory_iterator(uuid_folder)) {
                         fs::path game_id_folder = game_entry.path();
 
-                        UbiGame game;
+                        Game game;
+                        game.type = UBISOFT;
                         game.appid = appid_folder.filename().string();
                         game.game_id = game_id_folder.filename().string();
                         game.save_path = game_id_folder;
-                        game.game_name = getGameName(game.game_id).value_or("Unknown Game");
+                        game.game_name = getGameName(game.game_id.value()).value_or("Unknown Game");
 
                         games.push_back(game);
                     }
                 }
             }
         }
+        #endif // __linux__
+
+        #ifdef _WIN32
+        fs::path ubi_save_path = "C:/Program Files (x86)/Ubisoft/Ubisoft Game Launcher/savegames";
+
+        if(fs::exists(ubi_save_path)) {
+            std::cout << "Windows support is a work in progress!\n";
+
+            for(const auto& uuid_entry : fs::directory_iterator(ubi_save_path)) {
+                fs::path uuid_folder = uuid_entry.path();
+
+                if(found_uuid.empty()) {
+                    found_uuid = uuid_folder.filename().string();
+                }
+
+                for(const auto& game_entry : fs::directory_iterator(uuid_folder)) {
+                    fs::path game_id_folder = game_entry.path();
+
+                    UbiGame game;
+                    game.appid = "N/A"; 
+                    game.game_id = game_id_folder.filename().string();
+                    game.save_path = game_id_folder;
+                    game.game_name = getGameName(game.game_id).value_or("Unknown Game");
+
+                    games.push_back(game);
+                }
+            }
+        }
+        #endif // _WIN32
     }
 #endif // __linux__
 
