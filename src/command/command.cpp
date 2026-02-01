@@ -20,7 +20,6 @@ void handle_list(const Detection::DetectionResult& result) {
 }
 
 void handle_backup(const Detection::DetectionResult& result) {
-
     if(result.games.empty()) {
         std::cerr << "No Ubisoft savegames found!\n";
         wait_for_key();
