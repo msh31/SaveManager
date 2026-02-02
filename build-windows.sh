@@ -33,7 +33,8 @@ echo "Installing dependencies for Windows target..."
 echo "Configuring build..."
 cmake -B "$BUILD_DIR" \
     -DCMAKE_TOOLCHAIN_FILE=toolchains/toolchain-mingw-w64-vcpkg.cmake \
-    -DCMAKE_BUILD_TYPE=Release
+    -DCMAKE_BUILD_TYPE=Release \
+    -DVCPKG_APPLOCAL_DEPS=OFF
 
 echo ""
 echo "Building..."

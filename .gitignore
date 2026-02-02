@@ -4,5 +4,4 @@ vcpkg_installed/
 # cmkr
 build*/
 cmake-build*/
-CMakerLists.txt
 CMakeLists.txt.user

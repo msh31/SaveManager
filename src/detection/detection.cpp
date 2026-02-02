@@ -94,11 +94,11 @@ Detection::DetectionResult Detection::find_ubi_saves() {
             for (const auto& game_entry : fs::directory_iterator(uuid_folder)) {
                 fs::path game_id_folder = game_entry.path();
 
-                UbiGame game;
+                Game game;
                 game.appid = "N/A";
                 game.game_id = game_id_folder.filename().string();
                 game.save_path = game_id_folder;
-                game.game_name = getGameName(game.game_id).value_or("Unknown Game");
+                game.game_name = getGameName(game.game_id.value()).value_or("Unknown Game");
 
                 games.push_back(game);
             }
