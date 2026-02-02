@@ -58,3 +58,36 @@ brew install libzip
 #Windows (Using [vcpkg](https://vcpkg.io/en/index.html))
 vcpkg integrate install
 vcpkg install libzip
+```
+
+
+#### Cross-compiling for Windows (from Linux)
+You can cross-compile Windows executables from Linux using MinGW-w64:
+
+1. Install MinGW-w64:
+```bash
+# Arch, might differ on other distros
+sudo pacman -S mingw-w64-gcc
+```
+
+2. Install vcpkg (for dependency management):
+```bash
+git clone https://github.com/microsoft/vcpkg.git ~/vcpkg
+cd ~/vcpkg && ./bootstrap-vcpkg.sh
+export VCPKG_ROOT="~/vcpkg" # add to zsh or bash or fish shell
+```
+
+3. Build using the provided script:
+```bash
+./build-windows.sh
+```
+
+Or manually (still needs vcpkg):
+```bash
+cmake -B build-windows -DCMAKE_TOOLCHAIN_FILE=toolchains/toolchain-mingw-w64-vcpkg.cmake
+cmake --build build-windows
+```
+
+The Windows executable will be at `build-windows/savemanager.exe`
+
+**Note:** vcpkg will automatically download and build libzip and curl for Windows on first build.
