@@ -6,10 +6,6 @@
 #include "ui/menu.hpp"
 
 int main() {
-    #ifndef _WIN32
-    std::cout << COLOR_RED << print_title() << COLOR_RESET << "\n\n";
-    #endif
-
     if(!config_exists()) {
         std::cerr << "Config is missing and could not be generated!\n";
         return 1;
