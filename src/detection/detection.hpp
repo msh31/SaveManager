@@ -38,9 +38,10 @@ public:
 private:
     static std::vector<std::string> get_platform_steam_paths();
     static std::optional<fs::path> get_steam_location();
+    DetectionResult search_steam_library(const std::string& pfx_path);
 
     static DetectionResult find_ubi_saves();
-    // static DetectionResult find_rsg_saves();
+    static DetectionResult find_rsg_saves();
     // static DetectionResult find_ue_saves();
     // static DetectionResult find_psp_saves();
 };

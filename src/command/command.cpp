@@ -12,7 +12,7 @@ void handle_list(const Detection::DetectionResult& result) {
 
     for(const auto& g : result.games) {
         std::cout << COLOR_RED << "Game Name: " << COLOR_RESET << g.game_name << "\n";
-        std::cout << COLOR_BLUE << "Game ID: " << COLOR_RESET << g.game_id.value();
+        std::cout << COLOR_BLUE << "Game ID: " << COLOR_RESET << g.game_id.value_or("N/A");
         std::cout << COLOR_GREEN << " Appid: " << COLOR_RESET << g.appid;
         std::cout << COLOR_YELLOW << " Path: " << COLOR_RESET << g.save_path << "\n\n";
     }

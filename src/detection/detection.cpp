@@ -107,6 +107,67 @@ Detection::DetectionResult Detection::find_ubi_saves() {
 #endif // _WIN32
     return {found_uuid, games};
 }
+
+Detection::DetectionResult Detection::find_rsg_saves() {
+    std::vector<Game> games;
+    std::string found_uuid;
+
+#ifdef __linux__
+    auto libraries = Detection::get_library_folders();
+    if(libraries.empty()) {
+        std::cerr << "No steam libraries found!\n";
+        return {};
+    }
+
+    for (auto library : libraries) {
+        fs::path compatdata_path = library / "steamapps/compatdata";
+
+        if(!fs::exists(compatdata_path)) {
+            continue;
+        }
+        
+        for(const auto& entry : fs::directory_iterator(compatdata_path)) {
+            fs::path appid_folder = entry.path();
+            fs::path rsg_root = appid_folder / "pfx/drive_c/users/steamuser/Documents/Rockstar Games/";
+
+            if(!fs::exists(rsg_root)) {
+                continue;
+            }
+
+            for(const auto& game : fs::directory_iterator(rsg_root)) {
+                fs::path game_folder = game.path();
+                std::string folder_name = game_folder.filename().string();
+                fs::path profiles_folder = game_folder / "Profiles";
+
+                if(folder_name == "Launcher" || folder_name == "Social Club") {
+                    continue;
+                }
+
+                if(!fs::exists(profiles_folder)) {
+                    continue;
+                }
+
+                for(const auto& profile : fs::directory_iterator(profiles_folder)) {
+                    fs::path uuid_folder = profile.path();
+
+                    Game game;
+                    game.type = ROCKSTAR;
+                    game.appid = appid_folder.filename().string();
+                    game.save_path = uuid_folder;
+                    game.game_name = game_folder.filename().string();
+
+                    games.push_back(game);
+                }
+            }
+        }
+    }
+#endif // __linux__
+
+#ifdef _WIN32
+    //TODO
+#endif // _WIN32
+    return {found_uuid, games};
+}
 //PUBLIC
 
 std::vector<fs::path> Detection::get_library_folders() {
@@ -148,12 +209,18 @@ std::vector<fs::path> Detection::get_library_folders() {
 Detection::DetectionResult Detection::find_saves() {
     DetectionResult result;
     auto ubi_result = Detection::find_ubi_saves();
+    auto rsg_result = Detection::find_rsg_saves();
 
     if(ubi_result.games.empty()) {
         std::cerr << "No Ubisoft savegames found!\n";
     }
 
-    result.uuid = ubi_result.uuid;
-    result.games = ubi_result.games;
+    if(rsg_result.games.empty()) {
+        std::cerr << "No Rockstar Games savegames found!\n";
+    }
+
+    result.uuid = ubi_result.uuid; //might not be strictly needed!
+    result.games.insert(result.games.end(), ubi_result.games.begin(), ubi_result.games.end());
+    result.games.insert(result.games.end(), rsg_result.games.begin(), rsg_result.games.end());
     return result;
 }
