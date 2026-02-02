@@ -32,6 +32,12 @@ project(SaveManager
 )
 
 # Target: savemanager
+set(CMKR_TARGET savemanager)
+if(DEFINED VCPKG_TARGET_TRIPLET)
+    find_package(libzip CONFIG REQUIRED)
+    find_package(CURL REQUIRED)
+endif()
+
 set(savemanager_SOURCES
 	cmake.toml
 	"src/command/command.cpp"
@@ -55,8 +61,8 @@ target_include_directories(savemanager PRIVATE
 )
 
 target_link_libraries(savemanager PRIVATE
-	zip
-	curl
+	"$<IF:$<BOOL:${VCPKG_TARGET_TRIPLET}>,libzip::zip,zip>"
+	"$<IF:$<BOOL:${VCPKG_TARGET_TRIPLET}>,CURL::libcurl,curl>"
 )
 
 get_directory_property(CMKR_VS_STARTUP_PROJECT DIRECTORY ${PROJECT_SOURCE_DIR} DEFINITION VS_STARTUP_PROJECT)
