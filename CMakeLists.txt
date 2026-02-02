@@ -36,6 +36,17 @@ set(CMKR_TARGET savemanager)
 if(DEFINED VCPKG_TARGET_TRIPLET)
     find_package(libzip CONFIG REQUIRED)
     find_package(CURL REQUIRED)
+elseif(APPLE)
+    if(EXISTS "/opt/homebrew")
+        list(APPEND CMAKE_PREFIX_PATH "/opt/homebrew")
+    elseif(EXISTS "/usr/local")
+        list(APPEND CMAKE_PREFIX_PATH "/usr/local")
+    endif()
+    find_package(PkgConfig REQUIRED)
+    pkg_check_modules(LIBZIP REQUIRED libzip)
+    pkg_check_modules(CURL REQUIRED libcurl)
+    include_directories(${LIBZIP_INCLUDE_DIRS} ${CURL_INCLUDE_DIRS})
+    link_directories(${LIBZIP_LIBRARY_DIRS} ${CURL_LIBRARY_DIRS})
 endif()
 
 set(savemanager_SOURCES
@@ -61,8 +72,8 @@ target_include_directories(savemanager PRIVATE
 )
 
 target_link_libraries(savemanager PRIVATE
-	"$<IF:$<BOOL:${VCPKG_TARGET_TRIPLET}>,libzip::zip,zip>"
-	"$<IF:$<BOOL:${VCPKG_TARGET_TRIPLET}>,CURL::libcurl,curl>"
+	"$<IF:$<BOOL:${VCPKG_TARGET_TRIPLET}>,libzip::zip,$<IF:$<PLATFORM_ID:Darwin>,${LIBZIP_LIBRARIES},zip>>"
+	"$<IF:$<BOOL:${VCPKG_TARGET_TRIPLET}>,CURL::libcurl,$<IF:$<PLATFORM_ID:Darwin>,${CURL_LIBRARIES},curl>>"
 )
 
 get_directory_property(CMKR_VS_STARTUP_PROJECT DIRECTORY ${PROJECT_SOURCE_DIR} DEFINITION VS_STARTUP_PROJECT)
