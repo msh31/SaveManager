@@ -15,4 +15,10 @@ type = "executable" # static, shared
 sources = ["src/**.cpp"]
 include-directories = ["external"]
 compile-features = ["cxx_std_17"]
-link-libraries = ["zip", "curl"]
+link-libraries = ["$<IF:$<BOOL:${VCPKG_TARGET_TRIPLET}>,libzip::zip,zip>", "$<IF:$<BOOL:${VCPKG_TARGET_TRIPLET}>,CURL::libcurl,curl>"]
+cmake-before = """
+if(DEFINED VCPKG_TARGET_TRIPLET)
+    find_package(libzip CONFIG REQUIRED)
+    find_package(CURL REQUIRED)
+endif()
+"""
