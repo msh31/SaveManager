@@ -53,14 +53,19 @@ inline std::string space2underscore(std::string text) {
     return text;
 }
 
-inline std::string construct_backup_name(const Game& game) {
+inline std::string construct_backup_name(const Game& game, const std::string& custom_name = "") {
     auto now = std::time(nullptr);
     auto tm = *std::localtime(&now);
     char time_buf[20];
     std::strftime(time_buf, sizeof(time_buf), "%Y%m%d_%H%M%S", &tm);
     std::string game_name = space2underscore(game.game_name);
+    std::string filename = custom_name;
 
-    return "backup_" + game_name + "_" + std::string(time_buf) + ".zip";
+    if(filename.empty()) {
+        filename = space2underscore(game.game_name);
+    }
+
+    return "backup_" + filename + "_" + std::string(time_buf) + ".zip";
 }
 
 inline std::string print_title()

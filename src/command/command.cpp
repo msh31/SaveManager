@@ -50,6 +50,11 @@ void handle_backup(const Detection::DetectionResult& result) {
     // std::cout << "Save path: " << selected_game.save_path << "\n";
     //
 
+    std::string custom_title;
+    std::cout << COLOR_BLUE << "Enter a custom backup name (Ex: hard_100_percent): " << COLOR_RESET;
+    std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+    std::getline(std::cin, custom_title);
+
     int zip_error;
 
     fs::path game_backup_dir = selected_game.game_name;
@@ -57,7 +62,13 @@ void handle_backup(const Detection::DetectionResult& result) {
         fs::create_directories(backup_dir / game_backup_dir);
     }
 
-    fs::path zip_name = backup_dir / game_backup_dir / construct_backup_name(selected_game);
+    fs::path zip_name;
+    if(custom_title.empty()) {
+        zip_name = backup_dir / game_backup_dir / construct_backup_name(selected_game);
+    } else {
+        zip_name = backup_dir / game_backup_dir / construct_backup_name(selected_game, custom_title);
+    }
+
     std::string zip_name_utf8 = zip_name.u8string();
     zip_t* archive = zip_open(zip_name_utf8.c_str(), ZIP_CREATE | ZIP_TRUNCATE, &zip_error);
 
