@@ -100,23 +100,6 @@ inline bool download_ubi_translations() {
     );
 }
 
-inline bool config_exists() {
-    if(!fs::exists(backup_dir)) {
-        if(!fs::create_directories(backup_dir)) {
-            return false;
-        }
-    }
-
-    fs::path json_file = config_dir / "gameids.json";
-    if(!fs::exists(json_file)) {
-        if(!download_ubi_translations()) {
-            return false;
-        }
-    }
-
-    return true;
-}
-
 inline void wait_for_key() {
     std::cout << "\nPress any key to continue...";
     std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
