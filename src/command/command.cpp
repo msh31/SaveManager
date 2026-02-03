@@ -1,5 +1,6 @@
 #include "command.hpp"
 #include "../ui/input_validator.hpp"
+#include <filesystem>
 
 void handle_list(const Detection::DetectionResult& result) {
     if(result.games.empty()) {
@@ -50,7 +51,13 @@ void handle_backup(const Detection::DetectionResult& result) {
     //
 
     int zip_error;
-    fs::path zip_name = backup_dir / construct_backup_name(selected_game);
+
+    fs::path game_backup_dir = selected_game.game_name;
+    if(!fs::exists(backup_dir / game_backup_dir)) {
+        fs::create_directories(backup_dir / game_backup_dir);
+    }
+
+    fs::path zip_name = backup_dir / game_backup_dir / construct_backup_name(selected_game);
     std::string zip_name_utf8 = zip_name.u8string();
     zip_t* archive = zip_open(zip_name_utf8.c_str(), ZIP_CREATE | ZIP_TRUNCATE, &zip_error);
 
@@ -113,13 +120,20 @@ void handle_restore(const Detection::DetectionResult& result) {
 
     const auto& selected_game = result.games[selection - 1];
 
+    fs::path game_backup_dir = selected_game.game_name;
+    if(!fs::exists(backup_dir / game_backup_dir)) {
+        std::cerr << COLOR_RED "No backups found for: " << COLOR_RESET << selected_game.game_name << "!\n";
+        return;
+        wait_for_key();
+    }
+
     for (const auto& entry : fs::recursive_directory_iterator(backup_dir)) {
         if (entry.is_regular_file() && entry.path().extension() == ".zip") {
             const auto& full_path = entry.path();
             // std::cout << full_path << "\n";
 
             const std::string fileName = entry.path().filename().string();
-            if (fileName.find(selected_game.game_name) != std::string::npos) {
+            if (fileName.find(space2underscore(selected_game.game_name)) != std::string::npos) {
                 backups.emplace_back(full_path);
             }
         }

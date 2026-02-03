@@ -52,6 +52,7 @@ endif()
 set(savemanager_SOURCES
 	cmake.toml
 	"src/command/command.cpp"
+	"src/config/config.cpp"
 	"src/detection/detection.cpp"
 	"src/main.cpp"
 	"src/ui/input_validator.cpp"

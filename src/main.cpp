@@ -1,12 +1,13 @@
 #include <iostream>
 
+#include "config/config.hpp"
 #include "detection/detection.hpp"
 #include "helpers/utils.hpp"
 #include "command/command.hpp"
 #include "ui/menu.hpp"
 
 int main() {
-    if(!config_exists()) {
+    if(!Config::config_exist()) {
         std::cerr << "Config is missing and could not be generated!\n";
         return 1;
     }

@@ -5,6 +5,7 @@
 #include <ctime>
 #include <string>
 #include <filesystem>
+#include <algorithm>
 
 #include "../detection/detection.hpp"
 
@@ -28,7 +29,7 @@ namespace fs = std::filesystem;
 inline fs::path backup_dir = fs::path(std::getenv("HOME"))
            / ".config"
            / "savemanager"
-           / "backup";
+           / "backups";
 
 inline fs::path config_dir = fs::path(std::getenv("HOME"))
            / ".config"
@@ -36,7 +37,7 @@ inline fs::path config_dir = fs::path(std::getenv("HOME"))
 #elif defined(_WIN32)
 inline fs::path backup_dir = fs::path(std::getenv("APPDATA"))
            / "savemanager"
-           / "backup";
+           / "backups";
 
 inline fs::path config_dir = fs::path(std::getenv("APPDATA"))
            / "savemanager";
@@ -44,13 +45,22 @@ inline fs::path config_dir = fs::path(std::getenv("APPDATA"))
 #error "Unsupported platform"
 #endif
 
+// Source - https://stackoverflow.com/a/5253245
+// Posted by Blastfurnace, modified by community. See post 'Timeline' for change history
+// Retrieved 2026-02-03, License - CC BY-SA 2.5
+inline std::string space2underscore(std::string text) {
+    std::replace(text.begin(), text.end(), ' ', '_');
+    return text;
+}
+
 inline std::string construct_backup_name(const Game& game) {
     auto now = std::time(nullptr);
     auto tm = *std::localtime(&now);
     char time_buf[20];
     std::strftime(time_buf, sizeof(time_buf), "%Y%m%d_%H%M%S", &tm);
+    std::string game_name = space2underscore(game.game_name);
 
-    return "backup_" + game.game_name + "_" + std::string(time_buf) + ".zip";
+    return "backup_" + game_name + "_" + std::string(time_buf) + ".zip";
 }
 
 inline std::string print_title()
@@ -98,23 +108,6 @@ inline bool download_ubi_translations() {
         "https://git.marco007.dev/marco/Ubisoft-Game-Ids/raw/branch/master/gameids.json", 
         output_path.string()
     );
-}
-
-inline bool config_exists() {
-    if(!fs::exists(backup_dir)) {
-        if(!fs::create_directories(backup_dir)) {
-            return false;
-        }
-    }
-
-    fs::path json_file = config_dir / "gameids.json";
-    if(!fs::exists(json_file)) {
-        if(!download_ubi_translations()) {
-            return false;
-        }
-    }
-
-    return true;
 }
 
 inline void wait_for_key() {
