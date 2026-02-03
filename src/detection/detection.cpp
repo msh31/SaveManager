@@ -18,7 +18,9 @@ std::vector<std::string> Detection::get_platform_steam_paths() {
     #endif
     
     #ifdef __APPLE__
-        return "macOS";
+        return {
+            "macOS"
+        };
     #endif
 }
 
