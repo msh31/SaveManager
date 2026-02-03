@@ -133,7 +133,7 @@ void handle_restore(const Detection::DetectionResult& result) {
             // std::cout << full_path << "\n";
 
             const std::string fileName = entry.path().filename().string();
-            if (fileName.find(selected_game.game_name) != std::string::npos) {
+            if (fileName.find(space2underscore(selected_game.game_name)) != std::string::npos) {
                 backups.emplace_back(full_path);
             }
         }
