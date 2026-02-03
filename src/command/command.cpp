@@ -127,15 +127,10 @@ void handle_restore(const Detection::DetectionResult& result) {
         wait_for_key();
     }
 
-    for (const auto& entry : fs::recursive_directory_iterator(backup_dir)) {
+    for (const auto& entry : fs::recursive_directory_iterator(backup_dir / game_backup_dir)) {
         if (entry.is_regular_file() && entry.path().extension() == ".zip") {
             const auto& full_path = entry.path();
-            // std::cout << full_path << "\n";
-
-            const std::string fileName = entry.path().filename().string();
-            if (fileName.find(space2underscore(selected_game.game_name)) != std::string::npos) {
-                backups.emplace_back(full_path);
-            }
+            backups.emplace_back(full_path);
         }
     }
 
