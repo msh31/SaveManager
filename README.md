@@ -21,7 +21,7 @@ cmake --build build
 
 ## Features
 - **Backup and Restore Saves**  
-  Create backups of your savegames and restore them when needed.
+  Create backups of your savegames and restore them when needed, with custom name support!
   
 - **List Saves and Backups**  
   View all available saves and their backups with a simple command.
@@ -29,8 +29,6 @@ cmake --build build
 ### Planned Features
 - **Web sync**  
   Sync save games to your savehub account (seperate wip project)
-- **Custom Save Names**  
-  Give custom names to specific backups of savefiles e.x: "Hardcore-2026-02-02-16-00-00"
 - **Better UX**  
   Current design works, but it could of course be better. Perhaps with a GUI.
 
