@@ -11,12 +11,42 @@ languages = ["CXX"]
 
 # TODO: define a target for each of your executables/libraries like this:
 [target.savemanager]
-type = "executable" # static, shared
-sources = ["src/**.cpp"]
-include-directories = ["external"]
+type = "executable"
+
+sources = [
+    "src/**.cpp",
+
+    # Dear ImGui core
+    "external/imgui/imgui.cpp",
+    "external/imgui/imgui_draw.cpp",
+    "external/imgui/imgui_tables.cpp",
+    "external/imgui/imgui_widgets.cpp",
+
+    # backends
+    "external/imgui/backends/imgui_impl_glfw.cpp",
+    "external/imgui/backends/imgui_impl_opengl3.cpp"
+]
+
+include-directories = [
+    "external",
+    "external/imgui",
+    "external/imgui/backends"
+]
+
 compile-features = ["cxx_std_17"]
-link-libraries = ["$<IF:$<BOOL:${VCPKG_TARGET_TRIPLET}>,libzip::zip,$<IF:$<PLATFORM_ID:Darwin>,${LIBZIP_LIBRARIES},zip>>", "$<IF:$<BOOL:${VCPKG_TARGET_TRIPLET}>,CURL::libcurl,$<IF:$<PLATFORM_ID:Darwin>,${CURL_LIBRARIES},curl>>"]
+
+link-libraries = [
+    "glfw",
+    "OpenGL::GL",
+
+    "$<IF:$<BOOL:${VCPKG_TARGET_TRIPLET}>,libzip::zip,$<IF:$<PLATFORM_ID:Darwin>,${LIBZIP_LIBRARIES},zip>>",
+    "$<IF:$<BOOL:${VCPKG_TARGET_TRIPLET}>,CURL::libcurl,$<IF:$<PLATFORM_ID:Darwin>,${CURL_LIBRARIES},curl>>"
+]
+
 cmake-before = """
+find_package(OpenGL REQUIRED)
+find_package(glfw3 REQUIRED)
+
 if(DEFINED VCPKG_TARGET_TRIPLET)
     find_package(libzip CONFIG REQUIRED)
     find_package(CURL REQUIRED)

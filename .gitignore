@@ -6,4 +6,7 @@ build*/
 cmake-build*/
 CMakeLists.txt.user
 CMakeLists.txt
+
+# other
 leak_check.sh
+*.ini

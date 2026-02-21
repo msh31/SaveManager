@@ -33,6 +33,9 @@ project(SaveManager
 
 # Target: savemanager
 set(CMKR_TARGET savemanager)
+find_package(OpenGL REQUIRED)
+find_package(glfw3 REQUIRED)
+
 if(DEFINED VCPKG_TARGET_TRIPLET)
     find_package(libzip CONFIG REQUIRED)
     find_package(CURL REQUIRED)
@@ -51,8 +54,15 @@ endif()
 
 set(savemanager_SOURCES
 	cmake.toml
+	"external/imgui/backends/imgui_impl_glfw.cpp"
+	"external/imgui/backends/imgui_impl_opengl3.cpp"
+	"external/imgui/imgui.cpp"
+	"external/imgui/imgui_draw.cpp"
+	"external/imgui/imgui_tables.cpp"
+	"external/imgui/imgui_widgets.cpp"
 	"src/command/command.cpp"
 	"src/config/config.cpp"
+	"src/core/backup/backup.cpp"
 	"src/detection/detection.cpp"
 	"src/main.cpp"
 	"src/ui/input_validator.cpp"
@@ -70,9 +80,13 @@ target_compile_features(savemanager PRIVATE
 
 target_include_directories(savemanager PRIVATE
 	external
+	"external/imgui"
+	"external/imgui/backends"
 )
 
 target_link_libraries(savemanager PRIVATE
+	glfw
+	OpenGL::GL
 	"$<IF:$<BOOL:${VCPKG_TARGET_TRIPLET}>,libzip::zip,$<IF:$<PLATFORM_ID:Darwin>,${LIBZIP_LIBRARIES},zip>>"
 	"$<IF:$<BOOL:${VCPKG_TARGET_TRIPLET}>,CURL::libcurl,$<IF:$<PLATFORM_ID:Darwin>,${CURL_LIBRARIES},curl>>"
 )
