@@ -178,6 +178,13 @@ Detection::DetectionResult Detection::find_rsg_saves() {
 
 #ifdef _WIN32
     //TODO
+    Game game;
+    game.type = ROCKSTAR;
+    game.appid = "69";
+    game.save_path = "test";
+    game.game_name = "Red Dead Revolver"; 
+
+    games.push_back(game);
 #endif // _WIN32
     return {found_uuid, games};
 }

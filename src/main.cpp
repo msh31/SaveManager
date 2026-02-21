@@ -20,7 +20,7 @@ int main() {
 
     auto result = Detection::find_saves();
     if(result.games.empty()) {
-        std::cerr << "No Ubisoft savegames found, exiting..\n";
+        std::cerr << "No savegames found, exiting..\n";
         return 1;
     }
 
@@ -89,9 +89,9 @@ int main() {
         glfwPollEvents();
     }
     while(
-    glfwGetKey(window, GLFW_KEY_ESCAPE) != GLFW_PRESS &&
-    glfwWindowShouldClose(window) == 0
-);
+        glfwGetKey(window, GLFW_KEY_ESCAPE) != GLFW_PRESS &&
+        glfwWindowShouldClose(window) == 0
+    );
 
     ImGui_ImplOpenGL3_Shutdown();
     ImGui_ImplGlfw_Shutdown();
