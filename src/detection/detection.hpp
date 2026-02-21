@@ -6,6 +6,8 @@
 #include <fstream>
 #include <iostream>
 
+#include "../ui/input_validator.hpp"
+
 namespace fs = std::filesystem;
 
 enum PlatformType {
@@ -35,6 +37,7 @@ public:
     static std::vector<fs::path> get_library_folders();
     static DetectionResult find_saves();
 
+    static const Game* get_selected_game(const DetectionResult& result);
 private:
     static std::vector<std::string> get_platform_steam_paths();
     static std::optional<fs::path> get_steam_location();

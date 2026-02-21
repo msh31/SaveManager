@@ -120,3 +120,4 @@ inline void wait_for_key() {
     std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
     std::cin.get();
 }
+
