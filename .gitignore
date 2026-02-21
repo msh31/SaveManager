@@ -5,3 +5,5 @@ vcpkg_installed/
 build*/
 cmake-build*/
 CMakeLists.txt.user
+CMakeLists.txt
+leak_check.sh

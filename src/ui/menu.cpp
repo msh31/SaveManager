@@ -28,7 +28,7 @@ int Menu::get_selection() const {
 }
 
 bool Menu::run(const Detection::DetectionResult& context) {
-    std::cout << "\033[2J\033[H";
+    // std::cout << "\033[2J\033[H";
 
     #ifndef _WIN32
     if (!title.empty()) {

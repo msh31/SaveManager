@@ -237,3 +237,25 @@ Detection::DetectionResult Detection::find_saves() {
     result.games.insert(result.games.end(), rsg_result.games.begin(), rsg_result.games.end());
     return result;
 }
+
+const Game* Detection::get_selected_game(const DetectionResult &result) {
+    if(result.games.empty()) {
+        std::cerr << "No Savegames found!\n";
+        wait_for_key();
+        return nullptr;
+    }
+
+    int count = 0;
+    for (const auto& g : result.games) {
+        count += 1;
+        std::cout << count << ". " << COLOR_RED << "Game Name: " << COLOR_RESET << g.game_name << "\n";
+    }
+
+    int selection = get_int(
+        "Select a game (1-" + std::to_string(count) + "): ",
+        1, count
+    );
+
+    return &result.games[selection - 1];
+}
+
