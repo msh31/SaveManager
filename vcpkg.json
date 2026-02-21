@@ -4,7 +4,8 @@
   "$schema": "https://raw.githubusercontent.com/microsoft/vcpkg-tool/main/docs/vcpkg.schema.json",
   "dependencies": [
     "libzip",
-    "curl"
+    "curl",
+    "glfw3"
   ],
   "description": "The definitive local save manager",
   "name": "savemanager",

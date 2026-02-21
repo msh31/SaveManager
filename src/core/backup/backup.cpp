@@ -2,7 +2,8 @@
 
 void Backup::create_backup(const fs::path& name, const Game& selected_game) {
     int zip_error;
-    zip_t* archive = zip_open(name.c_str(), ZIP_CREATE | ZIP_TRUNCATE, &zip_error);
+    std::string utf8_path = name.u8string();
+    zip_t* archive = zip_open(utf8_path.c_str(), ZIP_CREATE | ZIP_TRUNCATE, &zip_error);
 
     if(!archive) {
         std::cout << COLOR_RED << "Could not create backup!\n" << COLOR_RESET;
