@@ -55,6 +55,17 @@ Detection::DetectionResult Detection::find_ubi_saves() {
         for(const auto& entry : fs::directory_iterator(compatdata_path)) {
             fs::path appid_folder = entry.path();
             fs::path ubi_save_path = appid_folder / "pfx/drive_c/Program Files (x86)/Ubisoft/Ubisoft Game Launcher/savegames";
+            fs::path ac_save_path = appid_folder / "pfx/drive_c/users/steamuser/AppData/Roaming/Ubisoft/Assassin's Creed/Saved Games/";
+
+            if(fs::exists(ac_save_path)) {
+                Game game;
+                game.type = UBISOFT;
+                game.appid = "N/A"; //could assign the steamID, but both uplay and steam store that path.. kinda pointless
+                game.game_id = "82";
+                game.save_path = ac_save_path;
+                game.game_name = "Assassin's Creed";
+                games.push_back(game);
+            }
 
             if(fs::exists(ubi_save_path)) {
                 for(const auto& uuid_entry : fs::directory_iterator(ubi_save_path)) {
