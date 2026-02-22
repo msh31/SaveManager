@@ -60,6 +60,7 @@ set(savemanager_SOURCES
 	"external/imgui/backends/imgui_impl_glfw.cpp"
 	"external/imgui/backends/imgui_impl_opengl3.cpp"
 	"external/imgui/imgui.cpp"
+	"external/imgui/imgui_demo.cpp"
 	"external/imgui/imgui_draw.cpp"
 	"external/imgui/imgui_tables.cpp"
 	"external/imgui/imgui_widgets.cpp"
@@ -68,6 +69,7 @@ set(savemanager_SOURCES
 	"src/core/backup/backup.cpp"
 	"src/core/ui/input_validator.cpp"
 	"src/core/ui/menu.cpp"
+	"src/core/ui/tabs/tabs.cpp"
 	"src/detection/detection.cpp"
 	"src/main.cpp"
 )
