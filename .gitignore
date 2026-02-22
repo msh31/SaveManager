@@ -10,3 +10,5 @@ CMakeLists.txt
 # other
 leak_check.sh
 *.ini
+*.ttf
+*.json

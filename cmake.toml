@@ -1,36 +1,35 @@
-# Reference: https://build-cpp.github.io/cmkr/cmake-toml
+# Reference: https://cmkr.build/cmake-toml
 [cmake]
 version = "4.0.0"
 cmkr-include = "cmkr.cmake"
 
 [project]
 name = "SaveManager"
-# version = "1.0.0"
 description = "The definitive local save manager"
 languages = ["CXX"]
 
-# TODO: define a target for each of your executables/libraries like this:
+[variables]
+CMAKE_EXPORT_COMPILE_COMMANDS = true
+
 [target.savemanager]
 type = "executable"
 
 sources = [
     "src/**.cpp",
 
-    # Dear ImGui core
+    # Dear ImGui
     "external/imgui/imgui.cpp",
     "external/imgui/imgui_draw.cpp",
     "external/imgui/imgui_tables.cpp",
     "external/imgui/imgui_widgets.cpp",
-
-    # backends
     "external/imgui/backends/imgui_impl_glfw.cpp",
-    "external/imgui/backends/imgui_impl_opengl3.cpp"
+    "external/imgui/backends/imgui_impl_opengl3.cpp",
 ]
 
 include-directories = [
     "external",
     "external/imgui",
-    "external/imgui/backends"
+    "external/imgui/backends",
 ]
 
 compile-features = ["cxx_std_17"]
@@ -38,9 +37,8 @@ compile-features = ["cxx_std_17"]
 link-libraries = [
     "glfw",
     "OpenGL::GL",
-
     "$<IF:$<BOOL:${VCPKG_TARGET_TRIPLET}>,libzip::zip,$<IF:$<PLATFORM_ID:Darwin>,${LIBZIP_LIBRARIES},zip>>",
-    "$<IF:$<BOOL:${VCPKG_TARGET_TRIPLET}>,CURL::libcurl,$<IF:$<PLATFORM_ID:Darwin>,${CURL_LIBRARIES},curl>>"
+    "$<IF:$<BOOL:${VCPKG_TARGET_TRIPLET}>,CURL::libcurl,$<IF:$<PLATFORM_ID:Darwin>,${CURL_LIBRARIES},curl>>",
 ]
 
 cmake-before = """
