@@ -16,6 +16,14 @@
 #include "core/ui/fonts/jbm_med.h"
 #include "core/ui/fonts/jbm_bold.h"
 
+struct Fonts {
+    ImFont* regular;
+    ImFont* medium;
+    ImFont* bold;
+
+    ImFont* title;
+};
+
 int main() {
     if(!Config::config_exist()) {
         std::cerr << "Config is missing and could not be generated!\n";
@@ -53,18 +61,17 @@ int main() {
     io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
 
     float title_fsize = 32.0f, gen_fsize = 20.0f, subt_fsize = 22.0f;
-    ImFontConfig cfg_reg;
+    ImFontConfig cfg_reg, cfg_med, cfg_bold;
+    Fonts fonts;
+
     cfg_reg.FontDataOwnedByAtlas = false;
-    ImFont* font_reg = io.Fonts->AddFontFromMemoryTTF((void*)jbm_reg, jbm_reg_len, gen_fsize, &cfg_reg);
-    ImFont* font_title = io.Fonts->AddFontFromMemoryTTF((void*)jbm_reg, jbm_reg_len, title_fsize, &cfg_reg);
-
-    ImFontConfig cfg_med;
     cfg_med.FontDataOwnedByAtlas = false;
-    ImFont* font_med = io.Fonts->AddFontFromMemoryTTF((void*)jbm_med, jbm_med_len, gen_fsize, &cfg_med);
-
-    ImFontConfig cfg_bold;
     cfg_bold.FontDataOwnedByAtlas = false;
-    ImFont* font_bold = io.Fonts->AddFontFromMemoryTTF((void*)jbm_bold, jbm_bold_len, gen_fsize, &cfg_bold);
+
+    fonts.regular = io.Fonts->AddFontFromMemoryTTF((void*)jbm_reg, jbm_reg_len, gen_fsize, &cfg_reg);
+    fonts.title = io.Fonts->AddFontFromMemoryTTF((void*)jbm_reg, jbm_reg_len, title_fsize, &cfg_reg);
+    fonts.medium = io.Fonts->AddFontFromMemoryTTF((void*)jbm_med, jbm_med_len, gen_fsize, &cfg_med);
+    fonts.bold = io.Fonts->AddFontFromMemoryTTF((void*)jbm_bold, jbm_bold_len, gen_fsize, &cfg_bold);
 
     ImGui_ImplGlfw_InitForOpenGL(window, true);
     ImGui_ImplOpenGL3_Init();
@@ -98,15 +105,15 @@ int main() {
 
         ImGui::BeginChild("HostSetupPanel", ImVec2(panelWidth, panelHeight), true, ImGuiChildFlags_AlwaysUseWindowPadding);
 
-        ImGui::PushFont(font_title);
+        ImGui::PushFont(fonts.title);
         ImGui::Text("SaveManager");
         ImGui::SameLine();
         ImGui::PopFont();
-        ImGui::PushFont(font_med);
+        ImGui::PushFont(fonts.medium);
         ImGui::Text(" | The definitive local save manager");
         ImGui::PopFont();
 
-        ImGui::PushFont(font_med);
+        ImGui::PushFont(fonts.regular);
         ImGui::Text("some text to fill the space");
         ImGui::PopFont();
         ImGui::Separator();
