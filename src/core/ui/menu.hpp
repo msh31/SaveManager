@@ -3,7 +3,7 @@
 #include <string>
 #include <vector>
 #include <functional>
-#include "../detection/detection.hpp"
+#include "../../detection/detection.hpp"
 
 struct MenuItem {
     std::string label;

@@ -4,13 +4,17 @@
 #include "detection/detection.hpp"
 #include "helpers/utils.hpp"
 #include "command/command.hpp"
-#include "ui/menu.hpp"
+#include "core/ui/menu.hpp"
 
 #include "imgui.h"
 #include "imgui_impl_glfw.h"
 #include "imgui_impl_opengl3.h"
 #include <GLFW/glfw3.h>
 #include <GL/gl.h>
+
+#include "core/ui/fonts/jbm_reg.h"
+#include "core/ui/fonts/jbm_med.h"
+#include "core/ui/fonts/jbm_bold.h"
 
 int main() {
     if(!Config::config_exist()) {
@@ -29,13 +33,13 @@ int main() {
         return 1;
     }
 
-    GLFWwindow* window = glfwCreateWindow(1280, 720, "SaveManager", nullptr, nullptr);
-    glfwMakeContextCurrent(window);
-    glfwSwapInterval(1);
     glfwWindowHint(GLFW_SAMPLES, 4); // 4x antialiasing
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE); // no old OpenGL
+    
+    GLFWwindow* window = glfwCreateWindow(1280, 720, "SaveManager", nullptr, nullptr);
+    glfwSwapInterval(1);
 
     if(window == nullptr) {
         std::cerr << "Failed to create GLFW window. OpenGL 3.3 support is required!\n";
@@ -44,6 +48,23 @@ int main() {
     }
     glfwMakeContextCurrent(window);
     ImGui::CreateContext();
+
+    ImGuiIO& io = ImGui::GetIO();
+    io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
+
+    float title_fsize = 32.0f, gen_fsize = 20.0f, subt_fsize = 22.0f;
+    ImFontConfig cfg_reg;
+    cfg_reg.FontDataOwnedByAtlas = false;
+    ImFont* font_reg = io.Fonts->AddFontFromMemoryTTF((void*)jbm_reg, jbm_reg_len, gen_fsize, &cfg_reg);
+    ImFont* font_title = io.Fonts->AddFontFromMemoryTTF((void*)jbm_reg, jbm_reg_len, title_fsize, &cfg_reg);
+
+    ImFontConfig cfg_med;
+    cfg_med.FontDataOwnedByAtlas = false;
+    ImFont* font_med = io.Fonts->AddFontFromMemoryTTF((void*)jbm_med, jbm_med_len, gen_fsize, &cfg_med);
+
+    ImFontConfig cfg_bold;
+    cfg_bold.FontDataOwnedByAtlas = false;
+    ImFont* font_bold = io.Fonts->AddFontFromMemoryTTF((void*)jbm_bold, jbm_bold_len, gen_fsize, &cfg_bold);
 
     ImGui_ImplGlfw_InitForOpenGL(window, true);
     ImGui_ImplOpenGL3_Init();
@@ -77,7 +98,17 @@ int main() {
 
         ImGui::BeginChild("HostSetupPanel", ImVec2(panelWidth, panelHeight), true, ImGuiChildFlags_AlwaysUseWindowPadding);
 
+        ImGui::PushFont(font_title);
         ImGui::Text("SaveManager");
+        ImGui::SameLine();
+        ImGui::PopFont();
+        ImGui::PushFont(font_med);
+        ImGui::Text(" | The definitive local save manager");
+        ImGui::PopFont();
+
+        ImGui::PushFont(font_med);
+        ImGui::Text("some text to fill the space");
+        ImGui::PopFont();
         ImGui::Separator();
         ImGui::Dummy(ImVec2(0, 15));
         ImGui::EndChild();

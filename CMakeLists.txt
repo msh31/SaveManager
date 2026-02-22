@@ -66,10 +66,10 @@ set(savemanager_SOURCES
 	"src/command/command.cpp"
 	"src/config/config.cpp"
 	"src/core/backup/backup.cpp"
+	"src/core/ui/input_validator.cpp"
+	"src/core/ui/menu.cpp"
 	"src/detection/detection.cpp"
 	"src/main.cpp"
-	"src/ui/input_validator.cpp"
-	"src/ui/menu.cpp"
 )
 
 add_executable(savemanager)

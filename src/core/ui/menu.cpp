@@ -2,7 +2,7 @@
 
 #include "menu.hpp"
 #include "input_validator.hpp"
-#include "../helpers/utils.hpp"
+#include "../../helpers/utils.hpp"
 
 Menu::Menu(const std::string& title) : title(title) {}
 

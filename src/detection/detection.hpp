@@ -6,7 +6,7 @@
 #include <fstream>
 #include <iostream>
 
-#include "../ui/input_validator.hpp"
+#include "../core/ui/input_validator.hpp"
 
 namespace fs = std::filesystem;
 

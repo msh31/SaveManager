@@ -6,6 +6,7 @@ build*/
 cmake-build*/
 CMakeLists.txt.user
 CMakeLists.txt
+*.cache/
 
 # other
 leak_check.sh
