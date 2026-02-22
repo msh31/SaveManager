@@ -5,6 +5,7 @@
 #include "helpers/utils.hpp"
 #include "command/command.hpp"
 #include "core/ui/menu.hpp"
+#include "core/ui/tabs/tabs.hpp"
 
 #include "imgui.h"
 #include "imgui_impl_glfw.h"
@@ -15,14 +16,7 @@
 #include "core/ui/fonts/jbm_reg.h"
 #include "core/ui/fonts/jbm_med.h"
 #include "core/ui/fonts/jbm_bold.h"
-
-struct Fonts {
-    ImFont* regular;
-    ImFont* medium;
-    ImFont* bold;
-
-    ImFont* title;
-};
+#include "core/globals.hpp"
 
 int main() {
     if(!Config::config_exist()) {
@@ -45,7 +39,7 @@ int main() {
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE); // no old OpenGL
-    
+
     GLFWwindow* window = glfwCreateWindow(1280, 720, "SaveManager", nullptr, nullptr);
     glfwSwapInterval(1);
 
@@ -76,6 +70,7 @@ int main() {
     ImGui_ImplGlfw_InitForOpenGL(window, true);
     ImGui_ImplOpenGL3_Init();
 
+    bool show_demo_window = true;
     do{
         glClear(GL_COLOR_BUFFER_BIT);
 
@@ -97,13 +92,9 @@ int main() {
 
         ImGui::Begin("Main Window", nullptr, window_flags);
 
-        float panelWidth = ImGui::GetContentRegionAvail().x * 1.0f;
-        float panelHeight = ImGui::GetContentRegionAvail().y * 1.0f;
-
-        ImGui::SetCursorPosX((ImGui::GetContentRegionAvail().x - panelWidth) * 0.5f);
-        ImGui::SetCursorPosY((ImGui::GetContentRegionAvail().y - panelHeight) * 0.5f);
-
-        ImGui::BeginChild("HostSetupPanel", ImVec2(panelWidth, panelHeight), true, ImGuiChildFlags_AlwaysUseWindowPadding);
+        if(show_demo_window) {
+            ImGui::ShowDemoWindow(&show_demo_window);
+        } 
 
         ImGui::PushFont(fonts.title);
         ImGui::Text("SaveManager");
@@ -117,8 +108,27 @@ int main() {
         ImGui::Text("some text to fill the space");
         ImGui::PopFont();
         ImGui::Separator();
-        ImGui::Dummy(ImVec2(0, 15));
-        ImGui::EndChild();
+
+        ImGui::AlignTextToFramePadding();
+
+        static ImGuiTabBarFlags tab_bar_flags = ImGuiTabBarFlags_Reorderable | ImGuiTabBarFlags_DrawSelectedOverline;
+        if (ImGui::BeginTabBar("MyTabBar", tab_bar_flags)) {
+            if (ImGui::BeginTabItem("General"))  {
+                Tabs::render_general_tab(fonts, result);
+                ImGui::EndTabItem();
+            }
+            if (ImGui::BeginTabItem("Log"))  {
+                Tabs::render_log_tab(fonts);
+                ImGui::EndTabItem();
+            }
+            if (ImGui::BeginTabItem("About"))  {
+                Tabs::render_about_tab(fonts);
+                ImGui::EndTabItem();
+            }
+
+            ImGui::EndTabBar();
+        }
+        ImGui::Separator();
 
         ImGui::End();
         ImGui::Render();
@@ -127,9 +137,9 @@ int main() {
         glfwPollEvents();
     }
     while(
-        glfwGetKey(window, GLFW_KEY_ESCAPE) != GLFW_PRESS &&
-        glfwWindowShouldClose(window) == 0
-    );
+glfwGetKey(window, GLFW_KEY_ESCAPE) != GLFW_PRESS &&
+glfwWindowShouldClose(window) == 0
+);
 
     ImGui_ImplOpenGL3_Shutdown();
     ImGui_ImplGlfw_Shutdown();
