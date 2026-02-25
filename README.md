@@ -3,8 +3,7 @@ A lightweight and efficient savegame manager to help you manage your game saves 
 
 <p>
 <img src="https://img.shields.io/badge/Windows-0078D6?style=for-the-badge&logo=windows&logoColor=white" alt="Windows"/>
-<img src="https://img.shields.io/badge/Linux-FCC624?style=for-the-badge&logo=linux&logoColor=black" alt="MacOS"/>
-<img src="https://img.shields.io/badge/MacOS-f0f0f0?logo=apple&logoColor=black&style=for-the-badge" alt="MacOS"/> 
+<img src="https://img.shields.io/badge/Linux-FCC624?style=for-the-badge&logo=linux&logoColor=black" alt="Linux"/>
 </p>
 
 ---
@@ -12,25 +11,16 @@ A lightweight and efficient savegame manager to help you manage your game saves 
 ## Under Construction
 This project is still under development, and features may be subject to change. 
 
-#### Where's the download?
-Currently there is only some linux binaries, but you can easily compile this project for yourself like so;
-```bash
-cmake -B build
-cmake --build build
-```
-
-## Features
-- **Backup and Restore Saves**  
+## Features (working)
+- **Backup and Restore**  
   Create backups of your savegames and restore them when needed, with custom name support!
   
-- **List Saves and Backups**  
-  View all available saves and their backups with a simple command.
+- **Listing**  
+  View all available saves and their backups
 
 ### Planned Features
 - **Web sync**  
   Sync save games to your savehub account (seperate wip project)
-- **Better UX**  
-  Current design works, but it could of course be better. Perhaps with a GUI.
 
 ## Support Platforms
 - Ubisoft 
