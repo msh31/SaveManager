@@ -53,18 +53,20 @@ int main() {
     ImGuiIO& io = ImGui::GetIO();
     io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
 
-    float title_fsize = 32.0f, gen_fsize = 20.0f, subt_fsize = 22.0f;
-    ImFontConfig cfg_reg, cfg_med, cfg_bold;
+    float title_fsize = 34.0f, gen_fsize = 20.0f, subt_fsize = 22.0f, head_fsize = 28.0f;
+    ImFontConfig cfg_reg, cfg_med, cfg_bold, cfg_head;
     Fonts fonts;
 
     cfg_reg.FontDataOwnedByAtlas = false;
     cfg_med.FontDataOwnedByAtlas = false;
     cfg_bold.FontDataOwnedByAtlas = false;
+    cfg_head.FontDataOwnedByAtlas = false;
 
     fonts.regular = io.Fonts->AddFontFromMemoryTTF((void*)jbm_reg, jbm_reg_len, gen_fsize, &cfg_reg);
     fonts.title = io.Fonts->AddFontFromMemoryTTF((void*)jbm_reg, jbm_reg_len, title_fsize, &cfg_reg);
     fonts.medium = io.Fonts->AddFontFromMemoryTTF((void*)jbm_med, jbm_med_len, gen_fsize, &cfg_med);
     fonts.bold = io.Fonts->AddFontFromMemoryTTF((void*)jbm_bold, jbm_bold_len, gen_fsize, &cfg_bold);
+    fonts.header = io.Fonts->AddFontFromMemoryTTF((void*)jbm_reg, jbm_reg_len, head_fsize, &cfg_head);
 
     ImGui_ImplGlfw_InitForOpenGL(window, true);
     ImGui_ImplOpenGL3_Init();

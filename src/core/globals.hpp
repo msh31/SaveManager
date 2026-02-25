@@ -7,4 +7,5 @@ struct Fonts {
     ImFont* bold;
 
     ImFont* title;
+    ImFont* header;
 };

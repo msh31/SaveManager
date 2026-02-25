@@ -2,13 +2,28 @@
 #include "imgui.h"
 
 void Tabs::render_general_tab(const Fonts& fonts, const Detection::DetectionResult& result) {
-    ImGui::Text("test");
+    ImGui::PushFont(fonts.header);
+    ImGui::Text("Detected Games");
+    ImGui::PopFont();
 
     if(!result.games.empty()) {
         for (const auto& game : result.games) {
-            ImGui::BeginChild(game.game_name.c_str(), ImVec2(200, 150), true);
+            ImGui::BeginChild(game.game_name.c_str(), ImVec2(250, 300), true);
             ImGui::Text("%s", game.game_name.c_str());
-            // buttons etc
+            ImGui::Separator();
+
+
+
+            ImGui::Dummy(ImVec2(0.0f, 222.0f));
+
+            if(ImGui::Button("Backup")) {
+                std::cout << "creating backup of: " << game.game_name.c_str() << "!\n";
+            }
+            ImGui::SameLine();
+            if(ImGui::Button("Restore")) {
+                std::cout << "restoring backup of: " << game.game_name.c_str() << "!\n";
+            }
+
             ImGui::EndChild();
             ImGui::SameLine(); 
         }
