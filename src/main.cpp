@@ -26,8 +26,7 @@ int main() {
 
     auto result = Detection::find_saves();
     if(result.games.empty()) {
-        std::cerr << "No savegames found, exiting..\n";
-        return 1;
+        std::cerr << "No savegames found!\n";
     }
 
     if(!glfwInit()) {
@@ -137,7 +136,7 @@ int main() {
         glfwPollEvents();
     }
     while(
-glfwGetKey(window, GLFW_KEY_ESCAPE) != GLFW_PRESS &&
+glfwGetKey(window, GLFW_KEY_Q) != GLFW_PRESS &&
 glfwWindowShouldClose(window) == 0
 );
 
