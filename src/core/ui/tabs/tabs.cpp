@@ -1,7 +1,7 @@
 #include "tabs.hpp"
 #include "imgui.h"
 
-void Tabs::render_general_tab(const Fonts& fonts, const Detection::DetectionResult& result) {
+void Tabs::render_general_tab(const Fonts& fonts, const Detection::DetectionResult& result, GLuint texture_id) {
     ImGui::PushFont(fonts.header);
     ImGui::Text("Detected Games");
     ImGui::PopFont();
@@ -12,9 +12,9 @@ void Tabs::render_general_tab(const Fonts& fonts, const Detection::DetectionResu
             ImGui::Text("%s", game.game_name.c_str());
             ImGui::Separator();
 
-
-
-            ImGui::Dummy(ImVec2(0.0f, 222.0f));
+            ImGui::Dummy(ImVec2(0.0f, 8.0f));
+            ImGui::Image((ImTextureID)(intptr_t)texture_id, ImVec2(300, 200));
+            ImGui::Dummy(ImVec2(0.0f, 8.0f));
 
             if(ImGui::Button("Backup")) {
                 std::cout << "creating backup of: " << game.game_name.c_str() << "!\n";
@@ -41,3 +41,4 @@ void Tabs::render_about_tab(const Fonts& fonts) {
     ImGui::Text("SaveManager");
     ImGui::PopFont();
 }
+

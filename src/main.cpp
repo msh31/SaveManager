@@ -2,10 +2,9 @@
 
 #include "config/config.hpp"
 #include "detection/detection.hpp"
-#include "helpers/utils.hpp"
-#include "command/command.hpp"
-#include "core/ui/menu.hpp"
 #include "core/ui/tabs/tabs.hpp"
+#include "helpers/textures.hpp"
+#include "core/globals.hpp"
 
 #include "imgui.h"
 #include "imgui_impl_glfw.h"
@@ -16,7 +15,7 @@
 #include "core/ui/fonts/jbm_reg.h"
 #include "core/ui/fonts/jbm_med.h"
 #include "core/ui/fonts/jbm_bold.h"
-#include "core/globals.hpp"
+#include "core/ui/img/placeholder_img.h"
 
 int main() {
     if(!Config::config_exist()) {
@@ -71,6 +70,11 @@ int main() {
     ImGui_ImplGlfw_InitForOpenGL(window, true);
     ImGui_ImplOpenGL3_Init();
 
+    GLuint placeholder_texture = 0;
+    int tex_w = 0, tex_h = 0;
+    // LoadTextureFromFile("assets/placeholder.png", &placeholder_texture, &tex_w, &tex_h);
+    LoadTextureFromMemory((void*)placeholder_png, placeholder_png_len, &placeholder_texture, &tex_w, &tex_h);
+
     bool show_demo_window = true;
     do{
         glClear(GL_COLOR_BUFFER_BIT);
@@ -115,7 +119,7 @@ int main() {
         static ImGuiTabBarFlags tab_bar_flags = ImGuiTabBarFlags_Reorderable | ImGuiTabBarFlags_DrawSelectedOverline;
         if (ImGui::BeginTabBar("MyTabBar", tab_bar_flags)) {
             if (ImGui::BeginTabItem("General"))  {
-                Tabs::render_general_tab(fonts, result);
+                Tabs::render_general_tab(fonts, result, placeholder_texture);
                 ImGui::EndTabItem();
             }
             if (ImGui::BeginTabItem("Log"))  {

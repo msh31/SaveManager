@@ -13,3 +13,5 @@ leak_check.sh
 *.ini
 *.ttf
 *.json
+*.png
+*.jpeg
