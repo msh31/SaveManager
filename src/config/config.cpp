@@ -1,5 +1,3 @@
-
-
 #include "config.hpp"
 
 bool Config::config_exist() {
