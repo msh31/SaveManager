@@ -33,7 +33,7 @@ int main() {
         return 1;
     }
 
-    glfwWindowHint(GLFW_SAMPLES, 4); // 4x antialiasing
+    glfwWindowHint(GLFW_SAMPLES, 4); // 4x antialiasing (MSAA)
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE); // no old OpenGL
@@ -75,7 +75,7 @@ int main() {
     // LoadTextureFromFile("assets/placeholder.png", &placeholder_texture, &tex_w, &tex_h);
     LoadTextureFromMemory((void*)placeholder_png, placeholder_png_len, &placeholder_texture, &tex_w, &tex_h);
 
-    bool show_demo_window = true;
+    bool show_demo_window = false;
     do{
         glClear(GL_COLOR_BUFFER_BIT);
 
@@ -151,15 +151,5 @@ glfwWindowShouldClose(window) == 0
     ImGui::DestroyContext();
     glfwDestroyWindow(window);
     glfwTerminate();
-
-    // Menu main_menu("Save Manager");
-    // main_menu.add_item("List games", handle_list);
-    // main_menu.add_item("Backup", handle_backup);
-    // main_menu.add_item("Restore", handle_restore);
-    // main_menu.add_exit_item("Quit");
-    //
-    // while(main_menu.run(result)) {
-    //
-    // }
     return 0;
 }
