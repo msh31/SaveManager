@@ -1,9 +1,10 @@
 #include <iostream>
 
-#include "config/config.hpp"
-#include "detection/detection.hpp"
+#include "core/config/config.hpp"
+#include "core/detection/detection.hpp"
+#include "core/helpers/textures.hpp"
 #include "core/ui/tabs/tabs.hpp"
-#include "helpers/textures.hpp"
+// #include "core/helpers/textures.hpp"
 #include "core/globals.hpp"
 
 #include "imgui.h"

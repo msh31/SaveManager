@@ -31,6 +31,7 @@ include-directories = [
     "external",
     "external/imgui",
     "external/imgui/backends",
+    "src",
 ]
 
 compile-features = ["cxx_std_17"]

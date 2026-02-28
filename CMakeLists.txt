@@ -64,11 +64,10 @@ set(savemanager_SOURCES
 	"external/imgui/imgui_draw.cpp"
 	"external/imgui/imgui_tables.cpp"
 	"external/imgui/imgui_widgets.cpp"
-	"src/config/config.cpp"
-	"src/core/backup/backup.cpp"
+	"src/core/config/config.cpp"
+	"src/core/detection/detection.cpp"
 	"src/core/features/features.cpp"
 	"src/core/ui/tabs/tabs.cpp"
-	"src/detection/detection.cpp"
 	"src/main.cpp"
 )
 
@@ -85,6 +84,7 @@ target_include_directories(savemanager PRIVATE
 	external
 	"external/imgui"
 	"external/imgui/backends"
+	src
 )
 
 target_link_libraries(savemanager PRIVATE

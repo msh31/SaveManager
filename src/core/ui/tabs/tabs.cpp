@@ -1,8 +1,8 @@
 #include "tabs.hpp"
+#include "core/features/features.hpp"
+#include "core/helpers/utils.hpp"
+
 #include "imgui.h"
-#include "../src/core/features/features.hpp"
-#include "../src/core/backup/backup.hpp"
-#include "imgui_internal.h"
 
 bool open_restore_modal = false;
 std::vector<fs::path> backups;
@@ -48,7 +48,7 @@ void Tabs::render_general_tab(const Fonts& fonts, const Detection::DetectionResu
         if(open_restore_modal) {
             ImGui::OpenPopup("Restore Backup");
             open_restore_modal = false;
-            backups = get_backups(*pending_restore_game); 
+            backups = Features::get_backups(*pending_restore_game); 
             if(backups.empty()) {
                 open_restore_modal = false;
             }
@@ -65,7 +65,7 @@ void Tabs::render_general_tab(const Fonts& fonts, const Detection::DetectionResu
             }
 
             if(ImGui::Button("Restore") && !backups.empty()) {
-                Backup::restore_backup(backups[selected_backup_idx], *pending_restore_game);
+                Features::restore_backup(backups[selected_backup_idx], *pending_restore_game);
                 ImGui::CloseCurrentPopup();
                 open_restore_modal = false;
             }

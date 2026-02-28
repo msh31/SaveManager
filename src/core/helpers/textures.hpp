@@ -55,3 +55,10 @@ inline bool LoadTextureFromFile(const char* file_name, GLuint* out_texture, int*
     IM_FREE(file_data);
     return ret;
 }
+
+// inline bool does_texture_exist(int app_id) {
+// //https://cdn.cloudflare.steamstatic.com/steam/apps/{appid}/header.jpg
+//
+//
+//     return false;
+// }

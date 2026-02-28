@@ -1,6 +1,6 @@
 #pragma once
-#include "../../globals.hpp"
-#include "../../../detection/detection.hpp"
+#include "core/globals.hpp"
+#include "core/detection/detection.hpp"
 #include <GL/gl.h>
 
 namespace Tabs {

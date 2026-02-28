@@ -1,7 +1,7 @@
 #include <filesystem>
 
 #include "detection.hpp"
-#include "../helpers/ubi_name_translations.hpp"
+#include "core/helpers/ubi_name_translations.hpp"
 
 std::vector<std::string> Detection::get_platform_steam_paths() {
     #ifdef __linux__

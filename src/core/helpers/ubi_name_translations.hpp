@@ -5,7 +5,7 @@
 #include <iostream>
 
 #include "../../external/json.hpp"
-#include "utils.hpp"
+#include "core/helpers/paths.hpp"
 
 using json = nlohmann::json;
 
