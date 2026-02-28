@@ -1,9 +1,13 @@
 #include "tabs.hpp"
 #include "imgui.h"
-#include "../src/helpers/utils.hpp"
+#include "../src/core/features/features.hpp"
 #include "../src/core/backup/backup.hpp"
+#include "imgui_internal.h"
 
-#include <filesystem>
+bool open_restore_modal = false;
+std::vector<fs::path> backups;
+const Game* pending_restore_game = nullptr;
+int selected_backup_idx = 0;
 
 void Tabs::render_general_tab(const Fonts& fonts, const Detection::DetectionResult& result, GLuint texture_id) {
     ImGui::PushFont(fonts.header);
@@ -28,30 +32,50 @@ void Tabs::render_general_tab(const Fonts& fonts, const Detection::DetectionResu
             ImGui::Dummy(ImVec2(0.0f, 8.0f));
 
             if(ImGui::Button("Backup")) {
-                std::cout << "creating backup of: " << game.game_name.c_str() << "!\n";
-
-                fs::path game_backup_dir = game.game_name;
-                if(!fs::exists(backup_dir / game_backup_dir)) {
-                    fs::create_directories(backup_dir / game_backup_dir);
-                }
-
-                fs::path zip_name = backup_dir / game_backup_dir / construct_backup_name(game);
-
-                Backup::create_backup(zip_name, game);
+                Features::backup_game(game);
             }
             ImGui::SameLine();
             if(ImGui::Button("Restore")) {
-                if(fs::is_empty(backup_dir)) {
-                    std::cerr << "No backups were found! Create some first...\n";
-                    return;
-                }
-
-                std::cout << "This feature still needs porting over to the GUI version..\n";
-                // std::cout << "restoring backup of: " << game.game_name.c_str() << "!\n";
+                pending_restore_game = &game;
+                open_restore_modal = true;
+                // Features::restore_game_backup(game);
             }
 
             ImGui::EndChild();
             ImGui::SameLine(); 
+        }
+
+        if(open_restore_modal) {
+            ImGui::OpenPopup("Restore Backup");
+            open_restore_modal = false;
+            backups = get_backups(*pending_restore_game); 
+            if(backups.empty()) {
+                open_restore_modal = false;
+            }
+        }
+
+        if(ImGui::BeginPopupModal("Restore Backup", nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
+            if(ImGui::BeginListBox("##backups")) {
+                for(int i = 0; i < backups.size(); i++) {
+                    if(ImGui::Selectable(backups[i].filename().string().c_str(), selected_backup_idx == i)) {
+                        selected_backup_idx = i;
+                    }
+                }
+                ImGui::EndListBox();
+            }
+
+            if(ImGui::Button("Restore") && !backups.empty()) {
+                Backup::restore_backup(backups[selected_backup_idx], *pending_restore_game);
+                ImGui::CloseCurrentPopup();
+                open_restore_modal = false;
+            }
+            ImGui::SameLine();
+            if(ImGui::Button("Cancel")) {
+                ImGui::CloseCurrentPopup();
+                pending_restore_game = nullptr;
+                open_restore_modal = false;
+            }
+            ImGui::EndPopup();
         }
     } else {
         ImGui::Text("None of the supported games were found on your system!");
@@ -59,7 +83,7 @@ void Tabs::render_general_tab(const Fonts& fonts, const Detection::DetectionResu
 }
 
 void Tabs::render_log_tab(const Fonts& fonts) {
-
+    ImGui::Text("the log tab");
 }
 
 void Tabs::render_about_tab(const Fonts& fonts) {

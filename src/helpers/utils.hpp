@@ -123,8 +123,21 @@ inline bool download_ubi_translations() {
     );
 }
 
-inline void wait_for_key() {
-    std::cout << "\nPress any key to continue...";
-    std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-    std::cin.get();
+inline std::vector<fs::path> get_backups(const Game& game) {
+    std::vector<fs::path> backups;
+    fs::path game_backup_dir = backup_dir / game.game_name;
+
+    if(!fs::exists(game_backup_dir)) {
+        std::cerr << "No backups found for: " << game.game_name << "!\n";
+        return {};
+    }
+
+    for (const auto& entry : fs::recursive_directory_iterator(game_backup_dir)) {
+        if (entry.is_regular_file() && entry.path().extension() == ".zip") {
+            const auto& full_path = entry.path();
+            backups.emplace_back(full_path);
+        }
+    }
+
+    return backups;
 }

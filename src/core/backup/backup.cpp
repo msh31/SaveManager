@@ -43,7 +43,6 @@ void Backup::restore_backup(const fs::path& name, const Game& selected_game) {
 
     if(!archive) {
         std::cout << COLOR_RED << "Could not open backup for restoration process!\n" << COLOR_RESET;
-        wait_for_key();
         return;
     }
 
@@ -81,7 +80,6 @@ void Backup::restore_backup(const fs::path& name, const Game& selected_game) {
         std::cerr << COLOR_RED << "Failed to restore:\n" << COLOR_RESET;
         for (const auto& f : failed_files) {
             std::cerr << "  - " << f << "\n";
-            wait_for_key();
         }
     } else {
         std::cout << "\nbackup for: " << selected_game.game_name << " has been restored!\n";
