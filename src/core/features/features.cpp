@@ -16,7 +16,6 @@ void Features::backup_game(const Game& game) {
     create_backup(zip_name, game);
 }
 
-
 std::vector<fs::path> Features::get_backups(const Game& game) {
     std::vector<fs::path> backups;
     fs::path game_backup_dir = backup_dir / game.game_name;
@@ -43,7 +42,7 @@ void Features::create_backup(const fs::path& name, const Game& selected_game) {
     zip_t* archive = zip_open(utf8_path.c_str(), ZIP_CREATE | ZIP_TRUNCATE, &zip_error);
 
     if(!archive) {
-        std::cout << COLOR_RED << "Could not create backup!\n" << COLOR_RESET;
+        std::cout << "Could not create backup!\n";
         return;
     }
 
@@ -79,7 +78,7 @@ void Features::restore_backup(const fs::path& name, const Game& selected_game) {
     zip_t* archive = zip_open(selected_backup_utf8.c_str(), 0, &zip_error);
 
     if(!archive) {
-        std::cout << COLOR_RED << "Could not open backup for restoration process!\n" << COLOR_RESET;
+        std::cout << "Could not open backup for restoration process!\n";
         return;
     }
 
@@ -114,7 +113,7 @@ void Features::restore_backup(const fs::path& name, const Game& selected_game) {
 
     zip_close(archive);
     if (!failed_files.empty()) {
-        std::cerr << COLOR_RED << "Failed to restore:\n" << COLOR_RESET;
+        std::cerr << "Failed to restore:\n";
         for (const auto& f : failed_files) {
             std::cerr << "  - " << f << "\n";
         }
