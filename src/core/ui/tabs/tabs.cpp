@@ -17,18 +17,22 @@ void Tabs::render_general_tab(const Fonts& fonts, const Detection::DetectionResu
     int count = 0;
     if(!result.games.empty()) {
         for (const auto& game : result.games) {
-            if(count > 5) {
+            if(count >= 5) {
                 ImGui::NewLine();
                 count = 0;
             }
 
+            if(count > 0) {
+                ImGui::SameLine(0.0f, 10.0f);
+            }
+
             count++;
             ImGui::BeginChild(game.game_name.c_str(), ImVec2(250, 300), true);
-            ImGui::Text("%s", game.game_name.c_str());
+            ImGui::TextWrapped("%s", game.game_name.c_str());
             ImGui::Separator();
 
             ImGui::Dummy(ImVec2(0.0f, 8.0f));
-            ImGui::Image((ImTextureID)(intptr_t)texture_id, ImVec2(300, 200));
+            ImGui::Image((ImTextureID)(intptr_t)texture_id, ImVec2(230, 150));
             ImGui::Dummy(ImVec2(0.0f, 8.0f));
 
             if(ImGui::Button("Backup")) {
@@ -38,11 +42,9 @@ void Tabs::render_general_tab(const Fonts& fonts, const Detection::DetectionResu
             if(ImGui::Button("Restore")) {
                 pending_restore_game = &game;
                 open_restore_modal = true;
-                // Features::restore_game_backup(game);
             }
 
             ImGui::EndChild();
-            ImGui::SameLine(); 
         }
 
         if(open_restore_modal) {
