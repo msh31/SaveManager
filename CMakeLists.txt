@@ -68,6 +68,7 @@ set(savemanager_SOURCES
 	"src/core/detection/detection.cpp"
 	"src/core/features/features.cpp"
 	"src/core/ui/tabs/tabs.cpp"
+	"src/core/ui/themes/themes.cpp"
 	"src/main.cpp"
 )
 

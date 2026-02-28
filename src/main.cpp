@@ -4,6 +4,7 @@
 #include "core/detection/detection.hpp"
 #include "core/helpers/textures.hpp"
 #include "core/ui/tabs/tabs.hpp"
+#include "core/ui/themes/themes.hpp"
 // #include "core/helpers/textures.hpp"
 #include "core/globals.hpp"
 
@@ -49,6 +50,7 @@ int main() {
     }
     glfwMakeContextCurrent(window);
     ImGui::CreateContext();
+    ThemeManager::apply_theme(ThemeType::Dark);
 
     ImGuiIO& io = ImGui::GetIO();
     io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
