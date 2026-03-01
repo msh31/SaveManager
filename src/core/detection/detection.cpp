@@ -2,6 +2,9 @@
 
 #include "detection.hpp"
 #include "core/helpers/ubi_name_translations.hpp"
+#include "core/logger/logger.hpp"
+
+static logger detectLog;
 
 std::vector<std::string> Detection::get_platform_steam_paths() {
     #ifdef __linux__
@@ -41,7 +44,7 @@ Detection::DetectionResult Detection::find_ubi_saves() {
 #ifdef __linux__
     auto libraries = Detection::get_library_folders();
     if(libraries.empty()) {
-        std::cerr << "No steam libraries found!\n";
+        detectLog.error("No steam libraries found!");
         return {};
     }
 
@@ -128,7 +131,7 @@ Detection::DetectionResult Detection::find_rsg_saves() {
 #ifdef __linux__
     auto libraries = Detection::get_library_folders();
     if(libraries.empty()) {
-        std::cerr << "No steam libraries found!\n";
+        detectLog.error("No steam libraries found!");
         return {};
     }
 
@@ -195,6 +198,7 @@ std::vector<fs::path> Detection::get_library_folders() {
     std::vector<fs::path> libraries;
 
     if(!vdf_file) {
+        detectLog.warning("Steam installation not found");
         return {};
     }
 
@@ -202,6 +206,7 @@ std::vector<fs::path> Detection::get_library_folders() {
     std::string line;
 
     if(!file.is_open()) {
+        detectLog.error("Failed to open Steam library file");
         return {};
     }
 
@@ -232,11 +237,11 @@ Detection::DetectionResult Detection::find_saves() {
     auto rsg_result = Detection::find_rsg_saves();
 
     if(ubi_result.games.empty()) {
-        std::cerr << "No Ubisoft savegames found!\n";
+        detectLog.error("No Ubisoft savegames found!");
     }
 
     if(rsg_result.games.empty()) {
-        std::cerr << "No Rockstar Games savegames found!\n";
+        detectLog.error("No Rockstar Games savegames found!");
     }
 
     result.uuid = ubi_result.uuid; //might not be strictly needed!
