@@ -101,8 +101,62 @@ void Tabs::render_log_tab(const Fonts& fonts) {
 }
 
 void Tabs::render_about_tab(const Fonts& fonts) {
+    ImGui::NewLine();
+
+    float win_width = ImGui::GetWindowSize().x;
+
     ImGui::PushFont(fonts.title);
+    float title_width = ImGui::CalcTextSize("SaveManager").x;
+    ImGui::SetCursorPosX((win_width - title_width) * 0.5f);
     ImGui::Text("SaveManager");
     ImGui::PopFont();
+
+    ImGui::PushFont(fonts.medium);
+    const char* subtitle = "The definitive local save manager";
+    float subtitle_width = ImGui::CalcTextSize(subtitle).x;
+    ImGui::SetCursorPosX((win_width - subtitle_width) * 0.5f);
+    ImGui::TextDisabled("%s", subtitle);
+    ImGui::PopFont();
+
+    ImGui::Dummy(ImVec2(0.0f, 4.0f));
+    ImGui::Separator();
+    ImGui::Dummy(ImVec2(0.0f, 4.0f));
+
+    ImGui::PushFont(fonts.header);
+    ImGui::Text("Details");
+    ImGui::PopFont();
+
+    ImGui::Text("Version");    ImGui::SameLine(120.0f); ImGui::Text("1.0.0");
+    ImGui::Text("Author");     ImGui::SameLine(120.0f); ImGui::Text("marco007");
+    ImGui::Text("License");    ImGui::SameLine(120.0f); ImGui::Text("MIT");
+    ImGui::Text("Source");     ImGui::SameLine(120.0f);
+    ImGui::TextLinkOpenURL("click for sauce", "https://git.marco007.dev/marco/SaveManager");
+
+    ImGui::Dummy(ImVec2(0.0f, 4.0f));
+    ImGui::Separator();
+    ImGui::Dummy(ImVec2(0.0f, 4.0f));
+
+    ImGui::PushFont(fonts.header);
+    ImGui::Text("Description");
+    ImGui::PopFont();
+
+    ImGui::TextWrapped(
+        "A tool for backing up and restoring game saves locally."
+        "Supports Steam, Ubisoft, Rockstar, and more."
+    );
+
+    ImGui::Dummy(ImVec2(0.0f, 4.0f));
+    ImGui::Separator();
+    ImGui::Dummy(ImVec2(0.0f, 4.0f));
+
+    ImGui::PushFont(fonts.header);
+    ImGui::Text("Built With");
+    ImGui::PopFont();
+
+    ImGui::BulletText("Dear ImGui");
+    ImGui::BulletText("GLFW");
+    ImGui::BulletText("OpenGL");
+    ImGui::BulletText("libcurl");
+    ImGui::BulletText("libzip");
 }
 

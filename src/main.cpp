@@ -118,14 +118,6 @@ int main() {
 
         ImGui::PushFont(fonts.title);
         ImGui::Text("SaveManager");
-        ImGui::SameLine();
-        ImGui::PopFont();
-        ImGui::PushFont(fonts.medium);
-        ImGui::Text(" | The definitive local save manager");
-        ImGui::PopFont();
-
-        ImGui::PushFont(fonts.regular);
-        ImGui::Text("some text to fill the space");
         ImGui::PopFont();
         ImGui::Separator();
 
