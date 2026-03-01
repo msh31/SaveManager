@@ -6,6 +6,8 @@ A lightweight and efficient savegame manager to help you manage your game saves 
 <img src="https://img.shields.io/badge/Linux-FCC624?style=for-the-badge&logo=linux&logoColor=black" alt="Linux"/>
 </p>
 
+<img src="https://drop.marco007.dev/r/ZUHhbfgP" alt="App Preview"/>
+
 ---
 
 ## Under Construction

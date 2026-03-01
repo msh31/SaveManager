@@ -92,6 +92,11 @@ int main() {
     std::unordered_map<std::string, GLuint> game_textures;
     int tex_w = 460, tex_h = 215;
     for (auto game : result.games) {
+
+        if(game.appid == "N/A") {
+            game.appid = "catafaceore";
+        }
+        
         if(download_game_image(game.appid)) {
             fs::path path;
 
