@@ -1,11 +1,13 @@
 #include <iostream>
+#include <unordered_map>
 
 #include "core/config/config.hpp"
 #include "core/detection/detection.hpp"
+#include "core/helpers/network.hpp"
 #include "core/helpers/textures.hpp"
 #include "core/ui/tabs/tabs.hpp"
 #include "core/ui/themes/themes.hpp"
-// #include "core/helpers/textures.hpp"
+#include "core/helpers/textures.hpp"
 #include "core/globals.hpp"
 
 #include "imgui.h"
@@ -73,10 +75,20 @@ int main() {
     ImGui_ImplGlfw_InitForOpenGL(window, true);
     ImGui_ImplOpenGL3_Init();
 
-    GLuint placeholder_texture = 0;
-    int tex_w = 0, tex_h = 0;
-    // LoadTextureFromFile("assets/placeholder.png", &placeholder_texture, &tex_w, &tex_h);
-    LoadTextureFromMemory((void*)placeholder_png, placeholder_png_len, &placeholder_texture, &tex_w, &tex_h);
+    GLuint game_texture; 
+    std::unordered_map<std::string, GLuint> game_textures;
+    int tex_w = 460, tex_h = 215;
+    for (auto game : result.games) {
+        if(download_game_image(game.appid)) {
+            std::string path = cache_dir / (game.appid + ".jpg");
+            LoadTextureFromFile(path.c_str(), &game_texture, &tex_w, &tex_h);
+        } else {
+            std::string path = cache_dir / (game.appid + ".jpg");
+            LoadTextureFromFile(path.c_str(), &game_texture, &tex_w, &tex_h);
+        }
+
+        game_textures[game.appid] = game_texture;
+    }
 
     bool show_demo_window = false;
     do{
@@ -122,7 +134,7 @@ int main() {
         static ImGuiTabBarFlags tab_bar_flags = ImGuiTabBarFlags_Reorderable | ImGuiTabBarFlags_DrawSelectedOverline;
         if (ImGui::BeginTabBar("MyTabBar", tab_bar_flags)) {
             if (ImGui::BeginTabItem("General"))  {
-                Tabs::render_general_tab(fonts, result, placeholder_texture);
+                Tabs::render_general_tab(fonts, result, game_textures);
                 ImGui::EndTabItem();
             }
             if (ImGui::BeginTabItem("Log"))  {

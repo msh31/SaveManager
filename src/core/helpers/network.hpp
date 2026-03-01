@@ -1,6 +1,7 @@
 #pragma once
 #include "paths.hpp"
 
+#include <filesystem>
 #include <string>
 #include <curl/curl.h>
 
@@ -33,4 +34,20 @@ inline bool download_ubi_translations() {
         "https://git.marco007.dev/marco/Ubisoft-Game-Ids/raw/branch/master/gameids.json", 
         output_path.string()
     );
+}
+
+inline bool download_game_image(const std::string& appid) {
+    std::string output_file = appid + ".jpg";
+    fs::path img_path = cache_dir / output_file; 
+
+    if (fs::exists(img_path)) {
+        return true;
+    }
+
+    std::string url =
+        "https://cdn.cloudflare.steamstatic.com/steam/apps/" +
+        appid +
+        "/header.jpg";
+
+    return download_file(url, img_path.string());
 }

@@ -1,5 +1,6 @@
 #include "tabs.hpp"
 #include "core/features/features.hpp"
+#include "core/helpers/network.hpp"
 #include "core/helpers/utils.hpp"
 
 #include "imgui.h"
@@ -9,7 +10,7 @@ std::vector<fs::path> backups;
 const Game* pending_restore_game = nullptr;
 int selected_backup_idx = 0;
 
-void Tabs::render_general_tab(const Fonts& fonts, const Detection::DetectionResult& result, GLuint texture_id) {
+void Tabs::render_general_tab(const Fonts& fonts, const Detection::DetectionResult& result, std::unordered_map<std::string, GLuint> texture_id) {
     ImGui::PushFont(fonts.header);
     ImGui::Text("Detected Games");
     ImGui::PopFont();
@@ -27,12 +28,22 @@ void Tabs::render_general_tab(const Fonts& fonts, const Detection::DetectionResu
             }
 
             count++;
-            ImGui::BeginChild(game.game_name.c_str(), ImVec2(250, 300), true);
+            ImGui::BeginChild(game.game_name.c_str(), ImVec2(300, 270), true);
             ImGui::TextWrapped("%s", game.game_name.c_str());
             ImGui::Separator();
 
             ImGui::Dummy(ImVec2(0.0f, 8.0f));
-            ImGui::Image((ImTextureID)(intptr_t)texture_id, ImVec2(230, 150));
+
+            auto it = texture_id.find(game.appid);
+            int texture;
+            if(it != texture_id.end()) {
+                texture = it->second;
+                ImGui::Image((ImTextureID)texture, ImVec2(280, 131));
+            }
+            else {
+                ImGui::Text("An image was not found :(");
+            }
+
             ImGui::Dummy(ImVec2(0.0f, 8.0f));
 
             if(ImGui::Button("Backup")) {
