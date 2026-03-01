@@ -1,9 +1,12 @@
 #pragma once
 #include "paths.hpp"
+#include "core/logger/logger.hpp"
 
 #include <filesystem>
 #include <string>
 #include <curl/curl.h>
+
+static logger netLog;
 
 inline size_t write_callback(void* ptr, size_t size, size_t nmemb, FILE* stream) {
     return fwrite(ptr, size, nmemb, stream);
@@ -11,10 +14,17 @@ inline size_t write_callback(void* ptr, size_t size, size_t nmemb, FILE* stream)
 
 inline bool download_file(const std::string& url, const std::string& output_path) {
     CURL* curl = curl_easy_init();
-    if (!curl) return false;
+    if (!curl) {
+        netLog.error("Failed to initialize CURL");
+        return false;
+    }
     
     FILE* fp = fopen(output_path.c_str(), "wb");
-    if (!fp) { curl_easy_cleanup(curl); return false; }
+    if (!fp) { 
+        netLog.error("Failed to open file for writing: " + output_path);
+        curl_easy_cleanup(curl); 
+        return false; 
+    }
     
     curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
     curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, write_callback);
@@ -25,7 +35,12 @@ inline bool download_file(const std::string& url, const std::string& output_path
     fclose(fp);
     curl_easy_cleanup(curl);
     
-    return res == CURLE_OK;
+    if (res != CURLE_OK) {
+        netLog.error("Failed to download file: " + std::string(curl_easy_strerror(res)));
+        return false;
+    }
+    
+    return true;
 }
 
 inline bool download_ubi_translations() {

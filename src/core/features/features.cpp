@@ -1,11 +1,12 @@
 #include "features.hpp"
 #include "core/helpers/utils.hpp"
 #include "core/helpers/paths.hpp"
+#include "core/logger/logger.hpp"
 
-#include <filesystem>
+static logger featureLog;
 
 void Features::backup_game(const Game& game) {
-    std::cout << "creating backup of: " << game.game_name.c_str() << "!\n";
+    featureLog.info("creating backup of: " + game.game_name);
     fs::path game_backup_dir = backup_dir / game.game_name;
 
     if(!fs::exists(game_backup_dir)) {
@@ -21,7 +22,7 @@ std::vector<fs::path> Features::get_backups(const Game& game) {
     fs::path game_backup_dir = backup_dir / game.game_name;
 
     if(!fs::exists(game_backup_dir)) {
-        std::cerr << "No backups found for: " << game.game_name << "!\n";
+        featureLog.error("No backups found for: " + game.game_name);
         return {};
     }
 
@@ -42,7 +43,7 @@ void Features::create_backup(const fs::path& name, const Game& selected_game) {
     zip_t* archive = zip_open(utf8_path.c_str(), ZIP_CREATE | ZIP_TRUNCATE, &zip_error);
 
     if(!archive) {
-        std::cout << "Could not create backup!\n";
+        featureLog.error("Could not create backup!");
         return;
     }
 
@@ -51,22 +52,22 @@ void Features::create_backup(const fs::path& name, const Game& selected_game) {
         if (entry.is_regular_file()) {
             std::string entry_utf8 = entry.path().u8string();
             fs::path relative = fs::relative(entry_utf8.c_str(), selected_game.save_path);
-            std::cout << "Adding: " << relative << " to the backup for " << selected_game.game_name << "\n";
+            featureLog.info("Adding: " + relative.string() + " to the backup for " + selected_game.game_name);
 
             zip_source_t* source = zip_source_file(archive, entry_utf8.c_str(), 0, 0);
             if (!source) {
-                std::cerr << "Failed to create source for: " << entry_utf8.c_str() << "\n";
+                featureLog.error("Failed to create source for: " + entry_utf8);
                 continue;
             }
 
             if (zip_file_add(archive, relative.string().c_str(), source, ZIP_FL_OVERWRITE) < 0) {
-                std::cerr << "Failed to add file: " << zip_strerror(archive) << "\n";
+                featureLog.error("Failed to add file: " + std::string(zip_strerror(archive)));
             }
             file_count++;
         }
     }
-    std::cout << "Added " << file_count << " files\n";
-    std::cout << "\nbackup has been created!\n";
+    featureLog.success("Added " + std::to_string(file_count) + " files");
+    featureLog.success("backup has been created!");
     zip_close(archive);
 }
 
@@ -78,7 +79,7 @@ void Features::restore_backup(const fs::path& name, const Game& selected_game) {
     zip_t* archive = zip_open(selected_backup_utf8.c_str(), 0, &zip_error);
 
     if(!archive) {
-        std::cout << "Could not open backup for restoration process!\n";
+        featureLog.error("Could not open backup for restoration process!");
         return;
     }
 
@@ -88,21 +89,33 @@ void Features::restore_backup(const fs::path& name, const Game& selected_game) {
         zip_stat_init(&fileInfo); 
 
         if (zip_stat_index(archive, i, 0, &fileInfo) == 0) {
-            std::cout << "File Name: " << fileInfo.name << "\n Saving to: \n";
+            featureLog.info(std::string("File Name: ") + fileInfo.name);
             const auto& output_path = selected_game.save_path / fileInfo.name;
-            std::cout << output_path << "\n";
+            featureLog.info("Saving to: " + output_path.string());
 
             zip_file* file = zip_fopen_index(archive, i, 0);
 
             if (!file) {
+                featureLog.warning("Failed to open file in archive: " + std::string(fileInfo.name));
                 failed_files.push_back(fileInfo.name);
                 continue;
             }
             char buffer[1024];
 
             zip_int64_t bytes_read;
-            fs::create_directories(output_path.parent_path());
+            if(!fs::create_directories(output_path.parent_path())) {
+                featureLog.error("Failed to create directory for: " + output_path.parent_path().string());
+                failed_files.push_back(fileInfo.name);
+                continue;
+            }
             std::ofstream save_file(output_path, std::ios::binary);
+
+            if (!save_file.is_open()) {
+                featureLog.error("Failed to open save file for writing: " + output_path.string());
+                failed_files.push_back(fileInfo.name);
+                zip_fclose(file);
+                continue;
+            }
 
             while ((bytes_read = zip_fread(file, buffer, sizeof(buffer))) > 0) {
                 save_file.write(buffer, bytes_read);
@@ -113,12 +126,12 @@ void Features::restore_backup(const fs::path& name, const Game& selected_game) {
 
     zip_close(archive);
     if (!failed_files.empty()) {
-        std::cerr << "Failed to restore:\n";
+        featureLog.error("Failed to restore:");
         for (const auto& f : failed_files) {
-            std::cerr << "  - " << f << "\n";
+            featureLog.error("  - " + f);
         }
     } else {
-        std::cout << "\nbackup for: " << selected_game.game_name << " has been restored!\n";
+        featureLog.success("backup for: " + selected_game.game_name + " has been restored!");
     }
 }
 

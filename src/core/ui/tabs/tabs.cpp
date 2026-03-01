@@ -10,7 +10,7 @@ bool open_restore_modal = false;
 std::vector<fs::path> backups;
 const Game* pending_restore_game = nullptr;
 int selected_backup_idx = 0;
-static logger loggar;
+// static logger loggar;
 static double last_read_time = 0.0;
 
 void Tabs::render_general_tab(const Fonts& fonts, const Detection::DetectionResult& result, std::unordered_map<std::string, GLuint> texture_id) {
@@ -121,9 +121,9 @@ void Tabs::render_log_tab(const Fonts& fonts) {
     ImGui::TextUnformatted(log_buffer.c_str());
     ImGui::SetScrollHereY(1.0f);
 
-    if (ImGui::Button("add log entry")) {
-        loggar.success("added!");
-    }
+    // if (ImGui::Button("add log entry")) {
+    //     loggar.success("added!");
+    // }
 }
 
 void Tabs::render_about_tab(const Fonts& fonts) {
