@@ -25,6 +25,8 @@ inline fs::path config_dir = fs::path(std::getenv("APPDATA"))
 inline fs::path cache_dir = fs::path(std::getenv("APPDATA"))
            / "savemanager"
            / "cache";
+inline fs::path documents_dir = fs::path(std::getenv("USERPROFILE"))
+           / "Documents";
 #else
 #error "Unsupported platform"
 #endif

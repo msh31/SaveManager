@@ -180,14 +180,37 @@ Detection::DetectionResult Detection::find_rsg_saves() {
 #endif // __linux__
 
 #ifdef _WIN32
-    //TODO
-    Game game;
-    game.type = ROCKSTAR;
-    game.appid = "69";
-    game.save_path = "test";
-    game.game_name = "Red Dead Revolver"; 
+    fs::path rsg_root = documents_dir / "Rockstar Games";
 
-    games.push_back(game);
+    if (!fs::exists(rsg_root)) {
+        return {};
+    }
+
+    for (const auto& game : fs::directory_iterator(rsg_root)) {
+        fs::path game_folder = game.path();
+        std::string folder_name = game_folder.filename().string();
+        fs::path profiles_folder = game_folder / "Profiles";
+
+        if (folder_name == "Launcher" || folder_name == "Social Club") {
+            continue;
+        }
+
+        if (!fs::exists(profiles_folder)) {
+            continue;
+        }
+
+        for (const auto& profile : fs::directory_iterator(profiles_folder)) {
+            fs::path uuid_folder = profile.path();
+
+            Game game;
+            game.type = ROCKSTAR;
+            game.appid = "N/A";
+            game.save_path = uuid_folder;
+            game.game_name = game_folder.filename().string();
+
+            games.push_back(game);
+        }
+    }
 #endif // _WIN32
     return {found_uuid, games};
 }
