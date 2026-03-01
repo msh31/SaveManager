@@ -24,8 +24,12 @@ if(CMAKE_CURRENT_SOURCE_DIR STREQUAL CMAKE_SOURCE_DIR)
 	set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS cmake.toml)
 endif()
 
+# Variables
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
 project(SaveManager
 	LANGUAGES
+		C
 		CXX
 	DESCRIPTION
 		"The definitive local save manager"
@@ -33,6 +37,8 @@ project(SaveManager
 
 # Target: savemanager
 set(CMKR_TARGET savemanager)
+find_package(glfw3 REQUIRED)
+
 if(DEFINED VCPKG_TARGET_TRIPLET)
     find_package(libzip CONFIG REQUIRED)
     find_package(CURL REQUIRED)
@@ -51,12 +57,21 @@ endif()
 
 set(savemanager_SOURCES
 	cmake.toml
-	"src/command/command.cpp"
-	"src/config/config.cpp"
-	"src/detection/detection.cpp"
+	"external/glad/src/glad.c"
+	"external/imgui/backends/imgui_impl_glfw.cpp"
+	"external/imgui/backends/imgui_impl_opengl3.cpp"
+	"external/imgui/imgui.cpp"
+	"external/imgui/imgui_demo.cpp"
+	"external/imgui/imgui_draw.cpp"
+	"external/imgui/imgui_tables.cpp"
+	"external/imgui/imgui_widgets.cpp"
+	"src/core/config/config.cpp"
+	"src/core/detection/detection.cpp"
+	"src/core/features/features.cpp"
+	"src/core/logger/logger.cpp"
+	"src/core/ui/tabs/tabs.cpp"
+	"src/core/ui/themes/themes.cpp"
 	"src/main.cpp"
-	"src/ui/input_validator.cpp"
-	"src/ui/menu.cpp"
 )
 
 add_executable(savemanager)
@@ -70,9 +85,14 @@ target_compile_features(savemanager PRIVATE
 
 target_include_directories(savemanager PRIVATE
 	external
+	"external/imgui"
+	"external/imgui/backends"
+	"external/glad/include"
+	src
 )
 
 target_link_libraries(savemanager PRIVATE
+	glfw
 	"$<IF:$<BOOL:${VCPKG_TARGET_TRIPLET}>,libzip::zip,$<IF:$<PLATFORM_ID:Darwin>,${LIBZIP_LIBRARIES},zip>>"
 	"$<IF:$<BOOL:${VCPKG_TARGET_TRIPLET}>,CURL::libcurl,$<IF:$<PLATFORM_ID:Darwin>,${CURL_LIBRARIES},curl>>"
 )

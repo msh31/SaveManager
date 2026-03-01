@@ -6,8 +6,6 @@
 #include <fstream>
 #include <iostream>
 
-#include "../ui/input_validator.hpp"
-
 namespace fs = std::filesystem;
 
 enum PlatformType {
