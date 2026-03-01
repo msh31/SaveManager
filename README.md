@@ -15,9 +15,6 @@ This project is still under development, and features may be subject to change.
 - **Backup and Restore**  
   Create backups of your savegames and restore them when needed, with custom name support!
   
-- **Listing**  
-  View all available saves and their backups
-
 ### Planned Features
 - **Web sync**  
   Sync save games to your savehub account (seperate wip project)
@@ -32,22 +29,19 @@ This project is still under development, and features may be subject to change.
 1. [nlohmann/json](https://github.com/nlohmann/json) - Working with json files
 2. [ubisoft_game_ids](https://git.marco007.dev/marco/Ubisoft-Game-Ids) - Ubisoft gameID translations | downloaded once on startup of the program
 3. [libzip](https://github.com/winlibs/libzip) - Creating zip archives crossplatform
+3. [curl](https://github.com/curl/curl) - Downloads of images and id->name translations for ubi
+3. [glad](https://github.com/Dav1dde/glad) - Cross platform way of using OpenGL 
 
 ```bash
-# INFO
-# make sure to install libzip on your system to be able to build this project!
-
 #arch
-sudo pacman -S libzip
+sudo pacman -S libzip curl glad
 
 #MacOS
-brew install libzip
+brew install libzip curl glad
 
-#Windows (Using [vcpkg](https://vcpkg.io/en/index.html))
-vcpkg integrate install
-vcpkg install libzip
+# Windows
+# uses the vcpkg manifest
 ```
-
 
 #### Cross-compiling for Windows (from Linux)
 You can cross-compile Windows executables from Linux using MinGW-w64:
@@ -68,12 +62,6 @@ export VCPKG_ROOT="~/vcpkg" # add to zsh or bash or fish shell
 3. Build using the provided script:
 ```bash
 ./build-windows.sh
-```
-
-Or manually (still needs vcpkg):
-```bash
-cmake -B build-windows -DCMAKE_TOOLCHAIN_FILE=toolchains/toolchain-mingw-w64-vcpkg.cmake
-cmake --build build-windows
 ```
 
 The Windows executable will be at `build-windows/savemanager.exe`

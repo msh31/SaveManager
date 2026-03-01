@@ -6,7 +6,7 @@ cmkr-include = "cmkr.cmake"
 [project]
 name = "SaveManager"
 description = "The definitive local save manager"
-languages = ["CXX"]
+languages = ["C", "CXX"]
 
 [variables]
 CMAKE_EXPORT_COMPILE_COMMANDS = true
@@ -25,29 +25,29 @@ sources = [
     "external/imgui/backends/imgui_impl_glfw.cpp",
     "external/imgui/backends/imgui_impl_opengl3.cpp",
     "external/imgui/imgui_demo.cpp",
+
+    # GLAD
+    "external/glad/src/glad.c",
 ]
 
 include-directories = [
     "external",
     "external/imgui",
     "external/imgui/backends",
+    "external/glad/include",
     "src",
 ]
 
 compile-features = ["cxx_std_17"]
 
 link-libraries = [
-    "glad::glad",
     "glfw",
-    "OpenGL::GL",
     "$<IF:$<BOOL:${VCPKG_TARGET_TRIPLET}>,libzip::zip,$<IF:$<PLATFORM_ID:Darwin>,${LIBZIP_LIBRARIES},zip>>",
     "$<IF:$<BOOL:${VCPKG_TARGET_TRIPLET}>,CURL::libcurl,$<IF:$<PLATFORM_ID:Darwin>,${CURL_LIBRARIES},curl>>",
 ]
 
 cmake-before = """
-find_package(OpenGL REQUIRED)
 find_package(glfw3 REQUIRED)
-find_package(glad REQUIRED)
 
 if(DEFINED VCPKG_TARGET_TRIPLET)
     find_package(libzip CONFIG REQUIRED)

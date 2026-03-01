@@ -1,7 +1,7 @@
 #pragma once
 #include "core/globals.hpp"
 #include "core/detection/detection.hpp"
-#include <GL/gl.h>
+#include <glad/glad.h>
 #include <unordered_map>
 
 namespace Tabs {

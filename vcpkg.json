@@ -5,8 +5,7 @@
   "dependencies": [
     "libzip",
     "curl",
-    "glfw3",
-    "glad"
+    "glfw3"
   ],
   "description": "The definitive local save manager",
   "name": "savemanager",

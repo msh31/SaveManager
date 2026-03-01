@@ -1,3 +1,7 @@
 [submodule "external/imgui"]
 	path = external/imgui
 	url = https://github.com/ocornut/imgui.git
+[submodule "external/glad"]
+	path = external/glad
+	url = https://github.com/Dav1dde/glad.git
+	branch = c

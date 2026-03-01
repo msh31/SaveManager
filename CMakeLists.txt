@@ -29,6 +29,7 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 project(SaveManager
 	LANGUAGES
+		C
 		CXX
 	DESCRIPTION
 		"The definitive local save manager"
@@ -36,9 +37,7 @@ project(SaveManager
 
 # Target: savemanager
 set(CMKR_TARGET savemanager)
-find_package(OpenGL REQUIRED)
 find_package(glfw3 REQUIRED)
-find_package(glad REQUIRED)
 
 if(DEFINED VCPKG_TARGET_TRIPLET)
     find_package(libzip CONFIG REQUIRED)
@@ -58,6 +57,7 @@ endif()
 
 set(savemanager_SOURCES
 	cmake.toml
+	"external/glad/src/glad.c"
 	"external/imgui/backends/imgui_impl_glfw.cpp"
 	"external/imgui/backends/imgui_impl_opengl3.cpp"
 	"external/imgui/imgui.cpp"
@@ -86,13 +86,12 @@ target_include_directories(savemanager PRIVATE
 	external
 	"external/imgui"
 	"external/imgui/backends"
+	"external/glad/include"
 	src
 )
 
 target_link_libraries(savemanager PRIVATE
-	glad::glad
 	glfw
-	OpenGL::GL
 	"$<IF:$<BOOL:${VCPKG_TARGET_TRIPLET}>,libzip::zip,$<IF:$<PLATFORM_ID:Darwin>,${LIBZIP_LIBRARIES},zip>>"
 	"$<IF:$<BOOL:${VCPKG_TARGET_TRIPLET}>,CURL::libcurl,$<IF:$<PLATFORM_ID:Darwin>,${CURL_LIBRARIES},curl>>"
 )
