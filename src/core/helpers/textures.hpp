@@ -2,7 +2,7 @@
 #include "imgui.h"
 #define STB_IMAGE_IMPLEMENTATION
 
-#include <GL/gl.h>
+#include <glad/glad.h>
 #include "../external/stb/stb_image.h"
 
 // THese 2 functions were copied from the imgui wiki -> https://github.com/ocornut/imgui/wiki/Image-Loading-and-Displaying-Examples#example-for-opengl-users

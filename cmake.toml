@@ -37,6 +37,7 @@ include-directories = [
 compile-features = ["cxx_std_17"]
 
 link-libraries = [
+    "glad::glad",
     "glfw",
     "OpenGL::GL",
     "$<IF:$<BOOL:${VCPKG_TARGET_TRIPLET}>,libzip::zip,$<IF:$<PLATFORM_ID:Darwin>,${LIBZIP_LIBRARIES},zip>>",
@@ -46,6 +47,7 @@ link-libraries = [
 cmake-before = """
 find_package(OpenGL REQUIRED)
 find_package(glfw3 REQUIRED)
+find_package(glad REQUIRED)
 
 if(DEFINED VCPKG_TARGET_TRIPLET)
     find_package(libzip CONFIG REQUIRED)

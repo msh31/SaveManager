@@ -1,3 +1,15 @@
+#ifdef _WIN32
+#define WIN32_LEAN_AND_MEAN
+#include <windows.h>
+#endif
+
+#include <glad/glad.h>
+#include <GLFW/glfw3.h>
+
+#include "imgui.h"
+#include "imgui_impl_glfw.h"
+#include "imgui_impl_opengl3.h"
+
 #include <iostream>
 #include <unordered_map>
 
@@ -10,16 +22,10 @@
 #include "core/helpers/textures.hpp"
 #include "core/globals.hpp"
 
-#include "imgui.h"
-#include "imgui_impl_glfw.h"
-#include "imgui_impl_opengl3.h"
-#include <GLFW/glfw3.h>
-#include <GL/gl.h>
-
 #include "core/ui/fonts/jbm_reg.h"
 #include "core/ui/fonts/jbm_med.h"
 #include "core/ui/fonts/jbm_bold.h"
-#include "core/ui/img/placeholder_img.h"
+//#include "core/ui/img/placeholder_img.h"
 
 int main() {
     if(!Config::config_exist()) {
@@ -51,6 +57,10 @@ int main() {
         return 1;
     }
     glfwMakeContextCurrent(window);
+    if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
+        std::cerr << "Failed to initialize GLAD\n";
+        return 1;
+    }
     ImGui::CreateContext();
     ThemeManager::apply_theme(ThemeType::Dark);
 

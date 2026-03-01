@@ -38,6 +38,7 @@ project(SaveManager
 set(CMKR_TARGET savemanager)
 find_package(OpenGL REQUIRED)
 find_package(glfw3 REQUIRED)
+find_package(glad REQUIRED)
 
 if(DEFINED VCPKG_TARGET_TRIPLET)
     find_package(libzip CONFIG REQUIRED)
@@ -89,6 +90,7 @@ target_include_directories(savemanager PRIVATE
 )
 
 target_link_libraries(savemanager PRIVATE
+	glad::glad
 	glfw
 	OpenGL::GL
 	"$<IF:$<BOOL:${VCPKG_TARGET_TRIPLET}>,libzip::zip,$<IF:$<PLATFORM_ID:Darwin>,${LIBZIP_LIBRARIES},zip>>"
