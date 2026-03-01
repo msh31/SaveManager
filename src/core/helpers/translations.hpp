@@ -1,0 +1,71 @@
+#pragma once
+#include <string>
+#include <fstream>
+#include <optional>
+#include <iostream>
+
+#include "../../external/json.hpp"
+#include "core/helpers/paths.hpp"
+#include "core/logger/logger.hpp"
+
+using json = nlohmann::json;
+
+static logger& get_logger() {
+    static logger log;
+    return log;
+}
+
+inline std::optional<std::string> get_game_name_ubi(const std::string& game_id) {
+    static json data;
+    static bool loaded = false;
+    
+    if (!loaded) {
+        fs::path json_path = config_dir / "ubi_translations.json";
+        // std::string json_utf8 = json_path.u8string();
+        std::ifstream file(json_path.c_str());
+        if (!file.is_open()) {
+            get_logger().error("Failed to open JSON file");
+            return std::nullopt;
+        }
+        data = json::parse(file);
+        get_logger().info("Loaded ubi_translations JSON with " + std::to_string(data.size()) + " franchises");
+        loaded = true;
+    }
+    
+    for (const auto& [franchise, games] : data.items()) {
+        // std::cout << "Searching franchise: " << franchise << "\n";
+        if (games.contains(game_id)) {
+            return games[game_id].get<std::string>();
+        }
+    }
+    
+    return std::nullopt;
+}
+
+inline std::optional<std::string> get_steam_id(const std::string& game_name) {
+    static json data;
+    static bool loaded = false;
+    
+    if (!loaded) {
+        fs::path json_path = config_dir / "steamids.json";
+        // std::string json_utf8 = json_path.u8string();
+        std::ifstream file(json_path.c_str());
+        if (!file.is_open()) {
+            get_logger().error("Failed to open JSON file");
+            return std::nullopt;
+        }
+        data = json::parse(file);
+        get_logger().info("Loaded steamids.json!");
+        loaded = true;
+    }
+    
+    for (const auto& [platform, games] : data.items()) {
+        for (const auto& game : games) {
+            if (game["name"] == game_name) {
+                return std::to_string(game["appid"].get<int>());
+            }
+        }
+    }
+    
+    return std::nullopt;
+}

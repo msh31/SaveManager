@@ -43,14 +43,6 @@ inline bool download_file(const std::string& url, const std::string& output_path
     return true;
 }
 
-inline bool download_ubi_translations() {
-    fs::path output_path = config_dir / "gameids.json";
-    return download_file(
-        "https://git.marco007.dev/marco/Ubisoft-Game-Ids/raw/branch/master/gameids.json", 
-        output_path.string()
-    );
-}
-
 inline bool download_game_image(const std::string& appid) {
     std::string output_file = appid + ".jpg";
     fs::path img_path = cache_dir / output_file; 

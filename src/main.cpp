@@ -10,7 +10,6 @@
 #include "imgui_impl_glfw.h"
 #include "imgui_impl_opengl3.h"
 
-#include <iostream>
 #include <unordered_map>
 
 #include "core/config/config.hpp"

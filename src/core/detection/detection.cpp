@@ -1,30 +1,30 @@
 #include <filesystem>
 
 #include "detection.hpp"
-#include "core/helpers/ubi_name_translations.hpp"
+#include "core/helpers/translations.hpp"
 #include "core/logger/logger.hpp"
 
 static logger detectLog;
 
 std::vector<std::string> Detection::get_platform_steam_paths() {
-    #ifdef __linux__
-        return {
-            std::string(std::getenv("HOME")) + "/.steam/steam/steamapps/libraryfolders.vdf",
-            std::string(std::getenv("HOME")) + "/.local/share/Steam/steamapps/libraryfolders.vdf"
-        };
-    #endif
-    
-    #ifdef _WIN32
-        return {
-            "C:\\Program Files (x86)\\Steam\\steamapps\\libraryfolders.vdf",
-        };
-    #endif
-    
-    #ifdef __APPLE__
-        return {
-            "macOS"
-        };
-    #endif
+#ifdef __linux__
+    return {
+        std::string(std::getenv("HOME")) + "/.steam/steam/steamapps/libraryfolders.vdf",
+        std::string(std::getenv("HOME")) + "/.local/share/Steam/steamapps/libraryfolders.vdf"
+    };
+#endif
+
+#ifdef _WIN32
+    return {
+        "C:\\Program Files (x86)\\Steam\\steamapps\\libraryfolders.vdf",
+    };
+#endif
+
+#ifdef __APPLE__
+    return {
+        "macOS"
+    };
+#endif
 }
 
 std::optional<fs::path> Detection::get_steam_location() {
@@ -54,7 +54,7 @@ Detection::DetectionResult Detection::find_ubi_saves() {
         if(!fs::exists(compatdata_path)) {
             continue;
         }
-        
+
         for(const auto& entry : fs::directory_iterator(compatdata_path)) {
             fs::path appid_folder = entry.path();
             fs::path ubi_save_path = appid_folder / "pfx/drive_c/Program Files (x86)/Ubisoft/Ubisoft Game Launcher/savegames";
@@ -63,10 +63,10 @@ Detection::DetectionResult Detection::find_ubi_saves() {
             if(fs::exists(ac_save_path)) {
                 Game game;
                 game.type = UBISOFT;
-                game.appid = "N/A"; //could assign the steamID, but both uplay and steam store that path.. kinda pointless
+                game.game_name = "Assassin's Creed";
+                game.appid = get_steam_id(game.game_name).value_or("N/A");
                 game.game_id = "82";
                 game.save_path = ac_save_path;
-                game.game_name = "Assassin's Creed";
                 games.push_back(game);
             }
 
@@ -86,7 +86,7 @@ Detection::DetectionResult Detection::find_ubi_saves() {
                         game.appid = appid_folder.filename().string();
                         game.game_id = game_id_folder.filename().string();
                         game.save_path = game_id_folder;
-                        game.game_name = getGameName(game.game_id.value()).value_or("Unknown Game");
+                        game.game_name = get_game_name_ubi(game.game_id.value()).value_or("Unknown Game");
 
                         games.push_back(game);
                     }
@@ -111,10 +111,11 @@ Detection::DetectionResult Detection::find_ubi_saves() {
                 fs::path game_id_folder = game_entry.path();
 
                 Game game;
-                game.appid = "N/A";
+                game.type = UBISOFT;
+                game.game_name = get_game_name_ubi(game.game_id.value()).value_or("Unknown Game");
+                game.appid = get_steam_id(game.game_name).value_or("N/A");
                 game.game_id = game_id_folder.filename().string();
                 game.save_path = game_id_folder;
-                game.game_name = getGameName(game.game_id.value()).value_or("Unknown Game");
 
                 games.push_back(game);
             }
@@ -141,7 +142,7 @@ Detection::DetectionResult Detection::find_rsg_saves() {
         if(!fs::exists(compatdata_path)) {
             continue;
         }
-        
+
         for(const auto& entry : fs::directory_iterator(compatdata_path)) {
             fs::path appid_folder = entry.path();
             fs::path rsg_root = appid_folder / "pfx/drive_c/users/steamuser/Documents/Rockstar Games/";
@@ -204,9 +205,9 @@ Detection::DetectionResult Detection::find_rsg_saves() {
 
             Game game;
             game.type = ROCKSTAR;
-            game.appid = "N/A";
-            game.save_path = uuid_folder;
             game.game_name = game_folder.filename().string();
+            game.appid = get_steam_id(game.game_name).value_or("N/A");
+            game.save_path = uuid_folder;
 
             games.push_back(game);
         }

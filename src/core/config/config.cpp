@@ -1,4 +1,5 @@
 #include "config.hpp"
+#include "core/helpers/network.hpp"
 #include "core/logger/logger.hpp"
 #include <filesystem>
 
@@ -16,11 +17,20 @@ bool Config::config_exist() {
         }
     }
 
-    fs::path json_file = config_dir / "gameids.json";
-    if(!fs::exists(json_file)) {
-        configLog.info("gameids.json not found, downloading...");
-        if(!download_ubi_translations()) {
+    fs::path ubi_translations = config_dir / "ubi_translations.json";
+    fs::path steam_appids = config_dir / "steamids.json";
+
+    if(!fs::exists(ubi_translations)) {
+        configLog.info("ubi_translations.json not found, downloading...");
+        if(!download_file("https://git.marco007.dev/marco/smdata/raw/branch/main/ubi_translations.json", ubi_translations)) {
             configLog.error("Failed to download Ubisoft game IDs");
+            return false;
+        }
+    }
+    if(!fs::exists(steam_appids)) {
+        configLog.info("steamids.json was not found, downloading...");
+        if(!download_file("https://git.marco007.dev/marco/smdata/raw/branch/main/steamids.json", steam_appids)) {
+            configLog.error("Failed to download Steam IDs");
             return false;
         }
     }
