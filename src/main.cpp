@@ -80,11 +80,13 @@ int main() {
     int tex_w = 460, tex_h = 215;
     for (auto game : result.games) {
         if(download_game_image(game.appid)) {
-            std::string path = cache_dir / (game.appid + ".jpg");
-            LoadTextureFromFile(path.c_str(), &game_texture, &tex_w, &tex_h);
+            fs::path path;
+
+            path = cache_dir / (game.appid + ".jpg");
+            LoadTextureFromFile(path.string().c_str(), &game_texture, &tex_w, &tex_h);
         } else {
-            std::string path = cache_dir / (game.appid + ".jpg");
-            LoadTextureFromFile(path.c_str(), &game_texture, &tex_w, &tex_h);
+            fs::path path = cache_dir / (game.appid + ".jpg");
+            LoadTextureFromFile(path.string().c_str(), &game_texture, &tex_w, &tex_h);
         }
 
         game_textures[game.appid] = game_texture;

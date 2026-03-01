@@ -22,8 +22,7 @@ inline fs::path backup_dir = fs::path(std::getenv("APPDATA"))
 
 inline fs::path config_dir = fs::path(std::getenv("APPDATA"))
            / "savemanager";
-inline fs::path cache_dir = fs::path(std::getenv("HOME"))
-           / ".config"
+inline fs::path cache_dir = fs::path(std::getenv("APPDATA"))
            / "savemanager"
            / "cache";
 #else
