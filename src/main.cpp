@@ -25,7 +25,6 @@
 #include "core/ui/fonts/jbm_reg.h"
 #include "core/ui/fonts/jbm_med.h"
 #include "core/ui/fonts/jbm_bold.h"
-//#include "core/ui/img/placeholder_img.h"
 
 int main() {
     if(!Config::config_exist()) {
@@ -94,12 +93,10 @@ int main() {
 
             path = cache_dir / (game.appid + ".jpg");
             LoadTextureFromFile(path.string().c_str(), &game_texture, &tex_w, &tex_h);
-        } else {
-            fs::path path = cache_dir / (game.appid + ".jpg");
-            LoadTextureFromFile(path.string().c_str(), &game_texture, &tex_w, &tex_h);
-        }
+            
+            game_textures[game.appid] = game_texture;
 
-        game_textures[game.appid] = game_texture;
+        }
     }
 
     bool show_demo_window = false;
