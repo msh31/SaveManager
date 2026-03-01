@@ -28,7 +28,7 @@ void Tabs::render_general_tab(const Fonts& fonts, const Detection::DetectionResu
             }
 
             count++;
-            ImGui::BeginChild(game.game_name.c_str(), ImVec2(300, 270), true);
+            ImGui::BeginChild(game.game_name.c_str(), ImVec2(300, 300), true);
             ImGui::TextWrapped("%s", game.game_name.c_str());
             ImGui::Separator();
 
@@ -68,6 +68,7 @@ void Tabs::render_general_tab(const Fonts& fonts, const Detection::DetectionResu
         }
 
         if(ImGui::BeginPopupModal("Restore Backup", nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
+            ImGui::SetNextItemWidth(550.0f);
             if(ImGui::BeginListBox("##backups")) {
                 for(int i = 0; i < backups.size(); i++) {
                     if(ImGui::Selectable(backups[i].filename().string().c_str(), selected_backup_idx == i)) {
