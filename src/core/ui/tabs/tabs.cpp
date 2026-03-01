@@ -2,6 +2,7 @@
 #include "core/features/features.hpp"
 #include "core/helpers/network.hpp"
 #include "core/helpers/utils.hpp"
+#include "core/logger/logger.hpp"
 
 #include "imgui.h"
 
@@ -9,6 +10,8 @@ bool open_restore_modal = false;
 std::vector<fs::path> backups;
 const Game* pending_restore_game = nullptr;
 int selected_backup_idx = 0;
+static logger loggar;
+static double last_read_time = 0.0;
 
 void Tabs::render_general_tab(const Fonts& fonts, const Detection::DetectionResult& result, std::unordered_map<std::string, GLuint> texture_id) {
     ImGui::PushFont(fonts.header);
@@ -97,7 +100,30 @@ void Tabs::render_general_tab(const Fonts& fonts, const Detection::DetectionResu
 }
 
 void Tabs::render_log_tab(const Fonts& fonts) {
-    ImGui::Text("the log tab");
+    static std::string log_buffer;
+    std::ifstream log_file(config_dir / "savemanager.log");
+
+    if (ImGui::GetTime() - last_read_time > 2.0) {
+        last_read_time = ImGui::GetTime();
+
+        if (log_file.is_open()) {
+            std::string buffer;
+            log_buffer.clear();
+            while (std::getline(log_file, buffer)) {
+                log_buffer += buffer + "\n";
+            }
+        }
+        else {
+            ImGui::Text("the log could not be opened.");
+        }
+    }
+
+    ImGui::TextUnformatted(log_buffer.c_str());
+    ImGui::SetScrollHereY(1.0f);
+
+    if (ImGui::Button("add log entry")) {
+        loggar.success("added!");
+    }
 }
 
 void Tabs::render_about_tab(const Fonts& fonts) {

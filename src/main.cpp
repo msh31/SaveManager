@@ -21,6 +21,7 @@
 #include "core/ui/themes/themes.hpp"
 #include "core/helpers/textures.hpp"
 #include "core/globals.hpp"
+#include "core/logger/logger.hpp"
 
 #include "core/ui/fonts/jbm_reg.h"
 #include "core/ui/fonts/jbm_med.h"
@@ -41,6 +42,9 @@ int main() {
         std::cerr << "Failed to initialize GLFW.\n";
         return 1;
     }
+
+    static logger log;
+    log.debug("oopsie");
 
     glfwWindowHint(GLFW_SAMPLES, 4); // 4x antialiasing (MSAA)
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
