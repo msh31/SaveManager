@@ -1,7 +1,6 @@
 #pragma once
 #include "core/helpers/paths.hpp"
 
-#include <iostream>
 #include <string>
 #include <fstream>
 

@@ -28,7 +28,6 @@
 
 int main() {
     static logger logger;
-    logger.debug("oopsie");
 
     if(!Config::config_exist()) {
         logger.error("Config is missing and could not be generated!");

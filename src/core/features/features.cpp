@@ -104,7 +104,6 @@ void Features::restore_backup(const fs::path& name, const Game& selected_game) {
 
             zip_int64_t bytes_read;
             if(!fs::create_directories(output_path.parent_path())) {
-                featureLog.error("Failed to create directory for: " + output_path.parent_path().string());
                 failed_files.push_back(fileInfo.name);
                 continue;
             }
