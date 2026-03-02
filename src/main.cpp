@@ -12,9 +12,9 @@
 
 #include <unordered_map>
 
+#include "core/network/network.hpp"
 #include "core/config/config.hpp"
 #include "core/detection/detection.hpp"
-#include "core/helpers/network.hpp"
 #include "core/helpers/textures.hpp"
 #include "core/ui/tabs/tabs.hpp"
 #include "core/ui/themes/themes.hpp"
@@ -95,7 +95,7 @@ int main() {
             game.appid = "catafaceore";
         }
         
-        if(download_game_image(game.appid)) {
+        if(Network::download_game_image(game.appid)) {
             fs::path path;
 
             path = cache_dir / (game.appid + ".jpg");

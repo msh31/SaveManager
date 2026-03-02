@@ -1,8 +1,6 @@
 #include "tabs.hpp"
 #include "core/features/features.hpp"
-#include "core/helpers/network.hpp"
-#include "core/helpers/utils.hpp"
-#include "core/logger/logger.hpp"
+#include "core/helpers/paths.hpp"
 
 #include "imgui.h"
 
