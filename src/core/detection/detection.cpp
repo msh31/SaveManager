@@ -112,9 +112,9 @@ Detection::DetectionResult Detection::find_ubi_saves() {
 
                 Game game;
                 game.type = UBISOFT;
+                game.game_id = game_id_folder.filename().string();
                 game.game_name = get_game_name_ubi(game.game_id.value()).value_or("Unknown Game");
                 game.appid = get_steam_id(game.game_name).value_or("N/A");
-                game.game_id = game_id_folder.filename().string();
                 game.save_path = game_id_folder;
 
                 games.push_back(game);
