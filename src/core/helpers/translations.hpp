@@ -2,7 +2,7 @@
 #include <string>
 #include <fstream>
 #include <optional>
-#include <iostream>
+#include <regex>
 
 #include "../../external/json.hpp"
 #include "core/helpers/paths.hpp"
@@ -35,7 +35,8 @@ inline std::optional<std::string> get_game_name_ubi(const std::string& game_id) 
     for (const auto& [franchise, games] : data.items()) {
         // std::cout << "Searching franchise: " << franchise << "\n";
         if (games.contains(game_id)) {
-            return games[game_id].get<std::string>();
+            auto name = std::regex_replace(games[game_id].get<std::string>(), std::regex(R"(\s*\([^)]*\))"), "");
+            return name; 
         }
     }
     
