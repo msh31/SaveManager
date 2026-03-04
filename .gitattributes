@@ -1,3 +1,13 @@
 # cmkr
 /**/CMakeLists.txt linguist-generated
 /**/cmkr.cmake linguist-vendored
+
+# Font files
+*.ttf binary
+*.otf binary
+*.woff binary
+*.woff2 binary
+*.eot binary
+
+# Font headers (embedded font data)
+src/core/ui/fonts/*.h binary
