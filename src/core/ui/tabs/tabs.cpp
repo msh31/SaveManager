@@ -1,16 +1,14 @@
 #include "tabs.hpp"
 #include "core/features/features.hpp"
-#include "core/helpers/network.hpp"
-#include "core/helpers/utils.hpp"
-#include "core/logger/logger.hpp"
+#include "core/helpers/paths.hpp"
 
+#include "core/ui/notifications/notification.hpp"
 #include "imgui.h"
 
 bool open_restore_modal = false;
 std::vector<fs::path> backups;
 const Game* pending_restore_game = nullptr;
 int selected_backup_idx = 0;
-// static logger loggar;
 static double last_read_time = 0.0;
 
 void Tabs::render_general_tab(const Fonts& fonts, const Detection::DetectionResult& result, std::unordered_map<std::string, GLuint> texture_id) {
@@ -103,6 +101,12 @@ void Tabs::render_log_tab(const Fonts& fonts) {
     static std::string log_buffer;
     std::ifstream log_file(config_dir / "savemanager.log");
 
+    if (ImGui::Button("Clear")) {
+        std::ofstream clear_file(config_dir / "savemanager.log", std::ios::trunc);
+        clear_file.close();
+        log_buffer.clear();
+    }
+
     if (ImGui::GetTime() - last_read_time > 2.0) {
         last_read_time = ImGui::GetTime();
 
@@ -119,11 +123,7 @@ void Tabs::render_log_tab(const Fonts& fonts) {
     }
 
     ImGui::TextUnformatted(log_buffer.c_str());
-    ImGui::SetScrollHereY(1.0f);
-
-    // if (ImGui::Button("add log entry")) {
-    //     loggar.success("added!");
-    // }
+    // ImGui::SetScrollHereY(1.0f);
 }
 
 void Tabs::render_about_tab(const Fonts& fonts) {
@@ -167,7 +167,7 @@ void Tabs::render_about_tab(const Fonts& fonts) {
     ImGui::PopFont();
 
     ImGui::TextWrapped(
-        "A tool for backing up and restoring game saves locally."
+        "A tool for backing up and restoring game saves locally. "
         "Supports Steam, Ubisoft, Rockstar, and more."
     );
 
@@ -179,10 +179,30 @@ void Tabs::render_about_tab(const Fonts& fonts) {
     ImGui::Text("Built With");
     ImGui::PopFont();
 
-    ImGui::BulletText("Dear ImGui");
-    ImGui::BulletText("GLFW");
-    ImGui::BulletText("OpenGL");
-    ImGui::BulletText("libcurl");
-    ImGui::BulletText("libzip");
+    ImGui::Text("Dear ImGui | ");
+    ImGui::SameLine();
+    ImGui::Text("GLFW | ");
+    ImGui::SameLine();
+    ImGui::Text("OpenGL | ");
+    ImGui::SameLine();
+    ImGui::Text("libcurl | ");
+    ImGui::SameLine();
+    ImGui::Text("libzip");
 }
 
+void Tabs::render_settings_tab(const Fonts& fonts) {
+    ImGui::PushFont(fonts.header);
+    ImGui::Text("Settings");
+    ImGui::PopFont();
+}
+
+void Tabs::render_debug_tab(const Fonts& fonts) {
+    ImGui::PushFont(fonts.header);
+    ImGui::Text("Debug menu");
+    ImGui::PopFont();
+
+    if(ImGui::Button("test notification")) {
+        Notify::show_notification("test", "this is a test!", 2000);
+        Notify::show_notification("test 2", "this is longer test to see how long text gets handled because I have some issues...", 3000);
+    }
+}

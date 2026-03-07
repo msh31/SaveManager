@@ -12,9 +12,10 @@
 
 #include <unordered_map>
 
+#include "core/network/network.hpp"
 #include "core/config/config.hpp"
+#include "core/ui/notifications/notification.hpp"
 #include "core/detection/detection.hpp"
-#include "core/helpers/network.hpp"
 #include "core/helpers/textures.hpp"
 #include "core/ui/tabs/tabs.hpp"
 #include "core/ui/themes/themes.hpp"
@@ -28,7 +29,6 @@
 
 int main() {
     static logger logger;
-    logger.debug("oopsie");
 
     if(!Config::config_exist()) {
         logger.error("Config is missing and could not be generated!");
@@ -96,7 +96,7 @@ int main() {
             game.appid = "catafaceore";
         }
         
-        if(download_game_image(game.appid)) {
+        if(Network::download_game_image(game.appid)) {
             fs::path path;
 
             path = cache_dir / (game.appid + ".jpg");
@@ -114,6 +114,7 @@ int main() {
         ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
+        Notify::render_notifications();
 
         ImGuiViewport* viewport = ImGui::GetMainViewport();
         ImGui::SetNextWindowPos(viewport->Pos);
@@ -152,6 +153,14 @@ int main() {
             }
             if (ImGui::BeginTabItem("About"))  {
                 Tabs::render_about_tab(fonts);
+                ImGui::EndTabItem();
+            }
+            if (ImGui::BeginTabItem("Settings"))  {
+                Tabs::render_settings_tab(fonts);
+                ImGui::EndTabItem();
+            }
+            if (ImGui::BeginTabItem("Debug"))  {
+                Tabs::render_debug_tab(fonts);
                 ImGui::EndTabItem();
             }
 

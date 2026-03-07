@@ -1,27 +1,19 @@
-#pragma once
-#include "paths.hpp"
-#include "core/logger/logger.hpp"
+#include "network.hpp"
 
-#include <filesystem>
-#include <string>
-#include <curl/curl.h>
-
-static logger netLog;
-
-inline size_t write_callback(void* ptr, size_t size, size_t nmemb, FILE* stream) {
+size_t Network::write_callback(void* ptr, size_t size, size_t nmemb, FILE* stream) {
     return fwrite(ptr, size, nmemb, stream);
 }
 
-inline bool download_file(const std::string& url, const std::string& output_path) {
+bool Network::download_file(const std::string& url, const std::string& output_path) {
     CURL* curl = curl_easy_init();
     if (!curl) {
-        netLog.error("Failed to initialize CURL");
+        logger().error("Failed to initialize CURL");
         return false;
     }
     
     FILE* fp = fopen(output_path.c_str(), "wb");
     if (!fp) { 
-        netLog.error("Failed to open file for writing: " + output_path);
+        logger().error("Failed to open file for writing: " + output_path);
         curl_easy_cleanup(curl); 
         return false; 
     }
@@ -36,14 +28,14 @@ inline bool download_file(const std::string& url, const std::string& output_path
     curl_easy_cleanup(curl);
     
     if (res != CURLE_OK) {
-        netLog.error("Failed to download file: " + std::string(curl_easy_strerror(res)));
+        logger().error("Failed to download file: " + std::string(curl_easy_strerror(res)));
         return false;
     }
     
     return true;
 }
 
-inline bool download_game_image(const std::string& appid) {
+bool Network::download_game_image(const std::string& appid) {
     std::string output_file = appid + ".jpg";
     fs::path img_path = cache_dir / output_file; 
 
@@ -56,5 +48,5 @@ inline bool download_game_image(const std::string& appid) {
         appid +
         "/header.jpg";
 
-    return download_file(url, img_path.string());
+    return Network::download_file(url, img_path.string());
 }

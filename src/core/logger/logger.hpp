@@ -1,7 +1,6 @@
 #pragma once
 #include "core/helpers/paths.hpp"
 
-#include <iostream>
 #include <string>
 #include <fstream>
 
@@ -17,6 +16,9 @@ class logger
 public:
     logger();
     ~logger();
+    inline logger& get_logger() {
+        return logger::get_logger();
+    }
 
     bool consoleLoggingEnabled = false;
     bool fileLoggingEnabled = true;

@@ -1,10 +1,9 @@
 #include <filesystem>
 
 #include "detection.hpp"
-#include "core/helpers/translations.hpp"
+#include "core/detection/ubi/ubi.hpp"
+#include "core/detection/rsg/rsg.hpp"
 #include "core/logger/logger.hpp"
-
-static logger detectLog;
 
 std::vector<std::string> Detection::get_platform_steam_paths() {
 #ifdef __linux__
@@ -36,185 +35,6 @@ std::optional<fs::path> Detection::get_steam_location() {
 
     return std::nullopt;
 }
-
-Detection::DetectionResult Detection::find_ubi_saves() {
-    std::vector<Game> games;
-    std::string found_uuid;
-
-#ifdef __linux__
-    auto libraries = Detection::get_library_folders();
-    if(libraries.empty()) {
-        detectLog.error("No steam libraries found!");
-        return {};
-    }
-
-    for (auto library : libraries) {
-        fs::path compatdata_path = library / "steamapps/compatdata";
-
-        if(!fs::exists(compatdata_path)) {
-            continue;
-        }
-
-        for(const auto& entry : fs::directory_iterator(compatdata_path)) {
-            fs::path appid_folder = entry.path();
-            fs::path ubi_save_path = appid_folder / "pfx/drive_c/Program Files (x86)/Ubisoft/Ubisoft Game Launcher/savegames";
-            fs::path ac_save_path = appid_folder / "pfx/drive_c/users/steamuser/AppData/Roaming/Ubisoft/Assassin's Creed/Saved Games/";
-
-            if(fs::exists(ac_save_path)) {
-                Game game;
-                game.type = UBISOFT;
-                game.game_name = "Assassin's Creed";
-                game.appid = get_steam_id(game.game_name).value_or("N/A");
-                game.game_id = "82";
-                game.save_path = ac_save_path;
-                games.push_back(game);
-            }
-
-            if(fs::exists(ubi_save_path)) {
-                for(const auto& uuid_entry : fs::directory_iterator(ubi_save_path)) {
-                    fs::path uuid_folder = uuid_entry.path();
-
-                    if(found_uuid.empty()) {
-                        found_uuid = uuid_folder.filename().string();
-                    }
-
-                    for(const auto& game_entry : fs::directory_iterator(uuid_folder)) {
-                        fs::path game_id_folder = game_entry.path();
-
-                        Game game;
-                        game.type = UBISOFT;
-                        game.appid = appid_folder.filename().string();
-                        game.game_id = game_id_folder.filename().string();
-                        game.save_path = game_id_folder;
-                        game.game_name = get_game_name_ubi(game.game_id.value()).value_or("Unknown Game");
-
-                        games.push_back(game);
-                    }
-                }
-            }
-        }
-    }
-#endif // __linux__
-
-#ifdef _WIN32
-    fs::path ubi_save_path = "C:\\Program Files (x86)\\Ubisoft\\Ubisoft Game Launcher\\savegames";
-
-    if (fs::exists(ubi_save_path)) {
-        for (const auto& uuid_entry : fs::directory_iterator(ubi_save_path)) {
-            fs::path uuid_folder = uuid_entry.path();
-
-            if (found_uuid.empty()) {
-                found_uuid = uuid_folder.filename().string();
-            }
-
-            for (const auto& game_entry : fs::directory_iterator(uuid_folder)) {
-                fs::path game_id_folder = game_entry.path();
-
-                Game game;
-                game.type = UBISOFT;
-                game.game_name = get_game_name_ubi(game.game_id.value()).value_or("Unknown Game");
-                game.appid = get_steam_id(game.game_name).value_or("N/A");
-                game.game_id = game_id_folder.filename().string();
-                game.save_path = game_id_folder;
-
-                games.push_back(game);
-            }
-        }
-    }
-#endif // _WIN32
-    return {found_uuid, games};
-}
-
-Detection::DetectionResult Detection::find_rsg_saves() {
-    std::vector<Game> games;
-    std::string found_uuid;
-
-#ifdef __linux__
-    auto libraries = Detection::get_library_folders();
-    if(libraries.empty()) {
-        detectLog.error("No steam libraries found!");
-        return {};
-    }
-
-    for (auto library : libraries) {
-        fs::path compatdata_path = library / "steamapps/compatdata";
-
-        if(!fs::exists(compatdata_path)) {
-            continue;
-        }
-
-        for(const auto& entry : fs::directory_iterator(compatdata_path)) {
-            fs::path appid_folder = entry.path();
-            fs::path rsg_root = appid_folder / "pfx/drive_c/users/steamuser/Documents/Rockstar Games/";
-
-            if(!fs::exists(rsg_root)) {
-                continue;
-            }
-
-            for(const auto& game : fs::directory_iterator(rsg_root)) {
-                fs::path game_folder = game.path();
-                std::string folder_name = game_folder.filename().string();
-                fs::path profiles_folder = game_folder / "Profiles";
-
-                if(folder_name == "Launcher" || folder_name == "Social Club") {
-                    continue;
-                }
-
-                if(!fs::exists(profiles_folder)) {
-                    continue;
-                }
-
-                for(const auto& profile : fs::directory_iterator(profiles_folder)) {
-                    fs::path uuid_folder = profile.path();
-
-                    Game game;
-                    game.type = ROCKSTAR;
-                    game.appid = appid_folder.filename().string();
-                    game.save_path = uuid_folder;
-                    game.game_name = game_folder.filename().string();
-
-                    games.push_back(game);
-                }
-            }
-        }
-    }
-#endif // __linux__
-
-#ifdef _WIN32
-    fs::path rsg_root = documents_dir / "Rockstar Games";
-
-    if (!fs::exists(rsg_root)) {
-        return {};
-    }
-
-    for (const auto& game : fs::directory_iterator(rsg_root)) {
-        fs::path game_folder = game.path();
-        std::string folder_name = game_folder.filename().string();
-        fs::path profiles_folder = game_folder / "Profiles";
-
-        if (folder_name == "Launcher" || folder_name == "Social Club") {
-            continue;
-        }
-
-        if (!fs::exists(profiles_folder)) {
-            continue;
-        }
-
-        for (const auto& profile : fs::directory_iterator(profiles_folder)) {
-            fs::path uuid_folder = profile.path();
-
-            Game game;
-            game.type = ROCKSTAR;
-            game.game_name = game_folder.filename().string();
-            game.appid = get_steam_id(game.game_name).value_or("N/A");
-            game.save_path = uuid_folder;
-
-            games.push_back(game);
-        }
-    }
-#endif // _WIN32
-    return {found_uuid, games};
-}
 //PUBLIC
 
 std::vector<fs::path> Detection::get_library_folders() {
@@ -222,7 +42,7 @@ std::vector<fs::path> Detection::get_library_folders() {
     std::vector<fs::path> libraries;
 
     if(!vdf_file) {
-        detectLog.warning("Steam installation not found");
+        logger().warning("Steam installation not found");
         return {};
     }
 
@@ -230,7 +50,7 @@ std::vector<fs::path> Detection::get_library_folders() {
     std::string line;
 
     if(!file.is_open()) {
-        detectLog.error("Failed to open Steam library file");
+        logger().error("Failed to open Steam library file");
         return {};
     }
 
@@ -257,19 +77,39 @@ std::vector<fs::path> Detection::get_library_folders() {
 
 Detection::DetectionResult Detection::find_saves() {
     DetectionResult result;
-    auto ubi_result = Detection::find_ubi_saves();
-    auto rsg_result = Detection::find_rsg_saves();
 
-    if(ubi_result.games.empty()) {
-        detectLog.error("No Ubisoft savegames found!");
+#ifdef __linux__
+// steam
+    auto libraries = get_library_folders();
+    for (const auto& library : libraries) {
+        fs::path compatdata = library / "steamapps/compatdata";
+        if (!fs::exists(compatdata)) continue;
+
+        for (const auto& entry : fs::directory_iterator(compatdata)) {
+            fs::path prefix = entry.path();
+            ubi::find_saves(prefix / "pfx/drive_c/Program Files (x86)/Ubisoft/Ubisoft Game Launcher/savegames", result.games, result.uuid);
+            rsg::find_saves(prefix / "pfx/drive_c/users/steamuser/Documents/Rockstar Games", result.games);
+        }
+    }
+// lutris
+    fs::path lutris_root = fs::path(std::getenv("HOME")) / "Games";
+    if (fs::exists(lutris_root)) {
+        for (const auto& entry : fs::directory_iterator(lutris_root)) {
+            fs::path prefix = entry.path();
+            ubi::find_saves(prefix / "drive_c/Program Files (x86)/Ubisoft/Ubisoft Game Launcher/savegames", result.games, result.uuid);
+            rsg::find_saves(prefix / "drive_c/users/steamuser/Documents/Rockstar Games", result.games); //untested
+        }
+    }
+#endif
+
+#ifdef _WIN32
+    ubi::find_saves("C:\\Program Files (x86)\\Ubisoft\\Ubisoft Game Launcher\\savegames", result.games, result.uuid);
+    rsg::find_saves(documents_dir / "Rockstar Games", result.games);
+#endif
+
+    if (result.games.empty()) {
+        logger().error("No savegames found!");
     }
 
-    if(rsg_result.games.empty()) {
-        detectLog.error("No Rockstar Games savegames found!");
-    }
-
-    result.uuid = ubi_result.uuid; //might not be strictly needed!
-    result.games.insert(result.games.end(), ubi_result.games.begin(), ubi_result.games.end());
-    result.games.insert(result.games.end(), rsg_result.games.begin(), rsg_result.games.end());
     return result;
 }

@@ -1,6 +1,11 @@
 #include "logger.hpp"
 #include <unordered_map>
 
+static logger& get_logger() {
+    static logger log;
+    return log;
+}
+
 logger::logger() {
 	if (fileLoggingEnabled) {
 		logFile.open(logFilePath, std::ios::app);
