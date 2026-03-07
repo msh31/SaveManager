@@ -22,14 +22,14 @@ bool Config::config_exist() {
 
     if(!fs::exists(ubi_translations)) {
         configLog.info("ubi_translations.json not found, downloading...");
-        if(!download_file("https://git.marco007.dev/marco/smdata/raw/branch/main/ubi_translations.json", ubi_translations)) {
+        if(!download_file("https://git.marco007.dev/marco/smdata/raw/branch/main/ubi_translations.json", ubi_translations.string())) {
             configLog.error("Failed to download Ubisoft game IDs");
             return false;
         }
     }
     if(!fs::exists(steam_appids)) {
         configLog.info("steamids.json was not found, downloading...");
-        if(!download_file("https://git.marco007.dev/marco/smdata/raw/branch/main/steamids.json", steam_appids)) {
+        if(!download_file("https://git.marco007.dev/marco/smdata/raw/branch/main/steamids.json", steam_appids.string())) {
             configLog.error("Failed to download Steam IDs");
             return false;
         }
