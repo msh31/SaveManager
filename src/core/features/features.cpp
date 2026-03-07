@@ -2,6 +2,7 @@
 #include "core/helpers/utils.hpp"
 #include "core/helpers/paths.hpp"
 #include "core/logger/logger.hpp"
+#include "core/ui/notifications/notification.hpp"
 
 static logger featureLog;
 
@@ -15,6 +16,7 @@ void Features::backup_game(const Game& game) {
 
     fs::path zip_name = game_backup_dir / construct_backup_name(game);
     create_backup(zip_name, game);
+    Notify::show_notification("Backup created", "A backup has been created for: " + game.game_name, 2500);
 }
 
 std::vector<fs::path> Features::get_backups(const Game& game) {
@@ -125,12 +127,14 @@ void Features::restore_backup(const fs::path& name, const Game& selected_game) {
 
     zip_close(archive);
     if (!failed_files.empty()) {
+        Notify::show_notification("Restore failed!", "The backup: " + selected_backup_utf8 + " could not be restored!", 5000);
         featureLog.error("Failed to restore:");
         for (const auto& f : failed_files) {
             featureLog.error("  - " + f);
         }
     } else {
         featureLog.success("backup for: " + selected_game.game_name + " has been restored!");
+        Notify::show_notification("Backup restored!", "The backup: " + selected_backup_utf8 + " has been restored!", 2500);
     }
 }
 

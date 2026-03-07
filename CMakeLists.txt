@@ -86,6 +86,7 @@ set(savemanager_SOURCES
 	"src/core/features/features.cpp"
 	"src/core/logger/logger.cpp"
 	"src/core/network/network.cpp"
+	"src/core/ui/notifications/notification.cpp"
 	"src/core/ui/tabs/tabs.cpp"
 	"src/core/ui/themes/themes.cpp"
 	"src/main.cpp"

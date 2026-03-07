@@ -14,6 +14,7 @@
 
 #include "core/network/network.hpp"
 #include "core/config/config.hpp"
+#include "core/ui/notifications/notification.hpp"
 #include "core/detection/detection.hpp"
 #include "core/helpers/textures.hpp"
 #include "core/ui/tabs/tabs.hpp"
@@ -113,6 +114,7 @@ int main() {
         ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
+        Notify::render_notifications();
 
         ImGuiViewport* viewport = ImGui::GetMainViewport();
         ImGui::SetNextWindowPos(viewport->Pos);
