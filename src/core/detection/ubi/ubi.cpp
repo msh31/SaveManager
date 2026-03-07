@@ -1,10 +1,8 @@
 #include "ubi.hpp"
 #include "core/helpers/translations.hpp"
-#include "core/logger/logger.hpp"
 
 void ubi::find_saves(const fs::path& prefix, std::vector<Game>& out_games, std::string& out_uuid) {
     if(!fs::exists(prefix)) {
-        get_logger().error("Failed to find Ubisoft savegames on your system!");
         return;
     }
 

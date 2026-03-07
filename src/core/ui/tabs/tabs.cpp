@@ -101,6 +101,12 @@ void Tabs::render_log_tab(const Fonts& fonts) {
     static std::string log_buffer;
     std::ifstream log_file(config_dir / "savemanager.log");
 
+    if (ImGui::Button("Clear")) {
+        std::ofstream clear_file(config_dir / "savemanager.log", std::ios::trunc);
+        clear_file.close();
+        log_buffer.clear();
+    }
+
     if (ImGui::GetTime() - last_read_time > 2.0) {
         last_read_time = ImGui::GetTime();
 
@@ -117,11 +123,7 @@ void Tabs::render_log_tab(const Fonts& fonts) {
     }
 
     ImGui::TextUnformatted(log_buffer.c_str());
-    ImGui::SetScrollHereY(1.0f);
-
-    // if (ImGui::Button("add log entry")) {
-    //     loggar.success("added!");
-    // }
+    // ImGui::SetScrollHereY(1.0f);
 }
 
 void Tabs::render_about_tab(const Fonts& fonts) {

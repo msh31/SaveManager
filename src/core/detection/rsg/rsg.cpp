@@ -1,10 +1,8 @@
 #include "rsg.hpp"
 #include "core/helpers/translations.hpp"
-#include "core/logger/logger.hpp"
 
 void rsg::find_saves(const fs::path& prefix, std::vector<Game>& out_games) {
     if(!fs::exists(prefix)) {
-        get_logger().error("Failed to find Rockstar savegames on your system!");
         return;
     }
 
