@@ -1,0 +1,36 @@
+name: Test Cross Platform build 
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build-linux:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: build_linux
+        run: |
+          cmake -B build
+          cmake --build build -j$(nproc)
+        # env:
+        #   VCPKG_ROOT: ${{ github.workspace }}/vcpkg
+
+  build-windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: build_windows
+        run: |
+          cmake -B build
+          cmake --build build --config Release
+        env:
+          VCPKG_ROOT: C:\vcpkg

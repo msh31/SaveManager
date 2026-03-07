@@ -1,6 +1,6 @@
 # Reference: https://cmkr.build/cmake-toml
 [cmake]
-version = "4.0.0"
+version = "3.31"
 cmkr-include = "cmkr.cmake"
 
 [project]
@@ -8,12 +8,24 @@ name = "SaveManager"
 description = "The definitive local save manager"
 languages = ["C", "CXX"]
 
+[vcpkg]
+version = "2026.02.27"
+packages = ["curl", "glfw3", "libzip"]
+
+[find-package.CURL]
+required = true
+
+[find-package.glfw3]
+required = true
+
+[find-package.libzip]
+required = true
+
 [variables]
 CMAKE_EXPORT_COMPILE_COMMANDS = true
 
 [target.savemanager]
 type = "executable"
-
 sources = [
     "src/**.cpp",
 
@@ -29,7 +41,6 @@ sources = [
     # GLAD
     "external/glad/src/glad.c",
 ]
-
 include-directories = [
     "external",
     "external/imgui",
@@ -37,31 +48,5 @@ include-directories = [
     "external/glad/include",
     "src",
 ]
-
+link-libraries = ["CURL::libcurl", "glfw", "libzip::zip"]
 compile-features = ["cxx_std_17"]
-
-link-libraries = [
-    "glfw",
-    "$<IF:$<BOOL:${VCPKG_TARGET_TRIPLET}>,libzip::zip,$<IF:$<PLATFORM_ID:Darwin>,${LIBZIP_LIBRARIES},zip>>",
-    "$<IF:$<BOOL:${VCPKG_TARGET_TRIPLET}>,CURL::libcurl,$<IF:$<PLATFORM_ID:Darwin>,${CURL_LIBRARIES},curl>>",
-]
-
-cmake-before = """
-find_package(glfw3 REQUIRED)
-
-if(DEFINED VCPKG_TARGET_TRIPLET)
-    find_package(libzip CONFIG REQUIRED)
-    find_package(CURL REQUIRED)
-elseif(APPLE)
-    if(EXISTS "/opt/homebrew")
-        list(APPEND CMAKE_PREFIX_PATH "/opt/homebrew")
-    elseif(EXISTS "/usr/local")
-        list(APPEND CMAKE_PREFIX_PATH "/usr/local")
-    endif()
-    find_package(PkgConfig REQUIRED)
-    pkg_check_modules(LIBZIP REQUIRED libzip)
-    pkg_check_modules(CURL REQUIRED libcurl)
-    include_directories(${LIBZIP_INCLUDE_DIRS} ${CURL_INCLUDE_DIRS})
-    link_directories(${LIBZIP_LIBRARY_DIRS} ${CURL_LIBRARY_DIRS})
-endif()
-"""
