@@ -8,4 +8,6 @@ namespace Tabs {
     void render_general_tab(const Fonts& fonts, const Detection::DetectionResult& result, std::unordered_map<std::string, GLuint> texture_id);
     void render_log_tab(const Fonts& fonts);
     void render_about_tab(const Fonts& fonts);
+    void render_settings_tab(const Fonts& fonts);
+    void render_debug_tab(const Fonts& fonts);
 };

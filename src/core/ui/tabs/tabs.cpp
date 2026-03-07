@@ -2,6 +2,7 @@
 #include "core/features/features.hpp"
 #include "core/helpers/paths.hpp"
 
+#include "core/ui/notifications/notification.hpp"
 #include "imgui.h"
 
 bool open_restore_modal = false;
@@ -167,7 +168,7 @@ void Tabs::render_about_tab(const Fonts& fonts) {
     ImGui::PopFont();
 
     ImGui::TextWrapped(
-        "A tool for backing up and restoring game saves locally."
+        "A tool for backing up and restoring game saves locally. "
         "Supports Steam, Ubisoft, Rockstar, and more."
     );
 
@@ -179,10 +180,30 @@ void Tabs::render_about_tab(const Fonts& fonts) {
     ImGui::Text("Built With");
     ImGui::PopFont();
 
-    ImGui::BulletText("Dear ImGui");
-    ImGui::BulletText("GLFW");
-    ImGui::BulletText("OpenGL");
-    ImGui::BulletText("libcurl");
-    ImGui::BulletText("libzip");
+    ImGui::Text("Dear ImGui | ");
+    ImGui::SameLine();
+    ImGui::Text("GLFW | ");
+    ImGui::SameLine();
+    ImGui::Text("OpenGL | ");
+    ImGui::SameLine();
+    ImGui::Text("libcurl | ");
+    ImGui::SameLine();
+    ImGui::Text("libzip");
 }
 
+void Tabs::render_settings_tab(const Fonts& fonts) {
+    ImGui::PushFont(fonts.header);
+    ImGui::Text("Settings");
+    ImGui::PopFont();
+}
+
+void Tabs::render_debug_tab(const Fonts& fonts) {
+    ImGui::PushFont(fonts.header);
+    ImGui::Text("Debug menu");
+    ImGui::PopFont();
+
+    if(ImGui::Button("test notification")) {
+        Notify::show_notification("test", "this is a test!", 2000);
+        Notify::show_notification("test 2", "this is longer test to see how long text gets handled because I have some issues...", 3000);
+    }
+}
