@@ -82,6 +82,7 @@ Detection::DetectionResult Detection::find_saves() {
     DetectionResult result;
 
 #ifdef __linux__
+// steam
     auto libraries = get_library_folders();
     for (const auto& library : libraries) {
         fs::path compatdata = library / "steamapps/compatdata";
@@ -91,6 +92,15 @@ Detection::DetectionResult Detection::find_saves() {
             fs::path prefix = entry.path();
             ubi::find_saves(prefix / "pfx/drive_c/Program Files (x86)/Ubisoft/Ubisoft Game Launcher/savegames", result.games, result.uuid);
             rsg::find_saves(prefix / "pfx/drive_c/users/steamuser/Documents/Rockstar Games", result.games);
+        }
+    }
+// lutris
+    fs::path lutris_root = fs::path(std::getenv("HOME")) / "Games";
+    if (fs::exists(lutris_root)) {
+        for (const auto& entry : fs::directory_iterator(lutris_root)) {
+            fs::path prefix = entry.path();
+            ubi::find_saves(prefix / "drive_c/Program Files (x86)/Ubisoft/Ubisoft Game Launcher/savegames", result.games, result.uuid);
+            rsg::find_saves(prefix / "drive_c/users/steamuser/Documents/Rockstar Games", result.games); //untested
         }
     }
 #endif
