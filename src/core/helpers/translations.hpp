@@ -10,11 +10,6 @@
 
 using json = nlohmann::json;
 
-static logger& get_logger() {
-    static logger log;
-    return log;
-}
-
 inline std::optional<std::string> get_game_name_ubi(const std::string& game_id) {
     static json data;
     static bool loaded = false;
@@ -24,11 +19,11 @@ inline std::optional<std::string> get_game_name_ubi(const std::string& game_id) 
         // std::string json_utf8 = json_path.u8string();
         std::ifstream file(json_path.c_str());
         if (!file.is_open()) {
-            get_logger().error("Failed to open JSON file");
+            logger().error("Failed to open JSON file");
             return std::nullopt;
         }
         data = json::parse(file);
-        get_logger().info("Loaded ubi_translations JSON with " + std::to_string(data.size()) + " franchises");
+        logger().info("Loaded ubi_translations JSON with " + std::to_string(data.size()) + " franchises");
         loaded = true;
     }
     
@@ -52,11 +47,11 @@ inline std::optional<std::string> get_steam_id(const std::string& game_name) {
         // std::string json_utf8 = json_path.u8string();
         std::ifstream file(json_path.c_str());
         if (!file.is_open()) {
-            get_logger().error("Failed to open JSON file");
+            logger().error("Failed to open JSON file");
             return std::nullopt;
         }
         data = json::parse(file);
-        get_logger().info("Loaded steamids.json!");
+        logger().info("Loaded steamids.json!");
         loaded = true;
     }
     

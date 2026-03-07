@@ -1,5 +1,4 @@
 #include "network.hpp"
-static logger netLog;
 
 size_t Network::write_callback(void* ptr, size_t size, size_t nmemb, FILE* stream) {
     return fwrite(ptr, size, nmemb, stream);
@@ -8,13 +7,13 @@ size_t Network::write_callback(void* ptr, size_t size, size_t nmemb, FILE* strea
 bool Network::download_file(const std::string& url, const std::string& output_path) {
     CURL* curl = curl_easy_init();
     if (!curl) {
-        netLog.error("Failed to initialize CURL");
+        logger().error("Failed to initialize CURL");
         return false;
     }
     
     FILE* fp = fopen(output_path.c_str(), "wb");
     if (!fp) { 
-        netLog.error("Failed to open file for writing: " + output_path);
+        logger().error("Failed to open file for writing: " + output_path);
         curl_easy_cleanup(curl); 
         return false; 
     }
@@ -29,7 +28,7 @@ bool Network::download_file(const std::string& url, const std::string& output_pa
     curl_easy_cleanup(curl);
     
     if (res != CURLE_OK) {
-        netLog.error("Failed to download file: " + std::string(curl_easy_strerror(res)));
+        logger().error("Failed to download file: " + std::string(curl_easy_strerror(res)));
         return false;
     }
     

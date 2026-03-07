@@ -3,10 +3,7 @@
 #include "detection.hpp"
 #include "core/detection/ubi/ubi.hpp"
 #include "core/detection/rsg/rsg.hpp"
-// #include "core/helpers/translations.hpp"
 #include "core/logger/logger.hpp"
-
-static logger detectLog;
 
 std::vector<std::string> Detection::get_platform_steam_paths() {
 #ifdef __linux__
@@ -45,7 +42,7 @@ std::vector<fs::path> Detection::get_library_folders() {
     std::vector<fs::path> libraries;
 
     if(!vdf_file) {
-        detectLog.warning("Steam installation not found");
+        logger().warning("Steam installation not found");
         return {};
     }
 
@@ -53,7 +50,7 @@ std::vector<fs::path> Detection::get_library_folders() {
     std::string line;
 
     if(!file.is_open()) {
-        detectLog.error("Failed to open Steam library file");
+        logger().error("Failed to open Steam library file");
         return {};
     }
 
@@ -111,7 +108,7 @@ Detection::DetectionResult Detection::find_saves() {
 #endif
 
     if (result.games.empty()) {
-        detectLog.error("No savegames found!");
+        logger().error("No savegames found!");
     }
 
     return result;
