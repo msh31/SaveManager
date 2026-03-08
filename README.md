@@ -15,9 +15,7 @@
 
 ---
 
-SaveManager handles your game saves across Ubisoft, Rockstar, and Steam (Proton/Wine)
-backups, restores, save editing, and PSP ↔ PPSSPP conversion in one place.
-
+SaveManager is a local save manager for PC games. It handles backup and restore for Ubisoft and Rockstar saves across Windows and Linux.
 
 ## Download
 
@@ -25,8 +23,9 @@ Available for Windows and Linux (x86-64) on the [releases page](https://github.c
 
 ## Features
 
-- **Backup & Restore** — create and restore save backups with custom names
-- **Automatic Detection** — detects Ubisoft and Rockstar saves on Windows; Steam/Proton and Wine on Linux
+- **Backup & Restore** — create and restore save backups
+- **Automatic Detection** — finds Ubisoft and Rockstar saves on Windows; Steam/Proton, Wine, and Lutris on Linux
+- **Configurable** — custom backup paths, per-store toggles, and platform-specific settings
 - **Cross-platform** — Windows and Linux (x86-64)
 
 ### Planned
@@ -39,8 +38,8 @@ Available for Windows and Linux (x86-64) on the [releases page](https://github.c
 
 | Store | Windows | Linux |
 |-------|---------|-------|
-| Ubisoft | Yes | Yes (Steam/Proton, Wine) |
-| Rockstar | Yes | Yes (Steam/Proton) |
+| Ubisoft | Yes | Yes (Steam/Proton, Wine, Lutris) |
+| Rockstar | Yes | Yes (Steam/Proton, Lutris) |
 
 ---
 
