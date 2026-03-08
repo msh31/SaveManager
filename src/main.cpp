@@ -50,8 +50,9 @@ int main() {
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE); // no old OpenGL
 
-    GLFWwindow* window = glfwCreateWindow(1280, 720, "SaveManager", nullptr, nullptr);
+    GLFWwindow* window = glfwCreateWindow(1600, 900, "SaveManager", nullptr, nullptr);
     glfwSwapInterval(1);
+    glfwSetWindowSizeLimits(window, 1280, 720, 5120, 2880); //720p -> 5K, 16:9
 
     if(window == nullptr) {
         get_logger().error("Failed to create GLFW window. OpenGL 3.3 support is required!");
