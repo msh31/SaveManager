@@ -1,8 +1,10 @@
 #include <filesystem>
+#include <optional>
 
 #include "detection.hpp"
 #include "core/detection/ubi/ubi.hpp"
 #include "core/detection/rsg/rsg.hpp"
+#include "core/helpers/paths.hpp"
 #include "core/logger/logger.hpp"
 
 std::vector<std::string> Detection::get_platform_steam_paths() {
@@ -26,9 +28,16 @@ std::vector<std::string> Detection::get_platform_steam_paths() {
 #endif
 }
 
-std::optional<fs::path> Detection::get_steam_location() {
+std::optional<fs::path> Detection::get_steam_location(Config& config) {
+    if (!config.settings.steam_path.empty()) {
+        if (fs::exists(config.settings.steam_path)) {
+            return config.settings.steam_path;
+        }
+        get_logger().warning("Configured Steam path does not exist, falling back to defaults");
+    }
+
     for (auto entry : get_platform_steam_paths()) {
-        if(fs::exists(entry)) {
+        if (fs::exists(entry)) {
             return entry;
         }
     }
@@ -37,13 +46,17 @@ std::optional<fs::path> Detection::get_steam_location() {
 }
 //PUBLIC
 
-std::vector<fs::path> Detection::get_library_folders() {
-    auto vdf_file = get_steam_location();
+std::vector<fs::path> Detection::get_library_folders(Config& config) {
+    auto vdf_file = get_steam_location(config);
     std::vector<fs::path> libraries;
 
     if(!vdf_file) {
         get_logger().warning("Steam installation not found");
         return {};
+    }
+
+    if (config.settings.steam_path.empty()) {
+        config.settings.steam_path = vdf_file.value().string();
     }
 
     std::ifstream file(vdf_file.value().string());
@@ -75,35 +88,63 @@ std::vector<fs::path> Detection::get_library_folders() {
 }
 
 
-Detection::DetectionResult Detection::find_saves() {
+Detection::DetectionResult Detection::find_saves(Config& config) {
     DetectionResult result;
 
 #ifdef __linux__
-// steam
-    auto libraries = get_library_folders();
+    // steam
+    auto libraries = get_library_folders(config);
     for (const auto& library : libraries) {
         fs::path compatdata = library / "steamapps/compatdata";
         if (!fs::exists(compatdata)) continue;
 
         for (const auto& entry : fs::directory_iterator(compatdata)) {
             fs::path prefix = entry.path();
-            ubi::find_saves(prefix / "pfx/drive_c/Program Files (x86)/Ubisoft/Ubisoft Game Launcher/savegames", result.games, result.uuid);
-            rsg::find_saves(prefix / "pfx/drive_c/users/steamuser/Documents/Rockstar Games", result.games);
+            if(config.settings.ubi_enabled) {
+                ubi::find_saves(prefix / "pfx/drive_c/Program Files (x86)/Ubisoft/Ubisoft Game Launcher/savegames", result.games, result.uuid);
+            }
+
+            if(config.settings.rsg_enabled) {
+                rsg::find_saves(prefix / "pfx/drive_c/users/steamuser/Documents/Rockstar Games", result.games);
+            }
         }
     }
-// lutris
-    if (fs::exists(lutris_dir)) {
-        for (const auto& entry : fs::directory_iterator(lutris_dir)) {
+    // lutris
+    fs::path resolved_lutris = lutris_dir;
+    if (!config.settings.lutris_path.empty()) {
+        if (fs::exists(config.settings.lutris_path)) {
+            resolved_lutris = config.settings.lutris_path;
+        } else {
+            get_logger().warning("Configured Lutris path does not exist, falling back to defaults");
+        }
+    }
+
+    if (fs::exists(resolved_lutris)) {
+        if (config.settings.lutris_path.empty()) {
+            config.settings.lutris_path = resolved_lutris.string();
+        }
+
+        for (const auto& entry : fs::directory_iterator(resolved_lutris)) {
             fs::path prefix = entry.path();
-            ubi::find_saves(prefix / "drive_c/Program Files (x86)/Ubisoft/Ubisoft Game Launcher/savegames", result.games, result.uuid);
-            rsg::find_saves(prefix / "drive_c/users/steamuser/Documents/Rockstar Games", result.games); //untested
+            if(config.settings.ubi_enabled) {
+                ubi::find_saves(prefix / "pfx/drive_c/Program Files (x86)/Ubisoft/Ubisoft Game Launcher/savegames", result.games, result.uuid);
+            }
+
+            if(config.settings.rsg_enabled) {
+                rsg::find_saves(prefix / "pfx/drive_c/users/steamuser/Documents/Rockstar Games", result.games);
+            }
         }
     }
 #endif
 
 #ifdef _WIN32
-    ubi::find_saves("C:\\Program Files (x86)\\Ubisoft\\Ubisoft Game Launcher\\savegames", result.games, result.uuid);
-    rsg::find_saves(documents_dir / "Rockstar Games", result.games);
+    if(config.settings.ubi_enabled) {
+        ubi::find_saves("C:\\Program Files (x86)\\Ubisoft\\Ubisoft Game Launcher\\savegames", result.games, result.uuid);
+    }
+
+    if(config.settings.rsg_enabled) {
+        rsg::find_saves(documents_dir / "Rockstar Games", result.games);
+    }
 #endif
 
     if (result.games.empty()) {

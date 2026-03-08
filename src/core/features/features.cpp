@@ -1,12 +1,8 @@
 #include "features.hpp"
-#include "core/helpers/utils.hpp"
-#include "core/helpers/paths.hpp"
-#include "core/logger/logger.hpp"
-#include "core/ui/notifications/notification.hpp"
 
-void Features::backup_game(const Game& game) {
+void Features::backup_game(const Game& game, Config& config) {
     get_logger().info("creating backup of: " + game.game_name);
-    fs::path game_backup_dir = backup_dir / game.game_name;
+    fs::path game_backup_dir = config.settings.backup_path / game.game_name;
 
     if(!fs::exists(game_backup_dir)) {
         fs::create_directories(game_backup_dir);
@@ -17,9 +13,9 @@ void Features::backup_game(const Game& game) {
     Notify::show_notification("Backup created", "A backup has been created for: " + game.game_name, 2500);
 }
 
-std::vector<fs::path> Features::get_backups(const Game& game) {
+std::vector<fs::path> Features::get_backups(const Game& game, Config& config) {
     std::vector<fs::path> backups;
-    fs::path game_backup_dir = backup_dir / game.game_name;
+    fs::path game_backup_dir = config.settings.backup_path / game.game_name;
 
     if(!fs::exists(game_backup_dir)) {
         get_logger().error("No backups found for: " + game.game_name);
