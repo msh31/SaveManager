@@ -18,7 +18,7 @@ void Tabs::render_general_tab(const Fonts& fonts, const Detection::DetectionResu
 
     int count = 0;
     float available_width = ImGui::GetContentRegionAvail().x;
-    int columns = std::max(1, (int)(available_width / (300 + 10))); // 10 = gap
+    int columns = (std::max)(1, (int)(available_width / (300 + 10))); //10 = gap
     if(!result.games.empty()) {
         for (const auto& game : result.games) {
             if(count >= columns) {
