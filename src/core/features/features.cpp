@@ -136,8 +136,8 @@ std::string Features::construct_backup_name(const Game& game, const std::string&
     auto tm = *std::localtime(&now);
     char time_buf[20];
     std::strftime(time_buf, sizeof(time_buf), "%Y%m%d_%H%M%S", &tm);
-    std::string game_name = space2underscore(game.game_name);
-    std::string game_name_sanitized = sanitize_filename(game_name);
+    std::string game_name = sanitize_filename(game.game_name);
+    std::string game_name_sanitized = space2underscore(game_name);
     std::string filename = custom_name;
 
     if(filename.empty()) {
