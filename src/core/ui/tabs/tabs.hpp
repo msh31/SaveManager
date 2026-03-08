@@ -10,5 +10,6 @@ namespace Tabs {
     void render_log_tab(const Fonts& fonts);
     void render_about_tab(const Fonts& fonts);
     void render_settings_tab(const Fonts& fonts, Config& config);
+    void render_editor_tab(const Fonts& fonts);
     void render_debug_tab(const Fonts& fonts);
 };

@@ -148,6 +148,10 @@ int main() {
                 Tabs::render_general_tab(fonts, result, game_textures, config);
                 ImGui::EndTabItem();
             }
+            if (ImGui::BeginTabItem("Editor"))  {
+                Tabs::render_editor_tab(fonts);
+                ImGui::EndTabItem();
+            }
             if (ImGui::BeginTabItem("Log"))  {
                 Tabs::render_log_tab(fonts);
                 ImGui::EndTabItem();

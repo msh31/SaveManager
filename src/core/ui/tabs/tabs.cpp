@@ -234,6 +234,12 @@ void Tabs::render_settings_tab(const Fonts& fonts, Config& config) {
     }
 }
 
+void Tabs::render_editor_tab(const Fonts& fonts) {
+    ImGui::PushFont(fonts.header);
+    ImGui::Text("Save Editor");
+    ImGui::PopFont();
+}
+
 void Tabs::render_debug_tab(const Fonts& fonts) {
     ImGui::PushFont(fonts.header);
     ImGui::Text("Debug menu");
