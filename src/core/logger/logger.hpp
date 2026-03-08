@@ -16,8 +16,10 @@ class logger
 public:
     logger();
     ~logger();
-    inline logger& get_logger() {
-        return logger::get_logger();
+
+    static logger& get_logger() {
+        static logger instance;
+        return instance;
     }
 
     bool consoleLoggingEnabled = false;
@@ -38,3 +40,7 @@ private:
     fs::path logFilePath = config_dir / "savemanager.log";
     static std::string getColorForLevel(const std::string& level);
 };
+
+inline logger& get_logger() {
+    return logger::get_logger();
+}

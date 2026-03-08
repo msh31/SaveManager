@@ -5,7 +5,7 @@
 #include "core/ui/notifications/notification.hpp"
 
 void Features::backup_game(const Game& game) {
-    logger().info("creating backup of: " + game.game_name);
+    get_logger().info("creating backup of: " + game.game_name);
     fs::path game_backup_dir = backup_dir / game.game_name;
 
     if(!fs::exists(game_backup_dir)) {
@@ -22,7 +22,7 @@ std::vector<fs::path> Features::get_backups(const Game& game) {
     fs::path game_backup_dir = backup_dir / game.game_name;
 
     if(!fs::exists(game_backup_dir)) {
-        logger().error("No backups found for: " + game.game_name);
+        get_logger().error("No backups found for: " + game.game_name);
         return {};
     }
 
@@ -43,7 +43,7 @@ void Features::create_backup(const fs::path& name, const Game& selected_game) {
     zip_t* archive = zip_open(utf8_path.c_str(), ZIP_CREATE | ZIP_TRUNCATE, &zip_error);
 
     if(!archive) {
-        logger().error("Could not create backup!");
+        get_logger().error("Could not create backup!");
         return;
     }
 
@@ -52,22 +52,22 @@ void Features::create_backup(const fs::path& name, const Game& selected_game) {
         if (entry.is_regular_file()) {
             std::string entry_utf8 = entry.path().u8string();
             fs::path relative = fs::relative(entry_utf8.c_str(), selected_game.save_path);
-            logger().info("Adding: " + relative.string() + " to the backup for " + selected_game.game_name);
+            get_logger().info("Adding: " + relative.string() + " to the backup for " + selected_game.game_name);
 
             zip_source_t* source = zip_source_file(archive, entry_utf8.c_str(), 0, 0);
             if (!source) {
-                logger().error("Failed to create source for: " + entry_utf8);
+                get_logger().error("Failed to create source for: " + entry_utf8);
                 continue;
             }
 
             if (zip_file_add(archive, relative.string().c_str(), source, ZIP_FL_OVERWRITE) < 0) {
-                logger().error("Failed to add file: " + std::string(zip_strerror(archive)));
+                get_logger().error("Failed to add file: " + std::string(zip_strerror(archive)));
             }
             file_count++;
         }
     }
-    logger().success("Added " + std::to_string(file_count) + " files");
-    logger().success("backup has been created!");
+    get_logger().success("Added " + std::to_string(file_count) + " files");
+    get_logger().success("backup has been created!");
     zip_close(archive);
 }
 
@@ -79,7 +79,7 @@ void Features::restore_backup(const fs::path& name, const Game& selected_game) {
     zip_t* archive = zip_open(selected_backup_utf8.c_str(), 0, &zip_error);
 
     if(!archive) {
-        logger().error("Could not open backup for restoration process!");
+        get_logger().error("Could not open backup for restoration process!");
         return;
     }
 
@@ -89,14 +89,14 @@ void Features::restore_backup(const fs::path& name, const Game& selected_game) {
         zip_stat_init(&fileInfo); 
 
         if (zip_stat_index(archive, i, 0, &fileInfo) == 0) {
-            logger().info(std::string("File Name: ") + fileInfo.name);
+            get_logger().info(std::string("File Name: ") + fileInfo.name);
             const auto& output_path = selected_game.save_path / fileInfo.name;
-            logger().info("Saving to: " + output_path.string());
+            get_logger().info("Saving to: " + output_path.string());
 
             zip_file* file = zip_fopen_index(archive, i, 0);
 
             if (!file) {
-                logger().warning("Failed to open file in archive: " + std::string(fileInfo.name));
+                get_logger().warning("Failed to open file in archive: " + std::string(fileInfo.name));
                 failed_files.push_back(fileInfo.name);
                 continue;
             }
@@ -110,7 +110,7 @@ void Features::restore_backup(const fs::path& name, const Game& selected_game) {
             std::ofstream save_file(output_path, std::ios::binary);
 
             if (!save_file.is_open()) {
-                logger().error("Failed to open save file for writing: " + output_path.string());
+                get_logger().error("Failed to open save file for writing: " + output_path.string());
                 failed_files.push_back(fileInfo.name);
                 zip_fclose(file);
                 continue;
@@ -126,12 +126,12 @@ void Features::restore_backup(const fs::path& name, const Game& selected_game) {
     zip_close(archive);
     if (!failed_files.empty()) {
         Notify::show_notification("Restore failed!", "The backup: " + selected_backup_utf8 + " could not be restored!", 5000);
-        logger().error("Failed to restore:");
+        get_logger().error("Failed to restore:");
         for (const auto& f : failed_files) {
-            logger().error("  - " + f);
+            get_logger().error("  - " + f);
         }
     } else {
-        logger().success("backup for: " + selected_game.game_name + " has been restored!");
+        get_logger().success("backup for: " + selected_game.game_name + " has been restored!");
         Notify::show_notification("Backup restored!", "The backup: " + selected_backup_utf8 + " has been restored!", 2500);
     }
 }

@@ -42,7 +42,7 @@ std::vector<fs::path> Detection::get_library_folders() {
     std::vector<fs::path> libraries;
 
     if(!vdf_file) {
-        logger().warning("Steam installation not found");
+        get_logger().warning("Steam installation not found");
         return {};
     }
 
@@ -50,7 +50,7 @@ std::vector<fs::path> Detection::get_library_folders() {
     std::string line;
 
     if(!file.is_open()) {
-        logger().error("Failed to open Steam library file");
+        get_logger().error("Failed to open Steam library file");
         return {};
     }
 
@@ -92,9 +92,8 @@ Detection::DetectionResult Detection::find_saves() {
         }
     }
 // lutris
-    fs::path lutris_root = fs::path(std::getenv("HOME")) / "Games";
-    if (fs::exists(lutris_root)) {
-        for (const auto& entry : fs::directory_iterator(lutris_root)) {
+    if (fs::exists(lutris_dir)) {
+        for (const auto& entry : fs::directory_iterator(lutris_dir)) {
             fs::path prefix = entry.path();
             ubi::find_saves(prefix / "drive_c/Program Files (x86)/Ubisoft/Ubisoft Game Launcher/savegames", result.games, result.uuid);
             rsg::find_saves(prefix / "drive_c/users/steamuser/Documents/Rockstar Games", result.games); //untested
@@ -108,7 +107,7 @@ Detection::DetectionResult Detection::find_saves() {
 #endif
 
     if (result.games.empty()) {
-        logger().error("No savegames found!");
+        get_logger().error("No savegames found!");
     }
 
     return result;

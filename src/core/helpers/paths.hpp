@@ -15,6 +15,9 @@ inline fs::path cache_dir = fs::path(std::getenv("HOME"))
            / ".config"
            / "savemanager"
            / "cache";
+
+inline fs::path lutris_dir = fs::path(std::getenv("HOME"))
+           / "Games";
 #elif defined(_WIN32)
 inline fs::path backup_dir = fs::path(std::getenv("APPDATA"))
            / "savemanager"

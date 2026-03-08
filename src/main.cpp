@@ -28,20 +28,18 @@
 #include "core/ui/fonts/jbm_bold.h"
 
 int main() {
-    static logger logger;
-
     if(!Config::config_exist()) {
-        logger.error("Config is missing and could not be generated!");
+        get_logger().error("Config is missing and could not be generated!");
         return 1;
     }
 
     auto result = Detection::find_saves();
     if(result.games.empty()) {
-        logger.warning("No savegames found!");
+        get_logger().warning("No savegames found!");
     }
 
     if(!glfwInit()) {
-        logger.error("Failed to initialize GLFW.");
+        get_logger().error("Failed to initialize GLFW.");
         return 1;
     }
 
@@ -54,13 +52,13 @@ int main() {
     glfwSwapInterval(1);
 
     if(window == nullptr) {
-        logger.error("Failed to create GLFW window. OpenGL 3.3 support is required!");
+        get_logger().error("Failed to create GLFW window. OpenGL 3.3 support is required!");
         glfwTerminate();
         return 1;
     }
     glfwMakeContextCurrent(window);
     if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
-        logger.error("Failed to initialize GLAD");
+        get_logger().error("Failed to initialize GLAD");
         return 1;
     }
     ImGui::CreateContext();
