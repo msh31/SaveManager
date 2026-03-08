@@ -1,4 +1,5 @@
 #pragma once
+#include "core/config/config.hpp"
 #include <filesystem>
 #include <string>
 #include <vector>
@@ -32,11 +33,11 @@ public:
         std::vector<Game> games;
     };
 
-    static DetectionResult find_saves();
+    static DetectionResult find_saves(Config& config);
 
     static const Game* get_selected_game(const DetectionResult& result);
 private:
     static std::vector<std::string> get_platform_steam_paths();
-    static std::optional<fs::path> get_steam_location();
-    static std::vector<fs::path> get_library_folders();
+    static std::optional<fs::path> get_steam_location(Config& config);
+    static std::vector<fs::path> get_library_folders(Config& config);
 };

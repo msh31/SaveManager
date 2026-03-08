@@ -28,15 +28,17 @@
 #include "core/ui/fonts/jbm_bold.h"
 
 int main() {
-    if(!Config::config_exist()) {
+    Config config;
+    if(!config.config_exists()) {
         get_logger().error("Config is missing and could not be generated!");
         return 1;
     }
 
-    auto result = Detection::find_saves();
+    auto result = Detection::find_saves(config);
     if(result.games.empty()) {
         get_logger().warning("No savegames found!");
     }
+    config.save();
 
     if(!glfwInit()) {
         get_logger().error("Failed to initialize GLFW.");
@@ -142,7 +144,7 @@ int main() {
         static ImGuiTabBarFlags tab_bar_flags = ImGuiTabBarFlags_Reorderable | ImGuiTabBarFlags_DrawSelectedOverline;
         if (ImGui::BeginTabBar("MyTabBar", tab_bar_flags)) {
             if (ImGui::BeginTabItem("General"))  {
-                Tabs::render_general_tab(fonts, result, game_textures);
+                Tabs::render_general_tab(fonts, result, game_textures, config);
                 ImGui::EndTabItem();
             }
             if (ImGui::BeginTabItem("Log"))  {
@@ -154,7 +156,7 @@ int main() {
                 ImGui::EndTabItem();
             }
             if (ImGui::BeginTabItem("Settings"))  {
-                Tabs::render_settings_tab(fonts);
+                Tabs::render_settings_tab(fonts, config);
                 ImGui::EndTabItem();
             }
             if (ImGui::BeginTabItem("Debug"))  {

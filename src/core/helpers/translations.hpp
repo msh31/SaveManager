@@ -19,7 +19,7 @@ inline std::optional<std::string> get_game_name_ubi(const std::string& game_id) 
         // std::string json_utf8 = json_path.u8string();
         std::ifstream file(json_path.c_str());
         if (!file.is_open()) {
-            logger().error("Failed to open JSON file");
+            logger().error("Failed to open translations file!");
             return std::nullopt;
         }
         data = json::parse(file);
@@ -47,7 +47,7 @@ inline std::optional<std::string> get_steam_id(const std::string& game_name) {
         // std::string json_utf8 = json_path.u8string();
         std::ifstream file(json_path.c_str());
         if (!file.is_open()) {
-            logger().error("Failed to open JSON file");
+            logger().error("Failed to open steamids file!");
             return std::nullopt;
         }
         data = json::parse(file);

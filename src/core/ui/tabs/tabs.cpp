@@ -11,7 +11,7 @@ const Game* pending_restore_game = nullptr;
 int selected_backup_idx = 0;
 static double last_read_time = 0.0;
 
-void Tabs::render_general_tab(const Fonts& fonts, const Detection::DetectionResult& result, std::unordered_map<std::string, GLuint> texture_id) {
+void Tabs::render_general_tab(const Fonts& fonts, const Detection::DetectionResult& result, std::unordered_map<std::string, GLuint> texture_id, Config& config) {
     ImGui::PushFont(fonts.header);
     ImGui::Text("Detected Games");
     ImGui::PopFont();
@@ -48,7 +48,7 @@ void Tabs::render_general_tab(const Fonts& fonts, const Detection::DetectionResu
             ImGui::Dummy(ImVec2(0.0f, 8.0f));
 
             if(ImGui::Button("Backup")) {
-                Features::backup_game(game);
+                Features::backup_game(game, config);
             }
             ImGui::SameLine();
             if(ImGui::Button("Restore")) {
@@ -62,7 +62,7 @@ void Tabs::render_general_tab(const Fonts& fonts, const Detection::DetectionResu
         if(open_restore_modal) {
             ImGui::OpenPopup("Restore Backup");
             open_restore_modal = false;
-            backups = Features::get_backups(*pending_restore_game); 
+            backups = Features::get_backups(*pending_restore_game, config); 
             if(backups.empty()) {
                 open_restore_modal = false;
             }
@@ -190,10 +190,46 @@ void Tabs::render_about_tab(const Fonts& fonts) {
     ImGui::Text("libzip");
 }
 
-void Tabs::render_settings_tab(const Fonts& fonts) {
+void Tabs::render_settings_tab(const Fonts& fonts, Config& config) {
     ImGui::PushFont(fonts.header);
     ImGui::Text("Settings");
     ImGui::PopFont();
+   
+    ImGui::PushFont(fonts.medium);
+    ImGui::Text("Launcher Support");
+    ImGui::PopFont();
+    ImGui::Checkbox("Ubisoft Connect", &config.settings.ubi_enabled);
+    ImGui::SameLine();
+    ImGui::Checkbox("Rockstar Games Launcher", &config.settings.rsg_enabled);
+    ImGui::Separator();
+
+    ImGui::PushFont(fonts.medium);
+    ImGui::Text("Paths");
+    ImGui::PopFont();
+    static char backup_buf[256];
+    static char lutris_buf[256];
+    static char steam_buf[256];
+
+    static bool initialized = false;
+    if (!initialized) {
+        snprintf(backup_buf, sizeof(backup_buf), "%s", config.settings.backup_path.string().c_str());
+        snprintf(lutris_buf, sizeof(lutris_buf), "%s", config.settings.lutris_path.c_str());
+        snprintf(steam_buf, sizeof(steam_buf), "%s", config.settings.steam_path.c_str());
+        initialized = true;
+    }
+
+    ImGui::InputText("Backup path", backup_buf, sizeof(backup_buf));
+    ImGui::InputText("Lutris path", lutris_buf, sizeof(lutris_buf));
+    ImGui::InputText("Steam path", steam_buf, sizeof(steam_buf));
+    ImGui::Separator();
+
+    if (ImGui::Button("Save")) {
+        config.settings.backup_path = fs::path(backup_buf);
+        config.settings.lutris_path = lutris_buf;
+        config.settings.steam_path = steam_buf;
+        config.save();
+        Notify::show_notification("Config Saved!", "Settings saved successfully!", 1500);
+    }
 }
 
 void Tabs::render_debug_tab(const Fonts& fonts) {
