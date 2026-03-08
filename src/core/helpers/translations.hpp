@@ -15,11 +15,9 @@ inline std::optional<std::string> get_game_name_ubi(const std::string& game_id) 
     static bool loaded = false;
     
     if (!loaded) {
-        fs::path json_path = config_dir / "ubi_translations.json";
-        // std::string json_utf8 = json_path.u8string();
-        std::ifstream file(json_path.c_str());
+        std::ifstream file(ubi_translations.c_str());
         if (!file.is_open()) {
-            logger().error("Failed to open translations file!");
+            logger().error("Failed to open ubi translations file!");
             return std::nullopt;
         }
         data = json::parse(file);
@@ -35,6 +33,27 @@ inline std::optional<std::string> get_game_name_ubi(const std::string& game_id) 
         }
     }
     
+    return std::nullopt;
+}
+
+inline std::optional<std::string> get_game_name_rsg(const std::string& game_id) {
+    static json data;
+    static bool loaded = false;
+    
+    if (!loaded) {
+        std::ifstream file(rsg_translations.c_str());
+        if (!file.is_open()) {
+            logger().error("Failed to open rsg translations file!");
+            return std::nullopt;
+        }
+        data = json::parse(file);
+        logger().info("Loaded rsg_translations JSON with " + std::to_string(data.size()) + " entries");
+        loaded = true;
+    }
+    
+    if (data.contains(game_id)) {
+        return data[game_id].get<std::string>();
+    }
     return std::nullopt;
 }
 
