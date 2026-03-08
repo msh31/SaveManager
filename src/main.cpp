@@ -108,7 +108,6 @@ int main() {
         }
     }
 
-    bool show_demo_window = false;
     do{
         glClear(GL_COLOR_BUFFER_BIT);
 
@@ -130,10 +129,6 @@ int main() {
             ImGuiWindowFlags_NoNavFocus;
 
         ImGui::Begin("Main Window", nullptr, window_flags);
-
-        if(show_demo_window) {
-            ImGui::ShowDemoWindow(&show_demo_window);
-        } 
 
         ImGui::PushFont(fonts.title);
         ImGui::Text("SaveManager");
