@@ -92,7 +92,9 @@ void Config::load() {
         settings.backup_path = backup_dir;
     }
     if (settings.lutris_path.empty()) {
+#ifdef __linux__
         settings.lutris_path = lutris_dir;
+#endif
     }
 
     settings.ubi_enabled = data.value("ubi_enabled", true);
