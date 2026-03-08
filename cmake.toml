@@ -36,7 +36,6 @@ sources = [
     "external/imgui/imgui_widgets.cpp",
     "external/imgui/backends/imgui_impl_glfw.cpp",
     "external/imgui/backends/imgui_impl_opengl3.cpp",
-    "external/imgui/imgui_demo.cpp",
 
     # GLAD
     "external/glad/src/glad.c",
