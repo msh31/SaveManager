@@ -1,8 +1,9 @@
 #include "features.hpp"
+#include "core/helpers/utils.hpp"
 
 void Features::backup_game(const Game& game, Config& config) {
     get_logger().info("creating backup of: " + game.game_name);
-    fs::path game_backup_dir = config.settings.backup_path / game.game_name;
+    fs::path game_backup_dir = config.settings.backup_path / sanitize_filename(game.game_name);
 
     if(!fs::exists(game_backup_dir)) {
         fs::create_directories(game_backup_dir);
@@ -15,10 +16,10 @@ void Features::backup_game(const Game& game, Config& config) {
 
 std::vector<fs::path> Features::get_backups(const Game& game, Config& config) {
     std::vector<fs::path> backups;
-    fs::path game_backup_dir = config.settings.backup_path / game.game_name;
+    fs::path game_backup_dir = config.settings.backup_path / sanitize_filename(game.game_name);
 
     if(!fs::exists(game_backup_dir)) {
-        get_logger().error("No backups found for: " + game.game_name);
+        get_logger().error("No backups found for: " + sanitize_filename(game.game_name));
         return {};
     }
 
@@ -99,10 +100,7 @@ void Features::restore_backup(const fs::path& name, const Game& selected_game) {
             char buffer[1024];
 
             zip_int64_t bytes_read;
-            if(!fs::create_directories(output_path.parent_path())) {
-                failed_files.push_back(fileInfo.name);
-                continue;
-            }
+            fs::create_directories(output_path.parent_path());
             std::ofstream save_file(output_path, std::ios::binary);
 
             if (!save_file.is_open()) {
@@ -139,10 +137,11 @@ std::string Features::construct_backup_name(const Game& game, const std::string&
     char time_buf[20];
     std::strftime(time_buf, sizeof(time_buf), "%Y%m%d_%H%M%S", &tm);
     std::string game_name = space2underscore(game.game_name);
+    std::string game_name_sanitized = sanitize_filename(game_name);
     std::string filename = custom_name;
 
     if(filename.empty()) {
-        filename = space2underscore(game.game_name);
+        filename = game_name_sanitized;
     }
 
     return "backup_" + filename + "_" + std::string(time_buf) + ".zip";
