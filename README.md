@@ -9,7 +9,7 @@
 
 [Download](#download) • [Features](#features) • [Contributing](CONTRIBUTING.md) • [License](#license)
 
-<img src="assets/preview_march_2026.png" alt="App Preview" width="800"/>
+<img src="assets/output_hq.gif" alt="App Preview" width="800"/>
 
 </div>
 
