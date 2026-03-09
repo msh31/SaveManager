@@ -25,16 +25,14 @@ struct Game {
     fs::path save_path;
 };
 
-class Detection {
-public:
+namespace Detection {
     struct DetectionResult {
         std::string uuid;  // ubi only 
         std::vector<Game> games;
     };
 
-    static DetectionResult find_saves(Config& config);
-private:
-    static std::vector<std::string> get_platform_steam_paths();
-    static std::optional<fs::path> get_steam_location(Config& config);
-    static std::vector<fs::path> get_library_folders(Config& config);
+    DetectionResult find_saves(Config& config);
+    std::vector<std::string> get_platform_steam_paths();
+    std::optional<fs::path> get_steam_location(Config& config);
+    std::vector<fs::path> get_library_folders(Config& config);
 };
