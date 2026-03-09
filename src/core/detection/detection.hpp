@@ -33,8 +33,6 @@ public:
     };
 
     static DetectionResult find_saves(Config& config);
-
-    static const Game* get_selected_game(const DetectionResult& result);
 private:
     static std::vector<std::string> get_platform_steam_paths();
     static std::optional<fs::path> get_steam_location(Config& config);
