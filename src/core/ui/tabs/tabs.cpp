@@ -62,12 +62,12 @@ void Tabs::render_general_tab(const Fonts& fonts, const Detection::DetectionResu
         }
 
         if(open_restore_modal) {
-            ImGui::OpenPopup("Restore Backup");
             open_restore_modal = false;
             backups = Features::get_backups(*pending_restore_game, config); 
             if(backups.empty()) {
                 open_restore_modal = false;
             }
+            ImGui::OpenPopup("Restore Backup");
         }
 
         if(ImGui::BeginPopupModal("Restore Backup", nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
