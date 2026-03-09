@@ -33,3 +33,8 @@ inline fs::path documents_dir = fs::path(std::getenv("USERPROFILE"))
 #else
 #error "Unsupported platform"
 #endif
+
+
+inline fs::path ubi_translations = config_dir / "ubi_translations.json";
+inline fs::path rsg_translations = config_dir / "rsg_translations.json";
+inline fs::path steam_appids = config_dir / "steamids.json";

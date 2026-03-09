@@ -25,32 +25,39 @@ Config::~Config() {
     }
 }
 
-bool Config::config_exists() {
+bool Config::init() {
     if(!fs::exists(backup_dir) || !fs::exists(cache_dir)) {
         if(!fs::create_directories(backup_dir)) {
             get_logger().error("Failed to create backup directory");
             return false;
         }
+    }
+
+    if(!fs::exists(cache_dir)) {
         if(!fs::create_directories(cache_dir)) {
             get_logger().error("Failed to create cache directory");
             return false;
         }
     }
 
-    fs::path ubi_translations = config_dir / "ubi_translations.json";
-    fs::path steam_appids = config_dir / "steamids.json";
-
     if(!fs::exists(ubi_translations)) {
         get_logger().info("ubi_translations.json not found, downloading...");
         if(!Network::download_file("https://git.marco007.dev/marco/smdata/raw/branch/main/ubi_translations.json", ubi_translations.string())) {
-            get_logger().error("Failed to download Ubisoft game IDs");
+            get_logger().error("Failed to download Ubisoft translations");
+            return false;
+        }
+    }
+    if(!fs::exists(rsg_translations)) {
+        get_logger().info("ubi_translations.json not found, downloading...");
+        if(!Network::download_file("https://git.marco007.dev/marco/smdata/raw/branch/main/rsg_translations.json", rsg_translations.string())) {
+            get_logger().error("Failed to download RSG translations");
             return false;
         }
     }
     if(!fs::exists(steam_appids)) {
         get_logger().info("steamids.json was not found, downloading...");
         if(!Network::download_file("https://git.marco007.dev/marco/smdata/raw/branch/main/steamids.json", steam_appids.string())) {
-            get_logger().error("Failed to download Steam IDs");
+            get_logger().error("Failed to download Steam ID data");
             return false;
         }
     }
@@ -71,7 +78,7 @@ void Config::save() {
 }
 
 void Config::load() {
-    static json data;
+    json data;
 
     if(!fs::exists(config_file)) {
         save();

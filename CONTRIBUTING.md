@@ -9,9 +9,9 @@ Contributions are welcome. If you want to report a bug, suggest a feature, or su
 
 ## Pull Requests
 
-- Keep PRs focused — one thing at a time
+- Keep PRs focused, one thing at a time
 - If you're adding a feature, open an issue first to discuss it
-- Follow the existing code style (C++17, no exceptions, namespace over heavy OOP)
+- Follow the existing code style (C++17, namespace over heavy OOP)
 
 ---
 
@@ -34,26 +34,13 @@ Bundled in `external/` (no install needed):
 | [Dear ImGui](https://github.com/ocornut/imgui) | GUI |
 | [stb](https://github.com/nothings/stb) | Image loading |
 
-System dependencies you need to install (Will change to vcpkg in the future):
-
-- [glfw3](https://github.com/glfw/glfw)
-- [libzip](https://github.com/winlibs/libzip)
-- [curl](https://github.com/curl/curl)
+System dependencies (glfw3, libzip, curl) are managed by vcpkg and installed automatically during the build.
 
 > Game ID data is fetched from GitHub on first launch and cached locally.
 
+The build configuration lives in `cmake.toml` ([cmkr](https://github.com/build-cpp/cmkr)), which auto-generates `CMakeLists.txt` — edit `cmake.toml`, not `CMakeLists.txt` directly.
+
 ### Linux
-
-```bash
-# Arch
-sudo pacman -S glfw-x11 libzip curl
-
-# Debian/Ubuntu
-sudo apt install libglfw3-dev libzip-dev libcurl4-openssl-dev
-
-# Fedora
-sudo dnf install glfw-devel libzip-devel libcurl-devel
-```
 
 ```bash
 cmake -B build
