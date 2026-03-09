@@ -1,5 +1,4 @@
 #include "logger.hpp"
-#include "core/ui/notifications/notification.hpp"
 
 logger::logger() {
 	if (fileLoggingEnabled) {
@@ -43,7 +42,6 @@ void logger::log(const std::string& level, const std::string& message) {
 			logFile.open(logFilePath, std::ios::app);
 
 			if (!logFile.is_open()) {
-                Notify::show_notification("Logger", "Failed to open logfile, is something else using it?", 2000);
 				return;
 			}
 		}
