@@ -19,7 +19,6 @@
 #include "core/helpers/textures.hpp"
 #include "core/ui/tabs/tabs.hpp"
 #include "core/ui/themes/themes.hpp"
-#include "core/helpers/textures.hpp"
 #include "core/globals.hpp"
 #include "core/logger/logger.hpp"
 
@@ -51,7 +50,6 @@ int main() {
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE); // no old OpenGL
 
     GLFWwindow* window = glfwCreateWindow(1600, 900, "SaveManager", nullptr, nullptr);
-    glfwSwapInterval(1);
     glfwSetWindowSizeLimits(window, 1280, 720, 5120, 2880); //720p -> 5K, 16:9
 
     if(window == nullptr) {
@@ -60,6 +58,7 @@ int main() {
         return 1;
     }
     glfwMakeContextCurrent(window);
+    glfwSwapInterval(1);
     if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
         get_logger().error("Failed to initialize GLAD");
         return 1;
