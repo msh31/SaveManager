@@ -62,12 +62,12 @@ void Tabs::render_general_tab(const Fonts& fonts, const Detection::DetectionResu
         }
 
         if(open_restore_modal) {
-            ImGui::OpenPopup("Restore Backup");
             open_restore_modal = false;
             backups = Features::get_backups(*pending_restore_game, config); 
             if(backups.empty()) {
                 open_restore_modal = false;
             }
+            ImGui::OpenPopup("Restore Backup");
         }
 
         if(ImGui::BeginPopupModal("Restore Backup", nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
@@ -212,17 +212,25 @@ void Tabs::render_settings_tab(const Fonts& fonts, Config& config) {
     static char lutris_buf[256];
     static char steam_buf[256];
 
-    static bool initialized = false;
-    if (!initialized) {
-        snprintf(backup_buf, sizeof(backup_buf), "%s", config.settings.backup_path.string().c_str());
-        snprintf(lutris_buf, sizeof(lutris_buf), "%s", config.settings.lutris_path.c_str());
-        snprintf(steam_buf, sizeof(steam_buf), "%s", config.settings.steam_path.c_str());
-        initialized = true;
-    }
+    snprintf(backup_buf, sizeof(backup_buf), "%s", config.settings.backup_path.string().c_str());
+    snprintf(lutris_buf, sizeof(lutris_buf), "%s", config.settings.lutris_path.c_str());
+    snprintf(steam_buf, sizeof(steam_buf), "%s", config.settings.steam_path.c_str());
 
     ImGui::InputText("Backup path", backup_buf, sizeof(backup_buf));
+    if (!ImGui::IsItemActive()) {
+        snprintf(backup_buf, sizeof(backup_buf), "%s", config.settings.backup_path.string().c_str());
+    }
+
     ImGui::InputText("Lutris path", lutris_buf, sizeof(lutris_buf));
+    if (!ImGui::IsItemActive()) {
+        snprintf(lutris_buf, sizeof(lutris_buf), "%s", config.settings.lutris_path.c_str());
+    }
+
     ImGui::InputText("Steam path", steam_buf, sizeof(steam_buf));
+    if (!ImGui::IsItemActive()) {
+        snprintf(steam_buf, sizeof(steam_buf), "%s", config.settings.steam_path.c_str());
+    }
+
     ImGui::Separator();
 
     if (ImGui::Button("Save")) {
