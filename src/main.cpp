@@ -149,10 +149,10 @@ int main() {
                 Tabs::render_settings_tab(fonts, config);
                 ImGui::EndTabItem();
             }
-            if (ImGui::BeginTabItem("Debug"))  {
-                Tabs::render_debug_tab(fonts);
-                ImGui::EndTabItem();
-            }
+            // if (ImGui::BeginTabItem("Debug"))  {
+            //     Tabs::render_debug_tab(fonts);
+            //     ImGui::EndTabItem();
+            // }
 
             ImGui::EndTabBar();
         }
