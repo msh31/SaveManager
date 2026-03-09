@@ -38,6 +38,9 @@ int main() {
         get_logger().warning("No savegames found!");
     }
     config.save();
+    get_logger().info("steam_path: " + config.settings.steam_path);
+    get_logger().info("lutris_path: " + config.settings.lutris_path);
+    get_logger().info("backup_path: " + config.settings.backup_path.string());
 
     if(!glfwInit()) {
         get_logger().error("Failed to initialize GLFW.");
@@ -91,6 +94,10 @@ int main() {
     std::unordered_map<std::string, GLuint> game_textures;
     int tex_w = 460, tex_h = 215;
     for (auto& game : result.games) {
+        if(game.appid == "N/A") {
+            continue;
+        }
+
         if(!Network::download_game_image(game.appid)) {
             continue;
         }
