@@ -35,7 +35,7 @@ std::optional<fs::path> get_steam_location(Config& config) {
         get_logger().warning("Configured Steam path does not exist, falling back to defaults");
     }
 
-    for (auto entry : get_platform_steam_paths()) {
+    for (const auto& entry : get_platform_steam_paths()) {
         if (fs::exists(entry)) {
             return entry;
         }
