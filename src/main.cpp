@@ -91,21 +91,16 @@ int main() {
     GLuint game_texture; 
     std::unordered_map<std::string, GLuint> game_textures;
     int tex_w = 460, tex_h = 215;
-    for (auto game : result.games) {
-
-        if(game.appid == "N/A") {
-            game.appid = "catafaceore";
+    for (auto& game : result.games) {
+        if(!Network::download_game_image(game.appid)) {
+            continue;
         }
-        
-        if(Network::download_game_image(game.appid)) {
-            fs::path path;
+        fs::path path;
 
-            path = cache_dir / (game.appid + ".jpg");
-            LoadTextureFromFile(path.string().c_str(), &game_texture, &tex_w, &tex_h);
-            
-            game_textures[game.appid] = game_texture;
+        path = cache_dir / (game.appid + ".jpg");
+        LoadTextureFromFile(path.string().c_str(), &game_texture, &tex_w, &tex_h);
 
-        }
+        game_textures[game.appid] = game_texture;
     }
 
     do{
