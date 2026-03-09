@@ -22,9 +22,8 @@ std::vector<std::string> Detection::get_platform_steam_paths() {
 #endif
 
 #ifdef __APPLE__
-    return {
-        #warning "This platform is not currently supported!"
-    };
+    #warning "macOS not currently supported"
+    return {};
 #endif
 }
 
