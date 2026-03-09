@@ -88,7 +88,7 @@ std::vector<fs::path> Detection::get_library_folders(Config& config) {
 
 
 Detection::DetectionResult Detection::find_saves(Config& config) {
-    DetectionResult result;
+    Detection::DetectionResult result;
 
 #ifdef __linux__
     // steam
