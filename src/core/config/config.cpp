@@ -75,7 +75,7 @@ void Config::save() {
 }
 
 void Config::load() {
-    static json data;
+    json data;
 
     if(!fs::exists(config_file)) {
         save();
