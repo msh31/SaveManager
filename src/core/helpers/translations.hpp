@@ -17,11 +17,11 @@ inline std::optional<std::string> get_game_name_ubi(const std::string& game_id) 
     if (!loaded) {
         std::ifstream file(ubi_translations.c_str());
         if (!file.is_open()) {
-            logger().error("Failed to open ubi translations file!");
+            get_logger().error("Failed to open ubi translations file!");
             return std::nullopt;
         }
         data = json::parse(file);
-        logger().info("Loaded ubi_translations JSON with " + std::to_string(data.size()) + " franchises");
+        get_logger().info("Loaded ubi_translations JSON with " + std::to_string(data.size()) + " franchises");
         loaded = true;
     }
     
@@ -43,11 +43,11 @@ inline std::optional<std::string> get_game_name_rsg(const std::string& game_id) 
     if (!loaded) {
         std::ifstream file(rsg_translations.c_str());
         if (!file.is_open()) {
-            logger().error("Failed to open rsg translations file!");
+            get_logger().error("Failed to open rsg translations file!");
             return std::nullopt;
         }
         data = json::parse(file);
-        logger().info("Loaded rsg_translations JSON with " + std::to_string(data.size()) + " entries");
+        get_logger().info("Loaded rsg_translations JSON with " + std::to_string(data.size()) + " entries");
         loaded = true;
     }
     
@@ -66,11 +66,11 @@ inline std::optional<std::string> get_steam_id(const std::string& game_name) {
         // std::string json_utf8 = json_path.u8string();
         std::ifstream file(json_path.c_str());
         if (!file.is_open()) {
-            logger().error("Failed to open steamids file!");
+            get_logger().error("Failed to open steamids file!");
             return std::nullopt;
         }
         data = json::parse(file);
-        logger().info("Loaded steamids.json!");
+        get_logger().info("Loaded steamids.json!");
         loaded = true;
     }
     
