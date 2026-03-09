@@ -17,7 +17,6 @@ enum PlatformType {
     PPSSPP
 };
 
-// for now we assume everything is through steam
 struct Game {
     PlatformType type;
     std::string appid;
