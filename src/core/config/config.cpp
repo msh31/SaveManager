@@ -25,7 +25,7 @@ Config::~Config() {
     }
 }
 
-bool Config::config_exists() {
+bool Config::init() {
     if(!fs::exists(backup_dir) || !fs::exists(cache_dir)) {
         if(!fs::create_directories(backup_dir)) {
             get_logger().error("Failed to create backup directory");

@@ -8,7 +8,7 @@ class Config {
 public:
     Config();
     ~Config();
-    bool config_exists();
+    bool init();
     void save();
 
     struct AppConfig {

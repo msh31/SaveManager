@@ -29,7 +29,7 @@
 
 int main() {
     Config config;
-    if(!config.config_exists()) {
+    if(!config.init()) {
         get_logger().error("Config is missing and could not be generated!");
         return 1;
     }
