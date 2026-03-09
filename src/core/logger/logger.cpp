@@ -1,5 +1,5 @@
 #include "logger.hpp"
-#include <unordered_map>
+#include "core/ui/notifications/notification.hpp"
 
 logger::logger() {
 	if (fileLoggingEnabled) {
@@ -37,34 +37,13 @@ void logger::fatal(const std::string& message) {
 	log("FATAL", message);
 }
 
-std::string logger::getColorForLevel(const std::string& level) {
-	static const std::unordered_map<std::string, std::string> levelColors = {
-		{"INF", SENTINEL_INFO},
-		{"WRN", SENTINEL_WARNING},
-		{"ERR", SENTINEL_ERROR},
-		{"DBG", SENTINEL_SUCCESS},
-		{"SUC", SENTINEL_SUCCESS},
-		{"FATAL", SENTINEL_FATAL}
-	};
-
-	auto colorEntry = levelColors.find(level);
-	if (colorEntry != levelColors.end()) {
-		return colorEntry->second; //value from the key-value pair :D
-	}
-
-	return SENTINEL_RESET;
-}
-
 void logger::log(const std::string& level, const std::string& message) {
-	std::string colorCode = getColorForLevel(level);
-
 	if (fileLoggingEnabled) {
 		if (!logFile.is_open()) { // this is called a lazy init apparently
 			logFile.open(logFilePath, std::ios::app);
 
 			if (!logFile.is_open()) {
-				//std::cerr << "Error: Could not open log file at " << logFilePath << ". Disabling file logging.\n";
-				fileLoggingEnabled = false;
+                Notify::show_notification("Logger", "Failed to open logfile, is something else using it?", 2000);
 				return;
 			}
 		}
