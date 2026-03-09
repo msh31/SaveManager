@@ -7,7 +7,7 @@
 #include "core/helpers/paths.hpp"
 #include "core/logger/logger.hpp"
 
-std::vector<std::string> Detection::get_platform_steam_paths() {
+std::vector<std::string> get_platform_steam_paths() {
 #ifdef __linux__
     return {
         std::string(std::getenv("HOME")) + "/.steam/steam/steamapps/libraryfolders.vdf",
@@ -27,7 +27,7 @@ std::vector<std::string> Detection::get_platform_steam_paths() {
 #endif
 }
 
-std::optional<fs::path> Detection::get_steam_location(Config& config) {
+std::optional<fs::path> get_steam_location(Config& config) {
     if (!config.settings.steam_path.empty()) {
         if (fs::exists(config.settings.steam_path)) {
             return config.settings.steam_path;
@@ -43,9 +43,8 @@ std::optional<fs::path> Detection::get_steam_location(Config& config) {
 
     return std::nullopt;
 }
-//PUBLIC
 
-std::vector<fs::path> Detection::get_library_folders(Config& config) {
+std::vector<fs::path> get_library_folders(Config& config) {
     auto vdf_file = get_steam_location(config);
     std::vector<fs::path> libraries;
 
@@ -88,7 +87,7 @@ std::vector<fs::path> Detection::get_library_folders(Config& config) {
 
 
 Detection::DetectionResult Detection::find_saves(Config& config) {
-    DetectionResult result;
+    Detection::DetectionResult result;
 
 #ifdef __linux__
     // steam

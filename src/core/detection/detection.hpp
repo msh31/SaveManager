@@ -31,11 +31,5 @@ namespace Detection {
         std::vector<Game> games;
     };
 
-    static DetectionResult find_saves(Config& config);
-
-    static const Game* get_selected_game(const DetectionResult& result);
     DetectionResult find_saves(Config& config);
-    std::vector<std::string> get_platform_steam_paths();
-    std::optional<fs::path> get_steam_location(Config& config);
-    std::vector<fs::path> get_library_folders(Config& config);
 };
