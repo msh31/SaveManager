@@ -32,7 +32,4 @@ namespace Detection {
     };
 
     DetectionResult find_saves(Config& config);
-    std::vector<std::string> get_platform_steam_paths();
-    std::optional<fs::path> get_steam_location(Config& config);
-    std::vector<fs::path> get_library_folders(Config& config);
 };
