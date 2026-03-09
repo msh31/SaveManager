@@ -31,6 +31,9 @@ bool Config::init() {
             get_logger().error("Failed to create backup directory");
             return false;
         }
+    }
+
+    if(!fs::exists(cache_dir)) {
         if(!fs::create_directories(cache_dir)) {
             get_logger().error("Failed to create cache directory");
             return false;
