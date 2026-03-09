@@ -38,9 +38,6 @@ int main() {
         get_logger().warning("No savegames found!");
     }
     config.save();
-    get_logger().info("steam_path: " + config.settings.steam_path);
-    get_logger().info("lutris_path: " + config.settings.lutris_path);
-    get_logger().info("backup_path: " + config.settings.backup_path.string());
 
     if(!glfwInit()) {
         get_logger().error("Failed to initialize GLFW.");
