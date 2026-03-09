@@ -26,6 +26,10 @@
 #include "core/ui/fonts/jbm_med.h"
 #include "core/ui/fonts/jbm_bold.h"
 
+#ifdef _WIN32
+#pragma comment(linker, "/subsystem:windows /entry:mainCRTStartup")
+#endif
+
 int main() {
     Config config;
     if(!config.init()) {
