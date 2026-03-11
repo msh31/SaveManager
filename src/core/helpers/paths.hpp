@@ -35,16 +35,16 @@ inline fs::path lutris_dir() {
 }
 #endif
 
-
 #if defined(_WIN32)
 inline fs::path documents_dir() {
     const char* userprofile = std::getenv("USERPROFILE");
-    if (!userprofile) throw std::runtime_error("USERPROFILE not set, how did you manage to do this?");
-    return userprofile;
+    if (!userprofile)
+        throw std::runtime_error("USERPROFILE not set, how did you manage to do this?");
+    
+    return fs::path(userprofile) / "Documents";
 }
 #endif
 
 inline fs::path ubi_translations() { return config_dir() / "ubi_translations.json"; }
-inline fs::path rsg_translations() { return config_dir() / "rsg_translations.json"; }
 inline fs::path steam_appids() { return config_dir() / "steamids.json"; }
 };
