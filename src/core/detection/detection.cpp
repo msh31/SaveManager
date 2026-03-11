@@ -108,7 +108,7 @@ Detection::DetectionResult Detection::find_saves(Config& config) {
         }
     }
     // lutris
-    fs::path resolved_lutris = lutris_dir;
+    fs::path resolved_lutris = paths::lutris_dir();
     if (!config.settings.lutris_path.empty()) {
         if (fs::exists(config.settings.lutris_path)) {
             resolved_lutris = config.settings.lutris_path;

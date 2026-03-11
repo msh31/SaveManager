@@ -101,10 +101,10 @@ void Tabs::render_general_tab(const Fonts& fonts, const Detection::DetectionResu
 
 void Tabs::render_log_tab(const Fonts& fonts) {
     static std::string log_buffer;
-    std::ifstream log_file(config_dir / "savemanager.log");
+    std::ifstream log_file(paths::config_dir() / "savemanager.log");
 
     if (ImGui::Button("Clear")) {
-        std::ofstream clear_file(config_dir / "savemanager.log", std::ios::trunc);
+        std::ofstream clear_file(paths::config_dir() / "savemanager.log", std::ios::trunc);
         clear_file.close();
         log_buffer.clear();
     }

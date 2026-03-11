@@ -28,7 +28,7 @@ private:
     void log(const std::string& level, const std::string& message);
 
     std::ofstream logFile;
-    fs::path logFilePath = config_dir / "savemanager.log";
+    fs::path logFilePath = paths::config_dir() / "savemanager.log";
 };
 
 inline logger& get_logger() {

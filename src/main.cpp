@@ -104,7 +104,7 @@ int main() {
         }
         fs::path path;
 
-        path = cache_dir / (game.appid + ".jpg");
+        path = paths::cache_dir() / (game.appid + ".jpg");
         LoadTextureFromFile(path.string().c_str(), &game_texture, &tex_w, &tex_h);
 
         game_textures[game.appid] = game_texture;

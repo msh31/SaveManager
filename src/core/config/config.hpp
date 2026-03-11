@@ -24,5 +24,5 @@ public:
 private:
     void load();
 
-    fs::path config_file = config_dir / "config.json";
+    fs::path config_file = paths::config_dir() / "config.json";
 };
