@@ -46,6 +46,7 @@ inline std::optional<std::string> get_game_name_rsg(const std::string& folder_na
         {"GTA San Andreas", "Grand Theft Auto: San Andreas"},
         {"GTA Vice City", "Grand Theft Auto: Vice City"},
         {"GTA III", "Grand Theft Auto III"},
+        {"Bully", "Bully: Scholarship Edition"},
     };
 
     auto it = translations.find(folder_name);
