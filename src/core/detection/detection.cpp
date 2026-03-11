@@ -91,6 +91,17 @@ std::vector<fs::path> get_library_folders(Config& config) {
     return libraries;
 }
 
+void Detection::scan_prefix_dir(const fs::path& compatdata, Detection::DetectionResult& result, const Config& config) {
+    for (const auto& entry : fs::directory_iterator(compatdata)) {
+        fs::path prefix = entry.path();
+        if (config.settings.ubi_enabled) {
+            ubi::find_saves(prefix / "pfx/drive_c/Program Files (x86)/Ubisoft/Ubisoft Game Launcher/savegames", result.games, result.uuid);
+        }
+        if (config.settings.rsg_enabled) {
+            rsg::find_saves(prefix / "pfx/drive_c/users/steamuser/Documents/Rockstar Games", result.games);
+        }
+    }
+}
 
 Detection::DetectionResult Detection::find_saves(Config& config) {
     Detection::DetectionResult result;
@@ -102,16 +113,7 @@ Detection::DetectionResult Detection::find_saves(Config& config) {
         fs::path compatdata = library / "steamapps/compatdata";
         if (!fs::exists(compatdata)) continue;
 
-        for (const auto& entry : fs::directory_iterator(compatdata)) {
-            fs::path prefix = entry.path();
-            if(config.settings.ubi_enabled) {
-                ubi::find_saves(prefix / "pfx/drive_c/Program Files (x86)/Ubisoft/Ubisoft Game Launcher/savegames", result.games, result.uuid);
-            }
-
-            if(config.settings.rsg_enabled) {
-                rsg::find_saves(prefix / "pfx/drive_c/users/steamuser/Documents/Rockstar Games", result.games);
-            }
-        }
+        scan_prefix_dir(compatdata, result, config);
     }
     // lutris
     fs::path resolved_lutris = paths::lutris_dir();
@@ -128,16 +130,7 @@ Detection::DetectionResult Detection::find_saves(Config& config) {
             config.settings.lutris_path = resolved_lutris.string();
         }
 
-        for (const auto& entry : fs::directory_iterator(resolved_lutris)) {
-            fs::path prefix = entry.path();
-            if(config.settings.ubi_enabled) {
-                ubi::find_saves(prefix / "pfx/drive_c/Program Files (x86)/Ubisoft/Ubisoft Game Launcher/savegames", result.games, result.uuid);
-            }
-
-            if(config.settings.rsg_enabled) {
-                rsg::find_saves(prefix / "pfx/drive_c/users/steamuser/Documents/Rockstar Games", result.games);
-            }
-        }
+        scan_prefix_dir(resolved_lutris, result, config);
     }
 #endif
 
