@@ -2,39 +2,49 @@
 #include <filesystem>
 
 namespace fs = std::filesystem;
+
+namespace paths {
+inline fs::path home_dir() {
+    const char* home;
 #if defined(__linux__) || defined(__APPLE__)
-inline fs::path backup_dir = fs::path(std::getenv("HOME"))
-           / ".config"
-           / "savemanager"
-           / "backups";
-
-inline fs::path config_dir = fs::path(std::getenv("HOME"))
-           / ".config"
-           / "savemanager";
-inline fs::path cache_dir = fs::path(std::getenv("HOME"))
-           / ".config"
-           / "savemanager"
-           / "cache";
-
-inline fs::path lutris_dir = fs::path(std::getenv("HOME"))
-           / "Games";
+    home = std::getenv("HOME");
 #elif defined(_WIN32)
-inline fs::path backup_dir = fs::path(std::getenv("APPDATA"))
-           / "savemanager"
-           / "backups";
+    home = std::getenv("APPDATA");
+#endif
+    if (!home) throw std::runtime_error("HOME/APPDATA not set, how did you manage to do this?");
+    return fs::path(home);
+}
 
-inline fs::path config_dir = fs::path(std::getenv("APPDATA"))
-           / "savemanager";
-inline fs::path cache_dir = fs::path(std::getenv("APPDATA"))
-           / "savemanager"
-           / "cache";
-inline fs::path documents_dir = fs::path(std::getenv("USERPROFILE"))
-           / "Documents";
-#else
-#error "Unsupported platform"
+inline fs::path config_dir() {
+#if defined(__linux__) || defined(__APPLE__)
+    return home_dir() / ".config" / "savemanager";
+#elif defined(_WIN32)
+    return home_dir() / "savemanager";
+#endif
+}
+inline fs::path backup_dir() {
+    return config_dir() / "backups";
+}
+inline fs::path cache_dir() {
+    return config_dir() / "cache";
+}
+
+#if defined(__linux__) || defined(__APPLE__)
+inline fs::path lutris_dir() {
+    return home_dir() / "Games";
+}
 #endif
 
 
-inline fs::path ubi_translations = config_dir / "ubi_translations.json";
-inline fs::path rsg_translations = config_dir / "rsg_translations.json";
-inline fs::path steam_appids = config_dir / "steamids.json";
+#if defined(_WIN32)
+inline fs::path documents_dir() {
+    const char* userprofile = std::getenv("USERPROFILE");
+    if (!userprofile) throw std::runtime_error("USERPROFILE not set, how did you manage to do this?");
+    return userprofile;
+}
+#endif
+
+inline fs::path ubi_translations() { return config_dir() / "ubi_translations.json"; }
+inline fs::path rsg_translations() { return config_dir() / "rsg_translations.json"; }
+inline fs::path steam_appids() { return config_dir() / "steamids.json"; }
+};
