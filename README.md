@@ -5,7 +5,7 @@
 
 <img src="https://img.shields.io/badge/Windows-0078D6?style=for-the-badge&logo=windows&logoColor=white" alt="Windows"/>
 <img src="https://img.shields.io/badge/Linux-FCC624?style=for-the-badge&logo=linux&logoColor=black" alt="Linux"/>
-<img src="https://img.shields.io/badge/license-MIT-green?style=for-the-badge" alt="MIT License"/>
+<img src="https://img.shields.io/badge/license-GPLv3-green?style=for-the-badge" alt="GPLv3 License"/>
 
 [Download](#download) • [Features](#features) • [Contributing](CONTRIBUTING.md) • [License](#license)
 
@@ -49,4 +49,4 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for build instructions and contribution g
 
 ## License
 
-MIT — see [LICENSE](LICENSE.md).
+GPLv3 — see [LICENSE](LICENSE.md).
