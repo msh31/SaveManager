@@ -1,3 +1,4 @@
+#include <exception>
 #include <filesystem>
 #include <optional>
 
@@ -8,23 +9,28 @@
 #include "core/logger/logger.hpp"
 
 std::vector<std::string> get_platform_steam_paths() {
-#ifdef __linux__
-    return {
-        std::string(std::getenv("HOME")) + "/.steam/steam/steamapps/libraryfolders.vdf",
-        std::string(std::getenv("HOME")) + "/.local/share/Steam/steamapps/libraryfolders.vdf"
-    };
-#endif
-
-#ifdef _WIN32
-    return {
-        "C:\\Program Files (x86)\\Steam\\steamapps\\libraryfolders.vdf",
-    };
-#endif
-
 #ifdef __APPLE__
     #warning "macOS not currently supported"
     return {};
 #endif
+
+    try {
+#ifdef __linux__
+        return {
+            paths::home_dir().string() + "/.steam/steam/steamapps/libraryfolders.vdf",
+            paths::home_dir().string() + "/.local/share/Steam/steamapps/libraryfolders.vdf"
+        };
+#endif
+
+#ifdef _WIN32
+        return {
+            "C:\\Program Files (x86)\\Steam\\steamapps\\libraryfolders.vdf",
+        };
+#endif
+    } catch (const std::exception& e) {
+        get_logger().error("Failed to get Steam paths: " + std::string(e.what()));
+        return {};
+    }
 }
 
 std::optional<fs::path> get_steam_location(Config& config) {
@@ -141,7 +147,7 @@ Detection::DetectionResult Detection::find_saves(Config& config) {
     }
 
     if(config.settings.rsg_enabled) {
-        rsg::find_saves(documents_dir / "Rockstar Games", result.games);
+        rsg::find_saves(paths::documents_dir() / "Rockstar Games", result.games);
     }
 #endif
 
