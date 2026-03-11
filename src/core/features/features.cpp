@@ -1,5 +1,6 @@
 #include "features.hpp"
 #include "core/helpers/utils.hpp"
+#include "core/ui/notifications/notification.hpp"
 
 void Features::backup_game(const Game& game, Config& config) {
     get_logger().info("creating backup of: " + game.game_name);
@@ -112,6 +113,11 @@ void Features::restore_backup(const fs::path& name, const Game& selected_game) {
 
             while ((bytes_read = zip_fread(file, buffer, sizeof(buffer))) > 0) {
                 save_file.write(buffer, bytes_read);
+            }
+            if (bytes_read == -1) {
+                get_logger().error("Failed to read file in archive: " + std::string(fileInfo.name));
+                failed_files.push_back(fileInfo.name);
+                Notify::show_notification("Restore Backup", "Failed to read file in backup, check the logs!", 2500);
             }
             zip_fclose(file);
         }
