@@ -45,13 +45,7 @@ bool Config::init() {
             return false;
         }
     }
-    if(!fs::exists(paths::rsg_translations())) {
-        get_logger().info("rsg_translations.json not found, downloading...");
-        if(!Network::download_file("https://git.marco007.dev/marco/smdata/raw/branch/main/rsg_translations.json", paths::rsg_translations().string())) {
-            get_logger().error("Failed to download RSG translations");
-            return false;
-        }
-    }
+
     if(!fs::exists(paths::steam_appids())) {
         get_logger().info("steamids.json was not found, downloading...");
         if(!Network::download_file("https://git.marco007.dev/marco/smdata/raw/branch/main/steamids.json", paths::steam_appids().string())) {
