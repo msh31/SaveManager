@@ -82,6 +82,7 @@ set(savemanager_SOURCES
 	"src/core/detection/detection.cpp"
 	"src/core/detection/rsg/rsg.cpp"
 	"src/core/detection/ubi/ubi.cpp"
+	"src/core/detection/unreal/unreal.cpp"
 	"src/core/features/features.cpp"
 	"src/core/logger/logger.cpp"
 	"src/core/network/network.cpp"

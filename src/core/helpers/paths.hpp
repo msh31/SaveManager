@@ -33,6 +33,9 @@ inline fs::path cache_dir() {
 inline fs::path lutris_dir() {
     return home_dir() / "Games";
 }
+inline fs::path heroic_dir() {
+    return home_dir() / "Games" / "Heroic";
+}
 #endif
 
 #if defined(_WIN32)

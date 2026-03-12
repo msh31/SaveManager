@@ -5,6 +5,7 @@
 #include "detection.hpp"
 #include "core/detection/ubi/ubi.hpp"
 #include "core/detection/rsg/rsg.hpp"
+#include "core/detection/unreal/unreal.hpp"
 #include "core/helpers/paths.hpp"
 #include "core/logger/logger.hpp"
 
@@ -94,11 +95,19 @@ std::vector<fs::path> get_library_folders(Config& config) {
 void Detection::scan_prefix_dir(const fs::path& compatdata, Detection::DetectionResult& result, const Config& config) {
     for (const auto& entry : fs::directory_iterator(compatdata)) {
         fs::path prefix = entry.path();
+        if(!fs::exists(prefix)) {
+            get_logger().warning("Prefix not found!");
+            continue;
+        }
+
         if (config.settings.ubi_enabled) {
             ubi::find_saves(prefix / "pfx/drive_c/Program Files (x86)/Ubisoft/Ubisoft Game Launcher/savegames", result.games, result.uuid);
         }
         if (config.settings.rsg_enabled) {
             rsg::find_saves(prefix / "pfx/drive_c/users/steamuser/Documents/Rockstar Games", result.games);
+        }
+        if(config.settings.unreal_enabled) {
+            unreal::find_saves(prefix / "pfx/drive_c/users/", result.games);
         }
     }
 }
@@ -131,6 +140,25 @@ Detection::DetectionResult Detection::find_saves(Config& config) {
         }
 
         scan_prefix_dir(resolved_lutris, result, config);
+    }
+    //heroic
+    fs::path heroic_dir = paths::heroic_dir() / "Prefixes/default";
+    if (!config.settings.heroic_path.empty()) {
+        if (fs::exists(config.settings.heroic_path)) {
+            heroic_dir = config.settings.heroic_path;
+        } else {
+            get_logger().warning("Configured Heroic path does not exist, falling back to defaults");
+        }
+    }
+
+    if (fs::exists(heroic_dir)) {
+        if (config.settings.heroic_path.empty()) {
+            config.settings.heroic_path = heroic_dir.string();
+        }
+
+        scan_prefix_dir(heroic_dir, result, config);
+    } else {
+        get_logger().warning("Heroic path does not exist!");
     }
 #endif
 

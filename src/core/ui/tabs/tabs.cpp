@@ -209,21 +209,25 @@ void Tabs::render_settings_tab(const Fonts& fonts, Config& config) {
     ImGui::Text("Paths");
     ImGui::PopFont();
 
+    //needs improvement
     static bool initialized = false;
     static char backup_buf[256];
     static char lutris_buf[256];
     static char steam_buf[256];
+    static char heroic_buf[256];
 
     if (!initialized) {
         snprintf(backup_buf, sizeof(backup_buf), "%s", config.settings.backup_path.string().c_str());
         snprintf(lutris_buf, sizeof(lutris_buf), "%s", config.settings.lutris_path.c_str());
         snprintf(steam_buf, sizeof(steam_buf), "%s", config.settings.steam_path.c_str());
+        snprintf(heroic_buf, sizeof(heroic_buf), "%s", config.settings.heroic_path.c_str());
         initialized = true;
     }
 
     ImGui::InputText("Backup path", backup_buf, sizeof(backup_buf));
     ImGui::InputText("Lutris path", lutris_buf, sizeof(lutris_buf));
     ImGui::InputText("Steam path", steam_buf, sizeof(steam_buf));
+    ImGui::InputText("Heroic path", heroic_buf, sizeof(heroic_buf));
 
     ImGui::Separator();
 
@@ -231,6 +235,7 @@ void Tabs::render_settings_tab(const Fonts& fonts, Config& config) {
         config.settings.backup_path = fs::path(backup_buf);
         config.settings.lutris_path = lutris_buf;
         config.settings.steam_path = steam_buf;
+        config.settings.heroic_path = heroic_buf;
         config.save();
         Notify::show_notification("Config Saved!", "Settings saved successfully!", 1500);
     }
