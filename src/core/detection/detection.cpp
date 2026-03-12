@@ -103,11 +103,17 @@ void Detection::scan_prefix_dir(const fs::path& compatdata, Detection::Detection
         if (config.settings.ubi_enabled) {
             ubi::find_saves(prefix / "pfx/drive_c/Program Files (x86)/Ubisoft/Ubisoft Game Launcher/savegames", result.games, result.uuid);
         }
-        if (config.settings.rsg_enabled) {
-            rsg::find_saves(prefix / "pfx/drive_c/users/steamuser/Documents/Rockstar Games", result.games);
-        }
-        if(config.settings.unreal_enabled) {
-            unreal::find_saves(prefix / "pfx/drive_c/users/", result.games);
+        fs::path users_dir = prefix / "pfx/drive_c/users/";
+        if (fs::exists(users_dir)) {
+            for (const auto& user : fs::directory_iterator(users_dir)) {
+                if (user.path().filename() == "Public") continue;
+                if (config.settings.rsg_enabled) {
+                    rsg::find_saves(user.path() / "Documents/Rockstar Games", result.games);
+                }
+                if (config.settings.unreal_enabled) {
+                    unreal::find_saves(user.path(), result.games);
+                }
+            }
         }
     }
 }
