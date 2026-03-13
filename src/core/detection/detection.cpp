@@ -100,10 +100,12 @@ void Detection::scan_prefix_dir(const fs::path& compatdata, Detection::Detection
             continue;
         }
 
+        fs::path drive_c = fs::exists(prefix / "pfx") ? prefix / "pfx/drive_c" : prefix / "drive_c";
         if (config.settings.ubi_enabled) {
-            ubi::find_saves(prefix / "pfx/drive_c/Program Files (x86)/Ubisoft/Ubisoft Game Launcher/savegames", result.games, result.uuid);
+            ubi::find_saves(drive_c / "Program Files (x86)/Ubisoft/Ubisoft Game Launcher/savegames", result.games, result.uuid);
         }
-        fs::path users_dir = prefix / "pfx/drive_c/users/";
+
+        fs::path users_dir = drive_c / "users";
         if (fs::exists(users_dir)) {
             for (const auto& user : fs::directory_iterator(users_dir)) {
                 if (user.path().filename() == "Public") continue;
@@ -148,18 +150,19 @@ Detection::DetectionResult Detection::find_saves(Config& config) {
         scan_prefix_dir(resolved_lutris, result, config);
     }
     //heroic
-    fs::path heroic_dir = paths::heroic_dir() / "Prefixes/default";
+    fs::path heroic_base = paths::heroic_dir();
     if (!config.settings.heroic_path.empty()) {
         if (fs::exists(config.settings.heroic_path)) {
-            heroic_dir = config.settings.heroic_path;
+            heroic_base = config.settings.heroic_path;
         } else {
             get_logger().warning("Configured Heroic path does not exist, falling back to defaults");
         }
     }
+    fs::path heroic_dir = heroic_base / "Prefixes/default";
 
     if (fs::exists(heroic_dir)) {
         if (config.settings.heroic_path.empty()) {
-            config.settings.heroic_path = heroic_dir.string();
+            config.settings.heroic_path = paths::heroic_dir().string();
         }
 
         scan_prefix_dir(heroic_dir, result, config);

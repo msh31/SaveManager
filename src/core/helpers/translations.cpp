@@ -2,7 +2,9 @@
 #include <string>
 #include <string_view>
 
-static std::unordered_map<std::string, std::string> ubi_translations, steam_translations;
+static std::unordered_map<std::string, std::string> ubi_translations;
+static std::unordered_map<std::string, std::string> steam_n2i_translation; //name to appid
+static std::unordered_map<std::string, std::string> steam_i2n_translation; //appid to name
 static const std::unordered_map<std::string_view, std::string> rsg_translations = { //small enough, for now.
     {"GTAV", "Grand Theft Auto V"},
     {"GTAV Enhanced", "Grand Theft Auto V Enhanced"},
@@ -40,7 +42,8 @@ void translations::init() {
             for (const auto& game : games) {
                 std::string name = game["name"].get<std::string>();
                 std::string appid = std::to_string(game["appid"].get<int>());
-                steam_translations[name] = appid;
+                steam_n2i_translation[name] = appid;
+                steam_i2n_translation[appid] = name;
             }
         }
     } else {
@@ -56,7 +59,16 @@ std::optional<std::string> translations::get_game_name_ubi(const std::string& ga
 }
 
 std::optional<std::string> translations::get_steam_id(const std::string& game_name) {    
-    if (auto it = steam_translations.find(game_name); it != steam_translations.end()) {
+    if (auto it = steam_n2i_translation.find(game_name); it != steam_n2i_translation.end()) {
+        return it->second;
+    }
+    
+    return std::nullopt;
+}
+
+
+std::optional<std::string> translations::get_steam_name(const std::string& appid) {
+    if (auto it = steam_i2n_translation.find(appid); it != steam_i2n_translation.end()) {
         return it->second;
     }
     
