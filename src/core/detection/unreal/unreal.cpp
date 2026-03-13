@@ -49,7 +49,6 @@ void unreal::find_saves(const fs::path& prefix, std::vector<Game>& out_games) {
                 break;
             }
         }
-        get_logger().debug(entry);
         out_games.push_back(game);
     }
 }
