@@ -59,11 +59,14 @@ bool Config::init() {
 
 void Config::save() {
     json data;
-    data["backup_path"] = settings.backup_path.string();
     data["ubi_enabled"] = settings.ubi_enabled;
     data["rsg_enabled"] = settings.rsg_enabled;
+    data["unreal_enabled"] = settings.rsg_enabled;
+
+    data["backup_path"] = settings.backup_path.string();
     data["steam_path"] = settings.steam_path;
     data["lutris_path"] = settings.lutris_path;
+    data["heroic_path"] = settings.heroic_path;
 
     std::ofstream file(config_file);
     file << data.dump(4);
@@ -86,16 +89,21 @@ void Config::load() {
     settings.backup_path = data.value("backup_path", std::string(""));
     settings.steam_path = data.value("steam_path", std::string(""));
     settings.lutris_path = data.value("lutris_path", std::string(""));
+    settings.heroic_path = data.value("heroic_path", std::string(""));
 
     if (settings.backup_path.empty()) {
         settings.backup_path = paths::backup_dir();
     }
-    if (settings.lutris_path.empty()) {
 #ifdef __linux__
+    if (settings.lutris_path.empty()) {
         settings.lutris_path = paths::lutris_dir().string();
+    }
 #endif
+    if (settings.heroic_path.empty()) {
+        settings.heroic_path = paths::heroic_dir().string();
     }
 
     settings.ubi_enabled = data.value("ubi_enabled", true);
     settings.rsg_enabled = data.value("rsg_enabled", true);
+    settings.unreal_enabled = data.value("unreal_enabled", true);
 }
