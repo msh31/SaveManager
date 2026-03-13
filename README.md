@@ -44,6 +44,9 @@ Available for Windows and Linux (x86-64) on the [releases page](https://github.c
 > Unreal Engine games are detected via .sav files, regardless of store. (It is also not perfect)
 ---
 
+## Changelog
+See [CHANGELOG.md](CHANGELOG.md) for a complete history of all changes made to the project.
+
 ## Contributing
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for build instructions and contribution guidelines.
