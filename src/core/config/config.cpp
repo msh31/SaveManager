@@ -40,7 +40,7 @@ Config::~Config() {
 bool Config::init() {
     if(!fs::exists(paths::ubi_translations())) {
         get_logger().info("ubi_translations.json not found, downloading...");
-        if(!Network::download_file("https://git.marco007.dev/marco/smdata/raw/branch/main/ubi_translations.json", paths::ubi_translations().string())) {
+        if(!Network::download_file("https://raw.githubusercontent.com/msh31/smdata/refs/heads/main/ubi_translations.json", paths::ubi_translations().string())) {
             get_logger().error("Failed to download Ubisoft translations");
             return false;
         }
@@ -48,7 +48,7 @@ bool Config::init() {
 
     if(!fs::exists(paths::steam_appids())) {
         get_logger().info("steamids.json was not found, downloading...");
-        if(!Network::download_file("https://git.marco007.dev/marco/smdata/raw/branch/main/steamids.json", paths::steam_appids().string())) {
+        if(!Network::download_file("https://raw.githubusercontent.com/msh31/smdata/refs/heads/main/steamids.json", paths::steam_appids().string())) {
             get_logger().error("Failed to download Steam ID data");
             return false;
         }

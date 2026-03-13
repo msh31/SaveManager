@@ -37,7 +37,7 @@ void unreal::find_saves(const fs::path& prefix, std::vector<Game>& out_games) {
                 ++it; // next component is the appid
                 std::string appid = it->string();
 
-                game.game_name = appid; //translations::get_steam_name(appid).value_or("N/A");
+                game.game_name = translations::get_steam_name(appid).value_or("N/A");
                 game.appid = appid;
 
                 break;
