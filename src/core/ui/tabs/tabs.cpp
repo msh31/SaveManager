@@ -2,6 +2,8 @@
 #include "core/features/features.hpp"
 #include "core/helpers/paths.hpp"
 
+#include "core/logger/logger.hpp"
+#include "core/network/network.hpp"
 #include "core/ui/notifications/notification.hpp"
 #include "imgui.h"
 
@@ -287,6 +289,16 @@ void Tabs::render_settings_tab(const Fonts& fonts, Config& config) {
         config.settings.heroic_path = heroic_buf;
         config.save();
         Notify::show_notification("Config Saved!", "Settings saved successfully!", 1500);
+    }
+    ImGui::SameLine();
+    if(ImGui::Button("Update translations")) {
+        if(!Network::download_file("https://raw.githubusercontent.com/msh31/smdata/refs/heads/main/ubi_translations.json", paths::ubi_translations().string())) {
+            get_logger().error("Failed to download Ubisoft translations");
+        }
+        if(!Network::download_file("https://raw.githubusercontent.com/msh31/smdata/refs/heads/main/steamids.json", paths::steam_appids().string())) {
+            get_logger().error("Failed to download Steam ID data");
+        }
+        Notify::show_notification("Translations", "All translations have been updated!", 2500);
     }
 }
 
