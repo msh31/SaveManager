@@ -19,8 +19,8 @@ void ubi::find_saves(const fs::path& prefix, std::vector<Game>& out_games, std::
             Game game;
             game.type = UBISOFT;
             game.game_id = game_id_folder.filename().string();
-            game.game_name = get_game_name_ubi(game.game_id.value()).value_or("Unknown Game");
-            game.appid = get_steam_id(game.game_name).value_or("N/A");
+            game.game_name = translations::get_game_name_ubi(game.game_id.value()).value_or("Unknown Game");
+            game.appid = translations::get_steam_id(game.game_name).value_or("N/A");
             game.save_path = game_id_folder;
 
             out_games.push_back(game);

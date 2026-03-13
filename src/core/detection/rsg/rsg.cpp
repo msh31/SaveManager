@@ -24,8 +24,8 @@ void rsg::find_saves(const fs::path& prefix, std::vector<Game>& out_games) {
 
             Game game;
             game.type = ROCKSTAR;
-            game.game_name = get_game_name_rsg(folder_name).value_or(folder_name);
-            game.appid = get_steam_id(game.game_name).value_or("N/A");
+            game.game_name = translations::get_game_name_rsg(folder_name).value_or(folder_name);
+            game.appid = translations::get_steam_id(game.game_name).value_or("N/A");
             game.save_path = uuid_folder;
 
             out_games.push_back(game);
