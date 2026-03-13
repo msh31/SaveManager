@@ -36,11 +36,12 @@ Available for Windows and Linux (x86-64) on the [releases page](https://github.c
 
 ## Supported Stores
 
-| Store | Windows | Linux |
+| Store / Savetype | Windows | Linux |
 |-------|---------|-------|
-| Ubisoft | Yes | Yes (Steam/Proton, Wine, Lutris) |
-| Rockstar | Yes | Yes (Steam/Proton, Lutris) |
-
+| Ubisoft | Yes | Yes (Steam/Proton, Wine, Lutris, Heroic) |
+| Rockstar | Yes | Yes (Steam/Proton, Lutris, Heroic) |
+| Unreal Engine | Planned | Yes (Steam/Proton, Lutris, Heroic) |
+> Unreal Engine games are detected via .sav files, regardless of store. (It is also not perfect)
 ---
 
 ## Contributing
