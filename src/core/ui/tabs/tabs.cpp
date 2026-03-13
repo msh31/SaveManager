@@ -16,45 +16,92 @@ void Tabs::render_general_tab(const Fonts& fonts, const Detection::DetectionResu
     ImGui::Text("Detected Games");
     ImGui::PopFont();
 
+    std::vector<std::vector<const Game*>> grouped_games;
+    std::unordered_map<std::string, size_t> appid_to_group;
+
+    for (const auto& game : result.games) {
+        if (game.appid != "N/A") {
+            auto it = appid_to_group.find(game.appid);
+            if (it != appid_to_group.end()) {
+                grouped_games[it->second].push_back(&game);
+            } else {
+                appid_to_group[game.appid] = grouped_games.size();
+                grouped_games.push_back({&game});
+            }
+        } else {
+            grouped_games.push_back({&game});
+        }
+    }
+
+    static std::unordered_map<std::string, int> selected_source;
+
     int count = 0;
     float available_width = ImGui::GetContentRegionAvail().x;
-    int columns = (std::max)(1, (int)(available_width / (300 + 10))); //10 = gap
-    if(!result.games.empty()) {
-        for (const auto& game : result.games) {
-            if(count >= columns) {
-                ImGui::NewLine();
-                count = 0;
+    constexpr float card_width = 300.0f;
+    constexpr float card_height = 300.0f;
+    constexpr float card_gap = 10.0f;
+    constexpr float image_height = 131.0f;
+    int columns = (std::max)(1, (int)(available_width / (card_width + card_gap)));
+    if(!grouped_games.empty()) {
+        for (int gi = 0; gi < (int)grouped_games.size(); gi++) {
+            const auto& group = grouped_games[gi];
+            if(count > 0 && count % columns == 0) {
+                ImGui::Dummy(ImVec2(0.0f, card_gap));
             }
 
-            if(count > 0) {
-                ImGui::SameLine(0.0f, 10.0f);
+            if(count % columns != 0) {
+                ImGui::SameLine(0.0f, card_gap);
             }
 
             count++;
-            ImGui::BeginChild(game.game_name.c_str(), ImVec2(300, 300), true);
-            ImGui::TextWrapped("%s", game.game_name.c_str());
+            const Game* primary = group[0];
+            std::string card_id = primary->game_name + "##card" + std::to_string(gi);
+
+            int& sel = selected_source[card_id];
+            if (sel >= (int)group.size()) sel = 0;
+            const Game& active_game = *group[sel];
+
+            ImGui::BeginChild(card_id.c_str(), ImVec2(card_width, card_height), true);
+            ImGui::TextWrapped("%s", primary->game_name.c_str());
             ImGui::Separator();
 
             ImGui::Dummy(ImVec2(0.0f, 8.0f));
 
-            auto it = texture_id.find(game.appid);
-            int texture;
+            auto it = texture_id.find(primary->appid);
             if(it != texture_id.end()) {
-                texture = it->second;
-                ImGui::Image((ImTextureID)texture, ImVec2(280, 131));
+                ImGui::Image((ImTextureID)(intptr_t)it->second, ImVec2(280, image_height));
             }
             else {
-                ImGui::Text("An image was not found :(");
+                ImGui::Dummy(ImVec2(280, image_height));
+                ImVec2 pos = ImGui::GetCursorPos();
+                ImGui::SetCursorPos(ImVec2(pos.x, pos.y - image_height / 2.0f - ImGui::GetTextLineHeight() / 2.0f));
+                ImGui::TextDisabled("No image available");
+                ImGui::SetCursorPos(pos);
             }
 
-            ImGui::Dummy(ImVec2(0.0f, 8.0f));
+            if (group.size() > 1) {
+                ImGui::SetNextItemWidth(-1);
+                if (ImGui::BeginCombo("##source", active_game.save_path.string().c_str())) {
+                    for (int i = 0; i < (int)group.size(); i++) {
+                        bool is_selected = (sel == i);
+                        std::string label = group[i]->save_path.string() + "##" + std::to_string(i);
+                        if (ImGui::Selectable(label.c_str(), is_selected)) {
+                            sel = i;
+                        }
+                        if (is_selected) ImGui::SetItemDefaultFocus();
+                    }
+                    ImGui::EndCombo();
+                }
+            } else {
+                ImGui::Dummy(ImVec2(0.0f, 8.0f));
+            }
 
             if(ImGui::Button("Backup")) {
-                Features::backup_game(game, config);
+                Features::backup_game(active_game, config);
             }
             ImGui::SameLine();
             if(ImGui::Button("Restore")) {
-                pending_restore_game = &game;
+                pending_restore_game = &active_game;
                 open_restore_modal = true;
             }
 
@@ -203,6 +250,8 @@ void Tabs::render_settings_tab(const Fonts& fonts, Config& config) {
     ImGui::Checkbox("Ubisoft Connect", &config.settings.ubi_enabled);
     ImGui::SameLine();
     ImGui::Checkbox("Rockstar Games Launcher", &config.settings.rsg_enabled);
+    ImGui::SameLine();
+    ImGui::Checkbox("Unreal Games (.sav saves)", &config.settings.unreal_enabled);
     ImGui::Separator();
 
     ImGui::PushFont(fonts.medium);
