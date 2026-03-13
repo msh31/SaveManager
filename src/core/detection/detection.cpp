@@ -1,30 +1,37 @@
+#include <exception>
 #include <filesystem>
 #include <optional>
 
 #include "detection.hpp"
 #include "core/detection/ubi/ubi.hpp"
 #include "core/detection/rsg/rsg.hpp"
+#include "core/detection/unreal/unreal.hpp"
 #include "core/helpers/paths.hpp"
 #include "core/logger/logger.hpp"
 
 std::vector<std::string> get_platform_steam_paths() {
-#ifdef __linux__
-    return {
-        std::string(std::getenv("HOME")) + "/.steam/steam/steamapps/libraryfolders.vdf",
-        std::string(std::getenv("HOME")) + "/.local/share/Steam/steamapps/libraryfolders.vdf"
-    };
-#endif
-
-#ifdef _WIN32
-    return {
-        "C:\\Program Files (x86)\\Steam\\steamapps\\libraryfolders.vdf",
-    };
-#endif
-
 #ifdef __APPLE__
     #warning "macOS not currently supported"
     return {};
 #endif
+
+    try {
+#ifdef __linux__
+        return {
+            paths::home_dir().string() + "/.steam/steam/steamapps/libraryfolders.vdf",
+            paths::home_dir().string() + "/.local/share/Steam/steamapps/libraryfolders.vdf"
+        };
+#endif
+
+#ifdef _WIN32
+        return {
+            "C:\\Program Files (x86)\\Steam\\steamapps\\libraryfolders.vdf",
+        };
+#endif
+    } catch (const std::exception& e) {
+        get_logger().error("Failed to get Steam paths: " + std::string(e.what()));
+        return {};
+    }
 }
 
 std::optional<fs::path> get_steam_location(Config& config) {
@@ -85,6 +92,33 @@ std::vector<fs::path> get_library_folders(Config& config) {
     return libraries;
 }
 
+void Detection::scan_prefix_dir(const fs::path& compatdata, Detection::DetectionResult& result, const Config& config) {
+    for (const auto& entry : fs::directory_iterator(compatdata)) {
+        fs::path prefix = entry.path();
+        if(!fs::exists(prefix)) {
+            get_logger().warning("Prefix not found!");
+            continue;
+        }
+
+        fs::path drive_c = fs::exists(prefix / "pfx") ? prefix / "pfx/drive_c" : prefix / "drive_c";
+        if (config.settings.ubi_enabled) {
+            ubi::find_saves(drive_c / "Program Files (x86)/Ubisoft/Ubisoft Game Launcher/savegames", result.games, result.uuid);
+        }
+
+        fs::path users_dir = drive_c / "users";
+        if (fs::exists(users_dir)) {
+            for (const auto& user : fs::directory_iterator(users_dir)) {
+                if (user.path().filename() == "Public") continue;
+                if (config.settings.rsg_enabled) {
+                    rsg::find_saves(user.path() / "Documents/Rockstar Games", result.games);
+                }
+                if (config.settings.unreal_enabled) {
+                    unreal::find_saves(user.path(), result.games);
+                }
+            }
+        }
+    }
+}
 
 Detection::DetectionResult Detection::find_saves(Config& config) {
     Detection::DetectionResult result;
@@ -96,19 +130,10 @@ Detection::DetectionResult Detection::find_saves(Config& config) {
         fs::path compatdata = library / "steamapps/compatdata";
         if (!fs::exists(compatdata)) continue;
 
-        for (const auto& entry : fs::directory_iterator(compatdata)) {
-            fs::path prefix = entry.path();
-            if(config.settings.ubi_enabled) {
-                ubi::find_saves(prefix / "pfx/drive_c/Program Files (x86)/Ubisoft/Ubisoft Game Launcher/savegames", result.games, result.uuid);
-            }
-
-            if(config.settings.rsg_enabled) {
-                rsg::find_saves(prefix / "pfx/drive_c/users/steamuser/Documents/Rockstar Games", result.games);
-            }
-        }
+        scan_prefix_dir(compatdata, result, config);
     }
     // lutris
-    fs::path resolved_lutris = lutris_dir;
+    fs::path resolved_lutris = paths::lutris_dir();
     if (!config.settings.lutris_path.empty()) {
         if (fs::exists(config.settings.lutris_path)) {
             resolved_lutris = config.settings.lutris_path;
@@ -122,16 +147,27 @@ Detection::DetectionResult Detection::find_saves(Config& config) {
             config.settings.lutris_path = resolved_lutris.string();
         }
 
-        for (const auto& entry : fs::directory_iterator(resolved_lutris)) {
-            fs::path prefix = entry.path();
-            if(config.settings.ubi_enabled) {
-                ubi::find_saves(prefix / "pfx/drive_c/Program Files (x86)/Ubisoft/Ubisoft Game Launcher/savegames", result.games, result.uuid);
-            }
-
-            if(config.settings.rsg_enabled) {
-                rsg::find_saves(prefix / "pfx/drive_c/users/steamuser/Documents/Rockstar Games", result.games);
-            }
+        scan_prefix_dir(resolved_lutris, result, config);
+    }
+    //heroic
+    fs::path heroic_base = paths::heroic_dir();
+    if (!config.settings.heroic_path.empty()) {
+        if (fs::exists(config.settings.heroic_path)) {
+            heroic_base = config.settings.heroic_path;
+        } else {
+            get_logger().warning("Configured Heroic path does not exist, falling back to defaults");
         }
+    }
+    fs::path heroic_dir = heroic_base / "Prefixes/default";
+
+    if (fs::exists(heroic_dir)) {
+        if (config.settings.heroic_path.empty()) {
+            config.settings.heroic_path = paths::heroic_dir().string();
+        }
+
+        scan_prefix_dir(heroic_dir, result, config);
+    } else {
+        get_logger().warning("Heroic path does not exist!");
     }
 #endif
 
@@ -141,7 +177,7 @@ Detection::DetectionResult Detection::find_saves(Config& config) {
     }
 
     if(config.settings.rsg_enabled) {
-        rsg::find_saves(documents_dir / "Rockstar Games", result.games);
+        rsg::find_saves(paths::documents_dir() / "Rockstar Games", result.games);
     }
 #endif
 

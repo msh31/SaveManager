@@ -1,3 +1,4 @@
+#include "core/helpers/translations.hpp"
 #ifdef _WIN32
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
@@ -36,6 +37,7 @@ int main() {
         get_logger().error("Config is missing and could not be generated!");
         return 1;
     }
+    translations::init();
 
     auto result = Detection::find_saves(config);
     if(result.games.empty()) {
@@ -104,7 +106,7 @@ int main() {
         }
         fs::path path;
 
-        path = cache_dir / (game.appid + ".jpg");
+        path = paths::cache_dir() / (game.appid + ".jpg");
         LoadTextureFromFile(path.string().c_str(), &game_texture, &tex_w, &tex_h);
 
         game_textures[game.appid] = game_texture;

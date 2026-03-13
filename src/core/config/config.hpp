@@ -15,8 +15,10 @@ public:
         fs::path backup_path;
         bool ubi_enabled = true;
         bool rsg_enabled = true;
+        bool unreal_enabled = true;
         std::string steam_path;
         std::string lutris_path;
+        std::string heroic_path;
     };
 
     AppConfig settings;
@@ -24,5 +26,5 @@ public:
 private:
     void load();
 
-    fs::path config_file = config_dir / "config.json";
+    fs::path config_file = paths::config_dir() / "config.json";
 };
