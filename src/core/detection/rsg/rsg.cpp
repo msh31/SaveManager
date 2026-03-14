@@ -6,7 +6,7 @@ void rsg::find_saves(const fs::path& prefix, std::vector<Game>& out_games) {
         return;
     }
 
-    for(const auto& game : fs::directory_iterator(prefix)) {
+    for(const auto& game : fs::directory_iterator(prefix, std::filesystem::directory_options::skip_permission_denied)) {
         fs::path game_folder = game.path();
         std::string folder_name = game_folder.filename().string();
         fs::path profiles_folder = game_folder / "Profiles";

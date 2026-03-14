@@ -6,7 +6,7 @@ void ubi::find_saves(const fs::path& prefix, std::vector<Game>& out_games, std::
         return;
     }
 
-    for(const auto& uuid_entry : fs::directory_iterator(prefix)) {
+    for(const auto& uuid_entry : fs::directory_iterator(prefix, std::filesystem::directory_options::skip_permission_denied)) {
         fs::path uuid_folder = uuid_entry.path();
 
         if(out_uuid.empty()) {
