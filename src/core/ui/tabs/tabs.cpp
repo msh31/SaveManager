@@ -203,11 +203,11 @@ void Tabs::render_about_tab(const Fonts& fonts) {
     ImGui::Text("Details");
     ImGui::PopFont();
 
-    ImGui::Text("Version");    ImGui::SameLine(120.0f); ImGui::Text("1.0.0");
+    ImGui::Text("Version");    ImGui::SameLine(120.0f); ImGui::Text("1.2.0");
     ImGui::Text("Author");     ImGui::SameLine(120.0f); ImGui::Text("marco007");
-    ImGui::Text("License");    ImGui::SameLine(120.0f); ImGui::Text("MIT");
+    ImGui::Text("License");    ImGui::SameLine(120.0f); ImGui::Text("GPLv3");
     ImGui::Text("Source");     ImGui::SameLine(120.0f);
-    ImGui::TextLinkOpenURL("click for sauce", "https://git.marco007.dev/marco/SaveManager");
+    ImGui::TextLinkOpenURL("click for sauce", "https://github.com/msh31/SaveManager");
 
     ImGui::Dummy(ImVec2(0.0f, 4.0f));
     ImGui::Separator();
