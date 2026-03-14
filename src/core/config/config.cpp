@@ -61,7 +61,7 @@ void Config::save() {
     json data;
     data["ubi_enabled"] = settings.ubi_enabled;
     data["rsg_enabled"] = settings.rsg_enabled;
-    data["unreal_enabled"] = settings.rsg_enabled;
+    data["unreal_enabled"] = settings.unreal_enabled;
 
     data["backup_path"] = settings.backup_path.string();
     data["steam_path"] = settings.steam_path;
