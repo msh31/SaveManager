@@ -10,19 +10,36 @@ void unreal::find_saves(const fs::path& prefix, std::vector<Game>& out_games) {
     }
     std::set<fs::path> directories;
     fs::path file;
+    char header[4] = {'G','V','A','S'};
 
-    for(const auto& folder : fs::recursive_directory_iterator(prefix)) { 
+    for(const auto& folder : fs::recursive_directory_iterator(prefix, std::filesystem::directory_options::skip_permission_denied)) { 
         file = folder.path();
 
         if(file.extension() == ".sav") {
-            std::string path_str = file.parent_path().string();
-            if (path_str.find("Ubisoft") != std::string::npos || 
-                path_str.find("Rockstar") != std::string::npos ||
-                path_str.find("Application Data BACKUP") != std::string::npos ||
-                path_str.find("Settings") != std::string::npos) { //might cause issues but works fine for now
+            std::ifstream save(file, std::ifstream::binary);
+
+            if(!save.is_open()) {
                 continue;
+            } else {
+                char buffer[4];
+                save.read(buffer, 4);
+                if(save.gcount() != 4) {
+                    continue;
+                }
+
+                if(!std::equal(std::begin(buffer), std::end(buffer), std::begin(header))) {
+                    continue;
+                }
+
+                std::string path_str = file.parent_path().string();
+                if (path_str.find("Ubisoft") != std::string::npos || 
+                    path_str.find("Rockstar") != std::string::npos ||
+                    path_str.find("Application Data BACKUP") != std::string::npos ||
+                    path_str.find("Settings") != std::string::npos) { //might cause issues but works fine for now
+                    continue;
+                }
+                directories.insert(file.parent_path());
             }
-            directories.insert(file.parent_path());
         }
     }
 
