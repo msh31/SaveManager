@@ -30,10 +30,43 @@ jobs:
           cmake -B build
           cmake --build build -j$(nproc)
 
+      - name: Package AppImage
+        run: |
+          # Create .desktop file
+          cat > savemanager.desktop << 'EOF'
+          [Desktop Entry]
+          Name=SaveManager
+          Exec=savemanager
+          Icon=savemanager
+          Type=Application
+          Categories=Utility;
+          EOF
+
+          # Create a minimal placeholder icon
+          python3 -c "
+          import base64, pathlib
+          pathlib.Path('savemanager.png').write_bytes(base64.b64decode(
+              'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg=='
+          ))
+          "
+
+          # Download linuxdeploy and appimage plugin
+          wget -q "https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-x86_64.AppImage"
+          wget -q "https://github.com/linuxdeploy/linuxdeploy-plugin-appimage/releases/download/continuous/linuxdeploy-plugin-appimage-x86_64.AppImage"
+          chmod +x linuxdeploy-x86_64.AppImage linuxdeploy-plugin-appimage-x86_64.AppImage
+
+          ARCH=x86_64 ./linuxdeploy-x86_64.AppImage \
+            --appdir AppDir \
+            --executable build/savemanager \
+            --desktop-file savemanager.desktop \
+            --icon-file savemanager.png \
+            --plugin appimage \
+            --output appimage
+
       - uses: actions/upload-artifact@v4
         with:
           name: savemanager-linux
-          path: build/savemanager
+          path: SaveManager-x86_64.AppImage
 
   build-windows:
     runs-on: windows-latest
@@ -46,12 +79,12 @@ jobs:
         uses: actions/cache@v4
         with:
           path: C:\Users\runneradmin\AppData\Local\vcpkg\archives
-          key: vcpkg-windows-${{ hashFiles('cmake.toml') }}
-          restore-keys: vcpkg-windows-
+          key: vcpkg-windows-static-${{ hashFiles('cmake.toml') }}
+          restore-keys: vcpkg-windows-static-
 
       - name: build_windows
         run: |
-          cmake -B build
+          cmake -B build -DVCPKG_TARGET_TRIPLET=x64-windows-static -DCMAKE_MSVC_RUNTIME_LIBRARY=MultiThreaded
           cmake --build build --config Release
         env:
           VCPKG_ROOT: C:\vcpkg
@@ -73,7 +106,7 @@ jobs:
       - name: Create GitHub Release
         run: |
           gh release create "${{ github.ref_name }}" \
-            savemanager-linux/savemanager \
+            savemanager-linux/SaveManager-x86_64.AppImage \
             savemanager-windows/savemanager.exe \
             --title "${{ github.ref_name }}" \
             --generate-notes
