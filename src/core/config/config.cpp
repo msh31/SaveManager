@@ -99,10 +99,11 @@ void Config::load() {
         settings.lutris_path = paths::lutris_dir().string();
     }
 #endif
+#ifndef _WIN32
     if (settings.heroic_path.empty()) {
         settings.heroic_path = paths::heroic_dir().string();
     }
-
+#endif // !__WIN32
     settings.ubi_enabled = data.value("ubi_enabled", true);
     settings.rsg_enabled = data.value("rsg_enabled", true);
     settings.unreal_enabled = data.value("unreal_enabled", true);
