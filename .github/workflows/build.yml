@@ -3,6 +3,7 @@ name: Test Cross Platform build
 on:
   push:
     branches: [ main ]
+    tags: ['v*']
   pull_request:
     branches: [ main ]
 
@@ -23,6 +24,10 @@ jobs:
           cmake --build build -j$(nproc)
         # env:
         #   VCPKG_ROOT: ${{ github.workspace }}/vcpkg
+      - uses: actions/upload-artifact@v4
+        with:
+          name: savemanager-linux
+          path: build/savemanager
 
   build-windows:
     runs-on: windows-latest
@@ -37,3 +42,23 @@ jobs:
           cmake --build build --config Release
         env:
           VCPKG_ROOT: C:\vcpkg
+      - uses: actions/upload-artifact@v4
+        with:
+          name: savemanager-windows
+          path: build/Release/savemanager.exe
+
+  release:
+    if: startsWith(github.ref, 'refs/tags/')
+    needs: [build-linux, build-windows]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+      - name: Create GitHub Release
+        run: |
+          gh release create "${{ github.ref_name }}" \
+            savemanager-linux/savemanager \
+            savemanager-windows/savemanager.exe \
+            --title "${{ github.ref_name }}" \
+            --generate-notes
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
