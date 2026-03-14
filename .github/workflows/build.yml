@@ -1,4 +1,4 @@
-name: Test Cross Platform build 
+name: Test Cross Platform build
 
 on:
   push:
@@ -15,6 +15,13 @@ jobs:
         with:
           submodules: recursive
 
+      - name: Cache vcpkg binary cache
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/vcpkg/archives
+          key: vcpkg-linux-${{ hashFiles('cmake.toml') }}
+          restore-keys: vcpkg-linux-
+
       - name: Install X11 development libraries
         run: sudo apt-get update && sudo apt-get install -y libx11-dev libxrandr-dev libxinerama-dev libxcursor-dev libxi-dev libgl1-mesa-dev
 
@@ -22,8 +29,7 @@ jobs:
         run: |
           cmake -B build
           cmake --build build -j$(nproc)
-        # env:
-        #   VCPKG_ROOT: ${{ github.workspace }}/vcpkg
+
       - uses: actions/upload-artifact@v4
         with:
           name: savemanager-linux
@@ -36,12 +42,20 @@ jobs:
         with:
           submodules: recursive
 
+      - name: Cache vcpkg binary cache
+        uses: actions/cache@v4
+        with:
+          path: C:\Users\runneradmin\AppData\Local\vcpkg\archives
+          key: vcpkg-windows-${{ hashFiles('cmake.toml') }}
+          restore-keys: vcpkg-windows-
+
       - name: build_windows
         run: |
           cmake -B build
           cmake --build build --config Release
         env:
           VCPKG_ROOT: C:\vcpkg
+
       - uses: actions/upload-artifact@v4
         with:
           name: savemanager-windows
