@@ -33,17 +33,6 @@
 
 int main() {
     Config config;
-    if(!config.init()) {
-        get_logger().error("Config is missing and could not be generated!");
-        return 1;
-    }
-    translations::init();
-
-    auto result = Detection::find_saves(config);
-    if(result.games.empty()) {
-        get_logger().warning("No savegames found!");
-    }
-    config.save();
 
     if(!glfwInit()) {
         get_logger().error("Failed to initialize GLFW.");
@@ -92,6 +81,18 @@ int main() {
 
     ImGui_ImplGlfw_InitForOpenGL(window, true);
     ImGui_ImplOpenGL3_Init();
+
+    if(!config.init()) {
+        get_logger().error("Config is missing and could not be generated!");
+        Notify::show_notification("Config error!", "Config is missing and could not be generated!", 5000);
+    }
+    translations::init();
+
+    auto result = Detection::find_saves(config);
+    if(result.games.empty()) {
+        get_logger().warning("No savegames found!");
+    }
+    config.save();
 
     GLuint game_texture; 
     std::unordered_map<std::string, GLuint> game_textures;
