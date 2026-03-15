@@ -1,7 +1,7 @@
 #pragma once
 #include "core/detection/idetector.hpp"
 #include "core/detection/detection.hpp"
-#include "core/helpers/translations.hpp"
+#include "core/helpers/translations/translations.hpp"
 #include "core/logger/logger.hpp"
 #include <optional>
 #include <set>

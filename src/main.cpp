@@ -1,4 +1,4 @@
-#include "core/helpers/translations.hpp"
+#include "core/helpers/translations/translations.hpp"
 #ifdef _WIN32
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
