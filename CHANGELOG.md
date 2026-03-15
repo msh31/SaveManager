@@ -1,5 +1,26 @@
 # Changelog
 
+## [1.2.0] - 2026-03-??
+### Added
+- Remote sync over SFTP
+- Remove backup functionality
+- Refresh saves button
+
+### Fixed 
+- Silent JSON translation failure errors on startup [#3](https://github.com/msh31/SaveManager/issues/3)
+- About tab showing outdated info from 1.0.0
+- Memory leak caused by not deleting the in-memory textures on shutdown
+
+### Changes 
+- Button presses now have some visual feedback
+
+### Known Issues
+- Incorrect Game name (shown by steam appid or N/A) on some games that are not yet fully supported (Backups will not work properly since the names are similar if N/A) [#2](https://github.com/msh31/SaveManager/issues/2)
+
+## [1.1.1] - 2026-03-14
+### Fixed
+- Unreal toggle not being wired up correctly
+
 ## [1.1.0] - 2026-03-14
 ### Added
 - Heroic Games Launcher support (Ubisoft, Rockstar, Epic/Unreal)
@@ -16,7 +37,6 @@
 - Translations refactor (single init, O(1) lookups)
 
 ### Known Issues
-- Dangling save games as the result of looking for .sav files in unreal detection (#2)
 - Incorrect Game name (shown by steam appid or N/A) on some games that are not yet supported (Backups will not work properly since the names are similar if N/A) (#2)
 
 ## [1.0.0] - 2026-03-10
