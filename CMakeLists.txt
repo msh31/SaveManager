@@ -85,6 +85,7 @@ set(savemanager_SOURCES
 	"src/core/detection/unreal/unreal.cpp"
 	"src/core/features/features.cpp"
 	"src/core/helpers/translations.cpp"
+	"src/core/helpers/zip_archive/zip_archive.cpp"
 	"src/core/logger/logger.cpp"
 	"src/core/network/network.cpp"
 	"src/core/ui/notifications/notification.cpp"

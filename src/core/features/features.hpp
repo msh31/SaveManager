@@ -1,10 +1,8 @@
 #pragma once
-#include <zip.h>
-
 #include "core/helpers/utils.hpp"
 #include "core/logger/logger.hpp"
-#include "core/ui/notifications/notification.hpp"
 #include "core/detection/detection.hpp"
+#include "core/helpers/zip_archive/zip_archive.hpp"
 
 class Features {
 public:
