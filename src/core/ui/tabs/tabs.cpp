@@ -18,6 +18,11 @@ void Tabs::render_general_tab(const Fonts& fonts, const Detection::DetectionResu
     ImGui::Text("Detected Games");
     ImGui::PopFont();
 
+    if(ImGui::Button("Refresh")) {
+        Detection::find_saves(config);
+        Notify::show_notification("Save refresh", "Saves have been refreshed succesfully!", 2000);
+    }
+
     std::vector<std::vector<const Game*>> grouped_games;
     std::unordered_map<std::string, size_t> appid_to_group;
 
