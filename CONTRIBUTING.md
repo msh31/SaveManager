@@ -32,7 +32,7 @@ Bundled in `external/` (no install needed):
 | [Dear ImGui](https://github.com/ocornut/imgui) | GUI |
 | [stb](https://github.com/nothings/stb) | Image loading |
 
-System dependencies (glfw3, libzip, curl) are managed by vcpkg and installed automatically during the build.
+System dependencies (glfw3, libzip, curl, libssh2) are managed by vcpkg and installed automatically during the build.
 
 > Game ID data is fetched from GitHub on first launch and cached locally.
 
@@ -49,7 +49,7 @@ cmake --build build -j$(nproc)
 Binary at `build/savemanager`.
 
 ### Windows (Visual Studio)
-vcpkg (bundled with VS) pulls in glfw3, libzip, and curl automatically same as linux.
+vcpkg (bundled with VS) pulls in glfw3, libzip, libssh2, and curl automatically same as linux.
 
 Edit `configure-vs.bat` if your VS install path, VS version or vcpkg location differs, then:
 

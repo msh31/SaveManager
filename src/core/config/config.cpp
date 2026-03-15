@@ -68,6 +68,13 @@ void Config::save() {
     data["lutris_path"] = settings.lutris_path;
     data["heroic_path"] = settings.heroic_path;
 
+    data["dest_addr"] = sftp.dest_addr;
+    data["username"] = sftp.username;
+    data["password"] = sftp.password;
+    data["pubkey"] = sftp.pubkey;
+    data["privkey"] = sftp.privkey;
+    data["remote_path"] = sftp.remote_path;
+
     std::ofstream file(config_file);
     file << data.dump(4);
 }
@@ -107,4 +114,11 @@ void Config::load() {
     settings.ubi_enabled = data.value("ubi_enabled", true);
     settings.rsg_enabled = data.value("rsg_enabled", true);
     settings.unreal_enabled = data.value("unreal_enabled", true);
+
+    sftp.dest_addr = data.value("dest_addr", std::string(""));
+    sftp.username = data.value("username", std::string(""));
+    sftp.password = data.value("password", std::string(""));
+    sftp.pubkey = data.value("pubkey", fs::path(""));
+    sftp.privkey = data.value("privkey", fs::path(""));
+    sftp.remote_path = data.value("remote_path", fs::path(""));
 }

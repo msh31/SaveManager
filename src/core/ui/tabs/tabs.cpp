@@ -1,3 +1,5 @@
+//this sucks
+
 #include "tabs.hpp"
 #include "core/features/features.hpp"
 #include "core/helpers/paths.hpp"
@@ -5,6 +7,7 @@
 #include "core/logger/logger.hpp"
 #include "core/network/network.hpp"
 #include "core/ui/notifications/notification.hpp"
+#include "core/helpers/remote_transfer/remote_transfer.hpp"
 #include "imgui.h"
 #include <filesystem>
 
@@ -354,6 +357,146 @@ void Tabs::render_settings_tab(const Fonts& fonts, Config& config) {
         }
         Notify::show_notification("Translations", "All translations have been updated!", 2500);
     }
+}
+
+void Tabs::render_transfer_tab(const Fonts& fonts, const Detection::DetectionResult& result, Config& config) {
+    ImGui::PushFont(fonts.header);
+    ImGui::Text("Save Transfer");
+    ImGui::PopFont();
+    ImGui::Separator();
+
+    static bool initialized = false;
+    static char dest_addr_buf[256];
+    static char username_buf[256];
+    static char password_buf[256];
+    static char pubkey_buf[256];
+    static char privkey_buf[256];
+    static char remote_path_buf[256];
+    static int selected_game_idx = 0;
+    static std::vector<fs::path> backups;
+    static std::vector<bool> selected_backups;
+
+    if (!initialized) {
+        snprintf(dest_addr_buf, sizeof(dest_addr_buf), "%s", config.sftp.dest_addr.c_str());
+        snprintf(username_buf, sizeof(username_buf), "%s", config.sftp.username.c_str());
+        snprintf(password_buf, sizeof(password_buf), "%s", config.sftp.password.c_str());
+        snprintf(pubkey_buf, sizeof(pubkey_buf), "%s", config.sftp.pubkey.c_str());
+        snprintf(privkey_buf, sizeof(privkey_buf), "%s", config.sftp.privkey.c_str());
+        snprintf(remote_path_buf, sizeof(remote_path_buf), "%s", config.sftp.remote_path.c_str());
+        initialized = true;
+    }
+
+    float window_width = ImGui::GetWindowSize().x;
+
+    ImGui::BeginChild("##transfer_left", ImVec2(window_width * 0.5f - 20.0f, 0), false);
+
+    ImGui::PushFont(fonts.medium);
+    ImGui::Text("Server");
+    ImGui::PopFont();
+    ImGui::SetNextItemWidth(300.0f);
+    ImGui::InputText("Address", dest_addr_buf, sizeof(dest_addr_buf));
+    ImGui::SetNextItemWidth(300.0f);
+    ImGui::InputText("Remote path", remote_path_buf, sizeof(remote_path_buf));
+
+    ImGui::Dummy(ImVec2(0.0f, 10.0f));
+
+    ImGui::PushFont(fonts.medium);
+    ImGui::Text("Authentication");
+    ImGui::PopFont();
+    ImGui::SetNextItemWidth(145.0f);
+    ImGui::InputText("Username##user", username_buf, sizeof(username_buf));
+    ImGui::SameLine();
+    ImGui::SetNextItemWidth(145.0f);
+    ImGui::InputText("Password##pass", password_buf, sizeof(password_buf), ImGuiInputTextFlags_Password);
+
+    ImGui::Dummy(ImVec2(0.0f, 5.0f));
+    ImGui::TextDisabled("Or use SSH keys:");
+    ImGui::SetNextItemWidth(300.0f);
+    ImGui::InputText("Public key", pubkey_buf, sizeof(pubkey_buf));
+    ImGui::SetNextItemWidth(300.0f);
+    ImGui::InputText("Private key", privkey_buf, sizeof(privkey_buf));
+
+    ImGui::Dummy(ImVec2(0.0f, 15.0f));
+
+    static std::unique_ptr<RemoteTransfer> remote;
+    if(ImGui::Button("Transfer")) {
+        std::vector<fs::path> selected_paths;
+        for (size_t i = 0; i < backups.size(); i++) {
+            if (selected_backups[i]) {
+                selected_paths.push_back(backups[i]);
+            }
+        }
+        if (!selected_paths.empty()) {
+            remote = std::make_unique<RemoteTransfer>(config.sftp.dest_addr, selected_paths[0], config);
+        } else {
+            Notify::show_notification("Transfer", "No backups selected!", 2000);
+        }
+    }
+    ImGui::SameLine();
+    if (ImGui::Button("Save configuration")) {
+        config.sftp.dest_addr = fs::path(dest_addr_buf);
+        config.sftp.username = username_buf;
+        config.sftp.password = password_buf;
+        config.sftp.pubkey = fs::path(pubkey_buf);
+        config.sftp.privkey = fs::path(privkey_buf);
+        config.sftp.remote_path = fs::path(remote_path_buf);
+        config.save();
+        Notify::show_notification("Config Saved!", "Settings saved successfully!", 1500);
+    }
+
+    ImGui::EndChild();
+    ImGui::SameLine();
+    ImGui::BeginChild("##transfer_right", ImVec2(0, 0), false);
+
+    ImGui::PushFont(fonts.medium);
+    ImGui::Text("Select Backups");
+    ImGui::PopFont();
+
+    std::vector<std::string> game_names;
+    for (const auto& game : result.games) {
+        game_names.push_back(game.game_name);
+    }
+
+    if (!game_names.empty()) {
+        if (selected_game_idx >= (int)game_names.size()) selected_game_idx = 0;
+
+        ImGui::SetNextItemWidth(300.0f);
+        if (ImGui::BeginCombo("##game", game_names[selected_game_idx].c_str())) {
+            for (int i = 0; i < (int)game_names.size(); i++) {
+                bool is_selected = (selected_game_idx == i);
+                if (ImGui::Selectable(game_names[i].c_str(), is_selected)) {
+                    selected_game_idx = i;
+                    backups = Features::get_backups(result.games[i], config);
+                    selected_backups.clear();
+                    selected_backups.resize(backups.size(), false);
+                }
+                if (is_selected) ImGui::SetItemDefaultFocus();
+            }
+            ImGui::EndCombo();
+        }
+
+        if (!backups.empty()) {
+            if (ImGui::BeginListBox("##backups", ImVec2(-FLT_MIN, 200.0f))) {
+                for (int i = 0; i < (int)backups.size(); i++) {
+                    std::string label = backups[i].filename().string() + "##" + std::to_string(i);
+                    if (ImGui::Selectable(label.c_str(), selected_backups[i], ImGuiSelectableFlags_AllowDoubleClick)) {
+                        selected_backups[i] = !selected_backups[i];
+                    }
+                }
+                ImGui::EndListBox();
+            }
+
+            int selected_count = 0;
+            for (bool b : selected_backups) if (b) selected_count++;
+            ImGui::Text("Selected: %d", selected_count);
+        } else {
+            ImGui::TextDisabled("No backups found");
+        }
+    } else {
+        ImGui::TextDisabled("No games detected");
+    }
+
+    ImGui::EndChild();
 }
 
 void Tabs::render_debug_tab(const Fonts& fonts) {

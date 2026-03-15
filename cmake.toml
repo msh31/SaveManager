@@ -10,7 +10,7 @@ languages = ["C", "CXX"]
 
 [vcpkg]
 version = "2026.02.27"
-packages = ["curl", "glfw3", "libzip"]
+packages = ["curl", "glfw3", "libzip", "libssh2"]
 
 [find-package.CURL]
 required = true
@@ -19,6 +19,9 @@ required = true
 required = true
 
 [find-package.libzip]
+required = true
+
+[find-package.libssh2]
 required = true
 
 [variables]
@@ -47,5 +50,5 @@ include-directories = [
     "external/glad/include",
     "src",
 ]
-link-libraries = ["CURL::libcurl", "glfw", "libzip::zip"]
+link-libraries = ["CURL::libcurl", "glfw", "libzip::zip", "libssh2::libssh2"]
 compile-features = ["cxx_std_17"]

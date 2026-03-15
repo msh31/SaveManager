@@ -68,6 +68,8 @@ find_package(glfw3 REQUIRED)
 
 find_package(libzip REQUIRED)
 
+find_package(libssh2 REQUIRED)
+
 # Target: savemanager
 set(savemanager_SOURCES
 	cmake.toml
@@ -84,7 +86,8 @@ set(savemanager_SOURCES
 	"src/core/detection/ubi/ubi.cpp"
 	"src/core/detection/unreal/unreal.cpp"
 	"src/core/features/features.cpp"
-	"src/core/helpers/translations.cpp"
+	"src/core/helpers/remote_transfer/remote_transfer.cpp"
+	"src/core/helpers/translations/translations.cpp"
 	"src/core/helpers/zip_archive/zip_archive.cpp"
 	"src/core/logger/logger.cpp"
 	"src/core/network/network.cpp"
@@ -115,6 +118,7 @@ target_link_libraries(savemanager PRIVATE
 	CURL::libcurl
 	glfw
 	libzip::zip
+	libssh2::libssh2
 )
 
 get_directory_property(CMKR_VS_STARTUP_PROJECT DIRECTORY ${PROJECT_SOURCE_DIR} DEFINITION VS_STARTUP_PROJECT)

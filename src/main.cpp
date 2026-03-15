@@ -148,6 +148,10 @@ int main() {
                 Tabs::render_general_tab(fonts, result, game_textures, config);
                 ImGui::EndTabItem();
             }
+            if (ImGui::BeginTabItem("Transfer"))  {
+                Tabs::render_transfer_tab(fonts, result, config);
+                ImGui::EndTabItem();
+            }
             if (ImGui::BeginTabItem("Log"))  {
                 Tabs::render_log_tab(fonts);
                 ImGui::EndTabItem();

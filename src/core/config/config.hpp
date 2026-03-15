@@ -21,7 +21,17 @@ public:
         std::string heroic_path;
     };
 
+    struct SFTPConfig {
+        std::string dest_addr;
+        std::string username;
+        std::string password;
+        fs::path pubkey;
+        fs::path privkey;
+        fs::path remote_path;
+    };
+
     AppConfig settings;
+    SFTPConfig sftp;
 
 private:
     void load();

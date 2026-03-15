@@ -11,7 +11,6 @@ void Features::backup_game(const Game& game, Config& config) {
 
     fs::path zip_name = game_backup_dir / construct_backup_name(game);
     create_backup(zip_name, game);
-    Notify::show_notification("Backup created", "A backup has been created for: " + game.game_name, 2500);
 }
 
 std::vector<fs::path> Features::get_backups(const Game& game, Config& config) {
@@ -39,7 +38,7 @@ void Features::create_backup(const fs::path& name, const Game& selected_game) {
     if(!archive.add_to_archive(selected_game)) {
         Notify::show_notification("Backup Creation", "Failed to create backup! Please refer to the logfile!", 2000);
     } else {
-        Notify::show_notification("Backup restored!", "The backup for: " + selected_game.game_name + " has been created!", 2000);
+        Notify::show_notification("Backup created!", "The backup for: " + selected_game.game_name + " has been created!", 2000);
     }
 }
 
