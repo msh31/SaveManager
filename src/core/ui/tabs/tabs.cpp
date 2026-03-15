@@ -6,10 +6,12 @@
 #include "core/network/network.hpp"
 #include "core/ui/notifications/notification.hpp"
 #include "imgui.h"
+#include <filesystem>
 
-bool open_restore_modal = false;
+bool open_restore_modal, open_delete_modal = false;
 std::vector<fs::path> backups;
 const Game* pending_restore_game = nullptr;
+const Game* pending_delete_game = nullptr;
 int selected_backup_idx = 0;
 static double last_read_time = 0.0;
 
@@ -111,6 +113,14 @@ void Tabs::render_general_tab(const Fonts& fonts, const Detection::DetectionResu
                 pending_restore_game = &active_game;
                 open_restore_modal = true;
             }
+            ImGui::SameLine();
+            ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.8f, 0.2f, 0.2f, 1.0f));
+            ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.9f, 0.3f, 0.3f, 1.0f));
+            if(ImGui::Button("Delete")) {
+                pending_delete_game = &active_game;
+                open_delete_modal = true;
+            }
+            ImGui::PopStyleColor(2);
 
             ImGui::EndChild();
         }
@@ -122,6 +132,14 @@ void Tabs::render_general_tab(const Fonts& fonts, const Detection::DetectionResu
                 open_restore_modal = false;
             }
             ImGui::OpenPopup("Restore Backup");
+        }
+        if(open_delete_modal) {
+            open_delete_modal = false;
+            backups = Features::get_backups(*pending_delete_game, config); 
+            if(backups.empty()) {
+                open_delete_modal = false;
+            }
+            ImGui::OpenPopup("Delete Backup");
         }
 
         if(ImGui::BeginPopupModal("Restore Backup", nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
@@ -145,6 +163,37 @@ void Tabs::render_general_tab(const Fonts& fonts, const Detection::DetectionResu
                 ImGui::CloseCurrentPopup();
                 pending_restore_game = nullptr;
                 open_restore_modal = false;
+            }
+            ImGui::EndPopup();
+        }
+        if(ImGui::BeginPopupModal("Delete Backup", nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
+            ImGui::SetNextItemWidth(550.0f);
+            if(ImGui::BeginListBox("##backups")) {
+                for(int i = 0; i < backups.size(); i++) {
+                    if(ImGui::Selectable(backups[i].filename().string().c_str(), selected_backup_idx == i)) {
+                        selected_backup_idx = i;
+                    }
+                }
+                ImGui::EndListBox();
+            }
+
+            ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.8f, 0.2f, 0.2f, 1.0f));
+            ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.9f, 0.3f, 0.3f, 1.0f));
+            if(ImGui::Button("Delete") && !backups.empty()) {
+                if(fs::remove(backups[selected_backup_idx])) {
+                    Notify::show_notification("Backup Deletion", "Backup deleted!", 1500);
+                } else {
+                    Notify::show_notification("Backup Deletion", "Backup could not be deleted!", 1500);
+                }
+                ImGui::CloseCurrentPopup();
+                open_delete_modal = false;
+            }
+            ImGui::PopStyleColor(2);
+            ImGui::SameLine();
+            if(ImGui::Button("Cancel")) {
+                ImGui::CloseCurrentPopup();
+                pending_delete_game = nullptr;
+                open_delete_modal = false;
             }
             ImGui::EndPopup();
         }
