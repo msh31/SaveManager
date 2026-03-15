@@ -3,11 +3,17 @@
 #include <optional>
 
 #include "detection.hpp"
-#include "core/detection/ubi/ubi.hpp"
 #include "core/detection/rsg/rsg.hpp"
+#include "core/detection/ubi/ubi.hpp"
 #include "core/detection/unreal/unreal.hpp"
 #include "core/helpers/paths.hpp"
 #include "core/logger/logger.hpp"
+
+struct Detectors {
+   RockstarDetector rockstar_detect; 
+   UbisoftDetector ubisoft_detect; 
+   UnrealDetector unreal_detect; 
+};
 
 std::vector<std::string> get_platform_steam_paths() {
 #ifdef __APPLE__
@@ -34,7 +40,7 @@ std::vector<std::string> get_platform_steam_paths() {
     }
 }
 
-std::optional<fs::path> get_steam_location(Config& config) {
+std::optional<fs::path> get_steam_location(const Config& config) {
     if (!config.settings.steam_path.empty()) {
         if (fs::exists(config.settings.steam_path)) {
             return config.settings.steam_path;
@@ -92,7 +98,7 @@ std::vector<fs::path> get_library_folders(Config& config) {
     return libraries;
 }
 
-void Detection::scan_prefix_dir(const fs::path& compatdata, Detection::DetectionResult& result, const Config& config) {
+void scan_prefix_dir(const fs::path& compatdata, Detection::DetectionResult& result, const Config& config, const Detectors& detectors) {
     for (const auto& entry : fs::directory_iterator(compatdata)) {
         fs::path prefix = entry.path();
         if(!fs::exists(prefix)) {
@@ -102,7 +108,7 @@ void Detection::scan_prefix_dir(const fs::path& compatdata, Detection::Detection
 
         fs::path drive_c = fs::exists(prefix / "pfx") ? prefix / "pfx/drive_c" : prefix / "drive_c";
         if (config.settings.ubi_enabled) {
-            ubi::find_saves(drive_c / "Program Files (x86)/Ubisoft/Ubisoft Game Launcher/savegames", result.games, result.uuid);
+            detectors.ubisoft_detect.find_saves(drive_c / "Program Files (x86)/Ubisoft/Ubisoft Game Launcher/savegames", result.games);
         }
 
         fs::path users_dir = drive_c / "users";
@@ -110,10 +116,10 @@ void Detection::scan_prefix_dir(const fs::path& compatdata, Detection::Detection
             for (const auto& user : fs::directory_iterator(users_dir)) {
                 if (user.path().filename() == "Public") continue;
                 if (config.settings.rsg_enabled) {
-                    rsg::find_saves(user.path() / "Documents/Rockstar Games", result.games);
+                    detectors.rockstar_detect.find_saves(user.path() / "Documents/Rockstar Games", result.games);
                 }
                 if (config.settings.unreal_enabled) {
-                    unreal::find_saves(user.path(), result.games);
+                    detectors.unreal_detect.find_saves(user.path(), result.games);
                 }
             }
         }
@@ -122,6 +128,7 @@ void Detection::scan_prefix_dir(const fs::path& compatdata, Detection::Detection
 
 Detection::DetectionResult Detection::find_saves(Config& config) {
     Detection::DetectionResult result;
+    Detectors detectors;
 
 #ifdef __linux__
     // steam
@@ -130,7 +137,7 @@ Detection::DetectionResult Detection::find_saves(Config& config) {
         fs::path compatdata = library / "steamapps/compatdata";
         if (!fs::exists(compatdata)) continue;
 
-        scan_prefix_dir(compatdata, result, config);
+        scan_prefix_dir(compatdata, result, config, detectors);
     }
     // lutris
     fs::path resolved_lutris = paths::lutris_dir();
@@ -147,7 +154,7 @@ Detection::DetectionResult Detection::find_saves(Config& config) {
             config.settings.lutris_path = resolved_lutris.string();
         }
 
-        scan_prefix_dir(resolved_lutris, result, config);
+        scan_prefix_dir(resolved_lutris, result, config, detectors);
     }
     //heroic
     fs::path heroic_base = paths::heroic_dir();
@@ -165,7 +172,7 @@ Detection::DetectionResult Detection::find_saves(Config& config) {
             config.settings.heroic_path = paths::heroic_dir().string();
         }
 
-        scan_prefix_dir(heroic_dir, result, config);
+        scan_prefix_dir(heroic_dir, result, config, detectors);
     } else {
         get_logger().warning("Heroic path does not exist!");
     }
@@ -173,11 +180,11 @@ Detection::DetectionResult Detection::find_saves(Config& config) {
 
 #ifdef _WIN32
     if(config.settings.ubi_enabled) {
-        ubi::find_saves("C:\\Program Files (x86)\\Ubisoft\\Ubisoft Game Launcher\\savegames", result.games, result.uuid);
+        detectors.ubisoft_detect.find_saves("C:\\Program Files (x86)\\Ubisoft\\Ubisoft Game Launcher\\savegames", result.games);
     }
 
     if(config.settings.rsg_enabled) {
-        rsg::find_saves(paths::documents_dir() / "Rockstar Games", result.games);
+        detectors.rockstar_detect.find_saves(paths::documents_dir() / "Rockstar Games", result.games);
     }
 #endif
 

@@ -27,10 +27,8 @@ struct Game {
 
 namespace Detection {
     struct DetectionResult {
-        std::string uuid;  // ubi only 
         std::vector<Game> games;
     };
 
     DetectionResult find_saves(Config& config);
-    void scan_prefix_dir(const fs::path& compatdata, Detection::DetectionResult& result, const Config& config);
 };

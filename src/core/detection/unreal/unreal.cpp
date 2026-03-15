@@ -1,10 +1,6 @@
 #include "unreal.hpp"
-#include "core/helpers/translations.hpp"
-#include "core/logger/logger.hpp"
-#include <optional>
-#include <set>
 
-void unreal::find_saves(const fs::path& prefix, std::vector<Game>& out_games) {
+void UnrealDetector::find_saves(const fs::path& prefix, std::vector<Game>& out_games) const {
     if(!fs::exists(prefix)) {
         return;
     }
