@@ -180,6 +180,11 @@ glfwGetKey(window, GLFW_KEY_Q) != GLFW_PRESS &&
 glfwWindowShouldClose(window) == 0
 );
 
+    if(!game_textures.empty()) {
+        for (auto it = game_textures.begin(); it != game_textures.end(); ++it) {
+            glDeleteTextures(1, &it->second);
+        }
+    }
     ImGui_ImplOpenGL3_Shutdown();
     ImGui_ImplGlfw_Shutdown();
     ImGui::DestroyContext();
