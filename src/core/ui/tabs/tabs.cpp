@@ -421,6 +421,14 @@ void Tabs::render_transfer_tab(const Fonts& fonts, const Detection::DetectionRes
     ImGui::Dummy(ImVec2(0.0f, 15.0f));
 
     static std::unique_ptr<RemoteTransfer> remote;
+    static std::future<void> future;
+    bool is_transferring = future.valid() && future.wait_for(std::chrono::seconds(0)) != std::future_status::ready;
+
+    if(is_transferring) {
+        ImGui::PushItemFlag(ImGuiItemFlags_Disabled, true);
+        ImGui::PushStyleVar(ImGuiStyleVar_Alpha, ImGui::GetStyle().Alpha * 0.5f);
+    }
+
     if(ImGui::Button("Transfer")) {
         std::vector<fs::path> selected_paths;
         for (size_t i = 0; i < backups.size(); i++) {
@@ -430,10 +438,16 @@ void Tabs::render_transfer_tab(const Fonts& fonts, const Detection::DetectionRes
         }
         if (!selected_paths.empty()) {
             remote = std::make_unique<RemoteTransfer>(config.sftp.dest_addr, selected_paths[0], config);
+            future = std::async(std::launch::async, &RemoteTransfer::transfer_file, remote.get(), selected_paths[0]);
         } else {
             Notify::show_notification("Transfer", "No backups selected!", 2000);
         }
     }
+    if(is_transferring) {
+        ImGui::PopItemFlag();
+        ImGui::PopStyleVar();
+    }
+
     ImGui::SameLine();
     if (ImGui::Button("Save configuration")) {
         config.sftp.dest_addr = fs::path(dest_addr_buf);

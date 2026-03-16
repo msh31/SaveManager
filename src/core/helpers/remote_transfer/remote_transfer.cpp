@@ -1,6 +1,7 @@
 #include "remote_transfer.hpp"
 #include "core/logger/logger.hpp"
 #include <filesystem>
+#include <fstream>
 #include <string>
 
 //https://libssh2.org/examples/sftp_write.html
@@ -78,17 +79,19 @@ RemoteTransfer::RemoteTransfer(const std::string& dest_addr, const fs::path& bac
         get_logger().error(error);
         return;
     }
+}
+
+void RemoteTransfer::transfer_file(const fs::path& backup_path) {
+    char mem[1024 * 100];
+    size_t nread;
+    ssize_t nwritten;
+    char *ptr;
 
     std::ifstream file(backup_path, std::ios::binary);
     if(!file.is_open()) {
         get_logger().error("Could not open backup path with SFTP");
         return;
     }
-
-    char mem[1024 * 100];
-    size_t nread;
-    ssize_t nwritten;
-    char *ptr;
 
     do {
         file.read(mem, sizeof(mem));

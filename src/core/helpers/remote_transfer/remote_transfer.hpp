@@ -10,6 +10,7 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <fstream>
+#include <future>
 
 class RemoteTransfer {
 public:
@@ -31,6 +32,8 @@ public:
             LIBSSH2_SOCKET_CLOSE(sock);
         }
     }
+
+    void transfer_file(const fs::path& backup_path);
 
     // disable copying (prevent accidental double-cleanup)
     RemoteTransfer(const RemoteTransfer&) = delete;
