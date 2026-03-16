@@ -90,24 +90,6 @@ RemoteTransfer::RemoteTransfer(const std::string& dest_addr, const fs::path& bac
     ssize_t nwritten;
     char *ptr;
 
-    // get_logger().debug(backup_path.string());
-
-    if(!file.good()) {
-        get_logger().debug("not good");
-    } else {
-        get_logger().debug("good");
-    }
-
-    if(!file.fail()) {
-        get_logger().debug("no fail");
-    } else {
-        get_logger().debug("fail");
-    }
-
-    get_logger().debug(std::to_string(file.gcount()));
-    get_logger().debug(std::to_string(fs::file_size(backup_path)));
-    get_logger().debug(std::to_string(fs::file_size(backup_path)));
-
     do {
         file.read(mem, sizeof(mem));
         if(file.gcount() <= 0) {
@@ -126,4 +108,6 @@ RemoteTransfer::RemoteTransfer(const std::string& dest_addr, const fs::path& bac
             nread -= (size_t)nwritten;
         } while(nread);
     } while(file.gcount() > 0);
+
+    get_logger().success("File has been transferred!");
 }
