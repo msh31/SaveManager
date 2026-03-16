@@ -246,7 +246,7 @@ void Tabs::render_about_tab(const Fonts& fonts) {
     ImGui::PopFont();
 
     ImGui::PushFont(fonts.medium);
-    const char* subtitle = "The definitive local save manager";
+    const char* subtitle = "The swiss army knife of save management.";
     float subtitle_width = ImGui::CalcTextSize(subtitle).x;
     ImGui::SetCursorPosX((win_width - subtitle_width) * 0.5f);
     ImGui::TextDisabled("%s", subtitle);
@@ -276,7 +276,7 @@ void Tabs::render_about_tab(const Fonts& fonts) {
 
     ImGui::TextWrapped(
         "A tool for backing up and restoring game saves locally. "
-        "Supports Steam, Ubisoft, Rockstar, and more."
+        "Supports Steam, Lutris, Unreal, Heroic, Ubisoft, Rockstar, and more."
     );
 
     ImGui::Dummy(ImVec2(0.0f, 4.0f));
@@ -296,6 +296,8 @@ void Tabs::render_about_tab(const Fonts& fonts) {
     ImGui::Text("libcurl | ");
     ImGui::SameLine();
     ImGui::Text("libzip");
+    ImGui::SameLine();
+    ImGui::Text("libssh2 | ");
 }
 
 void Tabs::render_settings_tab(const Fonts& fonts, Config& config) {
@@ -427,6 +429,7 @@ void Tabs::render_transfer_tab(const Fonts& fonts, const Detection::DetectionRes
             }
         }
         if (!selected_paths.empty()) {
+            get_logger().debug(selected_paths[0].string());
             remote = std::make_unique<RemoteTransfer>(config.sftp.dest_addr, selected_paths[0], config);
         } else {
             Notify::show_notification("Transfer", "No backups selected!", 2000);

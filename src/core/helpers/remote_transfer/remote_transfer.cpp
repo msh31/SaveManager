@@ -1,4 +1,7 @@
 #include "remote_transfer.hpp"
+#include "core/logger/logger.hpp"
+#include <filesystem>
+#include <string>
 
 //https://libssh2.org/examples/sftp_write.html
 RemoteTransfer::RemoteTransfer(const std::string& dest_addr, const fs::path& backup_path, const Config& config) {
@@ -16,7 +19,12 @@ RemoteTransfer::RemoteTransfer(const std::string& dest_addr, const fs::path& bac
 
     sin.sin_family = AF_INET;
     sin.sin_port = htons(22);
-    sin.sin_addr.s_addr = inet_pton(AF_INET, dest_addr.c_str(), &sin.sin_addr);
+    int rc = inet_pton(AF_INET, dest_addr.c_str(), &sin.sin_addr);
+    if(rc <= 0) {
+        get_logger().error("Invalid address: " + dest_addr);
+        return;
+    }
+
     if(connect(sock, (struct sockaddr*)(&sin), sizeof(struct sockaddr_in))) {
         get_logger().error("failed to connect to socket: " + std::string(strerror(errno)));
         return;
@@ -56,7 +64,8 @@ RemoteTransfer::RemoteTransfer(const std::string& dest_addr, const fs::path& bac
         return;
     }
 
-    sftp_handle = libssh2_sftp_open(sftp_session, backup_path.string().c_str(),
+    fs::path remote_file = config.sftp.remote_path / backup_path.filename();
+    sftp_handle = libssh2_sftp_open(sftp_session, remote_file.string().c_str(),
                                     LIBSSH2_FXF_WRITE |
                                     LIBSSH2_FXF_CREAT |
                                     LIBSSH2_FXF_TRUNC,
@@ -80,6 +89,24 @@ RemoteTransfer::RemoteTransfer(const std::string& dest_addr, const fs::path& bac
     size_t nread;
     ssize_t nwritten;
     char *ptr;
+
+    // get_logger().debug(backup_path.string());
+
+    if(!file.good()) {
+        get_logger().debug("not good");
+    } else {
+        get_logger().debug("good");
+    }
+
+    if(!file.fail()) {
+        get_logger().debug("no fail");
+    } else {
+        get_logger().debug("fail");
+    }
+
+    get_logger().debug(std::to_string(file.gcount()));
+    get_logger().debug(std::to_string(fs::file_size(backup_path)));
+    get_logger().debug(std::to_string(fs::file_size(backup_path)));
 
     do {
         file.read(mem, sizeof(mem));
