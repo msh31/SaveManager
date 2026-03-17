@@ -64,6 +64,13 @@ RemoteTransfer::RemoteTransfer(const std::string& dest_addr, const fs::path& bac
         get_logger().error("Unable to init SFTP session");
         return;
     }
+}
+
+void RemoteTransfer::transfer_file(const fs::path& backup_path, const Config& config) {
+    char mem[1024 * 100];
+    size_t nread;
+    ssize_t nwritten;
+    char *ptr;
 
     fs::path remote_file = config.sftp.remote_path / backup_path.filename();
     sftp_handle = libssh2_sftp_open(sftp_session, remote_file.string().c_str(),
@@ -79,13 +86,6 @@ RemoteTransfer::RemoteTransfer(const std::string& dest_addr, const fs::path& bac
         get_logger().error(error);
         return;
     }
-}
-
-void RemoteTransfer::transfer_file(const fs::path& backup_path) {
-    char mem[1024 * 100];
-    size_t nread;
-    ssize_t nwritten;
-    char *ptr;
 
     std::ifstream file(backup_path, std::ios::binary);
     if(!file.is_open()) {

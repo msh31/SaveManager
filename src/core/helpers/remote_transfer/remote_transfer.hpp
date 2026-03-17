@@ -33,7 +33,7 @@ public:
         }
     }
 
-    void transfer_file(const fs::path& backup_path);
+    void transfer_file(const fs::path& backup_path, const Config& config);
 
     // disable copying (prevent accidental double-cleanup)
     RemoteTransfer(const RemoteTransfer&) = delete;

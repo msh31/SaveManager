@@ -438,7 +438,13 @@ void Tabs::render_transfer_tab(const Fonts& fonts, const Detection::DetectionRes
         }
         if (!selected_paths.empty()) {
             remote = std::make_unique<RemoteTransfer>(config.sftp.dest_addr, selected_paths[0], config);
-            future = std::async(std::launch::async, &RemoteTransfer::transfer_file, remote.get(), selected_paths[0]);
+
+            //my first time using async and a lambda!
+            future = std::async(std::launch::async, [r = remote.get(), selected_paths, &config]() {
+                for (const auto& path : selected_paths) {
+                    r->transfer_file(path, config);
+                }
+            });
         } else {
             Notify::show_notification("Transfer", "No backups selected!", 2000);
         }
