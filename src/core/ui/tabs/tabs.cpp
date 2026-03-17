@@ -1,4 +1,4 @@
-//this sucks
+//this sucks | update: yes
 
 #include "tabs.hpp"
 #include "core/features/features.hpp"
@@ -275,7 +275,7 @@ void Tabs::render_about_tab(const Fonts& fonts) {
     ImGui::PopFont();
 
     ImGui::TextWrapped(
-        "A tool for backing up and restoring game saves locally. "
+        "A tool for backing up and restoring game saves locally and over sftp. "
         "Supports Steam, Lutris, Unreal, Heroic, Ubisoft, Rockstar, and more."
     );
 
@@ -295,9 +295,9 @@ void Tabs::render_about_tab(const Fonts& fonts) {
     ImGui::SameLine();
     ImGui::Text("libcurl | ");
     ImGui::SameLine();
-    ImGui::Text("libzip");
+    ImGui::Text("libzip | ");
     ImGui::SameLine();
-    ImGui::Text("libssh2 | ");
+    ImGui::Text("libssh2 ");
 }
 
 void Tabs::render_settings_tab(const Fonts& fonts, Config& config) {
