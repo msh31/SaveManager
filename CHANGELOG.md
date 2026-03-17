@@ -1,8 +1,8 @@
 # Changelog
 
-## [1.2.0] - 2026-03-??
+## [1.2.0] - 2026-03-17
 ### Added
-- Remote sync over SFTP
+- Remote sync over SFTP (With progress indicators & support for multi file transfers)
 - Remove backup functionality
 - Refresh saves button
 
@@ -13,6 +13,7 @@
 
 ### Changes 
 - Button presses now have some visual feedback
+- General code refactoring in: ZipArchive, Detection etc..
 
 ### Known Issues
 - Incorrect Game name (shown by steam appid or N/A) on some games that are not yet fully supported (Backups will not work properly since the names are similar if N/A) [#2](https://github.com/msh31/SaveManager/issues/2)
