@@ -25,9 +25,9 @@ public:
         std::string dest_addr;
         std::string username;
         std::string password;
+        std::string remote_path;
         fs::path pubkey;
         fs::path privkey;
-        fs::path remote_path;
     };
 
     AppConfig settings;

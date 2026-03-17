@@ -465,7 +465,7 @@ void Tabs::render_transfer_tab(const Fonts& fonts, const Detection::DetectionRes
         config.sftp.password = password_buf;
         config.sftp.pubkey = fs::path(pubkey_buf);
         config.sftp.privkey = fs::path(privkey_buf);
-        config.sftp.remote_path = fs::path(remote_path_buf);
+        config.sftp.remote_path = remote_path_buf;
         config.save();
         Notify::show_notification("Config Saved!", "Settings saved successfully!", 1500);
     }

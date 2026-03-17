@@ -118,7 +118,7 @@ void Config::load() {
     sftp.dest_addr = data.value("dest_addr", std::string(""));
     sftp.username = data.value("username", std::string(""));
     sftp.password = data.value("password", std::string(""));
+    sftp.remote_path = data.value("remote_path", std::string(""));
     sftp.pubkey = data.value("pubkey", fs::path(""));
     sftp.privkey = data.value("privkey", fs::path(""));
-    sftp.remote_path = data.value("remote_path", fs::path(""));
 }
