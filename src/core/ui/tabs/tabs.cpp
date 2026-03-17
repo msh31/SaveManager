@@ -460,7 +460,7 @@ void Tabs::render_transfer_tab(const Fonts& fonts, const Detection::DetectionRes
 
     ImGui::SameLine();
     if (ImGui::Button("Save configuration")) {
-        config.sftp.dest_addr = fs::path(dest_addr_buf);
+        config.sftp.dest_addr = fs::path(dest_addr_buf).string();
         config.sftp.username = username_buf;
         config.sftp.password = password_buf;
         config.sftp.pubkey = fs::path(pubkey_buf);

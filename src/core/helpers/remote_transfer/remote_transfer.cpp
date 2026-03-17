@@ -26,7 +26,7 @@ RemoteTransfer::RemoteTransfer(const std::string& dest_addr, const fs::path& bac
         return;
     }
 
-    if(connect(sock, (struct sockaddr*)(&sin), sizeof(struct sockaddr_in))) {
+    if(connect(sock, SOCKADDR_CAST(&sin), sizeof(struct sockaddr_in))) {
         get_logger().error("failed to connect to socket: " + std::string(strerror(errno)));
         return;
     }
