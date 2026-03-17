@@ -9,7 +9,7 @@
 #include "core/ui/notifications/notification.hpp"
 #include "core/helpers/remote_transfer/remote_transfer.hpp"
 #include "imgui.h"
-#include <filesystem>
+#include <atomic>
 
 bool open_restore_modal, open_delete_modal = false;
 std::vector<fs::path> backups;
@@ -422,6 +422,8 @@ void Tabs::render_transfer_tab(const Fonts& fonts, const Detection::DetectionRes
 
     static std::unique_ptr<RemoteTransfer> remote;
     static std::future<void> future;
+    static std::atomic<int> current_file_index = 0;
+    static std::atomic<int> total_files = 0;
     bool is_transferring = future.valid() && future.wait_for(std::chrono::seconds(0)) != std::future_status::ready;
 
     if(is_transferring) {
@@ -437,12 +439,14 @@ void Tabs::render_transfer_tab(const Fonts& fonts, const Detection::DetectionRes
             }
         }
         if (!selected_paths.empty()) {
+            total_files = selected_paths.size();
+            current_file_index = 0;
             remote = std::make_unique<RemoteTransfer>(config.sftp.dest_addr, selected_paths[0], config);
 
-            //my first time using async and a lambda!
             future = std::async(std::launch::async, [r = remote.get(), selected_paths, &config]() {
-                for (const auto& path : selected_paths) {
-                    r->transfer_file(path, config);
+                for (size_t i = 0; i < selected_paths.size(); i++) {
+                    current_file_index = i;
+                    r->transfer_file(selected_paths[i], config);
                 }
             });
         } else {
@@ -465,6 +469,37 @@ void Tabs::render_transfer_tab(const Fonts& fonts, const Detection::DetectionRes
         config.save();
         Notify::show_notification("Config Saved!", "Settings saved successfully!", 1500);
     }
+
+    ImGui::Dummy(ImVec2(0.0f, 10.0f));
+
+    float file_progress = 0.0f;
+    float overall_progress = 0.0f;
+    bool transferring = is_transferring && remote;
+
+    static bool was_transferring = false;
+
+    if (transferring) {
+        if (remote->total_bytes > 0) {
+            file_progress = (float)remote->bytes_transferred / (float)remote->total_bytes;
+        }
+        if (total_files > 0) {
+            overall_progress = ((float)current_file_index + file_progress) / (float)total_files;
+        }
+    } else if (was_transferring && !transferring) {
+        Notify::show_notification("Transfer Complete", "All files transferred successfully!", 2000);
+    }
+
+    was_transferring = transferring;
+
+    ImGui::Text("Current file");
+    ImGui::PushStyleColor(ImGuiCol_PlotHistogram, ImVec4(0.26f, 0.59f, 0.98f, 1.0f));
+    ImGui::ProgressBar(file_progress, ImVec2(-FLT_MIN, 0.0f), transferring ? std::to_string((int)(file_progress * 100)).c_str() : "Idle");
+    ImGui::PopStyleColor();
+
+    ImGui::Text("Overall");
+    ImGui::PushStyleColor(ImGuiCol_PlotHistogram, ImVec4(0.26f, 0.59f, 0.98f, 1.0f));
+    ImGui::ProgressBar(overall_progress, ImVec2(-FLT_MIN, 0.0f), transferring ? std::to_string((int)(overall_progress * 100)).c_str() : "Idle");
+    ImGui::PopStyleColor();
 
     ImGui::EndChild();
     ImGui::SameLine();

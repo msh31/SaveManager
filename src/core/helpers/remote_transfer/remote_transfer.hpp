@@ -39,6 +39,8 @@ public:
     RemoteTransfer(const RemoteTransfer&) = delete;
     RemoteTransfer& operator=(const RemoteTransfer&) = delete;
 
+    std::atomic<size_t> bytes_transferred;
+    std::atomic<size_t> total_bytes;
 private:
     uint32_t hostaddr;
     libssh2_socket_t sock = LIBSSH2_INVALID_SOCKET;

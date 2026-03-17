@@ -64,6 +64,9 @@ RemoteTransfer::RemoteTransfer(const std::string& dest_addr, const fs::path& bac
         get_logger().error("Unable to init SFTP session");
         return;
     }
+
+    bytes_transferred = 0;
+    total_bytes = 0;
 }
 
 void RemoteTransfer::transfer_file(const fs::path& backup_path, const Config& config) {
@@ -93,6 +96,7 @@ void RemoteTransfer::transfer_file(const fs::path& backup_path, const Config& co
         return;
     }
 
+    total_bytes = fs::file_size(backup_path);
     do {
         file.read(mem, sizeof(mem));
         if(file.gcount() <= 0) {
@@ -109,6 +113,7 @@ void RemoteTransfer::transfer_file(const fs::path& backup_path, const Config& co
             }
             ptr += nwritten;
             nread -= (size_t)nwritten;
+            bytes_transferred += nwritten;
         } while(nread);
     } while(file.gcount() > 0);
 
