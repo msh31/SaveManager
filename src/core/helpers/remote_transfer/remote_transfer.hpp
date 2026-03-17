@@ -49,6 +49,9 @@ public:
             shutdown(sock, 2);
             LIBSSH2_SOCKET_CLOSE(sock);
         }
+#ifdef _WIN32
+    WSACleanup();
+#endif
     }
 
     void transfer_file(const fs::path& backup_path, const Config& config);

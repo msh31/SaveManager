@@ -6,6 +6,11 @@
 
 //https://libssh2.org/examples/sftp_write.html
 RemoteTransfer::RemoteTransfer(const std::string& dest_addr, const fs::path& backup_path, const Config& config) {
+#ifdef _WIN32
+    WSADATA wsadata;
+    WSAStartup(MAKEWORD(2, 2), &wsadata);
+#endif
+    
     int result = libssh2_init(0);
     if(result) {
         get_logger().error("libssh2 initialization failed!" + std::to_string(result));
