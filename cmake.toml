@@ -11,7 +11,7 @@ languages = ["C", "CXX"]
 
 [vcpkg]
 version = "2026.02.27"
-packages = ["curl", "glfw3", "libzip", "libssh2"]
+packages = ["curl", "glfw3", "libzip", "libssh2", "openssl"]
 
 [find-package.CURL]
 required = true
@@ -20,6 +20,9 @@ required = true
 required = true
 
 [find-package.libzip]
+required = true
+
+[find-package.OpenSSL]
 required = true
 
 [find-package.libssh2]
@@ -53,7 +56,7 @@ include-directories = [
     "src",
 ]
 precompile-headers = ["src/pch.hpp"]
-link-libraries = ["CURL::libcurl", "glfw", "libzip::zip", "libssh2::libssh2"]
+link-libraries = ["CURL::libcurl", "glfw", "libzip::zip", "libssh2::libssh2", "OpenSSL::Crypto"]
 compile-features = ["cxx_std_17"]
 
 [target.savemanager.windows]
