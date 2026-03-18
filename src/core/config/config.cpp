@@ -70,8 +70,8 @@ void Config::save() {
     data["dest_addr"] = sftp.dest_addr;
     data["username"] = sftp.username;
     data["password"] = sftp.password;
-    data["pubkey"] = sftp.pubkey;
-    data["privkey"] = sftp.privkey;
+    data["pubkey"] = sftp.pubkey.string();
+    data["privkey"] = sftp.privkey.string();
     data["remote_path"] = sftp.remote_path;
 
     std::ofstream file(config_file);

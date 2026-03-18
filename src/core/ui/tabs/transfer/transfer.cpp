@@ -19,8 +19,8 @@ void TransferTab::render(const Fonts& fonts, const Detection::DetectionResult& r
     static std::string dest_addr {config.sftp.dest_addr};
     static std::string username {config.sftp.username};
     static std::string password {config.sftp.password};
-    static std::string pubkey {config.sftp.pubkey};
-    static std::string privkey {config.sftp.privkey};
+    static std::string pubkey {config.sftp.pubkey.string()};
+    static std::string privkey {config.sftp.privkey.string()};
     static std::string remote_path {config.sftp.remote_path};
 
     float window_width = ImGui::GetWindowSize().x;

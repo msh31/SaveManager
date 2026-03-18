@@ -25,7 +25,7 @@ void SettingsTab::render(const Fonts& fonts, Config& config) {
     ImGui::Text("Paths");
     ImGui::PopFont();
 
-    static std::string backup_path {config.settings.backup_path};
+    static std::string backup_path {config.settings.backup_path.string()};
     static std::string steam_path {config.settings.steam_path};
     static std::string lutris_path {config.settings.lutris_path};
     static std::string heroic_path {config.settings.heroic_path};
@@ -38,7 +38,7 @@ void SettingsTab::render(const Fonts& fonts, Config& config) {
     ImGui::Separator();
 
     if (ImGui::Button("Save")) {
-        config.settings.backup_path = fs::path(backup_path);
+        config.settings.backup_path = fs::path(backup_path).string();
         config.settings.steam_path = steam_path;
         config.settings.lutris_path = lutris_path;
         config.settings.heroic_path = heroic_path;
