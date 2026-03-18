@@ -1,8 +1,7 @@
 #include "remote_transfer.hpp"
+#include "core/config/config.hpp"
 #include "core/logger/logger.hpp"
-#include <filesystem>
 #include <fstream>
-#include <string>
 
 //https://libssh2.org/examples/sftp_write.html
 RemoteTransfer::RemoteTransfer(const std::string& dest_addr, const fs::path& backup_path, const Config& config) {

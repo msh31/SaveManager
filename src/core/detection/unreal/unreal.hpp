@@ -1,10 +1,5 @@
 #pragma once
 #include "core/detection/idetector.hpp"
-#include "core/detection/detection.hpp"
-#include "core/helpers/translations/translations.hpp"
-#include "core/logger/logger.hpp"
-#include <optional>
-#include <set>
 #include <filesystem>
 #include <vector>
 

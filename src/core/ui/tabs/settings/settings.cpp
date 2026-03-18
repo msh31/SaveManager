@@ -1,4 +1,10 @@
 #include "settings.hpp"
+#include "core/ui/notifications/notification.hpp"
+#include "core/network/network.hpp"
+#include "core/config/config.hpp"
+#include "core/logger/logger.hpp"
+
+#include "imgui/misc/cpp/imgui_stdlib.h"
 
 void SettingsTab::render(const Fonts& fonts, Config& config) {
     ImGui::PushFont(fonts.header);

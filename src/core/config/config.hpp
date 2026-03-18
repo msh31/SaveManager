@@ -1,8 +1,5 @@
 #pragma once
 #include "core/helpers/paths.hpp"
-#include <string>
-#include <filesystem>
-namespace fs = std::filesystem;
 
 class Config {
 public:

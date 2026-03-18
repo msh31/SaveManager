@@ -1,11 +1,14 @@
 #pragma once
-#include "core/helpers/zip_archive/zip_archive.hpp"
-#include "core/logger/logger.hpp"
 #include <libssh2.h>
 #include <libssh2_sftp.h>
+
 #include <string>
-#include <fstream>
-#include <future>
+#include <filesystem>
+#include <atomic>
+
+namespace fs = std::filesystem;
+
+class Config;
 
 //copied from https://git.marco007.dev/marco/http-server/src/commit/db41ab8f0126ed57b257face7c396c08d0999da9/socket_wrapper.hpp
 #ifdef _WIN32

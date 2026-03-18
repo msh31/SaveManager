@@ -1,8 +1,4 @@
 #pragma once
-#include "core/helpers/paths.hpp"
-#include "core/logger/logger.hpp"
-
-#include <filesystem>
 #include <string>
 #include <curl/curl.h>
 

@@ -1,4 +1,5 @@
 #include "ubi.hpp"
+#include "core/helpers/translations/translations.hpp"
 
 void UbisoftDetector::find_saves(const fs::path& prefix, std::vector<Game>& out_games) const {
     if(!fs::exists(prefix)) {

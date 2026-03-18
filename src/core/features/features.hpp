@@ -1,8 +1,7 @@
 #pragma once
-#include "core/helpers/utils.hpp"
-#include "core/logger/logger.hpp"
 #include "core/detection/detection.hpp"
-#include "core/helpers/zip_archive/zip_archive.hpp"
+
+class Config;
 
 class Features {
 public:

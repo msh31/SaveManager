@@ -1,5 +1,9 @@
 #include "features.hpp"
 #include "core/ui/notifications/notification.hpp"
+#include "core/logger/logger.hpp"
+#include "core/config/config.hpp"
+#include "core/helpers/utils.hpp"
+#include "core/helpers/zip_archive/zip_archive.hpp"
 
 void Features::backup_game(const Game& game, Config& config) {
     get_logger().info("creating backup of: " + game.game_name);

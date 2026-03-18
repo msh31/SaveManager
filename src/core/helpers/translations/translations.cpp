@@ -1,6 +1,11 @@
 #include "translations.hpp"
 #include <string>
 #include <string_view>
+#include <fstream>
+#include <regex>
+#include <unordered_map>
+#include "core/helpers/paths.hpp"
+#include "core/logger/logger.hpp"
 
 static std::unordered_map<std::string, std::string> ubi_translations;
 static std::unordered_map<std::string, std::string> steam_n2i_translation; //name to appid

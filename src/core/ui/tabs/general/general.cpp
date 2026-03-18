@@ -1,4 +1,5 @@
 #include "general.hpp"
+#include "core/ui/notifications/notification.hpp"
 
 void GeneralTab::render(const Fonts& fonts, const Detection::DetectionResult& result, std::unordered_map<std::string, GLuint> texture_id, Config& config) {
     ImGui::PushFont(fonts.header);

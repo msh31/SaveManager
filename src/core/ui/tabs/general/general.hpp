@@ -1,8 +1,6 @@
 #pragma once
 #include "core/globals.hpp"
 #include "core/detection/detection.hpp"
-#include "core/ui/notifications/notification.hpp"
-#include "core/helpers/paths.hpp"
 #include "core/features/features.hpp"
 
 #include <unordered_map>

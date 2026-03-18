@@ -1,8 +1,8 @@
 #include <exception>
 #include <filesystem>
-#include <optional>
 
 #include "detection.hpp"
+#include "core/config/config.hpp"
 #include "core/detection/rsg/rsg.hpp"
 #include "core/detection/ubi/ubi.hpp"
 #include "core/detection/unreal/unreal.hpp"

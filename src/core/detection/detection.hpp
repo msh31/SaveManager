@@ -1,13 +1,11 @@
 #pragma once
-#include "core/config/config.hpp"
 #include <filesystem>
-#include <string>
 #include <vector>
 #include <optional>
-#include <fstream>
-#include <iostream>
 
 namespace fs = std::filesystem;
+
+class Config;
 
 enum PlatformType {
     UBISOFT = 1,

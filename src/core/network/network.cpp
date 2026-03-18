@@ -1,4 +1,8 @@
 #include "network.hpp"
+#include "core/helpers/paths.hpp"
+#include "core/logger/logger.hpp"
+
+#include <filesystem>
 
 size_t Network::write_callback(void* ptr, size_t size, size_t nmemb, FILE* stream) {
     return fwrite(ptr, size, nmemb, stream);

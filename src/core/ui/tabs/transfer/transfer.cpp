@@ -1,4 +1,12 @@
 #include "transfer.hpp"
+#include "core/helpers/remote_transfer/remote_transfer.hpp"
+#include "core/ui/notifications/notification.hpp"
+#include "core/features/features.hpp"
+#include "core/config/config.hpp"
+
+#include "imgui/misc/cpp/imgui_stdlib.h"
+
+#include <future>
 
 void TransferTab::render(const Fonts& fonts, const Detection::DetectionResult& result, Config& config) {
     ImGui::PushFont(fonts.header);

@@ -1,9 +1,8 @@
 #pragma once
-#include "core/ui/notifications/notification.hpp"
-#include "core/network/network.hpp"
 #include "core/globals.hpp"
+#include <string_view>
 
-#include "imgui/misc/cpp/imgui_stdlib.h"
+class Config;
 
 namespace SettingsTab {
 void render(const Fonts& fonts, Config& config);

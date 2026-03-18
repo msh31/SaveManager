@@ -1,7 +1,6 @@
 #pragma once
 #include <zip.h>
 #include "core/detection/detection.hpp"
-#include "core/helpers/utils.hpp"
 #include "core/logger/logger.hpp"
 
 #define MODE_CREATE_ARCHIVE (ZIP_CREATE | ZIP_TRUNCATE)
