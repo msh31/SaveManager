@@ -6,8 +6,6 @@
 
 #include "imgui/misc/cpp/imgui_stdlib.h"
 
-#include <future>
-
 void TransferTab::render(const Fonts& fonts, const Detection::DetectionResult& result, Config& config) {
     ImGui::PushFont(fonts.header);
     ImGui::Text("Save Transfer");

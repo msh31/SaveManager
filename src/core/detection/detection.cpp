@@ -1,6 +1,3 @@
-#include <exception>
-#include <filesystem>
-
 #include "detection.hpp"
 #include "core/config/config.hpp"
 #include "core/detection/rsg/rsg.hpp"

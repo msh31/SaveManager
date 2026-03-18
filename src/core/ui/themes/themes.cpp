@@ -1,5 +1,4 @@
 #include "themes.hpp"
-#include "imgui.h"
 
 void ThemeManager::apply_theme(ThemeType theme) {
     ThemeType selectedTheme = theme;

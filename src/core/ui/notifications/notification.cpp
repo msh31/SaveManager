@@ -1,10 +1,5 @@
 #include "notification.hpp"
 
-#include "imgui.h"
-
-#include <chrono>
-#include <vector>
-
 std::vector<Notify::Notification> notifications;
 
 void Notify::show_notification(const std::string& title, const std::string& text, int duration_ms) {

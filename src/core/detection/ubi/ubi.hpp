@@ -1,9 +1,5 @@
 #pragma once
 #include "core/detection/idetector.hpp"
-#include <filesystem>
-#include <vector>
-
-namespace fs = std::filesystem;
 
 class UbisoftDetector : public IDetector {
 public:

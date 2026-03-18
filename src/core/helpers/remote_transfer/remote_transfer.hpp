@@ -2,10 +2,6 @@
 #include <libssh2.h>
 #include <libssh2_sftp.h>
 
-#include <string>
-#include <filesystem>
-#include <atomic>
-
 namespace fs = std::filesystem;
 
 class Config;

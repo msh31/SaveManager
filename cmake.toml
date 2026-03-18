@@ -52,6 +52,7 @@ include-directories = [
     "external/glad/include",
     "src",
 ]
+precompile-headers = ["src/pch.hpp"]
 link-libraries = ["CURL::libcurl", "glfw", "libzip::zip", "libssh2::libssh2"]
 compile-features = ["cxx_std_17"]
 

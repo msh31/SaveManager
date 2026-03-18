@@ -1,6 +1,5 @@
 #pragma once
 #include "core/detection/detection.hpp"
-#include <vector>
 
 class IDetector {
 public:

@@ -1,5 +1,4 @@
 #pragma once
-#include <string>
 #include <curl/curl.h>
 
 namespace Network {

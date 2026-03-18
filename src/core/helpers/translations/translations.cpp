@@ -1,9 +1,6 @@
 #include "translations.hpp"
-#include <string>
-#include <string_view>
 #include <fstream>
 #include <regex>
-#include <unordered_map>
 #include "core/helpers/paths.hpp"
 #include "core/logger/logger.hpp"
 

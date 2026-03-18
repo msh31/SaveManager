@@ -134,6 +134,10 @@ if(WIN32) # windows
 	)
 endif()
 
+target_precompile_headers(savemanager PRIVATE
+	"src/pch.hpp"
+)
+
 get_directory_property(CMKR_VS_STARTUP_PROJECT DIRECTORY ${PROJECT_SOURCE_DIR} DEFINITION VS_STARTUP_PROJECT)
 if(NOT CMKR_VS_STARTUP_PROJECT)
 	set_property(DIRECTORY ${PROJECT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT savemanager)

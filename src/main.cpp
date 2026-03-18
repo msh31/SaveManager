@@ -1,17 +1,10 @@
-#include "core/ui/tabs/about/about.hpp"
 #ifdef _WIN32
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 #endif
 
-#include <glad/glad.h>
-#include <GLFW/glfw3.h>
-
-#include "imgui.h"
 #include "imgui_impl_glfw.h"
 #include "imgui_impl_opengl3.h"
-
-#include <unordered_map>
 
 #include "core/network/network.hpp"
 #include "core/config/config.hpp"
@@ -28,6 +21,7 @@
 #include "core/ui/tabs/transfer/transfer.hpp"
 #include "core/ui/tabs/about/about.hpp"
 #include "core/ui/tabs/general/general.hpp"
+#include "core/ui/tabs/about/about.hpp"
 
 #include "core/ui/fonts/jbm_reg.h"
 #include "core/ui/fonts/jbm_med.h"
