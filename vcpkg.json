@@ -8,7 +8,7 @@
     "libzip",
     "libssh2"
   ],
-  "description": "The definitive local save manager",
+  "description": "The swiss army knife of save management.",
   "name": "savemanager",
   "version-string": "none"
 }

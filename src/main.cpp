@@ -1,4 +1,4 @@
-#include "core/helpers/translations/translations.hpp"
+#include "core/ui/tabs/about/about.hpp"
 #ifdef _WIN32
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
@@ -18,10 +18,16 @@
 #include "core/ui/notifications/notification.hpp"
 #include "core/detection/detection.hpp"
 #include "core/helpers/textures.hpp"
-#include "core/ui/tabs/tabs.hpp"
 #include "core/ui/themes/themes.hpp"
 #include "core/globals.hpp"
 #include "core/logger/logger.hpp"
+#include "core/helpers/translations/translations.hpp"
+
+#include "core/ui/tabs/settings/settings.hpp"
+#include "core/ui/tabs/log/log.hpp"
+#include "core/ui/tabs/transfer/transfer.hpp"
+#include "core/ui/tabs/about/about.hpp"
+#include "core/ui/tabs/general/general.hpp"
 
 #include "core/ui/fonts/jbm_reg.h"
 #include "core/ui/fonts/jbm_med.h"
@@ -45,13 +51,12 @@ int main() {
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE); // no old OpenGL
 
     GLFWwindow* window = glfwCreateWindow(1600, 900, "SaveManager", nullptr, nullptr);
-    glfwSetWindowSizeLimits(window, 1280, 720, 5120, 2880); //720p -> 5K, 16:9
-
     if(window == nullptr) {
         get_logger().error("Failed to create GLFW window. OpenGL 3.3 support is required!");
         glfwTerminate();
         return 1;
     }
+    glfwSetWindowSizeLimits(window, 1280, 720, 5120, 2880); //720p -> 5K, 16:9
     glfwMakeContextCurrent(window);
     glfwSwapInterval(1);
     if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
@@ -142,26 +147,25 @@ int main() {
 
         ImGui::AlignTextToFramePadding();
 
-        static ImGuiTabBarFlags tab_bar_flags = ImGuiTabBarFlags_Reorderable | ImGuiTabBarFlags_DrawSelectedOverline;
-        if (ImGui::BeginTabBar("MyTabBar", tab_bar_flags)) {
+        if (ImGui::BeginTabBar("MyTabBar", ImGuiTabBarFlags_Reorderable | ImGuiTabBarFlags_DrawSelectedOverline)) {
             if (ImGui::BeginTabItem("General"))  {
-                Tabs::render_general_tab(fonts, result, game_textures, config);
+                GeneralTab::render(fonts, result, game_textures, config);
                 ImGui::EndTabItem();
             }
             if (ImGui::BeginTabItem("Transfer"))  {
-                Tabs::render_transfer_tab(fonts, result, config);
+                TransferTab::render(fonts, result, config);
                 ImGui::EndTabItem();
             }
             if (ImGui::BeginTabItem("Log"))  {
-                Tabs::render_log_tab(fonts);
+                LogTab::render(fonts);
                 ImGui::EndTabItem();
             }
             if (ImGui::BeginTabItem("About"))  {
-                Tabs::render_about_tab(fonts);
+                AboutTab::render(fonts);
                 ImGui::EndTabItem();
             }
             if (ImGui::BeginTabItem("Settings"))  {
-                Tabs::render_settings_tab(fonts, config);
+                SettingsTab::render(fonts, config);
                 ImGui::EndTabItem();
             }
             // if (ImGui::BeginTabItem("Debug"))  {

@@ -4,7 +4,7 @@ size_t Network::write_callback(void* ptr, size_t size, size_t nmemb, FILE* strea
     return fwrite(ptr, size, nmemb, stream);
 }
 
-bool Network::download_file(const std::string& url, const std::string& output_path) {
+bool Network::download_file(const std::string_view& url, const std::string& output_path) {
     CURL* curl = curl_easy_init();
     if (!curl) {
         get_logger().error("Failed to initialize CURL");
@@ -18,7 +18,7 @@ bool Network::download_file(const std::string& url, const std::string& output_pa
         return false; 
     }
     
-    curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
+    curl_easy_setopt(curl, CURLOPT_URL, url);
     curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, write_callback);
     curl_easy_setopt(curl, CURLOPT_WRITEDATA, fp);
     

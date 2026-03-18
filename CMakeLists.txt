@@ -32,8 +32,10 @@ project(SaveManager
 	LANGUAGES
 		C
 		CXX
+	VERSION
+		1.2.0
 	DESCRIPTION
-		"The definitive local save manager"
+		"The swiss army knife of save management."
 )
 
 if(CMKR_ROOT_PROJECT AND NOT CMKR_DISABLE_VCPKG)
@@ -80,6 +82,7 @@ set(savemanager_SOURCES
 	"external/imgui/imgui_draw.cpp"
 	"external/imgui/imgui_tables.cpp"
 	"external/imgui/imgui_widgets.cpp"
+	"external/imgui/misc/cpp/imgui_stdlib.cpp"
 	"src/core/config/config.cpp"
 	"src/core/detection/detection.cpp"
 	"src/core/detection/rsg/rsg.cpp"
@@ -92,7 +95,11 @@ set(savemanager_SOURCES
 	"src/core/logger/logger.cpp"
 	"src/core/network/network.cpp"
 	"src/core/ui/notifications/notification.cpp"
-	"src/core/ui/tabs/tabs.cpp"
+	"src/core/ui/tabs/about/about.cpp"
+	"src/core/ui/tabs/general/general.cpp"
+	"src/core/ui/tabs/log/log.cpp"
+	"src/core/ui/tabs/settings/settings.cpp"
+	"src/core/ui/tabs/transfer/transfer.cpp"
 	"src/core/ui/themes/themes.cpp"
 	"src/main.cpp"
 )

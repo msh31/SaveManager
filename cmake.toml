@@ -5,7 +5,8 @@ cmkr-include = "cmkr.cmake"
 
 [project]
 name = "SaveManager"
-description = "The definitive local save manager"
+description = "The swiss army knife of save management."
+version = "1.2.0"
 languages = ["C", "CXX"]
 
 [vcpkg]
@@ -39,6 +40,7 @@ sources = [
     "external/imgui/imgui_widgets.cpp",
     "external/imgui/backends/imgui_impl_glfw.cpp",
     "external/imgui/backends/imgui_impl_opengl3.cpp",
+    "external/imgui/misc/cpp/imgui_stdlib.cpp",
 
     # GLAD
     "external/glad/src/glad.c",
