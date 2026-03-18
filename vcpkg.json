@@ -6,7 +6,8 @@
     "curl",
     "glfw3",
     "libzip",
-    "libssh2"
+    "libssh2",
+    "openssl"
   ],
   "description": "The swiss army knife of save management.",
   "name": "savemanager",

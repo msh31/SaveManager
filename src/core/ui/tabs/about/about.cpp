@@ -63,5 +63,7 @@ void AboutTab::render(const Fonts& fonts) {
     ImGui::SameLine();
     ImGui::Text("libzip | ");
     ImGui::SameLine();
-    ImGui::Text("libssh2 ");
+    ImGui::Text("libssh2 | ");
+    ImGui::SameLine();
+    ImGui::Text("openssl");
 }

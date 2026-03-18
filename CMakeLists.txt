@@ -70,6 +70,8 @@ find_package(glfw3 REQUIRED)
 
 find_package(libzip REQUIRED)
 
+find_package(OpenSSL REQUIRED)
+
 find_package(libssh2 REQUIRED)
 
 # Target: savemanager
@@ -126,6 +128,7 @@ target_link_libraries(savemanager PRIVATE
 	glfw
 	libzip::zip
 	libssh2::libssh2
+	OpenSSL::Crypto
 )
 
 if(WIN32) # windows
