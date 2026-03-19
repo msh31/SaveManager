@@ -121,6 +121,17 @@ void GeneralTab::render(const Fonts& fonts, Detection::DetectionResult& result, 
                 open_delete_modal = true;
             }
             ImGui::PopStyleColor(2);
+            if(ImGui::Button("Open Path")) {
+#ifdef __linux
+                std::string cmd = "xdg-open \"" + active_game.save_path.string() + "\"";
+                system(cmd.c_str());
+#endif
+
+#ifdef _WIN32
+                std::string cmd = "explorer.exe \"" + active_game.save_path.string() + "\"";
+                system(cmd.c_str());
+#endif
+            }
 
             ImGui::EndChild();
         }
