@@ -4,7 +4,7 @@
 
 struct GeneralTab {
     void render(const Fonts& fonts, Detection::DetectionResult& result, std::unordered_map<std::string, GLuint> texture_id, Config& config, TabState& state);
-    void on_result_changed(Detection::DetectionResult& result);
+    void on_result_changed(Detection::DetectionResult& result, TabState& state);
 
     size_t last_game_count = 0;
 

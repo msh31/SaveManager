@@ -1,12 +1,15 @@
 #include "general.hpp"
+#include "core/globals.hpp"
 #include "core/ui/notifications/notification.hpp"
 #include "core/features/features.hpp"
 
-void GeneralTab::on_result_changed(Detection::DetectionResult& result) {
+void GeneralTab::on_result_changed(Detection::DetectionResult& result, TabState& state) {
     grouped_games = {};
     appid_to_group = {};
     pending_restore_game = nullptr;
     pending_delete_game = nullptr;
+    state.selected_game_idx = 0;
+    state.selected_backup_idx = 0;
 
     for (int i = 0; i < (int)result.games.size(); i++) {
         const auto& game = result.games[i];
@@ -36,7 +39,7 @@ void GeneralTab::render(const Fonts& fonts, Detection::DetectionResult& result, 
     int count = 0;
 
     if(last_game_count != result.games.size()) {
-        on_result_changed(result);
+        on_result_changed(result, state);
     }
 
     ImGui::PushFont(fonts.header);
