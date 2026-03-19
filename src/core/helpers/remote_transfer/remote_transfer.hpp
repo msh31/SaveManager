@@ -31,7 +31,7 @@ class Config;
 
 class RemoteTransfer {
 public:
-    RemoteTransfer(const std::string& dest_addr, const fs::path& backup_path, const Config& config);
+    RemoteTransfer();
 
     ~RemoteTransfer() {
         if(sftp_handle) {
@@ -53,6 +53,7 @@ public:
 #endif
     }
 
+    bool connect(const std::string& dest_addr, const Config& config);
     void transfer_file(const fs::path& backup_path, const Config& config);
 
     // disable copying (prevent accidental double-cleanup)

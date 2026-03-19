@@ -4,7 +4,12 @@
 #include <fstream>
 
 //https://libssh2.org/examples/sftp_write.html
-RemoteTransfer::RemoteTransfer(const std::string& dest_addr, const fs::path& backup_path, const Config& config) {
+RemoteTransfer::RemoteTransfer() {
+    bytes_transferred = 0;
+    total_bytes = 0;
+}
+
+bool RemoteTransfer::connect(const std::string& dest_addr, const Config& config) {
 #ifdef _WIN32
     WSADATA wsadata;
     WSAStartup(MAKEWORD(2, 2), &wsadata);
@@ -13,13 +18,13 @@ RemoteTransfer::RemoteTransfer(const std::string& dest_addr, const fs::path& bac
     int result = libssh2_init(0);
     if(result) {
         get_logger().error("libssh2 initialization failed!" + std::to_string(result));
-        return;
+        return false;
     }
 
     sock = socket(AF_INET, SOCK_STREAM, 0);
     if(sock == LIBSSH2_INVALID_SOCKET) {
         get_logger().error("failed to create socket!");
-        return;
+        return false;
     }
 
     sin.sin_family = AF_INET;
@@ -27,25 +32,25 @@ RemoteTransfer::RemoteTransfer(const std::string& dest_addr, const fs::path& bac
     int rc = inet_pton(AF_INET, dest_addr.c_str(), &sin.sin_addr);
     if(rc <= 0) {
         get_logger().error("Invalid address: " + dest_addr);
-        return;
+        return false;
     }
 
-    if(connect(sock, SOCKADDR_CAST(&sin), sizeof(struct sockaddr_in))) {
+    if(::connect(sock, SOCKADDR_CAST(&sin), sizeof(struct sockaddr_in))) {
         get_logger().error("failed to connect to socket: " + std::string(strerror(errno)));
-        return;
+        return false;
     }
 
     session = libssh2_session_init();
     if(!session) {
         get_logger().error("Could not initialize SSH session.");
-        return;
+        return false;
     }
 
     libssh2_session_set_blocking(session, 1);
     result = libssh2_session_handshake(session, sock);
     if(result) {
         get_logger().error("Failure establishing SSH session: " + std::to_string(result));
-        return;
+        return false;
     }
 
     fingerprint = libssh2_hostkey_hash(session, LIBSSH2_HOSTKEY_HASH_SHA1);
@@ -53,24 +58,23 @@ RemoteTransfer::RemoteTransfer(const std::string& dest_addr, const fs::path& bac
     if(auth_pw) {
         if(libssh2_userauth_password(session, config.sftp.username.c_str(), config.sftp.password.c_str())) {
             get_logger().error("Authentication by password failed.");
-            return;
+            return false;
         }
     }
     else {
         if(libssh2_userauth_publickey_fromfile(session, config.sftp.username.c_str(), config.sftp.pubkey.string().c_str(), config.sftp.privkey.string().c_str(), config.sftp.password.c_str())) {
             get_logger().error("Authentication by public key failed.");
-            return;
+            return false;
         }
     }
 
     sftp_session = libssh2_sftp_init(session);
     if(!sftp_session) {
         get_logger().error("Unable to init SFTP session");
-        return;
+        return false;
     }
 
-    bytes_transferred = 0;
-    total_bytes = 0;
+    return true;
 }
 
 void RemoteTransfer::transfer_file(const fs::path& backup_path, const Config& config) {
