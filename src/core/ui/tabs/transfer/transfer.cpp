@@ -1,27 +1,26 @@
 #include "transfer.hpp"
-#include "core/helpers/remote_transfer/remote_transfer.hpp"
+#include "core/globals.hpp"
 #include "core/ui/notifications/notification.hpp"
 #include "core/features/features.hpp"
 #include "core/config/config.hpp"
 
 #include "imgui/misc/cpp/imgui_stdlib.h"
 
-void TransferTab::render(const Fonts& fonts, const Detection::DetectionResult& result, Config& config) {
+void TransferTab::render(const Fonts& fonts, const Detection::DetectionResult& result, Config& config, TabState& state) {
+    if (!initialized) {
+        dest_addr = config.sftp.dest_addr;
+        username = config.sftp.username;
+        password = config.sftp.password;
+        pubkey = config.sftp.pubkey.string();
+        privkey = config.sftp.privkey.string();
+        remote_path = config.sftp.remote_path;
+        initialized = true;
+    }
+
     ImGui::PushFont(fonts.header);
     ImGui::Text("Save Transfer");
     ImGui::PopFont();
     ImGui::Separator();
-
-    static int selected_game_idx = 0;
-    static std::vector<fs::path> backups;
-    static std::vector<bool> selected_backups;
-
-    static std::string dest_addr {config.sftp.dest_addr};
-    static std::string username {config.sftp.username};
-    static std::string password {config.sftp.password};
-    static std::string pubkey {config.sftp.pubkey.string()};
-    static std::string privkey {config.sftp.privkey.string()};
-    static std::string remote_path {config.sftp.remote_path};
 
     float window_width = ImGui::GetWindowSize().x;
 
@@ -55,12 +54,7 @@ void TransferTab::render(const Fonts& fonts, const Detection::DetectionResult& r
 
     ImGui::Dummy(ImVec2(0.0f, 15.0f));
 
-    static std::unique_ptr<RemoteTransfer> remote;
-    static std::future<void> future;
-    static std::atomic<int> current_file_index = 0;
-    static std::atomic<int> total_files = 0;
     bool is_transferring = future.valid() && future.wait_for(std::chrono::seconds(0)) != std::future_status::ready;
-
     if(is_transferring) {
         ImGui::PushItemFlag(ImGuiItemFlags_Disabled, true);
         ImGui::PushStyleVar(ImGuiStyleVar_Alpha, ImGui::GetStyle().Alpha * 0.5f);
@@ -68,9 +62,9 @@ void TransferTab::render(const Fonts& fonts, const Detection::DetectionResult& r
 
     if(ImGui::Button("Transfer")) {
         std::vector<fs::path> selected_paths;
-        for (size_t i = 0; i < backups.size(); i++) {
-            if (selected_backups[i]) {
-                selected_paths.push_back(backups[i]);
+        for (size_t i = 0; i < state.backups.size(); i++) {
+            if (state.selected_backups[i]) {
+                selected_paths.push_back(state.backups[i]);
             }
         }
         if (!selected_paths.empty()) {
@@ -78,7 +72,7 @@ void TransferTab::render(const Fonts& fonts, const Detection::DetectionResult& r
             current_file_index = 0;
             remote = std::make_unique<RemoteTransfer>(config.sftp.dest_addr, selected_paths[0], config);
 
-            future = std::async(std::launch::async, [r = remote.get(), selected_paths, &config]() {
+            future = std::async(std::launch::async, [this, r = remote.get(), selected_paths, &config]() {
                 for (size_t i = 0; i < selected_paths.size(); i++) {
                     current_file_index = i;
                     r->transfer_file(selected_paths[i], config);
@@ -150,36 +144,36 @@ void TransferTab::render(const Fonts& fonts, const Detection::DetectionResult& r
     }
 
     if (!game_names.empty()) {
-        if (selected_game_idx >= (int)game_names.size()) selected_game_idx = 0;
+        if (state.selected_game_idx >= (int)game_names.size()) state.selected_game_idx = 0;
 
         ImGui::SetNextItemWidth(300.0f);
-        if (ImGui::BeginCombo("##game", game_names[selected_game_idx].c_str())) {
+        if (ImGui::BeginCombo("##game", game_names[state.selected_game_idx].c_str())) {
             for (int i = 0; i < (int)game_names.size(); i++) {
-                bool is_selected = (selected_game_idx == i);
+                bool is_selected = (state.selected_game_idx == i);
                 if (ImGui::Selectable(game_names[i].c_str(), is_selected)) {
-                    selected_game_idx = i;
-                    backups = Features::get_backups(result.games[i], config);
-                    selected_backups.clear();
-                    selected_backups.resize(backups.size(), false);
+                    state.selected_game_idx = i;
+                    state.backups = Features::get_backups(result.games[i], config);
+                    state.selected_backups.clear();
+                    state.selected_backups.resize(state.backups.size(), false);
                 }
                 if (is_selected) ImGui::SetItemDefaultFocus();
             }
             ImGui::EndCombo();
         }
 
-        if (!backups.empty()) {
+        if (!state.backups.empty()) {
             if (ImGui::BeginListBox("##backups", ImVec2(-FLT_MIN, 200.0f))) {
-                for (int i = 0; i < (int)backups.size(); i++) {
-                    std::string label = backups[i].filename().string() + "##" + std::to_string(i);
-                    if (ImGui::Selectable(label.c_str(), selected_backups[i], ImGuiSelectableFlags_AllowDoubleClick)) {
-                        selected_backups[i] = !selected_backups[i];
+                for (int i = 0; i < (int)state.backups.size(); i++) {
+                    std::string label = state.backups[i].filename().string() + "##" + std::to_string(i);
+                    if (ImGui::Selectable(label.c_str(), state.selected_backups[i], ImGuiSelectableFlags_AllowDoubleClick)) {
+                        state.selected_backups[i] = !state.selected_backups[i];
                     }
                 }
                 ImGui::EndListBox();
             }
 
             int selected_count = 0;
-            for (bool b : selected_backups) if (b) selected_count++;
+            for (bool b : state.selected_backups) if (b) selected_count++;
             ImGui::Text("Selected: %d", selected_count);
         } else {
             ImGui::TextDisabled("No backups found");

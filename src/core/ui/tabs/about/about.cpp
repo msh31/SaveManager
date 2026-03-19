@@ -12,7 +12,6 @@ void AboutTab::render(const Fonts& fonts) {
     ImGui::PopFont();
 
     ImGui::PushFont(fonts.medium);
-    const char* subtitle = "The swiss army knife of save management.";
     float subtitle_width = ImGui::CalcTextSize(subtitle).x;
     ImGui::SetCursorPosX((win_width - subtitle_width) * 0.5f);
     ImGui::TextDisabled("%s", subtitle);

@@ -2,7 +2,6 @@
 #include "core/logger/logger.hpp"
 
 void LogTab::render(const Fonts& fonts) {
-    static std::string log_buffer;
     std::ifstream log_file(paths::config_dir() / "savemanager.log");
 
     if (ImGui::Button("Clear")) {

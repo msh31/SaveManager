@@ -1,7 +1,42 @@
 #include "general.hpp"
 #include "core/ui/notifications/notification.hpp"
+#include "core/features/features.hpp"
 
-void GeneralTab::render(const Fonts& fonts, const Detection::DetectionResult& result, std::unordered_map<std::string, GLuint> texture_id, Config& config) {
+void GeneralTab::on_result_changed(Detection::DetectionResult& result) {
+    grouped_games = {};
+    appid_to_group = {};
+
+    for (int i = 0; i < (int)result.games.size(); i++) {
+        const auto& game = result.games[i];
+        if (game.appid != "N/A") {
+            auto it = appid_to_group.find(game.appid);
+            if (it != appid_to_group.end()) {
+                grouped_games[it->second].push_back(i);
+            } else {
+                appid_to_group[game.appid] = grouped_games.size();
+                grouped_games.push_back({i});
+            }
+        } else {
+            grouped_games.push_back({i});
+        }
+    }
+
+    last_game_count = result.games.size();
+}
+
+void GeneralTab::render(const Fonts& fonts, Detection::DetectionResult& result, std::unordered_map<std::string, GLuint> texture_id, Config& config, TabState& state) {
+    float available_width = ImGui::GetContentRegionAvail().x;
+    float card_width = 300.0f;
+    float card_height = 300.0f;
+    float card_gap = 10.0f;
+    float image_height = 131.0f;
+    int columns = (std::max)(1, (int)(available_width / (card_width + card_gap)));
+    int count = 0;
+
+    if(last_game_count != result.games.size()) {
+        on_result_changed(result);
+    }
+
     ImGui::PushFont(fonts.header);
     ImGui::Text("Detected Games");
     ImGui::PopFont();
@@ -11,32 +46,6 @@ void GeneralTab::render(const Fonts& fonts, const Detection::DetectionResult& re
         Notify::show_notification("Save refresh", "Saves have been refreshed succesfully!", 2000);
     }
 
-    std::vector<std::vector<const Game*>> grouped_games;
-    std::unordered_map<std::string, size_t> appid_to_group;
-
-    for (const auto& game : result.games) {
-        if (game.appid != "N/A") {
-            auto it = appid_to_group.find(game.appid);
-            if (it != appid_to_group.end()) {
-                grouped_games[it->second].push_back(&game);
-            } else {
-                appid_to_group[game.appid] = grouped_games.size();
-                grouped_games.push_back({&game});
-            }
-        } else {
-            grouped_games.push_back({&game});
-        }
-    }
-
-    static std::unordered_map<std::string, int> selected_source;
-
-    int count = 0;
-    float available_width = ImGui::GetContentRegionAvail().x;
-    constexpr float card_width = 300.0f;
-    constexpr float card_height = 300.0f;
-    constexpr float card_gap = 10.0f;
-    constexpr float image_height = 131.0f;
-    int columns = (std::max)(1, (int)(available_width / (card_width + card_gap)));
     if(!grouped_games.empty()) {
         for (int gi = 0; gi < (int)grouped_games.size(); gi++) {
             const auto& group = grouped_games[gi];
@@ -49,12 +58,12 @@ void GeneralTab::render(const Fonts& fonts, const Detection::DetectionResult& re
             }
 
             count++;
-            const Game* primary = group[0];
+            const Game* primary = &result.games[group[0]];
             std::string card_id = primary->game_name + "##card" + std::to_string(gi);
 
             int& sel = selected_source[card_id];
             if (sel >= (int)group.size()) sel = 0;
-            const Game& active_game = *group[sel];
+            const Game& active_game = result.games[group[sel]];
 
             ImGui::BeginChild(card_id.c_str(), ImVec2(card_width, card_height), true);
             ImGui::TextWrapped("%s", primary->game_name.c_str());
@@ -79,7 +88,7 @@ void GeneralTab::render(const Fonts& fonts, const Detection::DetectionResult& re
                 if (ImGui::BeginCombo("##source", active_game.save_path.string().c_str())) {
                     for (int i = 0; i < (int)group.size(); i++) {
                         bool is_selected = (sel == i);
-                        std::string label = group[i]->save_path.string() + "##" + std::to_string(i);
+                        std::string label = result.games[group[i]].save_path.string() + "##" + std::to_string(i);
                         if (ImGui::Selectable(label.c_str(), is_selected)) {
                             sel = i;
                         }
@@ -113,16 +122,16 @@ void GeneralTab::render(const Fonts& fonts, const Detection::DetectionResult& re
 
         if(open_restore_modal) {
             open_restore_modal = false;
-            backups = Features::get_backups(*pending_restore_game, config); 
-            if(backups.empty()) {
+            state.backups = Features::get_backups(*pending_restore_game, config); 
+            if(state.backups.empty()) {
                 open_restore_modal = false;
             }
             ImGui::OpenPopup("Restore Backup");
         }
         if(open_delete_modal) {
             open_delete_modal = false;
-            backups = Features::get_backups(*pending_delete_game, config); 
-            if(backups.empty()) {
+            state.backups = Features::get_backups(*pending_delete_game, config); 
+            if(state.backups.empty()) {
                 open_delete_modal = false;
             }
             ImGui::OpenPopup("Delete Backup");
@@ -130,17 +139,17 @@ void GeneralTab::render(const Fonts& fonts, const Detection::DetectionResult& re
 
         if(ImGui::BeginPopupModal("Restore Backup", nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
             ImGui::SetNextItemWidth(550.0f);
-            if(ImGui::BeginListBox("##backups")) {
-                for(int i = 0; i < backups.size(); i++) {
-                    if(ImGui::Selectable(backups[i].filename().string().c_str(), selected_backup_idx == i)) {
-                        selected_backup_idx = i;
+            if(ImGui::BeginListBox("##state.backups")) {
+                for(int i = 0; i < state.backups.size(); i++) {
+                    if(ImGui::Selectable(state.backups[i].filename().string().c_str(), state.selected_backup_idx == i)) {
+                        state.selected_backup_idx = i;
                     }
                 }
                 ImGui::EndListBox();
             }
 
-            if(ImGui::Button("Restore") && !backups.empty()) {
-                Features::restore_backup(backups[selected_backup_idx], *pending_restore_game);
+            if(ImGui::Button("Restore") && !state.backups.empty()) {
+                Features::restore_backup(state.backups[state.selected_backup_idx], *pending_restore_game);
                 ImGui::CloseCurrentPopup();
                 open_restore_modal = false;
             }
@@ -154,10 +163,10 @@ void GeneralTab::render(const Fonts& fonts, const Detection::DetectionResult& re
         }
         if(ImGui::BeginPopupModal("Delete Backup", nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
             ImGui::SetNextItemWidth(550.0f);
-            if(ImGui::BeginListBox("##backups")) {
-                for(int i = 0; i < backups.size(); i++) {
-                    if(ImGui::Selectable(backups[i].filename().string().c_str(), selected_backup_idx == i)) {
-                        selected_backup_idx = i;
+            if(ImGui::BeginListBox("##state.backups")) {
+                for(int i = 0; i < state.backups.size(); i++) {
+                    if(ImGui::Selectable(state.backups[i].filename().string().c_str(), state.selected_backup_idx == i)) {
+                        state.selected_backup_idx = i;
                     }
                 }
                 ImGui::EndListBox();
@@ -165,8 +174,8 @@ void GeneralTab::render(const Fonts& fonts, const Detection::DetectionResult& re
 
             ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.8f, 0.2f, 0.2f, 1.0f));
             ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.9f, 0.3f, 0.3f, 1.0f));
-            if(ImGui::Button("Delete") && !backups.empty()) {
-                if(fs::remove(backups[selected_backup_idx])) {
+            if(ImGui::Button("Delete") && !state.backups.empty()) {
+                if(fs::remove(state.backups[state.selected_backup_idx])) {
                     Notify::show_notification("Backup Deletion", "Backup deleted!", 1500);
                 } else {
                     Notify::show_notification("Backup Deletion", "Backup could not be deleted!", 1500);

@@ -1,8 +1,9 @@
 #pragma once
 #include "core/globals.hpp"
 
-namespace LogTab {
-void render(const Fonts& fonts);
+struct LogTab {
+    void render(const Fonts& fonts);
 
-static double last_read_time = 0.0;
+    double last_read_time = 0.0;
+    std::string log_buffer;
 };

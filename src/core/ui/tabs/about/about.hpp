@@ -1,6 +1,8 @@
 #pragma once
 #include "core/globals.hpp"
 
-namespace AboutTab {
-void render(const Fonts& fonts);
+struct AboutTab {
+    void render(const Fonts& fonts);
+
+    const char* subtitle = "The swiss army knife of save management.";
 };

@@ -33,6 +33,12 @@
 
 int main() {
     Config config;
+    GeneralTab general_tab;
+    TransferTab transfer_tab;
+    LogTab log_tab;
+    AboutTab about_tab;
+    SettingsTab settings_tab;
+    TabState state;
 
     if(!glfwInit()) {
         get_logger().error("Failed to initialize GLFW.");
@@ -143,23 +149,23 @@ int main() {
 
         if (ImGui::BeginTabBar("MyTabBar", ImGuiTabBarFlags_Reorderable | ImGuiTabBarFlags_DrawSelectedOverline)) {
             if (ImGui::BeginTabItem("General"))  {
-                GeneralTab::render(fonts, result, game_textures, config);
+                general_tab.render(fonts, result, game_textures, config, state);
                 ImGui::EndTabItem();
             }
             if (ImGui::BeginTabItem("Transfer"))  {
-                TransferTab::render(fonts, result, config);
+                transfer_tab.render(fonts, result, config, state);
                 ImGui::EndTabItem();
             }
             if (ImGui::BeginTabItem("Log"))  {
-                LogTab::render(fonts);
+                log_tab.render(fonts);
                 ImGui::EndTabItem();
             }
             if (ImGui::BeginTabItem("About"))  {
-                AboutTab::render(fonts);
+                about_tab.render(fonts);
                 ImGui::EndTabItem();
             }
             if (ImGui::BeginTabItem("Settings"))  {
-                SettingsTab::render(fonts, config);
+                settings_tab.render(fonts, config);
                 ImGui::EndTabItem();
             }
             // if (ImGui::BeginTabItem("Debug"))  {
