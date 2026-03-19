@@ -1,3 +1,5 @@
+#include "core/helpers/paths.hpp"
+#include <filesystem>
 #ifdef _WIN32
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
@@ -99,22 +101,21 @@ int main() {
     }
     config.save();
 
-    GLuint game_texture; 
+    GLuint game_texture = 0; 
     std::unordered_map<std::string, GLuint> game_textures;
     int tex_w = 460, tex_h = 215;
     for (auto& game : result.games) {
         if(game.appid == "N/A") {
             continue;
         }
+        fs::path path = paths::cache_dir() / (game.appid + ".jpg");
 
-        if(!Network::download_game_image(game.appid)) {
+        Network::download_game_image(game.appid);
+        if(!fs::exists(path)) {
             continue;
         }
-        fs::path path;
 
-        path = paths::cache_dir() / (game.appid + ".jpg");
         LoadTextureFromFile(path.string().c_str(), &game_texture, &tex_w, &tex_h);
-
         game_textures[game.appid] = game_texture;
     }
 
