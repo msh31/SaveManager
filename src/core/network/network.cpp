@@ -20,7 +20,7 @@ bool Network::download_file(const std::string_view& url, const std::string& outp
         return false; 
     }
     
-    curl_easy_setopt(curl, CURLOPT_URL, url);
+    curl_easy_setopt(curl, CURLOPT_URL, std::string(url).c_str());
     curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, write_callback);
     curl_easy_setopt(curl, CURLOPT_WRITEDATA, fp);
     
@@ -37,12 +37,12 @@ bool Network::download_file(const std::string_view& url, const std::string& outp
     return true;
 }
 
-bool Network::download_game_image(const std::string& appid) {
+void Network::download_game_image(const std::string& appid) {
     std::string output_file = appid + ".jpg";
     fs::path img_path = paths::cache_dir() / output_file; 
 
     if (fs::exists(img_path)) {
-        return true;
+        return;
     }
 
     std::string url =
@@ -50,5 +50,5 @@ bool Network::download_game_image(const std::string& appid) {
         appid +
         "/header.jpg";
 
-    return Network::download_file(url, img_path.string());
+    Network::download_file(url, img_path.string());
 }

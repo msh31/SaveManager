@@ -5,6 +5,8 @@
 void GeneralTab::on_result_changed(Detection::DetectionResult& result) {
     grouped_games = {};
     appid_to_group = {};
+    pending_restore_game = nullptr;
+    pending_delete_game = nullptr;
 
     for (int i = 0; i < (int)result.games.size(); i++) {
         const auto& game = result.games[i];
@@ -42,7 +44,7 @@ void GeneralTab::render(const Fonts& fonts, Detection::DetectionResult& result, 
     ImGui::PopFont();
 
     if(ImGui::Button("Refresh")) {
-        Detection::find_saves(config);
+        result = Detection::find_saves(config);
         Notify::show_notification("Save refresh", "Saves have been refreshed succesfully!", 2000);
     }
 
