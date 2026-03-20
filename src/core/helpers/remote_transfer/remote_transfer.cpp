@@ -1,7 +1,9 @@
 #include "remote_transfer.hpp"
 #include "core/config/config.hpp"
+#include "core/globals.hpp"
 #include "core/logger/logger.hpp"
 #include <fstream>
+#include <libssh2_sftp.h>
 
 //https://libssh2.org/examples/sftp_write.html
 RemoteTransfer::RemoteTransfer() {
@@ -77,7 +79,7 @@ bool RemoteTransfer::connect(const std::string& dest_addr, const Config& config)
     return true;
 }
 
-void RemoteTransfer::transfer_file(const fs::path& backup_path, const Config& config) {
+void RemoteTransfer::upload_file(const fs::path& backup_path, const Config& config) {
     char mem[1024 * 100];
     size_t nread;
     ssize_t nwritten;
@@ -125,5 +127,49 @@ void RemoteTransfer::transfer_file(const fs::path& backup_path, const Config& co
         } while(nread);
     } while(file.gcount() > 0);
 
-    get_logger().success("File has been transferred!");
+    get_logger().success("File has been uploaded!");
+}
+
+std::vector<RemoteEntry> RemoteTransfer::list_directory(const std::string& path) {
+    LIBSSH2_SFTP_HANDLE* handle = libssh2_sftp_opendir(sftp_session, path.c_str());
+    if(!handle) {
+        return {};
+    }
+
+    char buffer[512];
+    std::vector<RemoteEntry> entry;
+    LIBSSH2_SFTP_ATTRIBUTES attrs;
+
+    while(libssh2_sftp_readdir(handle, buffer, sizeof(buffer), &attrs) > 0) {
+        entry.push_back({std::string(buffer), LIBSSH2_SFTP_S_ISDIR(attrs.permissions) != 0});
+    }
+
+    libssh2_sftp_closedir(handle);
+    return entry;
+}
+
+void RemoteTransfer::download_file(const fs::path& backup_path, const Config& config) {
+    char mem[1024 * 100];
+
+    fs::path remote_file = config.sftp.remote_path / backup_path.filename();
+    fs::path local_path = config.settings.backup_path / backup_path.filename();
+    sftp_handle = libssh2_sftp_open(sftp_session, remote_file.string().c_str(), LIBSSH2_FXF_READ, 0);
+    if(!sftp_handle) {
+        std::string error("Unable to open path with SFTP" + std::to_string(libssh2_sftp_last_error(sftp_session)));
+        get_logger().error(error);
+        return;
+    }
+
+    std::ofstream file(local_path, std::ios::binary);
+    if(!file.is_open()) {
+        get_logger().error("Could not open backup path with SFTP");
+        return;
+    }
+
+    ssize_t rc;
+    while ((rc = libssh2_sftp_read(sftp_handle, mem, sizeof(mem))) > 0) {
+        file.write(mem, rc);
+        bytes_transferred += rc;
+    }
+    get_logger().success("File has been download!");
 }

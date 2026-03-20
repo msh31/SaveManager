@@ -1,5 +1,7 @@
 #include "transfer.hpp"
 #include "core/globals.hpp"
+#include "core/helpers/remote_transfer/remote_transfer.hpp"
+#include "core/logger/logger.hpp"
 #include "core/ui/notifications/notification.hpp"
 #include "core/features/features.hpp"
 #include "core/config/config.hpp"
@@ -8,98 +10,17 @@
 
 void TransferTab::render(const Fonts& fonts, const Detection::DetectionResult& result, Config& config, TabState& state) {
     if (!initialized) {
+        remote = std::make_unique<RemoteTransfer>();
+
         dest_addr = config.sftp.dest_addr;
         username = config.sftp.username;
         password = config.sftp.password;
         pubkey = config.sftp.pubkey.string();
         privkey = config.sftp.privkey.string();
-        remote_path = config.sftp.remote_path;
         initialized = true;
     }
 
-    ImGui::PushFont(fonts.header);
-    ImGui::Text("Save Transfer");
-    ImGui::PopFont();
-    ImGui::Separator();
-
-    float window_width = ImGui::GetWindowSize().x;
-
-    ImGui::BeginChild("##transfer_left", ImVec2(window_width * 0.5f - 20.0f, 0), false);
-
-    ImGui::PushFont(fonts.medium);
-    ImGui::Text("Server");
-    ImGui::PopFont();
-    ImGui::SetNextItemWidth(300.0f);
-    ImGui::InputText("Address", &dest_addr);
-    ImGui::SetNextItemWidth(300.0f);
-    ImGui::InputText("Remote path", &remote_path);
-
-    ImGui::Dummy(ImVec2(0.0f, 10.0f));
-
-    ImGui::PushFont(fonts.medium);
-    ImGui::Text("Authentication");
-    ImGui::PopFont();
-    ImGui::SetNextItemWidth(145.0f);
-    ImGui::InputText("Username##user", &username);
-    ImGui::SameLine();
-    ImGui::SetNextItemWidth(145.0f);
-    ImGui::InputText("Password##user", &password, ImGuiInputTextFlags_Password);
-
-    ImGui::Dummy(ImVec2(0.0f, 5.0f));
-    ImGui::TextDisabled("Or use SSH keys:");
-    ImGui::SetNextItemWidth(300.0f);
-    ImGui::InputText("Public key", &pubkey);
-    ImGui::SetNextItemWidth(300.0f);
-    ImGui::InputText("Private key", &privkey);
-
-    ImGui::Dummy(ImVec2(0.0f, 15.0f));
-
     bool is_transferring = future.valid() && future.wait_for(std::chrono::seconds(0)) != std::future_status::ready;
-    if(is_transferring) {
-        ImGui::PushItemFlag(ImGuiItemFlags_Disabled, true);
-        ImGui::PushStyleVar(ImGuiStyleVar_Alpha, ImGui::GetStyle().Alpha * 0.5f);
-    }
-
-    if(ImGui::Button("Transfer")) {
-        std::vector<fs::path> selected_paths;
-        for (size_t i = 0; i < state.backups.size(); i++) {
-            if (state.selected_backups[i]) {
-                selected_paths.push_back(state.backups[i]);
-            }
-        }
-        if (!selected_paths.empty()) {
-            total_files = selected_paths.size();
-            current_file_index = 0;
-            remote = std::make_unique<RemoteTransfer>(config.sftp.dest_addr, selected_paths[0], config);
-
-            future = std::async(std::launch::async, [this, r = remote.get(), selected_paths, &config]() {
-                for (size_t i = 0; i < selected_paths.size(); i++) {
-                    current_file_index = i;
-                    r->transfer_file(selected_paths[i], config);
-                }
-            });
-        } else {
-            Notify::show_notification("Transfer", "No backups selected!", 2000);
-        }
-    }
-    if(is_transferring) {
-        ImGui::PopItemFlag();
-        ImGui::PopStyleVar();
-    }
-
-    ImGui::SameLine();
-    if (ImGui::Button("Save configuration")) {
-        config.sftp.dest_addr = fs::path(dest_addr).string();
-        config.sftp.username = username;
-        config.sftp.password = password;
-        config.sftp.pubkey = fs::path(pubkey);
-        config.sftp.privkey = fs::path(privkey);
-        config.sftp.remote_path = remote_path;
-        config.save();
-        Notify::show_notification("Config Saved!", "Settings saved successfully!", 1500);
-    }
-
-    ImGui::Dummy(ImVec2(0.0f, 10.0f));
 
     float file_progress = 0.0f;
     float overall_progress = 0.0f;
@@ -120,23 +41,108 @@ void TransferTab::render(const Fonts& fonts, const Detection::DetectionResult& r
 
     was_transferring = transferring;
 
-    ImGui::Text("Current file");
-    ImGui::PushStyleColor(ImGuiCol_PlotHistogram, ImVec4(0.26f, 0.59f, 0.98f, 1.0f));
-    ImGui::ProgressBar(file_progress, ImVec2(-FLT_MIN, 0.0f), transferring ? std::to_string((int)(file_progress * 100)).c_str() : "Idle");
-    ImGui::PopStyleColor();
-
-    ImGui::Text("Overall");
-    ImGui::PushStyleColor(ImGuiCol_PlotHistogram, ImVec4(0.26f, 0.59f, 0.98f, 1.0f));
-    ImGui::ProgressBar(overall_progress, ImVec2(-FLT_MIN, 0.0f), transferring ? std::to_string((int)(overall_progress * 100)).c_str() : "Idle");
-    ImGui::PopStyleColor();
-
-    ImGui::EndChild();
-    ImGui::SameLine();
-    ImGui::BeginChild("##transfer_right", ImVec2(0, 0), false);
+    ImGui::PushFont(fonts.header);
+    ImGui::Text("Save Transfer");
+    ImGui::PopFont();
+    ImGui::Separator();
 
     ImGui::PushFont(fonts.medium);
-    ImGui::Text("Select Backups");
+    ImGui::Text("Server");
     ImGui::PopFont();
+
+    ImGui::SetNextItemWidth(250.0f);
+    ImGui::InputText("Address", &dest_addr);
+
+    ImGui::Dummy(ImVec2(0.0f, 5.0f));
+
+    ImGui::PushFont(fonts.medium);
+    ImGui::Text("Authentication");
+    ImGui::PopFont();
+
+    ImGui::SetNextItemWidth(120.0f);
+    ImGui::InputText("Username##user", &username);
+    ImGui::SameLine();
+    ImGui::SetNextItemWidth(120.0f);
+    ImGui::InputText("Password##user", &password, ImGuiInputTextFlags_Password);
+
+    ImGui::Dummy(ImVec2(0.0f, 5.0f));
+    ImGui::TextDisabled("Or use SSH keys:");
+    ImGui::SetNextItemWidth(250.0f);
+    ImGui::InputText("Public key", &pubkey);
+    ImGui::SetNextItemWidth(250.0f);
+    ImGui::InputText("Private key", &privkey);
+
+    ImGui::Dummy(ImVec2(0.0f, 10.0f));
+
+    if (connected) {
+        ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.3f, 1.0f, 0.3f, 1.0f));
+        ImGui::BulletText("Connected to %s", dest_addr.c_str());
+        ImGui::PopStyleColor();
+    } else {
+        ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f, 0.3f, 0.3f, 1.0f));
+        ImGui::BulletText("Not connected");
+        ImGui::PopStyleColor();
+    }
+
+    if (ImGui::Button("Connect")) {
+        if (remote->connect(dest_addr, config)) {
+            connected = true;
+            current_remote_path = "/home/" + config.sftp.username;
+            remote_entries = remote->list_directory(current_remote_path);
+        } else {
+            Notify::show_notification("SFTP Connection", "Failed to connect to server!", 2000);
+        }
+    }
+    ImGui::SameLine();
+    if (ImGui::Button("Save configuration")) {
+        config.sftp.dest_addr = fs::path(dest_addr).string();
+        config.sftp.username = username;
+        config.sftp.password = password;
+        config.sftp.pubkey = fs::path(pubkey);
+        config.sftp.privkey = fs::path(privkey);
+        config.save();
+        Notify::show_notification("Config Saved!", "Settings saved successfully!", 1500);
+    }
+
+    ImGui::Separator();
+
+    float window_width = ImGui::GetWindowSize().x;
+    float panel_width = (window_width - 20.0f) / 2.0f;
+
+    ImGui::BeginChild("##transfer_local", ImVec2(panel_width, 0), false);
+    ImGui::PushFont(fonts.medium);
+    ImGui::Text("Local");
+    ImGui::PopFont();
+
+    int local_selected_count = 0;
+    for (bool b : state.selected_backups) if (b) local_selected_count++;
+
+    ImGui::BeginDisabled(!connected || local_selected_count == 0 || is_transferring);
+    if (ImGui::Button("Upload")) {
+        std::vector<fs::path> selected_paths;
+        for (size_t i = 0; i < state.backups.size(); i++) {
+            if (state.selected_backups[i]) {
+                selected_paths.push_back(state.backups[i]);
+            }
+        }
+        if (!selected_paths.empty()) {
+            total_files = selected_paths.size();
+            current_file_index = 0;
+
+            future = std::async(std::launch::async, [this, r = remote.get(), selected_paths, &config]() {
+                for (size_t i = 0; i < selected_paths.size(); i++) {
+                    current_file_index = i;
+                    r->upload_file(selected_paths[i], config);
+                }
+            });
+        }
+    }
+    ImGui::EndDisabled();
+
+    ImGui::SameLine();
+    ImGui::Text("(%d selected)", local_selected_count);
+
+    float content_height = ImGui::GetContentRegionAvail().y - 10.0f;
 
     std::vector<std::string> game_names;
     for (const auto& game : result.games) {
@@ -146,7 +152,7 @@ void TransferTab::render(const Fonts& fonts, const Detection::DetectionResult& r
     if (!game_names.empty()) {
         if (state.selected_game_idx >= (int)game_names.size()) state.selected_game_idx = 0;
 
-        ImGui::SetNextItemWidth(300.0f);
+        ImGui::SetNextItemWidth(250.0f);
         if (ImGui::BeginCombo("##game", game_names[state.selected_game_idx].c_str())) {
             for (int i = 0; i < (int)game_names.size(); i++) {
                 bool is_selected = (state.selected_game_idx == i);
@@ -162,7 +168,7 @@ void TransferTab::render(const Fonts& fonts, const Detection::DetectionResult& r
         }
 
         if (!state.backups.empty()) {
-            if (ImGui::BeginListBox("##backups", ImVec2(-FLT_MIN, 200.0f))) {
+            if (ImGui::BeginListBox("##backups", ImVec2(-FLT_MIN, content_height))) {
                 for (int i = 0; i < (int)state.backups.size(); i++) {
                     std::string label = state.backups[i].filename().string() + "##" + std::to_string(i);
                     if (ImGui::Selectable(label.c_str(), state.selected_backups[i], ImGuiSelectableFlags_AllowDoubleClick)) {
@@ -171,17 +177,94 @@ void TransferTab::render(const Fonts& fonts, const Detection::DetectionResult& r
                 }
                 ImGui::EndListBox();
             }
-
-            int selected_count = 0;
-            for (bool b : state.selected_backups) if (b) selected_count++;
-            ImGui::Text("Selected: %d", selected_count);
         } else {
             ImGui::TextDisabled("No backups found");
         }
     } else {
         ImGui::TextDisabled("No games detected");
     }
-
     ImGui::EndChild();
-}
 
+    ImGui::SameLine();
+
+    ImGui::BeginChild("##transfer_remote", ImVec2(panel_width, 0), false);
+
+    ImGui::PushFont(fonts.medium);
+    ImGui::Text("Remote");
+    ImGui::PopFont();
+
+    if (!connected) {
+        ImGui::TextDisabled("Connect to browse remote server");
+    } else {
+        bool has_remote_selection = selected_remote_idx >= 0 && selected_remote_idx < (int)remote_entries.size();
+        bool is_file_selected = has_remote_selection && !remote_entries[selected_remote_idx].is_directory;
+
+        ImGui::BeginDisabled(!is_file_selected || is_transferring);
+        if (ImGui::Button("Download")) {
+            std::string path = current_remote_path + "/" + remote_entries[selected_remote_idx].name;
+            remote->download_file(path, config);
+        }
+        ImGui::EndDisabled();
+
+        ImGui::SameLine();
+        if (has_remote_selection) {
+            ImGui::Text("%s", remote_entries[selected_remote_idx].name.c_str());
+        } else {
+            ImGui::TextDisabled("(no selection)");
+        }
+
+        ImGui::PushStyleColor(ImGuiCol_Text, ImGui::GetStyle().Colors[ImGuiCol_TextDisabled]);
+        ImGui::Text("Path:");
+        ImGui::PopStyleColor();
+        ImGui::SameLine();
+        ImGui::Text("%s", current_remote_path.c_str());
+
+        float remote_content_height = ImGui::GetContentRegionAvail().y - 10.0f;
+
+        if (ImGui::BeginListBox("##remote_entries", ImVec2(-FLT_MIN, remote_content_height))) {
+            if (current_remote_path != "/") {
+                if (ImGui::Selectable("..##parent", false)) {
+                    if (current_remote_path == "/") {
+                        current_remote_path = "/";
+                    } else {
+                        current_remote_path = fs::path(current_remote_path).parent_path().string();
+                        if (current_remote_path.empty()) current_remote_path = "/";
+                    }
+                    remote_entries = remote->list_directory(current_remote_path);
+                    selected_remote_idx = -1;
+                }
+            }
+            for (int i = 0; i < (int)remote_entries.size(); i++) {
+                if (remote_entries[i].name == "." || remote_entries[i].name == "..") continue;
+
+                std::string prefix = remote_entries[i].is_directory ? "[DIR] " : "[FILE] ";
+                std::string label = prefix + remote_entries[i].name + "##" + std::to_string(i);
+                if (ImGui::Selectable(label.c_str(), selected_remote_idx == i, ImGuiSelectableFlags_AllowDoubleClick)) {
+                    if (ImGui::IsMouseDoubleClicked(0) && remote_entries[i].is_directory) {
+                        current_remote_path = current_remote_path + "/" + remote_entries[i].name;
+                        remote_entries = remote->list_directory(current_remote_path);
+                        selected_remote_idx = -1;
+                    } else {
+                        selected_remote_idx = i;
+                    }
+                }
+            }
+            ImGui::EndListBox();
+        }
+    }
+    ImGui::EndChild();
+
+    ImGui::Separator();
+
+    ImGui::Text("File:");
+    ImGui::SameLine(60.0f);
+    ImGui::PushStyleColor(ImGuiCol_PlotHistogram, ImVec4(0.26f, 0.59f, 0.98f, 1.0f));
+    ImGui::ProgressBar(file_progress, ImVec2(-FLT_MIN, 0.0f), transferring ? std::to_string((int)(file_progress * 100)).c_str() : "Idle");
+    ImGui::PopStyleColor();
+
+    ImGui::Text("Overall:");
+    ImGui::SameLine(60.0f);
+    ImGui::PushStyleColor(ImGuiCol_PlotHistogram, ImVec4(0.26f, 0.59f, 0.98f, 1.0f));
+    ImGui::ProgressBar(overall_progress, ImVec2(-FLT_MIN, 0.0f), transferring ? std::to_string((int)(overall_progress * 100)).c_str() : "Idle");
+    ImGui::PopStyleColor();
+}

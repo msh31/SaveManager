@@ -9,12 +9,16 @@ struct TransferTab {
     void render(const Fonts& fonts, const Detection::DetectionResult& result, Config& config, TabState& state);
 
     bool initialized = false;
+    bool connected = false;
     std::string dest_addr;
     std::string username;
     std::string password;
     std::string pubkey;
     std::string privkey;
-    std::string remote_path;
+
+    std::string current_remote_path;
+    std::vector<RemoteEntry> remote_entries;
+    int selected_remote_idx = -1;
 
     std::unique_ptr<RemoteTransfer> remote;
     std::future<void> future;

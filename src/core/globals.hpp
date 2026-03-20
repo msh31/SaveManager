@@ -18,3 +18,9 @@ struct TabState {
     int selected_game_idx = 0;
     int selected_backup_idx = 0;
 };
+
+
+struct RemoteEntry {
+    std::string name;
+    bool is_directory;
+};

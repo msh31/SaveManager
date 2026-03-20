@@ -54,7 +54,9 @@ public:
     }
 
     bool connect(const std::string& dest_addr, const Config& config);
-    void transfer_file(const fs::path& backup_path, const Config& config);
+    void upload_file(const fs::path& backup_path, const Config& config);
+    void download_file(const fs::path& backup_path, const Config& config);
+    std::vector<RemoteEntry> list_directory(const std::string& path);
 
     // disable copying (prevent accidental double-cleanup)
     RemoteTransfer(const RemoteTransfer&) = delete;
