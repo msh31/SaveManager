@@ -1,7 +1,6 @@
 #include "transfer.hpp"
 #include "core/globals.hpp"
 #include "core/helpers/remote_transfer/remote_transfer.hpp"
-#include "core/logger/logger.hpp"
 #include "core/ui/notifications/notification.hpp"
 #include "core/features/features.hpp"
 #include "core/config/config.hpp"
@@ -21,6 +20,7 @@ void TransferTab::render(const Fonts& fonts, const Detection::DetectionResult& r
     }
 
     bool is_transferring = future.valid() && future.wait_for(std::chrono::seconds(0)) != std::future_status::ready;
+    bool is_connecting = connect_future.valid() && connect_future.wait_for(std::chrono::seconds(0)) != std::future_status::ready;
 
     float file_progress = 0.0f;
     float overall_progress = 0.0f;
@@ -40,6 +40,19 @@ void TransferTab::render(const Fonts& fonts, const Detection::DetectionResult& r
     }
 
     was_transferring = transferring;
+
+    // connection status updates that need to run every frame
+    if (connect_future.valid() && connect_future.wait_for(std::chrono::seconds(0)) == std::future_status::ready) {
+        bool success = connect_future.get();
+        if (success) {
+            connected = true;
+            current_remote_path = "/home/" + config.sftp.username;
+            remote_entries = remote->list_directory(current_remote_path);
+            Notify::show_notification("SFTP Connection", "Connected!", 2000);
+        } else {
+            Notify::show_notification("SFTP Connection", "Failed to connect!", 2000);
+        }
+    }
 
     ImGui::PushFont(fonts.header);
     ImGui::Text("Save Transfer");
@@ -85,17 +98,11 @@ void TransferTab::render(const Fonts& fonts, const Detection::DetectionResult& r
     }
 
     if (ImGui::Button("Connect")) {
-        if (remote->connect(dest_addr, config)) {
-            connected = true;
-            current_remote_path = "/home/" + config.sftp.username;
-            remote_entries = remote->list_directory(current_remote_path);
-            Notify::show_notification("SFTP Connection", "Connected to server!", 2000);
-        } else {
-            Notify::show_notification("SFTP Connection", "Failed to connect to server!", 2000);
-        }
+        connect_future = std::async(std::launch::async, [this, r = remote.get(), &config]() -> bool {
+            return r->connect(dest_addr, config);
+        });
     }
     ImGui::SameLine();
-
     if(connected) {
         ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.8f, 0.2f, 0.2f, 1.0f));
         ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.9f, 0.3f, 0.3f, 1.0f));
@@ -117,6 +124,20 @@ void TransferTab::render(const Fonts& fonts, const Detection::DetectionResult& r
         config.save();
         Notify::show_notification("Config Saved!", "Settings saved successfully!", 1500);
     }
+
+    ImGui::Separator();
+
+    ImGui::Text("File:");
+    ImGui::SameLine(60.0f);
+    ImGui::PushStyleColor(ImGuiCol_PlotHistogram, ImVec4(0.26f, 0.59f, 0.98f, 1.0f));
+    ImGui::ProgressBar(file_progress, ImVec2(300.0f, 0.0f), transferring ? std::to_string((int)(file_progress * 100)).c_str() : "Idle");
+    ImGui::PopStyleColor();
+
+    ImGui::Text("Overall:");
+    ImGui::SameLine(60.0f);
+    ImGui::PushStyleColor(ImGuiCol_PlotHistogram, ImVec4(0.26f, 0.59f, 0.98f, 1.0f));
+    ImGui::ProgressBar(overall_progress, ImVec2(300.0f, 0.0f), transferring ? std::to_string((int)(overall_progress * 100)).c_str() : "Idle");
+    ImGui::PopStyleColor();
 
     ImGui::Separator();
 
@@ -268,17 +289,4 @@ void TransferTab::render(const Fonts& fonts, const Detection::DetectionResult& r
     }
     ImGui::EndChild();
 
-    ImGui::Separator();
-
-    ImGui::Text("File:");
-    ImGui::SameLine(60.0f);
-    ImGui::PushStyleColor(ImGuiCol_PlotHistogram, ImVec4(0.26f, 0.59f, 0.98f, 1.0f));
-    ImGui::ProgressBar(file_progress, ImVec2(-FLT_MIN, 0.0f), transferring ? std::to_string((int)(file_progress * 100)).c_str() : "Idle");
-    ImGui::PopStyleColor();
-
-    ImGui::Text("Overall:");
-    ImGui::SameLine(60.0f);
-    ImGui::PushStyleColor(ImGuiCol_PlotHistogram, ImVec4(0.26f, 0.59f, 0.98f, 1.0f));
-    ImGui::ProgressBar(overall_progress, ImVec2(-FLT_MIN, 0.0f), transferring ? std::to_string((int)(overall_progress * 100)).c_str() : "Idle");
-    ImGui::PopStyleColor();
 }

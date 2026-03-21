@@ -22,6 +22,7 @@ struct TransferTab {
 
     std::unique_ptr<RemoteTransfer> remote;
     std::future<void> future;
+    std::future<bool> connect_future;
     std::atomic<int> current_file_index = 0;
     std::atomic<int> total_files = 0;
 };
