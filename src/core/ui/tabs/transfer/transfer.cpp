@@ -110,19 +110,18 @@ void TransferTab::render(const Fonts& fonts, const Detection::DetectionResult& r
         ImGui::PopStyleColor();
     }
 
-    if(!is_connecting) {
+    if(!is_connecting && !connected) {
         if (ImGui::Button("Connect")) {
             connect_future = std::async(std::launch::async, [this, r = remote.get(), &config, auth = use_password_auth, pass = key_passphrase]() -> bool {
                 return r->connect(dest_addr, config, auth, pass);
             });
         }
-    } else {
+    } else if(!connected) {
         char spin_char = spinner[(spinner_frame / 10) % 4];
 
         std::string loading_text = std::string("Connecting... ") + spin_char;
         ImGui::Text("%s", loading_text.c_str());
     }
-    ImGui::SameLine();
     if(connected) {
         ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.8f, 0.2f, 0.2f, 1.0f));
         ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.9f, 0.3f, 0.3f, 1.0f));
