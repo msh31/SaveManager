@@ -1,7 +1,5 @@
 #pragma once
 #include "core/helpers/paths.hpp"
-#include <string>
-#include <fstream>
 
 class logger
 {

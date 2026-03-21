@@ -1,8 +1,5 @@
 #pragma once
 #include "core/helpers/paths.hpp"
-#include <string>
-#include <filesystem>
-namespace fs = std::filesystem;
 
 class Config {
 public:
@@ -21,7 +18,17 @@ public:
         std::string heroic_path;
     };
 
+    struct SFTPConfig {
+        std::string dest_addr;
+        std::string username;
+        std::string password;
+        std::string remote_path;
+        fs::path pubkey;
+        fs::path privkey;
+    };
+
     AppConfig settings;
+    SFTPConfig sftp;
 
 private:
     void load();

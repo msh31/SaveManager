@@ -1,4 +1,5 @@
 #pragma once
+#include <filesystem>
 #include "imgui.h"
 
 struct Fonts {
@@ -8,4 +9,18 @@ struct Fonts {
 
     ImFont* title;
     ImFont* header;
+};
+
+
+struct TabState {
+    std::vector<std::filesystem::path> backups;
+    std::vector<bool> selected_backups;
+    int selected_game_idx = 0;
+    int selected_backup_idx = 0;
+};
+
+
+struct RemoteEntry {
+    std::string name;
+    bool is_directory;
 };

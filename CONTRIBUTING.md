@@ -16,7 +16,6 @@ Contributions are welcome. If you want to report a bug, suggest a feature, or su
 ---
 
 ## Building from Source
-
 After cloning, grab the submodules:
 
 ```bash
@@ -24,7 +23,6 @@ git submodule update --init --recursive
 ```
 
 ### Dependencies
-
 Bundled in `external/` (no install needed):
 
 | Library | Purpose |
@@ -34,7 +32,7 @@ Bundled in `external/` (no install needed):
 | [Dear ImGui](https://github.com/ocornut/imgui) | GUI |
 | [stb](https://github.com/nothings/stb) | Image loading |
 
-System dependencies (glfw3, libzip, curl) are managed by vcpkg and installed automatically during the build.
+System dependencies (glfw3, libzip, curl, libssh2) are managed by vcpkg and installed automatically during the build.
 
 > Game ID data is fetched from GitHub on first launch and cached locally.
 
@@ -46,14 +44,14 @@ The build configuration lives in `cmake.toml` ([cmkr](https://github.com/build-c
 cmake -B build
 cmake --build build -j$(nproc)
 ```
+> Note: use CMake 3.31.x as CMake 4.x.x does not work on some dependencies!
 
 Binary at `build/savemanager`.
 
 ### Windows (Visual Studio)
+vcpkg (bundled with VS) pulls in glfw3, libzip, libssh2, and curl automatically same as linux.
 
-vcpkg (bundled with VS 2026+) pulls in glfw3, libzip, and curl automatically.
-
-Edit `configure-vs.bat` if your VS install path or vcpkg location differs, then:
+Edit `configure-vs.bat` if your VS install path, VS version or vcpkg location differs, then:
 
 ```bat
 configure-vs.bat
@@ -61,34 +59,9 @@ configure-vs.bat
 
 This generates a VS solution in `build-vs/`. Open it and build from there.
 
-If you have a standalone vcpkg install:
+If you have a standalone vcpkg install (make sure to change the version to yours):
 
 ```bat
-cmake -B build -G "Visual Studio 18 2026" -A x64 ^
+cmake -B build -G "Visual Studio 17 2022" -A x64 ^
   -DCMAKE_TOOLCHAIN_FILE="path\to\vcpkg\scripts\buildsystems\vcpkg.cmake"
 ```
-
-### Cross-compiling for Windows (from Linux)
-
-1. Install MinGW-w64:
-
-```bash
-# Arch
-sudo pacman -S mingw-w64-gcc
-```
-
-2. Set up vcpkg:
-
-```bash
-git clone https://github.com/microsoft/vcpkg.git ~/vcpkg
-cd ~/vcpkg && ./bootstrap-vcpkg.sh
-export VCPKG_ROOT="$HOME/vcpkg"  # add to your shell rc
-```
-
-3. Run the build script:
-
-```bash
-./build-windows.sh
-```
-
-Output at `build-windows/savemanager.exe`.

@@ -1,10 +1,7 @@
 #pragma once
-#include "core/detection/detection.hpp"
-#include <filesystem>
-#include <vector>
+#include "core/detection/idetector.hpp"
 
-namespace fs = std::filesystem;
-
-namespace unreal {
-void find_saves(const fs::path& prefix, std::vector<Game>& out_games);
-}
+class UnrealDetector : public IDetector {
+public:
+    void find_saves(const fs::path& prefix, std::vector<Game>& out_games) const override;
+};

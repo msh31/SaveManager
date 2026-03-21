@@ -1,7 +1,7 @@
 #include "rsg.hpp"
-#include "core/helpers/translations.hpp"
+#include "core/helpers/translations/translations.hpp"
 
-void rsg::find_saves(const fs::path& prefix, std::vector<Game>& out_games) {
+void RockstarDetector::find_saves(const fs::path& prefix, std::vector<Game>& out_games) const {
     if(!fs::exists(prefix)) {
         return;
     }

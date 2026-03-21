@@ -1,10 +1,7 @@
 #pragma once
-#include <zip.h>
-
-#include "core/helpers/utils.hpp"
-#include "core/logger/logger.hpp"
-#include "core/ui/notifications/notification.hpp"
 #include "core/detection/detection.hpp"
+
+class Config;
 
 class Features {
 public:

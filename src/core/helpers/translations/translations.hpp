@@ -1,14 +1,5 @@
 #pragma once
-#include <string>
-#include <fstream>
-#include <optional>
-#include <regex>
-#include <string_view>
-#include <unordered_map>
-
 #include "../../external/json.hpp"
-#include "core/helpers/paths.hpp"
-#include "core/logger/logger.hpp"
 
 using json = nlohmann::json;
 

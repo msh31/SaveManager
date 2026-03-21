@@ -1,6 +1,4 @@
 #include "notification.hpp"
-#include "imgui.h"
-#include <chrono>
 
 std::vector<Notify::Notification> notifications;
 

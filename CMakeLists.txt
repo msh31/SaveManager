@@ -32,8 +32,10 @@ project(SaveManager
 	LANGUAGES
 		C
 		CXX
+	VERSION
+		1.2.0
 	DESCRIPTION
-		"The definitive local save manager"
+		"The swiss army knife of save management."
 )
 
 if(CMKR_ROOT_PROJECT AND NOT CMKR_DISABLE_VCPKG)
@@ -68,6 +70,10 @@ find_package(glfw3 REQUIRED)
 
 find_package(libzip REQUIRED)
 
+find_package(OpenSSL REQUIRED)
+
+find_package(libssh2 REQUIRED)
+
 # Target: savemanager
 set(savemanager_SOURCES
 	cmake.toml
@@ -78,17 +84,24 @@ set(savemanager_SOURCES
 	"external/imgui/imgui_draw.cpp"
 	"external/imgui/imgui_tables.cpp"
 	"external/imgui/imgui_widgets.cpp"
+	"external/imgui/misc/cpp/imgui_stdlib.cpp"
 	"src/core/config/config.cpp"
 	"src/core/detection/detection.cpp"
 	"src/core/detection/rsg/rsg.cpp"
 	"src/core/detection/ubi/ubi.cpp"
 	"src/core/detection/unreal/unreal.cpp"
 	"src/core/features/features.cpp"
-	"src/core/helpers/translations.cpp"
+	"src/core/helpers/remote_transfer/remote_transfer.cpp"
+	"src/core/helpers/translations/translations.cpp"
+	"src/core/helpers/zip_archive/zip_archive.cpp"
 	"src/core/logger/logger.cpp"
 	"src/core/network/network.cpp"
 	"src/core/ui/notifications/notification.cpp"
-	"src/core/ui/tabs/tabs.cpp"
+	"src/core/ui/tabs/about/about.cpp"
+	"src/core/ui/tabs/general/general.cpp"
+	"src/core/ui/tabs/log/log.cpp"
+	"src/core/ui/tabs/settings/settings.cpp"
+	"src/core/ui/tabs/transfer/transfer.cpp"
 	"src/core/ui/themes/themes.cpp"
 	"src/main.cpp"
 )
@@ -114,6 +127,18 @@ target_link_libraries(savemanager PRIVATE
 	CURL::libcurl
 	glfw
 	libzip::zip
+	libssh2::libssh2
+	OpenSSL::Crypto
+)
+
+if(WIN32) # windows
+	target_link_libraries(savemanager PRIVATE
+		ws2_32
+	)
+endif()
+
+target_precompile_headers(savemanager PRIVATE
+	"src/pch.hpp"
 )
 
 get_directory_property(CMKR_VS_STARTUP_PROJECT DIRECTORY ${PROJECT_SOURCE_DIR} DEFINITION VS_STARTUP_PROJECT)

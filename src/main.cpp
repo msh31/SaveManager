@@ -1,27 +1,29 @@
-#include "core/helpers/translations.hpp"
+#include "core/helpers/paths.hpp"
+#include <filesystem>
 #ifdef _WIN32
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 #endif
 
-#include <glad/glad.h>
-#include <GLFW/glfw3.h>
-
-#include "imgui.h"
 #include "imgui_impl_glfw.h"
 #include "imgui_impl_opengl3.h"
-
-#include <unordered_map>
 
 #include "core/network/network.hpp"
 #include "core/config/config.hpp"
 #include "core/ui/notifications/notification.hpp"
 #include "core/detection/detection.hpp"
 #include "core/helpers/textures.hpp"
-#include "core/ui/tabs/tabs.hpp"
 #include "core/ui/themes/themes.hpp"
 #include "core/globals.hpp"
 #include "core/logger/logger.hpp"
+#include "core/helpers/translations/translations.hpp"
+
+#include "core/ui/tabs/settings/settings.hpp"
+#include "core/ui/tabs/log/log.hpp"
+#include "core/ui/tabs/transfer/transfer.hpp"
+#include "core/ui/tabs/about/about.hpp"
+#include "core/ui/tabs/general/general.hpp"
+#include "core/ui/tabs/about/about.hpp"
 
 #include "core/ui/fonts/jbm_reg.h"
 #include "core/ui/fonts/jbm_med.h"
@@ -33,17 +35,12 @@
 
 int main() {
     Config config;
-    if(!config.init()) {
-        get_logger().error("Config is missing and could not be generated!");
-        return 1;
-    }
-    translations::init();
-
-    auto result = Detection::find_saves(config);
-    if(result.games.empty()) {
-        get_logger().warning("No savegames found!");
-    }
-    config.save();
+    GeneralTab general_tab;
+    TransferTab transfer_tab;
+    LogTab log_tab;
+    AboutTab about_tab;
+    SettingsTab settings_tab;
+    TabState state;
 
     if(!glfwInit()) {
         get_logger().error("Failed to initialize GLFW.");
@@ -56,13 +53,12 @@ int main() {
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE); // no old OpenGL
 
     GLFWwindow* window = glfwCreateWindow(1600, 900, "SaveManager", nullptr, nullptr);
-    glfwSetWindowSizeLimits(window, 1280, 720, 5120, 2880); //720p -> 5K, 16:9
-
     if(window == nullptr) {
         get_logger().error("Failed to create GLFW window. OpenGL 3.3 support is required!");
         glfwTerminate();
         return 1;
     }
+    glfwSetWindowSizeLimits(window, 1280, 720, 5120, 2880); //720p -> 5K, 16:9
     glfwMakeContextCurrent(window);
     glfwSwapInterval(1);
     if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
@@ -93,22 +89,33 @@ int main() {
     ImGui_ImplGlfw_InitForOpenGL(window, true);
     ImGui_ImplOpenGL3_Init();
 
-    GLuint game_texture; 
+    if(!config.init()) {
+        get_logger().error("Config is missing and could not be generated!");
+        Notify::show_notification("Config error!", "Config is missing and could not be generated!", 5000);
+    }
+    translations::init();
+
+    auto result = Detection::find_saves(config);
+    if(result.games.empty()) {
+        get_logger().warning("No savegames found!");
+    }
+    config.save();
+
+    GLuint game_texture = 0; 
     std::unordered_map<std::string, GLuint> game_textures;
     int tex_w = 460, tex_h = 215;
     for (auto& game : result.games) {
         if(game.appid == "N/A") {
             continue;
         }
+        fs::path path = paths::cache_dir() / (game.appid + ".jpg");
 
-        if(!Network::download_game_image(game.appid)) {
+        Network::download_game_image(game.appid);
+        if(!fs::exists(path)) {
             continue;
         }
-        fs::path path;
 
-        path = paths::cache_dir() / (game.appid + ".jpg");
         LoadTextureFromFile(path.string().c_str(), &game_texture, &tex_w, &tex_h);
-
         game_textures[game.appid] = game_texture;
     }
 
@@ -141,22 +148,27 @@ int main() {
 
         ImGui::AlignTextToFramePadding();
 
-        static ImGuiTabBarFlags tab_bar_flags = ImGuiTabBarFlags_Reorderable | ImGuiTabBarFlags_DrawSelectedOverline;
-        if (ImGui::BeginTabBar("MyTabBar", tab_bar_flags)) {
+        if (ImGui::BeginTabBar("MyTabBar", ImGuiTabBarFlags_Reorderable | ImGuiTabBarFlags_DrawSelectedOverline)) {
             if (ImGui::BeginTabItem("General"))  {
-                Tabs::render_general_tab(fonts, result, game_textures, config);
+                if (auto new_result = general_tab.render(fonts, result, game_textures, config, state)) {
+                    result = *new_result;
+                }
+                ImGui::EndTabItem();
+            }
+            if (ImGui::BeginTabItem("Transfer"))  {
+                transfer_tab.render(fonts, result, config, state);
                 ImGui::EndTabItem();
             }
             if (ImGui::BeginTabItem("Log"))  {
-                Tabs::render_log_tab(fonts);
+                log_tab.render(fonts);
                 ImGui::EndTabItem();
             }
             if (ImGui::BeginTabItem("About"))  {
-                Tabs::render_about_tab(fonts);
+                about_tab.render(fonts);
                 ImGui::EndTabItem();
             }
             if (ImGui::BeginTabItem("Settings"))  {
-                Tabs::render_settings_tab(fonts, config);
+                settings_tab.render(fonts, config);
                 ImGui::EndTabItem();
             }
             // if (ImGui::BeginTabItem("Debug"))  {
@@ -179,6 +191,11 @@ glfwGetKey(window, GLFW_KEY_Q) != GLFW_PRESS &&
 glfwWindowShouldClose(window) == 0
 );
 
+    if(!game_textures.empty()) {
+        for (auto it = game_textures.begin(); it != game_textures.end(); ++it) {
+            glDeleteTextures(1, &it->second);
+        }
+    }
     ImGui_ImplOpenGL3_Shutdown();
     ImGui_ImplGlfw_Shutdown();
     ImGui::DestroyContext();

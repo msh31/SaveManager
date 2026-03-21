@@ -1,13 +1,8 @@
 #pragma once
-#include "core/helpers/paths.hpp"
-#include "core/logger/logger.hpp"
-
-#include <filesystem>
-#include <string>
 #include <curl/curl.h>
 
 namespace Network {
     size_t write_callback(void* ptr, size_t size, size_t nmemb, FILE* stream);
-    bool download_file(const std::string& url, const std::string& output_path);
-    bool download_game_image(const std::string& appid);
+    bool download_file(const std::string_view& url, const std::string& output_path);
+    void download_game_image(const std::string& appid);
 };

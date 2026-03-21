@@ -1,17 +1,13 @@
 #include "ubi.hpp"
-#include "core/helpers/translations.hpp"
+#include "core/helpers/translations/translations.hpp"
 
-void ubi::find_saves(const fs::path& prefix, std::vector<Game>& out_games, std::string& out_uuid) {
+void UbisoftDetector::find_saves(const fs::path& prefix, std::vector<Game>& out_games) const {
     if(!fs::exists(prefix)) {
         return;
     }
 
     for(const auto& uuid_entry : fs::directory_iterator(prefix, std::filesystem::directory_options::skip_permission_denied)) {
         fs::path uuid_folder = uuid_entry.path();
-
-        if(out_uuid.empty()) {
-            out_uuid = uuid_folder.filename().string();
-        }
 
         for(const auto& game_entry : fs::directory_iterator(uuid_folder)) {
             fs::path game_id_folder = game_entry.path();

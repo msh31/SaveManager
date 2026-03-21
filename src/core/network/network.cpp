@@ -1,10 +1,12 @@
 #include "network.hpp"
+#include "core/helpers/paths.hpp"
+#include "core/logger/logger.hpp"
 
 size_t Network::write_callback(void* ptr, size_t size, size_t nmemb, FILE* stream) {
     return fwrite(ptr, size, nmemb, stream);
 }
 
-bool Network::download_file(const std::string& url, const std::string& output_path) {
+bool Network::download_file(const std::string_view& url, const std::string& output_path) {
     CURL* curl = curl_easy_init();
     if (!curl) {
         get_logger().error("Failed to initialize CURL");
@@ -18,7 +20,7 @@ bool Network::download_file(const std::string& url, const std::string& output_pa
         return false; 
     }
     
-    curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
+    curl_easy_setopt(curl, CURLOPT_URL, std::string(url).c_str());
     curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, write_callback);
     curl_easy_setopt(curl, CURLOPT_WRITEDATA, fp);
     
@@ -35,12 +37,12 @@ bool Network::download_file(const std::string& url, const std::string& output_pa
     return true;
 }
 
-bool Network::download_game_image(const std::string& appid) {
+void Network::download_game_image(const std::string& appid) {
     std::string output_file = appid + ".jpg";
     fs::path img_path = paths::cache_dir() / output_file; 
 
     if (fs::exists(img_path)) {
-        return true;
+        return;
     }
 
     std::string url =
@@ -48,5 +50,5 @@ bool Network::download_game_image(const std::string& appid) {
         appid +
         "/header.jpg";
 
-    return Network::download_file(url, img_path.string());
+    Network::download_file(url, img_path.string());
 }

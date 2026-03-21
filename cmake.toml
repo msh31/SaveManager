@@ -5,12 +5,13 @@ cmkr-include = "cmkr.cmake"
 
 [project]
 name = "SaveManager"
-description = "The definitive local save manager"
+description = "The swiss army knife of save management."
+version = "1.2.0"
 languages = ["C", "CXX"]
 
 [vcpkg]
 version = "2026.02.27"
-packages = ["curl", "glfw3", "libzip"]
+packages = ["curl", "glfw3", "libzip", "libssh2", "openssl"]
 
 [find-package.CURL]
 required = true
@@ -19,6 +20,12 @@ required = true
 required = true
 
 [find-package.libzip]
+required = true
+
+[find-package.OpenSSL]
+required = true
+
+[find-package.libssh2]
 required = true
 
 [variables]
@@ -36,6 +43,7 @@ sources = [
     "external/imgui/imgui_widgets.cpp",
     "external/imgui/backends/imgui_impl_glfw.cpp",
     "external/imgui/backends/imgui_impl_opengl3.cpp",
+    "external/imgui/misc/cpp/imgui_stdlib.cpp",
 
     # GLAD
     "external/glad/src/glad.c",
@@ -47,5 +55,9 @@ include-directories = [
     "external/glad/include",
     "src",
 ]
-link-libraries = ["CURL::libcurl", "glfw", "libzip::zip"]
+precompile-headers = ["src/pch.hpp"]
+link-libraries = ["CURL::libcurl", "glfw", "libzip::zip", "libssh2::libssh2", "OpenSSL::Crypto"]
 compile-features = ["cxx_std_17"]
+
+[target.savemanager.windows]
+link-libraries = ["ws2_32"]
