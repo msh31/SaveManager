@@ -150,7 +150,9 @@ int main() {
 
         if (ImGui::BeginTabBar("MyTabBar", ImGuiTabBarFlags_Reorderable | ImGuiTabBarFlags_DrawSelectedOverline)) {
             if (ImGui::BeginTabItem("General"))  {
-                general_tab.render(fonts, result, game_textures, config, state);
+                if (auto new_result = general_tab.render(fonts, result, game_textures, config, state)) {
+                    result = *new_result;
+                }
                 ImGui::EndTabItem();
             }
             if (ImGui::BeginTabItem("Transfer"))  {

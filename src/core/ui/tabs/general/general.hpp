@@ -3,7 +3,7 @@
 #include "core/detection/detection.hpp"
 
 struct GeneralTab {
-    void render(const Fonts& fonts, Detection::DetectionResult& result, std::unordered_map<std::string, GLuint> texture_id, Config& config, TabState& state);
+    std::optional<Detection::DetectionResult> render(const Fonts& fonts, Detection::DetectionResult& result, std::unordered_map<std::string, GLuint> texture_id, Config& config, TabState& state);
     void on_result_changed(Detection::DetectionResult& result, TabState& state);
 
     size_t last_game_count = 0;
@@ -16,4 +16,9 @@ struct GeneralTab {
     std::unordered_map<std::string, size_t> appid_to_group;
 
     std::unordered_map<std::string, int> selected_source;
+
+    std::future<Detection::DetectionResult> refresh_future;
+
+    int spinner_frame = 0;
+    const char* spinner = "|/-\\";
 };

@@ -2,6 +2,7 @@
 #include "core/globals.hpp"
 #include "core/ui/notifications/notification.hpp"
 #include "core/features/features.hpp"
+#include <optional>
 
 void GeneralTab::on_result_changed(Detection::DetectionResult& result, TabState& state) {
     grouped_games = {};
@@ -29,7 +30,8 @@ void GeneralTab::on_result_changed(Detection::DetectionResult& result, TabState&
     last_game_count = result.games.size();
 }
 
-void GeneralTab::render(const Fonts& fonts, Detection::DetectionResult& result, std::unordered_map<std::string, GLuint> texture_id, Config& config, TabState& state) {
+std::optional<Detection::DetectionResult> GeneralTab::render(const Fonts& fonts, Detection::DetectionResult& result, std::unordered_map<std::string, GLuint> texture_id, Config& config, TabState& state) {
+    spinner_frame++;
     float available_width = ImGui::GetContentRegionAvail().x;
     float card_width = 300.0f;
     float card_height = 300.0f;
@@ -37,6 +39,12 @@ void GeneralTab::render(const Fonts& fonts, Detection::DetectionResult& result, 
     float image_height = 131.0f;
     int columns = (std::max)(1, (int)(available_width / (card_width + card_gap)));
     int count = 0;
+
+    if (refresh_future.valid() && refresh_future.wait_for(std::chrono::seconds(0)) == std::future_status::ready) {
+        auto new_result = refresh_future.get();
+        Notify::show_notification("Save refresh", "Saves refreshed!", 2000);
+        return new_result;
+    }
 
     if(last_game_count != result.games.size()) {
         on_result_changed(result, state);
@@ -46,9 +54,18 @@ void GeneralTab::render(const Fonts& fonts, Detection::DetectionResult& result, 
     ImGui::Text("Detected Games");
     ImGui::PopFont();
 
-    if(ImGui::Button("Refresh")) {
-        result = Detection::find_saves(config);
-        Notify::show_notification("Save refresh", "Saves have been refreshed succesfully!", 2000);
+    bool is_refreshing = refresh_future.valid() && refresh_future.wait_for(std::chrono::seconds(0)) != std::future_status::ready;
+    if(!is_refreshing) {
+        if(ImGui::Button("Refresh")) {
+            refresh_future = std::async(std::launch::async, [&config]() {
+                return Detection::find_saves(config);
+            });
+        }
+    } else {
+        char spin_char = spinner[(spinner_frame / 10) % 4];
+
+        std::string loading_text = std::string("Refreshing savegames... ") + spin_char;
+        ImGui::Text("%s", loading_text.c_str());
     }
 
     if(!grouped_games.empty()) {
@@ -211,4 +228,6 @@ void GeneralTab::render(const Fonts& fonts, Detection::DetectionResult& result, 
     } else {
         ImGui::Text("None of the supported games were found on your system!");
     }
+
+    return std::nullopt;
 }
