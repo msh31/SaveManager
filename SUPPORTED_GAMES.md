@@ -16,8 +16,8 @@ verified list of games from my testing, contributions are welcome!
 
 
 ## Rockstar
-- GTA Vice City (Original / The Definitive Edition)
-- GTA San Andreas (Original / The Definitive Edition)
+- GTA Vice City The Definitive Edition
+- GTA San Andreas The Definitive Edition
 - GTA 3 The Definitive Edition
 - Bully
 - Grand Theft Auto V (Enhanced / Legacy)
@@ -30,6 +30,8 @@ verified list of games from my testing, contributions are welcome!
 - Assassin's Creed Syndicate
 - Assassin's Creed Valhalla
 - Tom Clancy's Ghost Recon Wildlands
+- FarCry 4
+- FarCry 5
 
 ## Unreal
 - Maneater
