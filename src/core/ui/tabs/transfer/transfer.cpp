@@ -128,13 +128,13 @@ void TransferTab::render(const Fonts& fonts, const Detection::DetectionResult& r
     ImGui::Separator();
 
     ImGui::Text("File:");
-    ImGui::SameLine(60.0f);
+    ImGui::SameLine(140.0f);
     ImGui::PushStyleColor(ImGuiCol_PlotHistogram, ImVec4(0.26f, 0.59f, 0.98f, 1.0f));
     ImGui::ProgressBar(file_progress, ImVec2(300.0f, 0.0f), transferring ? std::to_string((int)(file_progress * 100)).c_str() : "Idle");
     ImGui::PopStyleColor();
 
     ImGui::Text("Overall:");
-    ImGui::SameLine(60.0f);
+    ImGui::SameLine(140.0f);
     ImGui::PushStyleColor(ImGuiCol_PlotHistogram, ImVec4(0.26f, 0.59f, 0.98f, 1.0f));
     ImGui::ProgressBar(overall_progress, ImVec2(300.0f, 0.0f), transferring ? std::to_string((int)(overall_progress * 100)).c_str() : "Idle");
     ImGui::PopStyleColor();
