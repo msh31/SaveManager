@@ -260,6 +260,7 @@ void TransferTab::render(const Fonts& fonts, const Detection::DetectionResult& r
         if (ImGui::Button("Download")) {
             std::string path = current_remote_path + (current_remote_path.back() == '/' ? "" : "/") + remote_entries[selected_remote_idx].name;
             remote->download_file(path, config);
+            Notify::show_notification("Remote Transfer", "Backup has been downloaded!", 2000);
         }
         ImGui::EndDisabled();
 
