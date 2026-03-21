@@ -189,7 +189,7 @@ void TransferTab::render(const Fonts& fonts, const Detection::DetectionResult& r
             future = std::async(std::launch::async, [this, r = remote.get(), selected_paths, &config]() {
                 for (size_t i = 0; i < selected_paths.size(); i++) {
                     current_file_index = i;
-                    r->upload_file(selected_paths[i], config);
+                    r->upload_file(selected_paths[i], current_remote_path, config);
                 }
             });
         }

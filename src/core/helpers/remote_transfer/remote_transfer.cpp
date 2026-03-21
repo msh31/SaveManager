@@ -103,14 +103,14 @@ bool RemoteTransfer::disconnect() {
     return false;
 }
 
-void RemoteTransfer::upload_file(const fs::path& backup_path, const Config& config) {
+void RemoteTransfer::upload_file(const fs::path& backup_path, const std::string& remote_path, const Config& config) {
     char mem[1024 * 100];
     size_t nread;
     ssize_t nwritten;
     char *ptr;
 
-    fs::path remote_file = config.sftp.remote_path / backup_path.filename();
-    sftp_handle = libssh2_sftp_open(sftp_session, remote_file.string().c_str(),
+    std::string remote_file = remote_path + (remote_path.back() == '/' ? "" : "/") + backup_path.filename().string();
+    sftp_handle = libssh2_sftp_open(sftp_session, remote_file.c_str(),
                                     LIBSSH2_FXF_WRITE |
                                     LIBSSH2_FXF_CREAT |
                                     LIBSSH2_FXF_TRUNC,
