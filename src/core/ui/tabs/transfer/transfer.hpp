@@ -25,4 +25,7 @@ struct TransferTab {
     std::future<bool> connect_future;
     std::atomic<int> current_file_index = 0;
     std::atomic<int> total_files = 0;
+
+    int spinner_frame = 0;
+    const char* spinner = "|/-\\";
 };

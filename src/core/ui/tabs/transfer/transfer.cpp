@@ -5,9 +5,11 @@
 #include "core/features/features.hpp"
 #include "core/config/config.hpp"
 
+#include "imgui.h"
 #include "imgui/misc/cpp/imgui_stdlib.h"
 
 void TransferTab::render(const Fonts& fonts, const Detection::DetectionResult& result, Config& config, TabState& state) {
+    spinner_frame++;
     if (!initialized) {
         remote = std::make_unique<RemoteTransfer>();
 
@@ -103,6 +105,11 @@ void TransferTab::render(const Fonts& fonts, const Detection::DetectionResult& r
                 return r->connect(dest_addr, config);
             });
         }
+    } else {
+        char spin_char = spinner[(spinner_frame / 10) % 4];
+
+        std::string loading_text = std::string("Connecting... ") + spin_char;
+        ImGui::Text("%s", loading_text.c_str());
     }
     ImGui::SameLine();
     if(connected) {
