@@ -32,28 +32,12 @@ class Config;
 class RemoteTransfer {
 public:
     RemoteTransfer();
-
     ~RemoteTransfer() {
-        if(sftp_handle) {
-            libssh2_sftp_close(sftp_handle);
-        }
-        if(sftp_session) {
-            libssh2_sftp_shutdown(sftp_session);
-        }
-        if(session) {
-             libssh2_session_disconnect(session, "Normal Shutdown");
-             libssh2_session_free(session);
-        }
-        if(sock != LIBSSH2_INVALID_SOCKET) {
-            shutdown(sock, 2);
-            LIBSSH2_SOCKET_CLOSE(sock);
-        }
-#ifdef _WIN32
-    WSACleanup();
-#endif
+        disconnect();
     }
 
     bool connect(const std::string& dest_addr, const Config& config);
+    bool disconnect();
     void upload_file(const fs::path& backup_path, const Config& config);
     void download_file(const fs::path& backup_path, const Config& config);
     std::vector<RemoteEntry> list_directory(const std::string& path);
@@ -62,15 +46,15 @@ public:
     RemoteTransfer(const RemoteTransfer&) = delete;
     RemoteTransfer& operator=(const RemoteTransfer&) = delete;
 
-    std::atomic<size_t> bytes_transferred;
-    std::atomic<size_t> total_bytes;
+    std::atomic<size_t> bytes_transferred = 0;
+    std::atomic<size_t> total_bytes = 0;
 private:
     uint32_t hostaddr;
     libssh2_socket_t sock = LIBSSH2_INVALID_SOCKET;
     struct sockaddr_in sin;
     const char *fingerprint;
     int auth_pw = 1;
-    LIBSSH2_SESSION *session = NULL;
+    LIBSSH2_SESSION *session = nullptr;
     LIBSSH2_SFTP_HANDLE *sftp_handle = nullptr;
     LIBSSH2_SFTP *sftp_session = nullptr;
 };

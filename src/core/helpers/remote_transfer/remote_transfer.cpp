@@ -6,10 +6,7 @@
 #include <libssh2_sftp.h>
 
 //https://libssh2.org/examples/sftp_write.html
-RemoteTransfer::RemoteTransfer() {
-    bytes_transferred = 0;
-    total_bytes = 0;
-}
+RemoteTransfer::RemoteTransfer() {}
 
 bool RemoteTransfer::connect(const std::string& dest_addr, const Config& config) {
 #ifdef _WIN32
@@ -77,6 +74,34 @@ bool RemoteTransfer::connect(const std::string& dest_addr, const Config& config)
     }
 
     return true;
+}
+
+bool RemoteTransfer::disconnect() {
+    if(sftp_handle) {
+        libssh2_sftp_close(sftp_handle);
+    }
+    if(sftp_session) {
+        libssh2_sftp_shutdown(sftp_session);
+    }
+    if(session) {
+        libssh2_session_disconnect(session, "Normal Shutdown");
+        libssh2_session_free(session);
+    }
+
+    session = nullptr;
+    sftp_handle = nullptr;
+    sftp_session = nullptr;
+
+    if(sock != LIBSSH2_INVALID_SOCKET) {
+        shutdown(sock, 2);
+        LIBSSH2_SOCKET_CLOSE(sock);
+#ifdef _WIN32
+        WSACleanup();
+#endif
+
+        return true;
+    }
+    return false;
 }
 
 void RemoteTransfer::upload_file(const fs::path& backup_path, const Config& config) {

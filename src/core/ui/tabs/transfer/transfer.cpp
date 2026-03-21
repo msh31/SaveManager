@@ -89,9 +89,23 @@ void TransferTab::render(const Fonts& fonts, const Detection::DetectionResult& r
             connected = true;
             current_remote_path = "/home/" + config.sftp.username;
             remote_entries = remote->list_directory(current_remote_path);
+            Notify::show_notification("SFTP Connection", "Connected to server!", 2000);
         } else {
             Notify::show_notification("SFTP Connection", "Failed to connect to server!", 2000);
         }
+    }
+    ImGui::SameLine();
+
+    if(connected) {
+        ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.8f, 0.2f, 0.2f, 1.0f));
+        ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.9f, 0.3f, 0.3f, 1.0f));
+        if(ImGui::Button("Disconnect")) {
+            connected = false;
+            remote_entries = {};
+            remote->disconnect();
+            Notify::show_notification("SFTP Connection", "Disconnected from server!", 2000);
+        }
+        ImGui::PopStyleColor(2);
     }
     ImGui::SameLine();
     if (ImGui::Button("Save configuration")) {
