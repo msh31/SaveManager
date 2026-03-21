@@ -15,11 +15,13 @@ struct TransferTab {
     std::string password;
     std::string pubkey;
     std::string privkey;
+    std::string key_passphrase;
 
     std::string current_remote_path;
     std::vector<RemoteEntry> remote_entries;
     int selected_remote_idx = -1;
 
+    bool use_password_auth = true;
     std::unique_ptr<RemoteTransfer> remote;
     std::future<void> future;
     std::future<bool> connect_future;

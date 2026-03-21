@@ -156,6 +156,8 @@ std::optional<Detection::DetectionResult> GeneralTab::render(const Fonts& fonts,
         if(open_restore_modal) {
             open_restore_modal = false;
             state.backups = Features::get_backups(*pending_restore_game, config); 
+            state.selected_backups.clear();
+            state.selected_backups.resize(state.backups.size(), false);
             if(state.backups.empty()) {
                 open_restore_modal = false;
             }
@@ -164,6 +166,8 @@ std::optional<Detection::DetectionResult> GeneralTab::render(const Fonts& fonts,
         if(open_delete_modal) {
             open_delete_modal = false;
             state.backups = Features::get_backups(*pending_delete_game, config); 
+            state.selected_backups.clear();
+            state.selected_backups.resize(state.backups.size(), false);
             if(state.backups.empty()) {
                 open_delete_modal = false;
             }

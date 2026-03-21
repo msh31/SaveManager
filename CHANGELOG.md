@@ -1,6 +1,15 @@
 # Changelog
 
-## [1.2.0] - 2026-03-19
+## [1.2.1] - 2026-03-21
+### Fixed
+- Password authentication being the only option for SFTP transfers
+- A path joining bug in the SFTP implementation
+- Incorrect path passed to the upload and download buttons for SFTP transfers
+- Connect button not being hidden when connected
+- Out of bounds error in the transfer tab
+
+
+## [1.2.0] - 2026-03-21
 ### Added
 - Remote sync over SFTP, to and from a server (With progress indicators & support for multi file transfers)
 - Remove backup functionality
@@ -22,9 +31,11 @@
 - Game Images aren't updated on refresh [#4](https://github.com/msh31/SaveManager/issues/4)
 - Downloading of game images is not done asynchronously [#5](https://github.com/msh31/SaveManager/issues/5)
 
+
 ## [1.1.1] - 2026-03-14
 ### Fixed
 - Unreal toggle not being wired up correctly
+
 
 ## [1.1.0] - 2026-03-14
 ### Added

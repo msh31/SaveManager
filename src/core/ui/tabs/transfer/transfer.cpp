@@ -18,6 +18,7 @@ void TransferTab::render(const Fonts& fonts, const Detection::DetectionResult& r
         password = config.sftp.password;
         pubkey = config.sftp.pubkey.string();
         privkey = config.sftp.privkey.string();
+        key_passphrase = config.sftp.key_passphrase;
         initialized = true;
     }
 
@@ -74,18 +75,28 @@ void TransferTab::render(const Fonts& fonts, const Detection::DetectionResult& r
     ImGui::Text("Authentication");
     ImGui::PopFont();
 
+    if(ImGui::RadioButton("Password", use_password_auth)) {
+        use_password_auth = true;
+    }
+    ImGui::SameLine();
+    if(ImGui::RadioButton("SSH Key", !use_password_auth)) {
+        use_password_auth = false;
+    }
+
     ImGui::SetNextItemWidth(120.0f);
     ImGui::InputText("Username##user", &username);
-    ImGui::SameLine();
-    ImGui::SetNextItemWidth(120.0f);
-    ImGui::InputText("Password##user", &password, ImGuiInputTextFlags_Password);
 
-    ImGui::Dummy(ImVec2(0.0f, 5.0f));
-    ImGui::TextDisabled("Or use SSH keys:");
-    ImGui::SetNextItemWidth(250.0f);
-    ImGui::InputText("Public key", &pubkey);
-    ImGui::SetNextItemWidth(250.0f);
-    ImGui::InputText("Private key", &privkey);
+    if(use_password_auth) {
+        ImGui::SetNextItemWidth(120.0f);
+        ImGui::InputText("Password##user", &password, ImGuiInputTextFlags_Password);
+    } else {
+        ImGui::SetNextItemWidth(250.0f);
+        ImGui::InputText("Public key", &pubkey);
+        ImGui::SetNextItemWidth(250.0f);
+        ImGui::InputText("Private key", &privkey);
+        ImGui::SetNextItemWidth(250.0f);
+        ImGui::InputText("Key passphrase", &key_passphrase, ImGuiInputTextFlags_Password);
+    }
 
     ImGui::Dummy(ImVec2(0.0f, 10.0f));
 
@@ -99,19 +110,18 @@ void TransferTab::render(const Fonts& fonts, const Detection::DetectionResult& r
         ImGui::PopStyleColor();
     }
 
-    if(!is_connecting) {
+    if(!is_connecting && !connected) {
         if (ImGui::Button("Connect")) {
-            connect_future = std::async(std::launch::async, [this, r = remote.get(), &config]() -> bool {
-                return r->connect(dest_addr, config);
+            connect_future = std::async(std::launch::async, [this, r = remote.get(), &config, auth = use_password_auth, pass = key_passphrase]() -> bool {
+                return r->connect(dest_addr, config, auth, pass);
             });
         }
-    } else {
+    } else if(!connected) {
         char spin_char = spinner[(spinner_frame / 10) % 4];
 
         std::string loading_text = std::string("Connecting... ") + spin_char;
         ImGui::Text("%s", loading_text.c_str());
     }
-    ImGui::SameLine();
     if(connected) {
         ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.8f, 0.2f, 0.2f, 1.0f));
         ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.9f, 0.3f, 0.3f, 1.0f));
@@ -130,6 +140,8 @@ void TransferTab::render(const Fonts& fonts, const Detection::DetectionResult& r
         config.sftp.password = password;
         config.sftp.pubkey = fs::path(pubkey);
         config.sftp.privkey = fs::path(privkey);
+        config.sftp.key_passphrase = key_passphrase;
+        config.sftp.auth_pw = use_password_auth;
         config.save();
         Notify::show_notification("Config Saved!", "Settings saved successfully!", 1500);
     }
@@ -176,7 +188,7 @@ void TransferTab::render(const Fonts& fonts, const Detection::DetectionResult& r
             future = std::async(std::launch::async, [this, r = remote.get(), selected_paths, &config]() {
                 for (size_t i = 0; i < selected_paths.size(); i++) {
                     current_file_index = i;
-                    r->upload_file(selected_paths[i], config);
+                    r->upload_file(selected_paths[i], current_remote_path, config);
                 }
             });
         }
@@ -245,8 +257,9 @@ void TransferTab::render(const Fonts& fonts, const Detection::DetectionResult& r
 
         ImGui::BeginDisabled(!is_file_selected || is_transferring);
         if (ImGui::Button("Download")) {
-            std::string path = current_remote_path + "/" + remote_entries[selected_remote_idx].name;
+            std::string path = current_remote_path + (current_remote_path.back() == '/' ? "" : "/") + remote_entries[selected_remote_idx].name;
             remote->download_file(path, config);
+            Notify::show_notification("Remote Transfer", "Backup has been downloaded!", 2000);
         }
         ImGui::EndDisabled();
 
@@ -285,7 +298,7 @@ void TransferTab::render(const Fonts& fonts, const Detection::DetectionResult& r
                 std::string label = prefix + remote_entries[i].name + "##" + std::to_string(i);
                 if (ImGui::Selectable(label.c_str(), selected_remote_idx == i, ImGuiSelectableFlags_AllowDoubleClick)) {
                     if (ImGui::IsMouseDoubleClicked(0) && remote_entries[i].is_directory) {
-                        current_remote_path = current_remote_path + "/" + remote_entries[i].name;
+                        current_remote_path = current_remote_path + (current_remote_path.back() == '/' ? "" : "/") + remote_entries[i].name;
                         remote_entries = remote->list_directory(current_remote_path);
                         selected_remote_idx = -1;
                     } else {

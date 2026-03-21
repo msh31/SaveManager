@@ -8,7 +8,7 @@
 //https://libssh2.org/examples/sftp_write.html
 RemoteTransfer::RemoteTransfer() {}
 
-bool RemoteTransfer::connect(const std::string& dest_addr, const Config& config) {
+bool RemoteTransfer::connect(const std::string& dest_addr, const Config& config, bool auth_pw, const std::string& key_passphrase) {
 #ifdef _WIN32
     WSADATA wsadata;
     WSAStartup(MAKEWORD(2, 2), &wsadata);
@@ -59,9 +59,8 @@ bool RemoteTransfer::connect(const std::string& dest_addr, const Config& config)
             get_logger().error("Authentication by password failed.");
             return false;
         }
-    }
-    else {
-        if(libssh2_userauth_publickey_fromfile(session, config.sftp.username.c_str(), config.sftp.pubkey.string().c_str(), config.sftp.privkey.string().c_str(), config.sftp.password.c_str())) {
+    } else {
+        if(libssh2_userauth_publickey_fromfile(session, config.sftp.username.c_str(), config.sftp.pubkey.string().c_str(), config.sftp.privkey.string().c_str(), key_passphrase.empty() ? nullptr : key_passphrase.c_str())) {
             get_logger().error("Authentication by public key failed.");
             return false;
         }
@@ -104,14 +103,14 @@ bool RemoteTransfer::disconnect() {
     return false;
 }
 
-void RemoteTransfer::upload_file(const fs::path& backup_path, const Config& config) {
+void RemoteTransfer::upload_file(const fs::path& backup_path, const std::string& remote_path, const Config& config) {
     char mem[1024 * 100];
     size_t nread;
     ssize_t nwritten;
     char *ptr;
 
-    fs::path remote_file = config.sftp.remote_path / backup_path.filename();
-    sftp_handle = libssh2_sftp_open(sftp_session, remote_file.string().c_str(),
+    std::string remote_file = remote_path + (remote_path.back() == '/' ? "" : "/") + backup_path.filename().string();
+    sftp_handle = libssh2_sftp_open(sftp_session, remote_file.c_str(),
                                     LIBSSH2_FXF_WRITE |
                                     LIBSSH2_FXF_CREAT |
                                     LIBSSH2_FXF_TRUNC,
@@ -176,9 +175,8 @@ std::vector<RemoteEntry> RemoteTransfer::list_directory(const std::string& path)
 void RemoteTransfer::download_file(const fs::path& backup_path, const Config& config) {
     char mem[1024 * 100];
 
-    fs::path remote_file = config.sftp.remote_path / backup_path.filename();
     fs::path local_path = config.settings.backup_path / backup_path.filename();
-    sftp_handle = libssh2_sftp_open(sftp_session, remote_file.string().c_str(), LIBSSH2_FXF_READ, 0);
+    sftp_handle = libssh2_sftp_open(sftp_session, backup_path.string().c_str(), LIBSSH2_FXF_READ, 0);
     if(!sftp_handle) {
         std::string error("Unable to open path with SFTP" + std::to_string(libssh2_sftp_last_error(sftp_session)));
         get_logger().error(error);
@@ -196,5 +194,5 @@ void RemoteTransfer::download_file(const fs::path& backup_path, const Config& co
         file.write(mem, rc);
         bytes_transferred += rc;
     }
-    get_logger().success("File has been download!");
+    get_logger().success("File has been downloaded!");
 }

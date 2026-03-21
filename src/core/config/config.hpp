@@ -25,6 +25,8 @@ public:
         std::string remote_path;
         fs::path pubkey;
         fs::path privkey;
+        std::string key_passphrase;
+        bool auth_pw = true;
     };
 
     AppConfig settings;
