@@ -18,6 +18,7 @@ void TransferTab::render(const Fonts& fonts, const Detection::DetectionResult& r
         password = config.sftp.password;
         pubkey = config.sftp.pubkey.string();
         privkey = config.sftp.privkey.string();
+        key_passphrase = config.sftp.key_passphrase;
         initialized = true;
     }
 
@@ -74,18 +75,28 @@ void TransferTab::render(const Fonts& fonts, const Detection::DetectionResult& r
     ImGui::Text("Authentication");
     ImGui::PopFont();
 
+    if(ImGui::RadioButton("Password", use_password_auth)) {
+        use_password_auth = true;
+    }
+    ImGui::SameLine();
+    if(ImGui::RadioButton("SSH Key", !use_password_auth)) {
+        use_password_auth = false;
+    }
+
     ImGui::SetNextItemWidth(120.0f);
     ImGui::InputText("Username##user", &username);
-    ImGui::SameLine();
-    ImGui::SetNextItemWidth(120.0f);
-    ImGui::InputText("Password##user", &password, ImGuiInputTextFlags_Password);
 
-    ImGui::Dummy(ImVec2(0.0f, 5.0f));
-    ImGui::TextDisabled("Or use SSH keys:");
-    ImGui::SetNextItemWidth(250.0f);
-    ImGui::InputText("Public key", &pubkey);
-    ImGui::SetNextItemWidth(250.0f);
-    ImGui::InputText("Private key", &privkey);
+    if(use_password_auth) {
+        ImGui::SetNextItemWidth(120.0f);
+        ImGui::InputText("Password##user", &password, ImGuiInputTextFlags_Password);
+    } else {
+        ImGui::SetNextItemWidth(250.0f);
+        ImGui::InputText("Public key", &pubkey);
+        ImGui::SetNextItemWidth(250.0f);
+        ImGui::InputText("Private key", &privkey);
+        ImGui::SetNextItemWidth(250.0f);
+        ImGui::InputText("Key passphrase", &key_passphrase, ImGuiInputTextFlags_Password);
+    }
 
     ImGui::Dummy(ImVec2(0.0f, 10.0f));
 
@@ -101,8 +112,8 @@ void TransferTab::render(const Fonts& fonts, const Detection::DetectionResult& r
 
     if(!is_connecting) {
         if (ImGui::Button("Connect")) {
-            connect_future = std::async(std::launch::async, [this, r = remote.get(), &config]() -> bool {
-                return r->connect(dest_addr, config);
+            connect_future = std::async(std::launch::async, [this, r = remote.get(), &config, auth = use_password_auth, pass = key_passphrase]() -> bool {
+                return r->connect(dest_addr, config, auth, pass);
             });
         }
     } else {
@@ -130,6 +141,8 @@ void TransferTab::render(const Fonts& fonts, const Detection::DetectionResult& r
         config.sftp.password = password;
         config.sftp.pubkey = fs::path(pubkey);
         config.sftp.privkey = fs::path(privkey);
+        config.sftp.key_passphrase = key_passphrase;
+        config.sftp.auth_pw = use_password_auth;
         config.save();
         Notify::show_notification("Config Saved!", "Settings saved successfully!", 1500);
     }

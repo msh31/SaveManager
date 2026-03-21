@@ -36,7 +36,7 @@ public:
         disconnect();
     }
 
-    bool connect(const std::string& dest_addr, const Config& config);
+    bool connect(const std::string& dest_addr, const Config& config, bool auth_pw, const std::string& key_passphrase);
     bool disconnect();
     void upload_file(const fs::path& backup_path, const Config& config);
     void download_file(const fs::path& backup_path, const Config& config);
@@ -53,7 +53,6 @@ private:
     libssh2_socket_t sock = LIBSSH2_INVALID_SOCKET;
     struct sockaddr_in sin;
     const char *fingerprint;
-    int auth_pw = 1;
     LIBSSH2_SESSION *session = nullptr;
     LIBSSH2_SFTP_HANDLE *sftp_handle = nullptr;
     LIBSSH2_SFTP *sftp_session = nullptr;

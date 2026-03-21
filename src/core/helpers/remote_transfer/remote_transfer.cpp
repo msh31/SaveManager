@@ -8,7 +8,7 @@
 //https://libssh2.org/examples/sftp_write.html
 RemoteTransfer::RemoteTransfer() {}
 
-bool RemoteTransfer::connect(const std::string& dest_addr, const Config& config) {
+bool RemoteTransfer::connect(const std::string& dest_addr, const Config& config, bool auth_pw, const std::string& key_passphrase) {
 #ifdef _WIN32
     WSADATA wsadata;
     WSAStartup(MAKEWORD(2, 2), &wsadata);
@@ -59,9 +59,8 @@ bool RemoteTransfer::connect(const std::string& dest_addr, const Config& config)
             get_logger().error("Authentication by password failed.");
             return false;
         }
-    }
-    else {
-        if(libssh2_userauth_publickey_fromfile(session, config.sftp.username.c_str(), config.sftp.pubkey.string().c_str(), config.sftp.privkey.string().c_str(), config.sftp.password.c_str())) {
+    } else {
+        if(libssh2_userauth_publickey_fromfile(session, config.sftp.username.c_str(), config.sftp.pubkey.string().c_str(), config.sftp.privkey.string().c_str(), key_passphrase.empty() ? nullptr : key_passphrase.c_str())) {
             get_logger().error("Authentication by public key failed.");
             return false;
         }
