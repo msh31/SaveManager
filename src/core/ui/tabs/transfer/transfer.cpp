@@ -97,10 +97,12 @@ void TransferTab::render(const Fonts& fonts, const Detection::DetectionResult& r
         ImGui::PopStyleColor();
     }
 
-    if (ImGui::Button("Connect")) {
-        connect_future = std::async(std::launch::async, [this, r = remote.get(), &config]() -> bool {
-            return r->connect(dest_addr, config);
-        });
+    if(!is_connecting) {
+        if (ImGui::Button("Connect")) {
+            connect_future = std::async(std::launch::async, [this, r = remote.get(), &config]() -> bool {
+                return r->connect(dest_addr, config);
+            });
+        }
     }
     ImGui::SameLine();
     if(connected) {
