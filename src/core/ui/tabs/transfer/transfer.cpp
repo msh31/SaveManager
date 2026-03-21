@@ -258,7 +258,7 @@ void TransferTab::render(const Fonts& fonts, const Detection::DetectionResult& r
 
         ImGui::BeginDisabled(!is_file_selected || is_transferring);
         if (ImGui::Button("Download")) {
-            std::string path = current_remote_path + "/" + remote_entries[selected_remote_idx].name;
+            std::string path = current_remote_path + (current_remote_path.back() == '/' ? "" : "/") + remote_entries[selected_remote_idx].name;
             remote->download_file(path, config);
         }
         ImGui::EndDisabled();
@@ -298,7 +298,7 @@ void TransferTab::render(const Fonts& fonts, const Detection::DetectionResult& r
                 std::string label = prefix + remote_entries[i].name + "##" + std::to_string(i);
                 if (ImGui::Selectable(label.c_str(), selected_remote_idx == i, ImGuiSelectableFlags_AllowDoubleClick)) {
                     if (ImGui::IsMouseDoubleClicked(0) && remote_entries[i].is_directory) {
-                        current_remote_path = current_remote_path + "/" + remote_entries[i].name;
+                        current_remote_path = current_remote_path + (current_remote_path.back() == '/' ? "" : "/") + remote_entries[i].name;
                         remote_entries = remote->list_directory(current_remote_path);
                         selected_remote_idx = -1;
                     } else {
