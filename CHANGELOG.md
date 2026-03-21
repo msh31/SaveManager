@@ -17,8 +17,10 @@
 - Button presses now have some visual feedback
 - General code refactoring in: ZipArchive, Detection & individual tabs
 
-### Known Issues
+### Known Issues / Limitations
 - Incorrect Game name (shown by steam appid or N/A) on some games that are not yet fully supported (Backups will not work properly since the names are similar if N/A) [#2](https://github.com/msh31/SaveManager/issues/2)
+- Game Images aren't updated on refresh [#4](https://github.com/msh31/SaveManager/issues/4)
+- Downloading of game images is not done asynchronously [#5](https://github.com/msh31/SaveManager/issues/5)
 
 ## [1.1.1] - 2026-03-14
 ### Fixed
