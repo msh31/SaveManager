@@ -7,6 +7,18 @@
 #include "imgui/misc/cpp/imgui_stdlib.h"
 
 void SettingsTab::render(const Fonts& fonts, Config& config) {
+    if (update_future.valid() && update_future.wait_for(std::chrono::seconds(0)) == std::future_status::ready) {
+        bool result = update_future.get();
+
+        if(result) {
+            Notify::show_notification("Update Available!", "A new release is available for download!", 2500);
+        } else {
+            Notify::show_notification("Updates", "No new updates found!", 2500);
+        }
+    }
+
+    bool is_checking = update_future.valid() && update_future.wait_for(std::chrono::seconds(0)) != std::future_status::ready;
+
     ImGui::PushFont(fonts.header);
     ImGui::Text("Settings");
     ImGui::PopFont();
@@ -45,6 +57,16 @@ void SettingsTab::render(const Fonts& fonts, Config& config) {
         config.save();
         Notify::show_notification("Config Saved!", "Settings saved successfully!", 1500);
     }
+
+    ImGui::Separator();
+
+    ImGui::BeginDisabled(is_checking);
+    if(ImGui::Button("Check for updates")) {
+            update_future = std::async(std::launch::async, []() {
+                return Network::is_update_available();
+            });
+    }
+    ImGui::EndDisabled();
     ImGui::SameLine();
     if(ImGui::Button("Update translations")) {
         if(!Network::download_file(ubi_translation_url, paths::ubi_translations().string())) {

@@ -2,6 +2,8 @@
 #include <filesystem>
 #include "imgui.h"
 
+constexpr std::string_view APP_VERSION = "v1.3.0";
+
 struct Fonts {
     ImFont* regular;
     ImFont* medium;
@@ -24,3 +26,4 @@ struct RemoteEntry {
     std::string name;
     bool is_directory;
 };
+
