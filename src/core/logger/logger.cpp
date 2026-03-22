@@ -37,6 +37,7 @@ void logger::fatal(const std::string& message) {
 }
 
 void logger::log(const std::string& level, const std::string& message) {
+    std::lock_guard<std::mutex> lock(log_mutex);
 	if (fileLoggingEnabled) {
 		if (!logFile.is_open()) { // this is called a lazy init apparently
 			logFile.open(logFilePath, std::ios::app);
