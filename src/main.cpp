@@ -101,10 +101,6 @@ int main() {
     }
     config.save();
 
-    // std::async(std::launch::async, [appid]() {
-    //     return load_image_async(appid);
-    // });
-
     std::unordered_map<std::string, GLuint> game_textures;
     std::vector<std::future<ImageData>> texture_futures;
     int tex_w = 460, tex_h = 215;
@@ -112,7 +108,6 @@ int main() {
         if(game.appid == "N/A") {
             continue;
         }
-
         texture_futures.push_back(std::async(std::launch::async, load_image, game.appid));
     }
 
@@ -124,8 +119,8 @@ int main() {
                     continue; 
                 }
 
-                auto tex = upload_image_to_gpu(data);
-                game_textures[data.appid] = tex;
+                game_textures[data.appid] = upload_image_to_gpu(data);
+                get_logger().info("Uploaded texture for: " + data.appid);
             }
         }
 
@@ -161,6 +156,22 @@ int main() {
             if (ImGui::BeginTabItem("General"))  {
                 if (auto new_result = general_tab.render(fonts, result, game_textures, config, state)) {
                     result = *new_result;
+
+                    for (auto it = game_textures.begin(); it != game_textures.end(); ++it) {
+                        glDeleteTextures(1, &it->second);
+                    }
+
+                    game_textures = {};
+                    texture_futures.clear();
+
+                    for (auto& game : result.games) {
+                        if(game.appid == "N/A") {
+                            continue;
+                        }
+
+                        texture_futures.push_back(std::async(std::launch::async, load_image, game.appid));
+                        get_logger().info("Launched texture futures after refresh: " + std::to_string(texture_futures.size()));
+                    }
                 }
                 ImGui::EndTabItem();
             }
