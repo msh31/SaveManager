@@ -20,7 +20,7 @@ private:
         {"Anno 1404 Venice",             {"Anno 1404 Venice", "Savegames"}},
         {"Anno 1503 History Edition",             {"Anno 1503 History Edition", "SaveGame"}},
         {"Anno 1602 History Edition",             {"Anno 1602 History Edition", ""}},
-        {"Anno 1702 History Edition",             {"Anno 1702 History Edition", ""}},
+        {"Anno 1701 History Edition",             {"Anno 1701 History Edition", ""}},
         {"Anno 2070",             {"Anno 2070", "Accounts"}},
     };
 };
