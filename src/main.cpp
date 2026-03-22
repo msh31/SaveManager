@@ -101,25 +101,34 @@ int main() {
     }
     config.save();
 
-    GLuint game_texture = 0; 
+    // std::async(std::launch::async, [appid]() {
+    //     return load_image_async(appid);
+    // });
+
     std::unordered_map<std::string, GLuint> game_textures;
+    std::vector<std::future<ImageData>> texture_futures;
     int tex_w = 460, tex_h = 215;
     for (auto& game : result.games) {
         if(game.appid == "N/A") {
             continue;
         }
-        fs::path path = paths::cache_dir() / (game.appid + ".jpg");
 
-        Network::download_game_image(game.appid);
-        if(!fs::exists(path)) {
-            continue;
-        }
-
-        LoadTextureFromFile(path.string().c_str(), &game_texture, &tex_w, &tex_h);
-        game_textures[game.appid] = game_texture;
+        texture_futures.push_back(std::async(std::launch::async, load_image, game.appid));
     }
 
     do{
+        for (auto& texture : texture_futures) {
+            if (texture.valid() && texture.wait_for(std::chrono::seconds(0)) == std::future_status::ready) {
+                ImageData data = texture.get(); 
+                if(data.pixels.empty()) {
+                    continue; 
+                }
+
+                auto tex = upload_image_to_gpu(data);
+                game_textures[data.appid] = tex;
+            }
+        }
+
         glClear(GL_COLOR_BUFFER_BIT);
 
         ImGui_ImplOpenGL3_NewFrame();
