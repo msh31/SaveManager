@@ -8,11 +8,10 @@
 #include "imgui_impl_glfw.h"
 #include "imgui_impl_opengl3.h"
 
-#include "core/network/network.hpp"
 #include "core/config/config.hpp"
 #include "core/ui/notifications/notification.hpp"
 #include "core/detection/detection.hpp"
-#include "core/helpers/textures.hpp"
+#include "core/helpers/textures/textures.hpp"
 #include "core/ui/themes/themes.hpp"
 #include "core/globals.hpp"
 #include "core/logger/logger.hpp"
@@ -102,25 +101,25 @@ int main() {
     config.save();
 
     std::unordered_map<std::string, GLuint> game_textures;
-    std::vector<std::future<ImageData>> texture_futures;
+    std::vector<std::future<Textures::ImageData>> texture_futures;
     int tex_w = 460, tex_h = 215;
     for (auto& game : result.games) {
         if(game.appid == "N/A") {
             continue;
         }
-        texture_futures.push_back(std::async(std::launch::async, load_image, game.appid));
+        texture_futures.push_back(std::async(std::launch::async, Textures::load_image, game.appid));
     }
 
     do{
         for (auto& texture : texture_futures) {
             if (texture.valid() && texture.wait_for(std::chrono::seconds(0)) == std::future_status::ready) {
-                ImageData data = texture.get(); 
+                Textures::ImageData data = texture.get(); 
                 if(data.pixels.empty()) {
                     continue; 
                 }
 
-                game_textures[data.appid] = upload_image_to_gpu(data);
-                get_logger().info("Uploaded texture for: " + data.appid);
+                game_textures[data.appid] = Textures::upload_image_to_gpu(data);
+                // get_logger().info("Uploaded texture for: " + data.appid);
             }
         }
 
@@ -169,8 +168,8 @@ int main() {
                             continue;
                         }
 
-                        texture_futures.push_back(std::async(std::launch::async, load_image, game.appid));
-                        get_logger().info("Launched texture futures after refresh: " + std::to_string(texture_futures.size()));
+                        texture_futures.push_back(std::async(std::launch::async, Textures::load_image, game.appid));
+                        // get_logger().info("Launched texture futures after refresh: " + std::to_string(texture_futures.size()));
                     }
                 }
                 ImGui::EndTabItem();

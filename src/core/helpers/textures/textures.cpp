@@ -1,4 +1,4 @@
-#pragma once
+#include "textures.hpp"
 #include "core/helpers/paths.hpp"
 #include "core/logger/logger.hpp"
 #include "imgui.h"
@@ -9,14 +9,8 @@
 #include "../external/stb/stb_image.h"
 #include <core/network/network.hpp>
 
-struct ImageData {
-    std::string appid;
-    std::vector<unsigned char> pixels;
-    int width;
-    int height;
-};
+GLuint Textures::upload_image_to_gpu(const ImageData& data) {
 
-inline GLuint upload_image_to_gpu(const ImageData& data) {
     GLuint image_texture;
     glGenTextures(1, &image_texture);
     glBindTexture(GL_TEXTURE_2D, image_texture);
@@ -32,7 +26,7 @@ inline GLuint upload_image_to_gpu(const ImageData& data) {
     return image_texture;
 }
 
-inline ImageData load_image(const std::string& appid) {
+Textures::ImageData Textures::load_image(const std::string& appid) {
     Network::download_game_image(appid); //this silently fails, but its fine for now.
 
     auto filename = paths::cache_dir() / (appid + ".jpg");
@@ -41,7 +35,7 @@ inline ImageData load_image(const std::string& appid) {
         get_logger().error("Failed to open: " + appid + ".jpg during loading");
         return {};
     }
-    
+
     fseek(f, 0, SEEK_END);
     size_t file_size = (size_t)ftell(f);
 
@@ -50,7 +44,7 @@ inline ImageData load_image(const std::string& appid) {
         fclose(f);
         return {};
     }
-    
+
     fseek(f, 0, SEEK_SET);
     void* file_data = IM_ALLOC(file_size);
     fread(file_data, 1, file_size, f);

@@ -92,6 +92,7 @@ set(savemanager_SOURCES
 	"src/core/detection/unreal/unreal.cpp"
 	"src/core/features/features.cpp"
 	"src/core/helpers/remote_transfer/remote_transfer.cpp"
+	"src/core/helpers/textures/textures.cpp"
 	"src/core/helpers/translations/translations.cpp"
 	"src/core/helpers/zip_archive/zip_archive.cpp"
 	"src/core/logger/logger.cpp"
