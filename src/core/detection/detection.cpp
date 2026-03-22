@@ -114,6 +114,7 @@ void scan_prefix_dir(const fs::path& compatdata, Detection::DetectionResult& res
                 if (user.path().filename() == "Public") continue;
                 if (config.settings.rsg_enabled) {
                     detectors.rockstar_detect.find_saves(user.path() / "Documents/Rockstar Games", result.games);
+                    detectors.rockstar_detect.find_legacy_saves(user.path() / "Documents", result.games);
                 }
                 if (config.settings.unreal_enabled) {
                     detectors.unreal_detect.find_saves(user.path(), result.games);
@@ -182,6 +183,7 @@ Detection::DetectionResult Detection::find_saves(Config& config) {
 
     if(config.settings.rsg_enabled) {
         detectors.rockstar_detect.find_saves(paths::documents_dir() / "Rockstar Games", result.games);
+        detectors.rockstar_detect.find_legacy_saves(paths::documents_dir(), result.games);
     }
 #endif
 
