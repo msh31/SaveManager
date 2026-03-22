@@ -1,9 +1,11 @@
 #include "settings.hpp"
+#include "core/helpers/blacklist/blacklist.hpp"
 #include "core/ui/notifications/notification.hpp"
 #include "core/network/network.hpp"
 #include "core/config/config.hpp"
 #include "core/logger/logger.hpp"
 
+#include "imgui.h"
 #include "imgui/misc/cpp/imgui_stdlib.h"
 
 void SettingsTab::render(const Fonts& fonts, Config& config) {
@@ -76,5 +78,36 @@ void SettingsTab::render(const Fonts& fonts, Config& config) {
             get_logger().error("Failed to download Steam ID data");
         }
         Notify::show_notification("Translations", "All translations have been updated!", 2500);
+    }
+
+    ImGui::Separator();
+
+    ImGui::PushFont(fonts.medium);
+    ImGui::Text("Blacklisted Games");
+    ImGui::PopFont();
+
+    if (ImGui::BeginChild("blacklist_child", ImVec2(0, 120), true)) {
+        for (auto it = Blacklist::blacklisted_games.begin(); it != Blacklist::blacklisted_games.end(); ) {
+            ImGui::Text("%s", it->c_str());
+            ImGui::SameLine();
+            ImGui::SetCursorPosX(ImGui::GetCursorPosX() + 5);
+            if (ImGui::Button(("X##" + std::to_string(std::distance(Blacklist::blacklisted_games.begin(), it))).c_str())) {
+                it = Blacklist::blacklisted_games.erase(it);
+                Blacklist::save();
+            } else {
+                ++it;
+            }
+        }
+        ImGui::EndChild();
+    }
+
+    ImGui::InputText("##blacklist_input", &blacklist_input);
+    ImGui::SameLine();
+    if (ImGui::Button("Add")) {
+        if (!blacklist_input.empty()) {
+            Blacklist::blacklisted_games.insert(blacklist_input);
+            Blacklist::save();
+            blacklist_input.clear();
+        }
     }
 }

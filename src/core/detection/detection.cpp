@@ -3,6 +3,7 @@
 #include "core/detection/rsg/rsg.hpp"
 #include "core/detection/ubi/ubi.hpp"
 #include "core/detection/unreal/unreal.hpp"
+#include "core/helpers/blacklist/blacklist.hpp"
 #include "core/helpers/paths.hpp"
 #include "core/logger/logger.hpp"
 
@@ -191,5 +192,11 @@ Detection::DetectionResult Detection::find_saves(Config& config) {
         get_logger().error("No savegames found!");
     }
 
+    result.games.erase(
+        std::remove_if(result.games.begin(), result.games.end(), [](const Game& game) {
+            return Blacklist::is_blacklisted(game.game_name);
+        }),
+        result.games.end()
+    );
     return result;
 }

@@ -9,5 +9,7 @@ struct SettingsTab {
     std::string_view ubi_translation_url = "https://raw.githubusercontent.com/msh31/smdata/refs/heads/main/ubi_translations.json";
     std::string_view steam_translation_url = "https://raw.githubusercontent.com/msh31/smdata/refs/heads/main/steamids.json";
 
+    std::string blacklist_input;
+
     std::future<bool> update_future;
 };

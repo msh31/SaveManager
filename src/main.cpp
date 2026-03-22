@@ -16,6 +16,7 @@
 #include "core/globals.hpp"
 #include "core/logger/logger.hpp"
 #include "core/helpers/translations/translations.hpp"
+#include "core/helpers/blacklist/blacklist.hpp"
 
 #include "core/ui/tabs/settings/settings.hpp"
 #include "core/ui/tabs/log/log.hpp"
@@ -93,6 +94,7 @@ int main() {
         Notify::show_notification("Config error!", "Config is missing and could not be generated!", 5000);
     }
     translations::init();
+    Blacklist::init();
 
     auto result = Detection::find_saves(config);
     if(result.games.empty()) {
