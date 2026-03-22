@@ -105,14 +105,19 @@ void scan_prefix_dir(const fs::path& compatdata, Detection::DetectionResult& res
         }
 
         fs::path drive_c = fs::exists(prefix / "pfx") ? prefix / "pfx/drive_c" : prefix / "drive_c";
+        fs::path users_dir = drive_c / "users";
         if (config.settings.ubi_enabled) {
             detectors.ubisoft_detect.find_saves(drive_c / "Program Files (x86)/Ubisoft/Ubisoft Game Launcher/savegames", result.games);
         }
 
-        fs::path users_dir = drive_c / "users";
         if (fs::exists(users_dir)) {
             for (const auto& user : fs::directory_iterator(users_dir)) {
                 if (user.path().filename() == "Public") continue;
+
+                if(config.settings.ubi_enabled) {
+                    detectors.ubisoft_detect.find_anno_saves(user.path() / "Documents", result.games);
+                    detectors.ubisoft_detect.find_anno_saves(user.path() / "AppData/Roaming", result.games);
+                }
                 if (config.settings.rsg_enabled) {
                     detectors.rockstar_detect.find_saves(user.path() / "Documents/Rockstar Games", result.games);
                     detectors.rockstar_detect.find_legacy_saves(user.path() / "Documents", result.games);
@@ -180,6 +185,8 @@ Detection::DetectionResult Detection::find_saves(Config& config) {
 #ifdef _WIN32
     if(config.settings.ubi_enabled) {
         detectors.ubisoft_detect.find_saves("C:\\Program Files (x86)\\Ubisoft\\Ubisoft Game Launcher\\savegames", result.games);
+        detectors.ubisoft_detect.find_anno_saves(paths::documents_dir(), result.games);
+        detectors.ubisoft_detect.find_anno_saves(paths::home_dir() / "AppData/Roaming", result.games);
     }
 
     if(config.settings.rsg_enabled) {
