@@ -12,5 +12,6 @@ private:
         {"GTA Vice City User Files", "Grand Theft Auto Vice City"},
         {"GTA San Andreas User Files", "Grand Theft Auto San Andreas"},
         {"Manhunt User Files", "Manhunt"},
+        {"Manhunt 2", "Manhunt 2"},
     };
 };
