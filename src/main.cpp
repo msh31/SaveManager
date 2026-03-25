@@ -1,5 +1,3 @@
-#include "core/helpers/paths.hpp"
-#include <filesystem>
 #ifdef _WIN32
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
@@ -8,15 +6,17 @@
 #include "imgui_impl_glfw.h"
 #include "imgui_impl_opengl3.h"
 
-#include "core/network/network.hpp"
 #include "core/config/config.hpp"
 #include "core/ui/notifications/notification.hpp"
 #include "core/detection/detection.hpp"
-#include "core/helpers/textures.hpp"
 #include "core/ui/themes/themes.hpp"
 #include "core/globals.hpp"
 #include "core/logger/logger.hpp"
+
+#include "core/helpers/textures/textures.hpp"
 #include "core/helpers/translations/translations.hpp"
+#include "core/helpers/blacklist/blacklist.hpp"
+#include "core/helpers/custom_games/custom_games.hpp"
 
 #include "core/ui/tabs/settings/settings.hpp"
 #include "core/ui/tabs/log/log.hpp"
@@ -94,6 +94,8 @@ int main() {
         Notify::show_notification("Config error!", "Config is missing and could not be generated!", 5000);
     }
     translations::init();
+    Blacklist::init();
+    CustomGamesFile::init();
 
     auto result = Detection::find_saves(config);
     if(result.games.empty()) {
@@ -101,25 +103,29 @@ int main() {
     }
     config.save();
 
-    GLuint game_texture = 0; 
     std::unordered_map<std::string, GLuint> game_textures;
+    std::vector<std::future<Textures::ImageData>> texture_futures;
     int tex_w = 460, tex_h = 215;
     for (auto& game : result.games) {
         if(game.appid == "N/A") {
             continue;
         }
-        fs::path path = paths::cache_dir() / (game.appid + ".jpg");
-
-        Network::download_game_image(game.appid);
-        if(!fs::exists(path)) {
-            continue;
-        }
-
-        LoadTextureFromFile(path.string().c_str(), &game_texture, &tex_w, &tex_h);
-        game_textures[game.appid] = game_texture;
+        texture_futures.push_back(std::async(std::launch::async, Textures::load_image, game.appid));
     }
 
     do{
+        for (auto& texture : texture_futures) {
+            if (texture.valid() && texture.wait_for(std::chrono::seconds(0)) == std::future_status::ready) {
+                Textures::ImageData data = texture.get(); 
+                if(data.pixels.empty()) {
+                    continue; 
+                }
+
+                game_textures[data.appid] = Textures::upload_image_to_gpu(data);
+                // get_logger().info("Uploaded texture for: " + data.appid);
+            }
+        }
+
         glClear(GL_COLOR_BUFFER_BIT);
 
         ImGui_ImplOpenGL3_NewFrame();
@@ -152,6 +158,22 @@ int main() {
             if (ImGui::BeginTabItem("General"))  {
                 if (auto new_result = general_tab.render(fonts, result, game_textures, config, state)) {
                     result = *new_result;
+
+                    for (auto it = game_textures.begin(); it != game_textures.end(); ++it) {
+                        glDeleteTextures(1, &it->second);
+                    }
+
+                    game_textures = {};
+                    texture_futures.clear();
+
+                    for (auto& game : result.games) {
+                        if(game.appid == "N/A") {
+                            continue;
+                        }
+
+                        texture_futures.push_back(std::async(std::launch::async, Textures::load_image, game.appid));
+                        // get_logger().info("Launched texture futures after refresh: " + std::to_string(texture_futures.size()));
+                    }
                 }
                 ImGui::EndTabItem();
             }

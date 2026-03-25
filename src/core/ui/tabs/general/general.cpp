@@ -3,6 +3,7 @@
 #include "core/ui/notifications/notification.hpp"
 #include "core/features/features.hpp"
 #include <optional>
+#include <unistd.h>
 
 void GeneralTab::on_result_changed(Detection::DetectionResult& result, TabState& state) {
     grouped_games = {};
@@ -139,14 +140,17 @@ std::optional<Detection::DetectionResult> GeneralTab::render(const Fonts& fonts,
             }
             ImGui::PopStyleColor(2);
             if(ImGui::Button("Open Path")) {
-#ifdef __linux
-                std::string cmd = "xdg-open \"" + active_game.save_path.string() + "\"";
-                system(cmd.c_str());
+#ifdef __linux__
+                pid_t pid = fork();
+                if (pid == 0) {
+                    execl("/usr/bin/xdg-open", "xdg-open", active_game.save_path.string().c_str(), nullptr);
+                    _exit(1); // only reached if execl fails
+                }
 #endif
 
 #ifdef _WIN32
                 std::string cmd = "explorer.exe \"" + active_game.save_path.string() + "\"";
-                system(cmd.c_str());
+                ShellExecuteA(NULL, "open", active_game.save_path.string().c_str(), NULL, NULL, SW_SHOWDEFAULT);
 #endif
             }
 

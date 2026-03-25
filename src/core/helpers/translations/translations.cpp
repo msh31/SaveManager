@@ -1,6 +1,4 @@
 #include "translations.hpp"
-#include <fstream>
-#include <regex>
 #include "core/helpers/paths.hpp"
 #include "core/logger/logger.hpp"
 

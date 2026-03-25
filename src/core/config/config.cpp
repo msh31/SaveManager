@@ -53,6 +53,22 @@ bool Config::init() {
         }
     }
 
+    if(!fs::exists(paths::blacklist())) {
+        get_logger().info("game_blacklist.json was not found, downloading...");
+        if(!Network::download_file("https://raw.githubusercontent.com/msh31/smdata/refs/heads/main/game_blacklist.json", paths::blacklist().string())) {
+            get_logger().error("Failed to download blacklist");
+            return false;
+        }
+    }
+
+    if(!fs::exists(paths::custom_games())) {
+        get_logger().info("custom_games.json was not found, downloading...");
+        if(!Network::download_file("https://raw.githubusercontent.com/msh31/smdata/refs/heads/main/custom_games.json", paths::custom_games().string())) {
+            get_logger().error("Failed to download custom_games list");
+            return false;
+        }
+    }
+
     return true;
 }
 

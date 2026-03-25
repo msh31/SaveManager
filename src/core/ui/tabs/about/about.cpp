@@ -1,4 +1,5 @@
 #include "about.hpp"
+#include "core/globals.hpp"
 
 void AboutTab::render(const Fonts& fonts) {
     ImGui::NewLine();
@@ -25,7 +26,7 @@ void AboutTab::render(const Fonts& fonts) {
     ImGui::Text("Details");
     ImGui::PopFont();
 
-    ImGui::Text("Version");    ImGui::SameLine(120.0f); ImGui::Text("1.2.0");
+    ImGui::Text("Version");    ImGui::SameLine(120.0f); ImGui::Text(APP_VERSION.data());
     ImGui::Text("Author");     ImGui::SameLine(120.0f); ImGui::Text("marco007");
     ImGui::Text("License");    ImGui::SameLine(120.0f); ImGui::Text("GPLv3");
     ImGui::Text("Source");     ImGui::SameLine(120.0f);

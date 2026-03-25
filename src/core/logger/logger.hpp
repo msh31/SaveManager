@@ -27,6 +27,8 @@ private:
 
     std::ofstream logFile;
     fs::path logFilePath = paths::config_dir() / "savemanager.log";
+
+    std::mutex log_mutex;
 };
 
 inline logger& get_logger() {

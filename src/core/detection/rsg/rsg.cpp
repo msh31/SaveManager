@@ -1,4 +1,5 @@
 #include "rsg.hpp"
+#include "core/detection/detection.hpp"
 #include "core/helpers/translations/translations.hpp"
 
 void RockstarDetector::find_saves(const fs::path& prefix, std::vector<Game>& out_games) const {
@@ -29,6 +30,26 @@ void RockstarDetector::find_saves(const fs::path& prefix, std::vector<Game>& out
             game.save_path = uuid_folder;
 
             out_games.push_back(game);
+        }
+    }
+}
+
+void RockstarDetector::find_legacy_saves(const fs::path& prefix, std::vector<Game>& out_games) const {
+    if(!fs::exists(prefix)) {
+        return;
+    }
+
+    for(const auto& game : fs::directory_iterator(prefix, std::filesystem::directory_options::skip_permission_denied)) {
+        std::string folder_name = game.path().filename().string();
+
+        if (auto it = legacy_games.find(folder_name); it != legacy_games.end()) {
+            Game l_game;
+            l_game.type = ROCKSTAR;
+            l_game.game_name = it->second;
+            l_game.appid = translations::get_steam_id(l_game.game_name).value_or("N/A");
+            l_game.save_path = game.path();
+
+            out_games.push_back(l_game);
         }
     }
 }
