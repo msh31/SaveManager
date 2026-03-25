@@ -1,16 +1,19 @@
 #include "detection.hpp"
 #include "core/config/config.hpp"
-#include "core/detection/rsg/rsg.hpp"
-#include "core/detection/ubi/ubi.hpp"
-#include "core/detection/unreal/unreal.hpp"
 #include "core/helpers/blacklist/blacklist.hpp"
 #include "core/helpers/paths.hpp"
 #include "core/logger/logger.hpp"
+
+#include "core/detection/rsg/rsg.hpp"
+#include "core/detection/ubi/ubi.hpp"
+#include "core/detection/unreal/unreal.hpp"
+#include "core/detection/custom/custom.hpp"
 
 struct Detectors {
    RockstarDetector rockstar_detect; 
    UbisoftDetector ubisoft_detect; 
    UnrealDetector unreal_detect; 
+   CustomDetector custom_detect; 
 };
 
 std::vector<std::string> get_platform_steam_paths() {
@@ -117,14 +120,17 @@ void scan_prefix_dir(const fs::path& compatdata, Detection::DetectionResult& res
                 if(config.settings.ubi_enabled) {
                     detectors.ubisoft_detect.find_anno_saves(user.path() / "Documents", result.games);
                     detectors.ubisoft_detect.find_anno_saves(user.path() / "AppData/Roaming", result.games);
+                    detectors.custom_detect.find_saves(user.path(), result.games);
                 }
                 if (config.settings.rsg_enabled) {
                     detectors.rockstar_detect.find_saves(user.path() / "Documents/Rockstar Games", result.games);
                     detectors.rockstar_detect.find_legacy_saves(user.path() / "Documents", result.games);
                     detectors.rockstar_detect.find_legacy_saves(user.path() / "AppData/Local/Rockstar Games", result.games);
+                    detectors.custom_detect.find_saves(user.path(), result.games);
                 }
                 if (config.settings.unreal_enabled) {
                     detectors.unreal_detect.find_saves(user.path(), result.games);
+                    detectors.custom_detect.find_saves(user.path(), result.games);
                 }
             }
         }
@@ -188,12 +194,14 @@ Detection::DetectionResult Detection::find_saves(Config& config) {
         detectors.ubisoft_detect.find_saves("C:\\Program Files (x86)\\Ubisoft\\Ubisoft Game Launcher\\savegames", result.games);
         detectors.ubisoft_detect.find_anno_saves(paths::documents_dir(), result.games);
         detectors.ubisoft_detect.find_anno_saves(paths::home_dir() / "AppData/Roaming", result.games);
+        detectors.custom_detect.find_saves(paths::home_dir(), result.games);
     }
 
     if(config.settings.rsg_enabled) {
         detectors.rockstar_detect.find_saves(paths::documents_dir() / "Rockstar Games", result.games);
         detectors.rockstar_detect.find_legacy_saves(paths::documents_dir(), result.games);
         detectors.rockstar_detect.find_legacy_saves(paths::home_dir() / "AppData/Local/Rockstar Games", result.games);
+        detectors.custom_detect.find_saves(paths::home_dir(), result.games);
     }
 #endif
 

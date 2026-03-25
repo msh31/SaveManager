@@ -1,9 +1,9 @@
+#define STB_IMAGE_IMPLEMENTATION
 #include "textures.hpp"
 #include "core/helpers/paths.hpp"
 #include "core/logger/logger.hpp"
 #include "imgui.h"
 #include <cstdio>
-#define STB_IMAGE_IMPLEMENTATION
 
 #include <glad/glad.h>
 #include "../external/stb/stb_image.h"

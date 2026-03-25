@@ -61,6 +61,14 @@ bool Config::init() {
         }
     }
 
+    if(!fs::exists(paths::custom_games())) {
+        get_logger().info("custom_games.json was not found, downloading...");
+        if(!Network::download_file("https://raw.githubusercontent.com/msh31/smdata/refs/heads/main/custom_games.json", paths::custom_games().string())) {
+            get_logger().error("Failed to download custom_games list");
+            return false;
+        }
+    }
+
     return true;
 }
 

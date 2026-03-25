@@ -1,5 +1,3 @@
-#include "core/helpers/paths.hpp"
-#include <filesystem>
 #ifdef _WIN32
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
@@ -11,12 +9,14 @@
 #include "core/config/config.hpp"
 #include "core/ui/notifications/notification.hpp"
 #include "core/detection/detection.hpp"
-#include "core/helpers/textures/textures.hpp"
 #include "core/ui/themes/themes.hpp"
 #include "core/globals.hpp"
 #include "core/logger/logger.hpp"
+
+#include "core/helpers/textures/textures.hpp"
 #include "core/helpers/translations/translations.hpp"
 #include "core/helpers/blacklist/blacklist.hpp"
+#include "core/helpers/custom_games/custom_games.hpp"
 
 #include "core/ui/tabs/settings/settings.hpp"
 #include "core/ui/tabs/log/log.hpp"
@@ -95,6 +95,7 @@ int main() {
     }
     translations::init();
     Blacklist::init();
+    CustomGamesFile::init();
 
     auto result = Detection::find_saves(config);
     if(result.games.empty()) {

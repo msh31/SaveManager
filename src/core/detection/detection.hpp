@@ -8,7 +8,8 @@ enum PlatformType {
     ROCKSTAR,
     UNREAL,
     PSP,
-    PPSSPP
+    PPSSPP,
+    CUSTOM
 };
 
 struct Game {
