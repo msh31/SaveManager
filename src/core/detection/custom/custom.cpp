@@ -1,5 +1,6 @@
 #include "custom.hpp"
 #include "core/helpers/custom_games/custom_games.hpp"
+#include "core/logger/logger.hpp"
 
 void CustomDetector::find_saves(const fs::path& prefix, std::vector<Game>& out_games) const {
     if(!fs::exists(prefix)) {
@@ -8,6 +9,7 @@ void CustomDetector::find_saves(const fs::path& prefix, std::vector<Game>& out_g
 
     for (const auto& entry : CustomGamesFile::games) {
         fs::path save_path = prefix / entry.save_path;
+        get_logger().info("Custom check: " + save_path.string());
 
         if (!fs::exists(save_path)) {
             continue;

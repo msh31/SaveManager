@@ -1,5 +1,6 @@
 #include "settings.hpp"
 #include "core/helpers/blacklist/blacklist.hpp"
+#include "core/helpers/custom_games/custom_games.hpp"
 #include "core/ui/notifications/notification.hpp"
 #include "core/network/network.hpp"
 #include "core/config/config.hpp"
@@ -103,11 +104,49 @@ void SettingsTab::render(const Fonts& fonts, Config& config) {
 
     ImGui::InputText("##blacklist_input", &blacklist_input);
     ImGui::SameLine();
-    if (ImGui::Button("Add")) {
+    if (ImGui::Button("Add##blacklist")) {
         if (!blacklist_input.empty()) {
             Blacklist::blacklisted_games.insert(blacklist_input);
             Blacklist::save();
             blacklist_input.clear();
+        }
+    }
+
+    ImGui::PushFont(fonts.medium);
+    ImGui::Text("Custom Games");
+    ImGui::PopFont();
+
+    if (ImGui::BeginChild("custom_game_child", ImVec2(0, 120), true)) {
+        for (auto it = CustomGamesFile::games.begin(); it != CustomGamesFile::games.end(); ) {
+            ImGui::Text("%s", it->game_name.c_str());
+            ImGui::SameLine();
+            ImGui::SetCursorPosX(ImGui::GetCursorPosX() + 5);
+            if (ImGui::Button(("X##" + std::to_string(std::distance(CustomGamesFile::games.begin(), it))).c_str())) {
+                it = CustomGamesFile::games.erase(it);
+                CustomGamesFile::save();
+            } else {
+                ++it;
+            }
+        }
+        ImGui::EndChild();
+    }
+
+    ImGui::InputText("Game Name", &new_game_name);
+    ImGui::InputText("Save Path", &new_game_path);
+    ImGui::InputText("AppID (optional)", &new_game_appid);
+    // ImGui::SameLine();
+    if (ImGui::Button("Add##custom")) {
+        if (!new_game_name.empty() && !new_game_path.empty()) {
+            CustomGamesFile::CustomGame game;
+            game.game_name = new_game_name;
+            game.save_path = new_game_path;
+            game.appid = new_game_appid;
+            CustomGamesFile::games.push_back(game);
+            CustomGamesFile::save();
+
+            new_game_name.clear();
+            new_game_path.clear();
+            new_game_appid.clear();
         }
     }
 }

@@ -10,6 +10,10 @@ struct SettingsTab {
     std::string_view steam_translation_url = "https://raw.githubusercontent.com/msh31/smdata/refs/heads/main/steamids.json";
 
     std::string blacklist_input;
+    std::string new_game_name;
+    std::string new_game_path; 
+    std::string new_game_appid;
+
 
     std::future<bool> update_future;
 };
