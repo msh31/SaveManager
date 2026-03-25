@@ -1,5 +1,38 @@
 # Changelog
 
+## [1.3.0] - 2026-03-26
+### New Game support
+- The original GTA Trilogy 
+- Anno franchise
+- Manhunt 1 & 2
+- Max Payne 1 & 2
+- God of War 2018 & Ragnarok
+- Crimson Desert (Beta, through custom games)
+
+### Added
+- Check for updates button
+- Game blacklist (User configurable)
+- Custom Game list (User configurable)
+> Note: both the blacklist and custom list do also get downloaded from github
+    The custom game list is there for non specific game launcher / publisher games
+    and it will receive more updates, hopefully with community additions
+
+### Fixed 
+- Game Images aren't updated on refresh [#4](https://github.com/msh31/SaveManager/issues/4)
+- Downloading of game images is not done asynchronously [#5](https://github.com/msh31/SaveManager/issues/5) (semi-fixed)
+
+### Changes 
+- Improved support for Unreal Games
+- Texture loading is now done asynchronously
+- Logger is now thread-safe
+- No more direct system calls to open a path
+
+### Known Issues / Limitations 
+- Duplicate cards for games with N/A appid [#7](https://github.com/msh31/SaveManager/issues/7)
+- Incorrect Game name (shown by steam appid or N/A) on some games that are not yet supported (Backups will not work properly since the names are similar if N/A) [#2](https://github.com/msh31/SaveManager/issues/2)
+
+- Original Anno editions not supported due to install path limitations (You can add them manually though!)
+
 ## [1.2.1] - 2026-03-21
 ### Fixed
 - Password authentication being the only option for SFTP transfers
