@@ -33,7 +33,7 @@ project(SaveManager
 		C
 		CXX
 	VERSION
-		1.2.0
+		1.3.0
 	DESCRIPTION
 		"The swiss army knife of save management."
 )

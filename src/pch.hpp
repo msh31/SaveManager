@@ -15,10 +15,15 @@
 #include <algorithm>
 #include <future>
 #include <regex>
+#include <optional>
 
 #include "core/globals.hpp"
 
 #include <imgui.h>
+#endif
+
+#ifdef __linux__
+#include <unistd.h>
 #endif
 
 #include <glad/glad.h>

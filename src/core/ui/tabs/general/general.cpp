@@ -2,8 +2,6 @@
 #include "core/globals.hpp"
 #include "core/ui/notifications/notification.hpp"
 #include "core/features/features.hpp"
-#include <optional>
-#include <unistd.h>
 
 void GeneralTab::on_result_changed(Detection::DetectionResult& result, TabState& state) {
     grouped_games = {};
