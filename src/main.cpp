@@ -1,6 +1,6 @@
 #ifdef _WIN32
-#define WIN32_LEAN_AND_MEAN
 #include <windows.h>
+#pragma comment(linker, "/subsystem:windows /entry:mainCRTStartup")
 #endif
 
 #include "imgui_impl_glfw.h"
@@ -28,10 +28,6 @@
 #include "core/ui/fonts/jbm_reg.h"
 #include "core/ui/fonts/jbm_med.h"
 #include "core/ui/fonts/jbm_bold.h"
-
-#ifdef _WIN32
-#pragma comment(linker, "/subsystem:windows /entry:mainCRTStartup")
-#endif
 
 int main() {
     Config config;

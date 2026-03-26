@@ -60,4 +60,4 @@ link-libraries = ["CURL::libcurl", "glfw", "libzip::zip", "libssh2::libssh2", "O
 compile-features = ["cxx_std_17"]
 
 [target.savemanager.windows]
-link-libraries = ["ws2_32"]
+link-libraries = ["ws2_32", "shell32"]

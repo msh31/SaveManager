@@ -15,10 +15,22 @@
 #include <algorithm>
 #include <future>
 #include <regex>
+#include <optional>
 
 #include "core/globals.hpp"
 
 #include <imgui.h>
+#endif
+
+#ifdef __linux__
+#include <unistd.h>
+#endif
+
+#ifdef _WIN32
+#include <winsock2.h>
+#include <ws2tcpip.h>
+#include <windows.h>
+#include <shellapi.h>
 #endif
 
 #include <glad/glad.h>

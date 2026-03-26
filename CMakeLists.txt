@@ -33,7 +33,7 @@ project(SaveManager
 		C
 		CXX
 	VERSION
-		1.2.0
+		1.3.0
 	DESCRIPTION
 		"The swiss army knife of save management."
 )
@@ -138,6 +138,7 @@ target_link_libraries(savemanager PRIVATE
 if(WIN32) # windows
 	target_link_libraries(savemanager PRIVATE
 		ws2_32
+		shell32
 	)
 endif()
 
