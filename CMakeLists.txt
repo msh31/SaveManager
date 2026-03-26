@@ -138,6 +138,7 @@ target_link_libraries(savemanager PRIVATE
 if(WIN32) # windows
 	target_link_libraries(savemanager PRIVATE
 		ws2_32
+		shell32
 	)
 endif()
 

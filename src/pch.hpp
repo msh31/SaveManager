@@ -26,5 +26,12 @@
 #include <unistd.h>
 #endif
 
+#ifdef _WIN32
+#include <winsock2.h>
+#include <ws2tcpip.h>
+#include <windows.h>
+#include <shellapi.h>
+#endif
+
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
