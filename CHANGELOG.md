@@ -1,5 +1,29 @@
 # Changelog
 
+## [1.4.0] - 2026-03-??
+### New Game support
+- 
+
+### Added
+- Mass Backup button 
+- Backup labels
+- Dark / Light Mode toggle
+
+### Fixed
+- Duplicate cards for games with N/A appid [#7](https://github.com/msh31/SaveManager/issues/7)
+- Incorrect Game name (shown by steam appid or N/A) on some games that are not yet supported (Backups will not work properly since the names are similar if N/A) [#2](https://github.com/msh31/SaveManager/issues/2)
+
+### Changes
+- An Internet connection is no longer required by default 
+- Codebase changes in the entrypoint
+- Overall UI improvements for better User Experience
+- Improved overall detection accuracy
+
+### Known Issues / Limitations
+- Original Anno editions not supported due to install path limitations (You can add them manually though!)
+
+
+
 ## [1.3.0] - 2026-03-26
 ### New Game support
 - The original GTA Trilogy 
@@ -32,6 +56,7 @@
 - Incorrect Game name (shown by steam appid or N/A) on some games that are not yet supported (Backups will not work properly since the names are similar if N/A) [#2](https://github.com/msh31/SaveManager/issues/2)
 
 - Original Anno editions not supported due to install path limitations (You can add them manually though!)
+
 
 ## [1.2.1] - 2026-03-21
 ### Fixed
