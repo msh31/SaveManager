@@ -14,6 +14,11 @@ struct SettingsTab {
     std::string new_game_path; 
     std::string new_game_appid;
 
-
     std::future<bool> update_future;
+
+    std::string backup_path;
+    std::string steam_path;
+    std::string lutris_path;
+    std::string heroic_path;
+    bool paths_initialized = false;
 };
