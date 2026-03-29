@@ -24,6 +24,8 @@ private:
     bool initialized = false;
 
     void render_ui();
+    void render_loading_screen();
+
     Fonts fonts;
 
     Config config;
