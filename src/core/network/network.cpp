@@ -81,7 +81,7 @@ void Network::download_game_image(const std::string& appid) {
     std::string url =
         "https://cdn.cloudflare.steamstatic.com/steam/apps/" +
         appid +
-        "/header.jpg";
+        "/library_600x900.jpg";
 
     Network::download_file(url, img_path.string());
 }

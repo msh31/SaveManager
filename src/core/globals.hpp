@@ -23,7 +23,6 @@ struct Fonts {
     ImFont* header;
 };
 
-
 struct TabState {
     std::vector<std::filesystem::path> backups;
     std::vector<bool> selected_backups;

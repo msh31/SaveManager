@@ -2,6 +2,7 @@
 #include "core/globals.hpp"
 #include "core/ui/notifications/notification.hpp"
 #include "core/features/features.hpp"
+#include "imgui.h"
 
 void GeneralTab::on_result_changed() {
     grouped_games = {};
@@ -80,32 +81,39 @@ std::optional<Detection::DetectionResult> GeneralTab::render(const Fonts& fonts,
 
 void GeneralTab::render_cards() {
     float available_width = ImGui::GetContentRegionAvail().x;
-    float card_width = 300.0f;
-    float card_height = 300.0f;
-    float card_gap = 10.0f;
-    int columns = (std::max)(1, (int)(available_width / (card_width + card_gap)));
-    int count = 0;
+    float card_height = 380.0f;
+    float padding = 10.0f;
+    float min_card_width = 200.0f;
+    float max_card_width = 300.0f;
+    int min_columns = 3;
+
+    int columns = (std::max)(min_columns, (int)(available_width / (min_card_width + padding)));
+    float card_width = (available_width - (padding * (columns - 1))) / columns;
+    card_width = (std::min)(card_width, max_card_width);
+    columns = (std::max)(min_columns, (int)((available_width + padding) / (card_width + padding)));
+
     if(!grouped_games.empty()) {
         for (int gi = 0; gi < (int)grouped_games.size(); gi++) {
             const auto& group = grouped_games[gi];
-            if(count > 0 && count % columns == 0) {
-                ImGui::Dummy(ImVec2(0.0f, card_gap));
+            int row = gi / columns;
+            int col = gi % columns;
+
+            if(col == 0 && gi > 0) {
+                ImGui::Dummy(ImVec2(0.0f, padding));
             }
 
-            if(count % columns != 0) {
-                ImGui::SameLine(0.0f, card_gap);
+            if(col > 0) {
+                ImGui::SameLine(0.0f, padding);
             }
 
-            count++;
             const Game* primary = &m_result->games[group[0]];
             std::string card_id = primary->game_name + "##card" + std::to_string(gi);
 
-            int& sel = selected_source[card_id];
-            if (sel >= (int)group.size()) sel = 0;
-            const Game& active_game = m_result->games[group[sel]];
+            const Game& active_game = m_result->games[group[0]];
 
-            ImGui::BeginChild(card_id.c_str(), ImVec2(card_width, card_height), true);
-            render_card(*primary, active_game, group, gi, sel);
+            ImGui::BeginChild(card_id.c_str(), ImVec2(card_width, card_height), true, 
+                              ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
+            render_card(*primary, active_game, group, gi);
             ImGui::EndChild();
         }
 
@@ -114,58 +122,53 @@ void GeneralTab::render_cards() {
     }
 }
 
-void GeneralTab::render_card(const Game& primary, const Game& active_game, const std::vector<int>& group, int gi, int& sel) {
-    ImGui::TextWrapped("%s", primary.game_name.c_str());
-    ImGui::Separator();
-
-    ImGui::Dummy(ImVec2(0.0f, 8.0f));
+void GeneralTab::render_card(const Game& primary, const Game& active_game, const std::vector<int>& group, int gi) {
+    auto w_pos = ImGui::GetWindowPos();
+    auto w_siz = ImGui::GetWindowSize();
+    ImGuiViewport* vp = ImGui::GetMainViewport();
 
     auto it = m_textures->find(primary.appid);
     if(it != m_textures->end()) {
-        ImGui::Image((ImTextureID)(intptr_t)it->second, ImVec2(280, image_height));
+        ImGui::GetWindowDrawList()->AddImage(
+            (ImTextureID)(intptr_t)it->second,
+            w_pos,
+            ImVec2(w_pos.x + w_siz.x, w_pos.y + image_height),
+            ImVec2(0, 0),
+            ImVec2(1, 1),
+            IM_COL32(255, 255, 255, 255)
+        );
+        // ImGui::GetWindowDrawList()->AddRectFilled(
+        //     w_pos,
+        //     ImVec2(w_pos.x + w_siz.x, w_pos.y + 40.0f),
+        //     IM_COL32(0, 0, 0, 200)
+        // );
+        // ImGui::SetCursorPos(ImVec2(8.0f, 8.0f));
+        // ImGui::TextWrapped("%s", primary.game_name.c_str());
+        // ImGui::SetCursorPos(ImVec2(0, image_height));
     }
     else {
-        ImGui::Dummy(ImVec2(280, image_height));
-        ImVec2 pos = ImGui::GetCursorPos();
-        ImGui::SetCursorPos(ImVec2(pos.x, pos.y - image_height / 2.0f - ImGui::GetTextLineHeight() / 2.0f));
-        ImGui::TextDisabled("No image available");
-        ImGui::SetCursorPos(pos);
+        ImGui::TextWrapped("%s", primary.game_name.c_str());
     }
 
-    if (group.size() > 1) {
-        ImGui::SetNextItemWidth(-1);
-        if (ImGui::BeginCombo("##source", active_game.save_path.string().c_str())) {
-            for (int i = 0; i < (int)group.size(); i++) {
-                bool is_selected = (sel == i);
-                std::string label = m_result->games[group[i]].save_path.string() + "##" + std::to_string(i);
-                if (ImGui::Selectable(label.c_str(), is_selected)) {
-                    sel = i;
-                }
-                if (is_selected) ImGui::SetItemDefaultFocus();
-            }
-            ImGui::EndCombo();
-        }
-    } else {
-        ImGui::Dummy(ImVec2(0.0f, 8.0f));
+    if(it == m_textures->end()) {
+        ImGui::Separator();
     }
+    float button_y = w_siz.y - 46.0f;
+    ImGui::SetCursorPos(ImVec2(0.0f, button_y));
+    float button_spacing = 8.0f;
+    float buttons_width = 32.0f * 4 + button_spacing * 3;
+    ImGui::SetCursorPosX((w_siz.x - buttons_width) * 0.5f);
 
-    if(ImGui::Button("Backup")) {
+    if(ImGui::Button("\uf0c7", ImVec2(32.0f, 32.0f))) {
         Features::backup_game(active_game, *m_config);
     }
-    ImGui::SameLine();
-    if(ImGui::Button("Restore")) {
+    ImGui::SameLine(0.0f, button_spacing);
+    if(ImGui::Button("\uf2ea", ImVec2(32.0f, 32.0f))) {
         pending_restore_game = &active_game;
         open_restore_modal = true;
     }
-    ImGui::SameLine();
-    ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.8f, 0.2f, 0.2f, 1.0f));
-    ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.9f, 0.3f, 0.3f, 1.0f));
-    if(ImGui::Button("Delete")) {
-        pending_delete_game = &active_game;
-        open_delete_modal = true;
-    }
-    ImGui::PopStyleColor(2);
-    if(ImGui::Button("Open Path")) {
+    ImGui::SameLine(0.0f, button_spacing);
+    if(ImGui::Button("\uf07b", ImVec2(32.0f, 32.0f))) {
 #ifdef __linux__
         pid_t pid = fork();
         if (pid == 0) {
@@ -179,6 +182,14 @@ void GeneralTab::render_card(const Game& primary, const Game& active_game, const
         ShellExecuteA(NULL, "open", active_game.save_path.string().c_str(), NULL, NULL, SW_SHOWDEFAULT);
 #endif
     }
+    ImGui::SameLine(0.0f, button_spacing);
+    ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.8f, 0.2f, 0.2f, 1.0f));
+    ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.9f, 0.3f, 0.3f, 1.0f));
+    if(ImGui::Button("\uf1f8", ImVec2(32.0f, 32.0f))) {
+        pending_delete_game = &active_game;
+        open_delete_modal = true;
+    }
+    ImGui::PopStyleColor(2);
 }
 
 void GeneralTab::render_modals() {

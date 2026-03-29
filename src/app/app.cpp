@@ -13,9 +13,11 @@
 
 #include "core/ui/themes/themes.hpp"
 #include "core/ui/notifications/notification.hpp"
+
 #include "core/ui/fonts/jbm_reg.h"
 #include "core/ui/fonts/jbm_med.h"
 #include "core/ui/fonts/jbm_bold.h"
+#include "core/ui/fonts/font_awesome.hpp"
 
 #include "core/detection/detection.hpp"
 #include "core/helpers/translations/translations.hpp"
@@ -173,7 +175,6 @@ bool App::setup_opengl() {
     return true;
 }
 
-//could be improved
 bool App::setup_imgui() {
     ImGui::CreateContext();
     ThemeManager::apply_theme(ThemeType::Dark);
@@ -182,14 +183,20 @@ bool App::setup_imgui() {
     io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
 
     float title_fsize = 34.0f, gen_fsize = 20.0f, subt_fsize = 22.0f, head_fsize = 28.0f;
-    ImFontConfig cfg_reg, cfg_med, cfg_bold, cfg_head;
+    ImFontConfig cfg_reg, cfg_med, cfg_bold, cfg_head, icon_font;
 
     cfg_reg.FontDataOwnedByAtlas = false;
     cfg_med.FontDataOwnedByAtlas = false;
     cfg_bold.FontDataOwnedByAtlas = false;
     cfg_head.FontDataOwnedByAtlas = false;
 
+    icon_font.FontDataOwnedByAtlas = false;
+    icon_font.MergeMode = true;
+
     fonts.regular = io.Fonts->AddFontFromMemoryTTF((void*)jbm_reg, jbm_reg_len, gen_fsize, &cfg_reg);
+    static ImWchar icon_ranges[] = { 0xf000, 0xf8ff, 0 };
+    io.Fonts->AddFontFromMemoryTTF((void*)font_awesome, font_awesome_len, gen_fsize, &icon_font, icon_ranges);
+
     fonts.title = io.Fonts->AddFontFromMemoryTTF((void*)jbm_reg, jbm_reg_len, title_fsize, &cfg_reg);
     fonts.medium = io.Fonts->AddFontFromMemoryTTF((void*)jbm_med, jbm_med_len, gen_fsize, &cfg_med);
     fonts.bold = io.Fonts->AddFontFromMemoryTTF((void*)jbm_bold, jbm_bold_len, gen_fsize, &cfg_bold);
