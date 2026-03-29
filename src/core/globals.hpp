@@ -2,7 +2,7 @@
 #include <filesystem>
 #include "imgui.h"
 
-#define APP_NAME "MSGF" 
+#define APP_NAME "SaveManager" 
 #define APP_AUTHOR "marco007" 
 #define APP_VERSION "1.4.0" 
 
