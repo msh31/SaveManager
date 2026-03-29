@@ -3,8 +3,21 @@
 #include "core/detection/detection.hpp"
 
 struct GeneralTab {
-    std::optional<Detection::DetectionResult> render(const Fonts& fonts, Detection::DetectionResult& result, std::unordered_map<std::string, GLuint> texture_id, Config& config, TabState& state);
-    void on_result_changed(Detection::DetectionResult& result, TabState& state);
+    Detection::DetectionResult* m_result = nullptr;
+    const std::unordered_map<std::string, GLuint>* m_textures = nullptr;
+    Config* m_config = nullptr;
+    TabState* m_state = nullptr;
+
+    std::optional<Detection::DetectionResult> render(const Fonts& fonts, Detection::DetectionResult& result, 
+                                                     const std::unordered_map<std::string, GLuint>& texture_id, 
+                                                     Config& config, 
+                                                     TabState& state);
+
+    void on_result_changed();
+    static constexpr float image_height = 131.0f;
+    void render_cards();
+    void render_card(const Game& primary, const Game& active_game, const std::vector<int>& group, int gi, int& sel);
+    void render_modals();
 
     size_t last_game_count = 0;
 
