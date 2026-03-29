@@ -182,12 +182,15 @@ void GeneralTab::render_card(const Game& primary, const Game& active_game, const
     if(it == m_textures->end()) {
         ImGui::Separator();
     }
-    float button_y = w_siz.y - 46.0f;
-    ImGui::SetCursorPos(ImVec2(0.0f, button_y));
+    float button_y = w_siz.y - 42.0f;
+    // ImGui::SetCursorPos(ImVec2(0.0f, button_y));
     float button_spacing = 8.0f;
-    float buttons_width = 32.0f * 4 + button_spacing * 3;
-    ImGui::SetCursorPosX((w_siz.x - buttons_width) * 0.5f);
+    float btn_width = 32.0f;
+    float total = btn_width * 4 + button_spacing * 3;
+    float start_x = (w_siz.x - total) * 0.5f;
+    ImGui::SetCursorPos(ImVec2(start_x, button_y));
 
+    ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(8.0f, 8.0f));
     if(ImGui::Button("\uf0c7", ImVec2(32.0f, 32.0f))) {
         Features::backup_game(active_game, *m_config);
     }
@@ -219,6 +222,7 @@ void GeneralTab::render_card(const Game& primary, const Game& active_game, const
         open_delete_modal = true;
     }
     ImGui::PopStyleColor(2);
+    ImGui::PopStyleVar();
 }
 
 void GeneralTab::render_modals() {
