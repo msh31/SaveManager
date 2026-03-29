@@ -13,6 +13,7 @@ public:
         bool ubi_enabled = true;
         bool rsg_enabled = true;
         bool unreal_enabled = true;
+        bool dark_mode = true;
         std::string steam_path;
         std::string lutris_path;
         std::string heroic_path;

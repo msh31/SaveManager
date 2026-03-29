@@ -67,6 +67,7 @@ void Config::save() {
     data["ubi_enabled"] = settings.ubi_enabled;
     data["rsg_enabled"] = settings.rsg_enabled;
     data["unreal_enabled"] = settings.unreal_enabled;
+    data["dark_mode"] = settings.dark_mode;
 
     data["backup_path"] = settings.backup_path.string();
     data["steam_path"] = settings.steam_path;
@@ -119,6 +120,7 @@ void Config::load() {
     settings.ubi_enabled = data.value("ubi_enabled", true);
     settings.rsg_enabled = data.value("rsg_enabled", true);
     settings.unreal_enabled = data.value("unreal_enabled", true);
+    settings.dark_mode = data.value("dark_mode", true);
 
     sftp.dest_addr = data.value("dest_addr", std::string(""));
     sftp.username = data.value("username", std::string(""));

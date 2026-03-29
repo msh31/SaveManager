@@ -25,6 +25,9 @@ void SettingsTab::render(const Fonts& fonts, Config& config) {
     ImGui::PushFont(fonts.header);
     ImGui::Text("Settings");
     ImGui::PopFont();
+
+    ImGui::Checkbox("Dark Mode", &config.settings.dark_mode);
+    ImGui::Separator();
    
     ImGui::PushFont(fonts.medium);
     ImGui::Text("Launcher Support");

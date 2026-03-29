@@ -177,7 +177,6 @@ bool App::setup_opengl() {
 
 bool App::setup_imgui() {
     ImGui::CreateContext();
-    ThemeManager::apply_theme(ThemeType::Dark);
 
     ImGuiIO& io = ImGui::GetIO();
     io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
@@ -213,6 +212,7 @@ void App::render() {
 
     if(are_we_ready.valid() && are_we_ready.wait_for(std::chrono::seconds(0)) == std::future_status::ready) {
         initialized = true;
+        ThemeManager::apply_theme(config.settings.dark_mode ? ThemeType::Dark : ThemeType::Light);
     }
 
     if(initialized && texture_futures.empty()) {
