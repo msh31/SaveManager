@@ -21,7 +21,9 @@ public:
 private:
     bool setup_opengl();
     bool setup_imgui();
+
     bool initialized = false;
+    bool last_dark_mode = true;
 
     void render_ui();
     void render_loading_screen();

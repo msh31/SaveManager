@@ -210,7 +210,8 @@ bool App::setup_imgui() {
 void App::render() {
     glClear(GL_COLOR_BUFFER_BIT);
 
-    if(are_we_ready.valid() && are_we_ready.wait_for(std::chrono::seconds(0)) == std::future_status::ready) {
+    if(!initialized && are_we_ready.valid() && are_we_ready.wait_for(std::chrono::seconds(0)) == std::future_status::ready) {
+        are_we_ready.get();
         initialized = true;
         ThemeManager::apply_theme(config.settings.dark_mode ? ThemeType::Dark : ThemeType::Light);
     }
@@ -249,6 +250,10 @@ void App::render() {
     ImGui::Begin("Main Window", nullptr, window_flags);
 
     if(initialized) {
+        if(last_dark_mode != config.settings.dark_mode) {
+            ThemeManager::apply_theme(config.settings.dark_mode ? ThemeType::Dark : ThemeType::Light);
+            last_dark_mode = config.settings.dark_mode;
+        }
         render_ui();
     } else {
         render_loading_screen();
