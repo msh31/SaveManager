@@ -111,10 +111,12 @@ void GeneralTab::render_cards() {
 
             const Game& active_game = m_result->games[group[0]];
 
-            ImGui::BeginChild(card_id.c_str(), ImVec2(card_width, card_height), true, 
+            ImGui::PushStyleColor(ImGuiCol_Border, ImVec4(0.776f, 0.380f, 0.247f, 1.0f));
+            ImGui::BeginChild(card_id.c_str(), ImVec2(card_width, card_height), true,
                               ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
             render_card(*primary, active_game, group, gi);
             ImGui::EndChild();
+            ImGui::PopStyleColor();
         }
 
     } else {
@@ -137,6 +139,12 @@ void GeneralTab::render_card(const Game& primary, const Game& active_game, const
             ImVec2(1, 1),
             IM_COL32(255, 255, 255, 255)
         );
+        ImGui::GetWindowDrawList()->AddLine(
+            ImVec2(w_pos.x, w_pos.y + image_height),
+            ImVec2(w_pos.x + w_siz.x, w_pos.y + image_height),
+            IM_COL32(198, 97, 63, 255),
+            2.0f
+        );
         // ImGui::GetWindowDrawList()->AddRectFilled(
         //     w_pos,
         //     ImVec2(w_pos.x + w_siz.x, w_pos.y + 40.0f),
@@ -147,7 +155,28 @@ void GeneralTab::render_card(const Game& primary, const Game& active_game, const
         // ImGui::SetCursorPos(ImVec2(0, image_height));
     }
     else {
+        ImVec2 center(w_pos.x + w_siz.x * 0.5f, w_pos.y + image_height * 0.5f);
+        float r = 30.0f;
+        ImU32 col = IM_COL32(80, 80, 80, 255);
+
         ImGui::TextWrapped("%s", primary.game_name.c_str());
+
+        ImGui::GetWindowDrawList()->AddCircle(center, r, col, 32, 2.0f);
+        ImGui::GetWindowDrawList()->AddCircleFilled(ImVec2(center.x - 10, center.y - 8), 3, col);
+        ImGui::GetWindowDrawList()->AddCircleFilled(ImVec2(center.x + 10, center.y - 8), 3, col);
+        ImGui::GetWindowDrawList()->AddBezierCubic(
+            ImVec2(center.x - 12, center.y + 10),
+            ImVec2(center.x - 6, center.y + 4),
+            ImVec2(center.x + 6, center.y + 4),
+            ImVec2(center.x + 12, center.y + 10),
+            col, 2.0f
+        );
+        ImGui::GetWindowDrawList()->AddLine(
+            ImVec2(w_pos.x, w_pos.y + image_height),
+            ImVec2(w_pos.x + w_siz.x, w_pos.y + image_height),
+            IM_COL32(198, 97, 63, 255),
+            2.0f
+        );
     }
 
     if(it == m_textures->end()) {
