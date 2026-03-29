@@ -3,6 +3,8 @@
 #include "core/network/network.hpp"
 #include "core/logger/logger.hpp"
 #include "../../external/json.hpp"
+#include "core/helpers/translations/steamids.hpp"
+#include "core/helpers/translations/ubi_translations.hpp"
 
 #include <fstream>
 
@@ -38,19 +40,13 @@ Config::~Config() {
 
 bool Config::init() {
     if(!fs::exists(paths::ubi_translations())) {
-        get_logger().info("ubi_translations.json not found, downloading...");
-        if(!Network::download_file("https://raw.githubusercontent.com/msh31/smdata/refs/heads/main/ubi_translations.json", paths::ubi_translations().string())) {
-            get_logger().error("Failed to download Ubisoft translations");
-            return false;
-        }
+        std::ofstream f(paths::ubi_translations(), std::ios::binary);
+        f.write(reinterpret_cast<const char*>(ubi_translations_json), ubi_translations_json_len);
     }
 
     if(!fs::exists(paths::steam_appids())) {
-        get_logger().info("steamids.json was not found, downloading...");
-        if(!Network::download_file("https://raw.githubusercontent.com/msh31/smdata/refs/heads/main/steamids.json", paths::steam_appids().string())) {
-            get_logger().error("Failed to download Steam ID data");
-            return false;
-        }
+        std::ofstream f(paths::steam_appids(), std::ios::binary);
+        f.write(reinterpret_cast<const char*>(steamids_json), steamids_json_len);
     }
 
     if(!fs::exists(paths::blacklist())) {
