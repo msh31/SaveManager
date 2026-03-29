@@ -17,9 +17,11 @@ public:
     void render();
 
     GLFWwindow* window = nullptr;
+    std::future<void> are_we_ready;
 private:
     bool setup_opengl();
     bool setup_imgui();
+    bool initialized = false;
 
     void render_ui();
     Fonts fonts;

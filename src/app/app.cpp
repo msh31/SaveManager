@@ -1,3 +1,4 @@
+#include <chrono>
 #ifdef _WIN32
 #include <windows.h>
 #pragma comment(linker, "/subsystem:windows /entry:mainCRTStartup")
@@ -29,27 +30,29 @@ void App::init() {
         return;
     }
 
-    if(!config.init()) {
-        get_logger().error("Config is missing and could not be generated!");
-        Notify::show_notification("Config error!", "Config is missing and could not be generated!", 5000);
-    }
-
-    translations::init();
-    Blacklist::init();
-    CustomGamesFile::init();
-
-    d_result = Detection::find_saves(config);
-    if(d_result.games.empty()) {
-        get_logger().warning("No savegames found!");
-    }
-    config.save();
-
-    for (auto& game : d_result.games) {
-        if(game.appid == "N/A") {
-            continue;
+    are_we_ready = std::async(std::launch::async, [this]() {
+        if(!config.init()) {
+            get_logger().error("Config is missing and could not be generated!");
+            Notify::show_notification("Config error!", "Config is missing and could not be generated!", 5000);
         }
-        texture_futures.push_back(std::async(std::launch::async, Textures::load_image, game.appid));
-    }
+
+        translations::init();
+        Blacklist::init();
+        CustomGamesFile::init();
+
+        d_result = Detection::find_saves(config);
+        if(d_result.games.empty()) {
+            get_logger().warning("No savegames found!");
+        }
+        config.save();
+
+        // for (auto& game : d_result.games) {
+        //     if(game.appid == "N/A") {
+        //         continue;
+        //     }
+        //     texture_futures.push_back(std::async(std::launch::async, Textures::load_image, game.appid));
+        // }
+    });
 }
 
 void App::render_ui() {
@@ -169,6 +172,17 @@ bool App::setup_imgui() {
 void App::render() {
     glClear(GL_COLOR_BUFFER_BIT);
 
+    if(are_we_ready.valid() && are_we_ready.wait_for(std::chrono::seconds(0)) == std::future_status::ready) {
+        initialized = true;
+    }
+
+    if(initialized && texture_futures.empty()) {
+        for (auto& game : d_result.games) {
+            if(game.appid == "N/A") continue;
+            texture_futures.push_back(std::async(std::launch::async, Textures::load_image, game.appid));
+        }
+    }
+
     for (auto& texture : texture_futures) {
         if (texture.valid() && texture.wait_for(std::chrono::seconds(0)) == std::future_status::ready) {
             Textures::ImageData data = texture.get(); 
@@ -199,7 +213,11 @@ void App::render() {
 
     ImGui::Begin("Main Window", nullptr, window_flags);
 
-    App::render_ui();
+    if(initialized) {
+        App::render_ui();
+    } else {
+        ImGui::Text("Loading...");
+    }
 
     ImGui::End();
     ImGui::Render();
