@@ -5,7 +5,7 @@ void ThemeManager::apply_theme(ThemeType theme) {
 
     ImGuiStyle &style = ImGui::GetStyle();
     style.WindowPadding = {10.f, 10.f};
-    style.PopupRounding = 0.f;
+    style.PopupRounding = 4.f;
     style.FramePadding = {8.f, 4.f};
     style.ItemSpacing = {10.f, 8.f};
     style.ItemInnerSpacing = {6.f, 6.f};
@@ -19,11 +19,11 @@ void ThemeManager::apply_theme(ThemeType theme) {
     style.FrameBorderSize = 0.f;
     style.TabBorderSize = 0.f;
     style.WindowRounding = 0.f;
-    style.ChildRounding = 0.f;
-    style.FrameRounding = 0.f;
-    style.ScrollbarRounding = 0.f;
+    style.ChildRounding = 4.f;
+    style.FrameRounding = 4.f;
+    style.ScrollbarRounding = 4.f;
     style.GrabRounding = 0.f;
-    style.TabRounding = 0.f;
+    style.TabRounding = 4.f;
     style.WindowTitleAlign = {0.5f, 0.5f};
     style.ButtonTextAlign = {0.5f, 0.5f};
     style.DisplaySafeAreaPadding = {3.f, 3.f};
@@ -70,6 +70,7 @@ void ThemeManager::apply_theme(ThemeType theme) {
             colors[ImGuiCol_TabActive]             = ImVec4(0.776f, 0.380f, 0.247f, 0.86f);
             colors[ImGuiCol_TabUnfocused] = ImVec4(0.10f, 0.10f, 0.10f, 0.97f);
             colors[ImGuiCol_TabUnfocusedActive]    = ImVec4(0.50f, 0.25f, 0.16f, 1.00f);
+            colors[ImGuiCol_TabSelectedOverline] = ImVec4(0.776f, 0.380f, 0.247f, 1.00f);
             colors[ImGuiCol_PlotLines] = ImVec4(0.61f, 0.61f, 0.61f, 1.00f);
             colors[ImGuiCol_PlotLinesHovered] = ImVec4(1.00f, 0.43f, 0.35f, 1.00f);
             colors[ImGuiCol_PlotHistogram] = ImVec4(0.90f, 0.70f, 0.00f, 1.00f);
@@ -120,6 +121,7 @@ void ThemeManager::apply_theme(ThemeType theme) {
             colors[ImGuiCol_TabActive]             = ImVec4(0.776f, 0.380f, 0.247f, 1.00f);
             colors[ImGuiCol_TabUnfocused] = ImVec4(0.85f, 0.80f, 0.70f, 0.97f);
             colors[ImGuiCol_TabUnfocusedActive]    = ImVec4(0.50f, 0.25f, 0.16f, 1.00f);
+            colors[ImGuiCol_TabSelectedOverline] = ImVec4(0.776f, 0.380f, 0.247f, 1.00f);
             colors[ImGuiCol_PlotLines] = ImVec4(0.50f, 0.50f, 0.50f, 1.00f);
             colors[ImGuiCol_PlotLinesHovered] = ImVec4(0.85f, 0.45f, 0.30f, 1.00f);
             colors[ImGuiCol_PlotHistogram] = ImVec4(0.776f, 0.380f, 0.247f, 1.00f);
