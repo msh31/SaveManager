@@ -62,6 +62,11 @@ void TransferTab::render(const Fonts& fonts, const Detection::DetectionResult& r
     ImGui::PopFont();
     ImGui::Separator();
 
+    float window_width = ImGui::GetWindowSize().x;
+    float top_height = use_password_auth ? 290.0f : 370.0f;
+    float half = (window_width - 20.0f) / 2.0f;
+
+    ImGui::BeginChild("##server", ImVec2(half, top_height), true);
     ImGui::PushFont(fonts.medium);
     ImGui::Text("Server");
     ImGui::PopFont();
@@ -98,18 +103,10 @@ void TransferTab::render(const Fonts& fonts, const Detection::DetectionResult& r
         ImGui::InputText("Key passphrase", &key_passphrase, ImGuiInputTextFlags_Password);
     }
 
-    ImGui::Dummy(ImVec2(0.0f, 10.0f));
+    // ImGui::Dummy(ImVec2(0.0f, 10.0f));
 
-    if (connected) {
-        ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.3f, 1.0f, 0.3f, 1.0f));
-        ImGui::BulletText("Connected to %s", dest_addr.c_str());
-        ImGui::PopStyleColor();
-    } else {
-        ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f, 0.3f, 0.3f, 1.0f));
-        ImGui::BulletText("Not connected");
-        ImGui::PopStyleColor();
-    }
-
+    float status_y = top_height - 45.0f;
+    ImGui::SetCursorPosY(status_y);
     if(!is_connecting && !connected) {
         if (ImGui::Button("Connect")) {
             connect_future = std::async(std::launch::async, [this, r = remote.get(), &config, auth = use_password_auth, pass = key_passphrase]() -> bool {
@@ -133,21 +130,11 @@ void TransferTab::render(const Fonts& fonts, const Detection::DetectionResult& r
         }
         ImGui::PopStyleColor(2);
     }
-    ImGui::SameLine();
-    if (ImGui::Button("Save configuration")) {
-        config.sftp.dest_addr = fs::path(dest_addr).string();
-        config.sftp.username = username;
-        config.sftp.password = password;
-        config.sftp.pubkey = fs::path(pubkey);
-        config.sftp.privkey = fs::path(privkey);
-        config.sftp.key_passphrase = key_passphrase;
-        config.sftp.auth_pw = use_password_auth;
-        config.save();
-        Notify::show_notification("Config Saved!", "Settings saved successfully!", 1500);
-    }
+    ImGui::EndChild();
 
-    ImGui::Separator();
+    ImGui::SameLine(0.0f, 10.0f);
 
+    ImGui::BeginChild("##progress", ImVec2(half, top_height), true);
     ImGui::Text("File:");
     ImGui::SameLine(140.0f);
     ImGui::PushStyleColor(ImGuiCol_PlotHistogram, ImVec4(0.26f, 0.59f, 0.98f, 1.0f));
@@ -160,12 +147,34 @@ void TransferTab::render(const Fonts& fonts, const Detection::DetectionResult& r
     ImGui::ProgressBar(overall_progress, ImVec2(300.0f, 0.0f), transferring ? std::to_string((int)(overall_progress * 100)).c_str() : "Idle");
     ImGui::PopStyleColor();
 
-    ImGui::Separator();
+    ImGui::SetCursorPosY(status_y);
+    if (ImGui::Button("Save configuration")) {
+        config.sftp.dest_addr = fs::path(dest_addr).string();
+        config.sftp.username = username;
+        config.sftp.password = password;
+        config.sftp.pubkey = fs::path(pubkey);
+        config.sftp.privkey = fs::path(privkey);
+        config.sftp.key_passphrase = key_passphrase;
+        config.sftp.auth_pw = use_password_auth;
+        config.save();
+        Notify::show_notification("Config Saved!", "Settings saved successfully!", 1500);
+    }
+    ImGui::SameLine();
+    if (connected) {
+        ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.3f, 1.0f, 0.3f, 1.0f));
+        ImGui::BulletText("Connected to %s", dest_addr.c_str());
+        ImGui::PopStyleColor();
+    } else {
+        ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f, 0.3f, 0.3f, 1.0f));
+        ImGui::BulletText("Not connected");
+        ImGui::PopStyleColor();
+    }
+    ImGui::EndChild();
+    ImGui::Dummy(ImVec2(0, 8.0f));
 
-    float window_width = ImGui::GetWindowSize().x;
-    float panel_width = (window_width - 20.0f) / 2.0f;
+    float bottom_height = ImGui::GetContentRegionAvail().y;
 
-    ImGui::BeginChild("##transfer_local", ImVec2(panel_width, 0), false);
+    ImGui::BeginChild("##transfer_local", ImVec2(half, bottom_height), true);
     ImGui::PushFont(fonts.medium);
     ImGui::Text("Local");
     ImGui::PopFont();
@@ -241,10 +250,10 @@ void TransferTab::render(const Fonts& fonts, const Detection::DetectionResult& r
     }
     ImGui::EndChild();
 
+    ImGui::SameLine(0.0f, 10.0f);
     ImGui::SameLine();
 
-    ImGui::BeginChild("##transfer_remote", ImVec2(panel_width, 0), false);
-
+    ImGui::BeginChild("##transfer_remote", ImVec2(half, bottom_height), true);
     ImGui::PushFont(fonts.medium);
     ImGui::Text("Remote");
     ImGui::PopFont();
@@ -310,5 +319,4 @@ void TransferTab::render(const Fonts& fonts, const Detection::DetectionResult& r
         }
     }
     ImGui::EndChild();
-
 }

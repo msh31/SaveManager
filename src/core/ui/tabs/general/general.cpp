@@ -127,7 +127,6 @@ void GeneralTab::render_cards() {
 void GeneralTab::render_card(const Game& primary, const Game& active_game, const std::vector<int>& group, int gi) {
     auto w_pos = ImGui::GetWindowPos();
     auto w_siz = ImGui::GetWindowSize();
-    ImGuiViewport* vp = ImGui::GetMainViewport();
 
     auto it = m_textures->find(primary.appid);
     if(it != m_textures->end()) {
