@@ -14,7 +14,7 @@ void ThemeManager::apply_theme(ThemeType theme) {
     style.ScrollbarSize = 15.f;
     style.GrabMinSize = 8.f;
     style.WindowBorderSize = 1.f;
-    style.ChildBorderSize = 1.f;
+    style.ChildBorderSize = 2.f;
     style.PopupBorderSize = 1.f;
     style.FrameBorderSize = 0.f;
     style.TabBorderSize = 0.f;
