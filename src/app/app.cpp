@@ -1,0 +1,223 @@
+#ifdef _WIN32
+#include <windows.h>
+#pragma comment(linker, "/subsystem:windows /entry:mainCRTStartup")
+#endif
+
+#include "imgui_impl_glfw.h"
+#include "imgui_impl_opengl3.h"
+
+#include "app.hpp"
+#include "core/globals.hpp"
+#include "core/logger/logger.hpp"
+
+#include "core/ui/themes/themes.hpp"
+#include "core/ui/notifications/notification.hpp"
+#include "core/ui/fonts/jbm_reg.h"
+#include "core/ui/fonts/jbm_med.h"
+#include "core/ui/fonts/jbm_bold.h"
+
+#include "core/detection/detection.hpp"
+#include "core/helpers/translations/translations.hpp"
+#include "core/helpers/blacklist/blacklist.hpp"
+#include "core/helpers/custom_games/custom_games.hpp"
+
+void App::init() {
+    if(!setup_opengl()) {
+        return;
+    }
+    if(!setup_imgui()) {
+        return;
+    }
+
+    if(!config.init()) {
+        get_logger().error("Config is missing and could not be generated!");
+        Notify::show_notification("Config error!", "Config is missing and could not be generated!", 5000);
+    }
+
+    translations::init();
+    Blacklist::init();
+    CustomGamesFile::init();
+
+    d_result = Detection::find_saves(config);
+    if(d_result.games.empty()) {
+        get_logger().warning("No savegames found!");
+    }
+    config.save();
+
+    for (auto& game : d_result.games) {
+        if(game.appid == "N/A") {
+            continue;
+        }
+        texture_futures.push_back(std::async(std::launch::async, Textures::load_image, game.appid));
+    }
+}
+
+void App::render_ui() {
+    ImGui::PushFont(fonts.title);
+    ImGui::Text(APP_NAME);
+    ImGui::PopFont();
+    ImGui::Separator();
+
+    ImGui::AlignTextToFramePadding();
+
+    if (ImGui::BeginTabBar("MyTabBar", ImGuiTabBarFlags_Reorderable | ImGuiTabBarFlags_DrawSelectedOverline)) {
+        if (ImGui::BeginTabItem("General"))  {
+            if (auto new_d_result = general_tab.render(fonts, d_result, game_textures, config, state)) {
+                d_result = *new_d_result;
+
+                for (auto it = game_textures.begin(); it != game_textures.end(); ++it) {
+                    glDeleteTextures(1, &it->second);
+                }
+
+                game_textures = {};
+                texture_futures.clear();
+
+                for (auto& game : d_result.games) {
+                    if(game.appid == "N/A") {
+                        continue;
+                    }
+
+                    texture_futures.push_back(std::async(std::launch::async, Textures::load_image, game.appid));
+                    // get_logger().info("Launched texture futures after refresh: " + std::to_string(texture_futures.size()));
+                }
+            }
+            ImGui::EndTabItem();
+        }
+        if (ImGui::BeginTabItem("Transfer"))  {
+            transfer_tab.render(fonts, d_result, config, state);
+            ImGui::EndTabItem();
+        }
+        if (ImGui::BeginTabItem("Log"))  {
+            log_tab.render(fonts);
+            ImGui::EndTabItem();
+        }
+        if (ImGui::BeginTabItem("About"))  {
+            about_tab.render(fonts);
+            ImGui::EndTabItem();
+        }
+        if (ImGui::BeginTabItem("Settings"))  {
+            settings_tab.render(fonts, config);
+            ImGui::EndTabItem();
+        }
+        // if (ImGui::BeginTabItem("Debug"))  {
+        //     Tabs::render_debug_tab(fonts);
+        //     ImGui::EndTabItem();
+        // }
+
+        ImGui::EndTabBar();
+    }
+    ImGui::Separator();
+}
+
+bool App::setup_opengl() {
+    if(!glfwInit()) {
+        get_logger().error("Failed to initialize GLFW.");
+        return false;
+    }
+
+    glfwWindowHint(GLFW_SAMPLES, 4); // 4x antialiasing (MSAA)
+                   glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE); // no old OpenGL
+
+    window = glfwCreateWindow(DEF_RES_W, DEF_RES_H, APP_NAME, nullptr, nullptr);
+    if(window == nullptr) {
+        get_logger().error("Failed to create GLFW window. OpenGL 3.3 support is required!");
+        glfwTerminate();
+        return false;
+    }
+
+    glfwSetWindowSizeLimits(window, MIN_RES_W, MIN_RES_H, MAX_RES_W, MAX_RES_H); 
+    glfwMakeContextCurrent(window);
+    glfwSwapInterval(1);
+    if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
+        get_logger().error("Failed to initialize GLAD");
+        return false;
+    }
+
+    return true;
+}
+
+//could be improved
+bool App::setup_imgui() {
+    ImGui::CreateContext();
+    ThemeManager::apply_theme(ThemeType::Dark);
+
+    ImGuiIO& io = ImGui::GetIO();
+    io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
+
+    float title_fsize = 34.0f, gen_fsize = 20.0f, subt_fsize = 22.0f, head_fsize = 28.0f;
+    ImFontConfig cfg_reg, cfg_med, cfg_bold, cfg_head;
+
+    cfg_reg.FontDataOwnedByAtlas = false;
+    cfg_med.FontDataOwnedByAtlas = false;
+    cfg_bold.FontDataOwnedByAtlas = false;
+    cfg_head.FontDataOwnedByAtlas = false;
+
+    fonts.regular = io.Fonts->AddFontFromMemoryTTF((void*)jbm_reg, jbm_reg_len, gen_fsize, &cfg_reg);
+    fonts.title = io.Fonts->AddFontFromMemoryTTF((void*)jbm_reg, jbm_reg_len, title_fsize, &cfg_reg);
+    fonts.medium = io.Fonts->AddFontFromMemoryTTF((void*)jbm_med, jbm_med_len, gen_fsize, &cfg_med);
+    fonts.bold = io.Fonts->AddFontFromMemoryTTF((void*)jbm_bold, jbm_bold_len, gen_fsize, &cfg_bold);
+    fonts.header = io.Fonts->AddFontFromMemoryTTF((void*)jbm_reg, jbm_reg_len, head_fsize, &cfg_head);
+
+    ImGui_ImplGlfw_InitForOpenGL(window, true);
+    ImGui_ImplOpenGL3_Init();
+
+    return true;
+}
+
+void App::render() {
+    glClear(GL_COLOR_BUFFER_BIT);
+
+    for (auto& texture : texture_futures) {
+        if (texture.valid() && texture.wait_for(std::chrono::seconds(0)) == std::future_status::ready) {
+            Textures::ImageData data = texture.get(); 
+            if(data.pixels.empty()) {
+                continue; 
+            }
+
+            game_textures[data.appid] = Textures::upload_image_to_gpu(data);
+            // get_logger().info("Uploaded texture for: " + data.appid);
+        }
+    }
+
+    ImGui_ImplOpenGL3_NewFrame();
+    ImGui_ImplGlfw_NewFrame();
+    ImGui::NewFrame();
+
+    ImGuiViewport* viewport = ImGui::GetMainViewport();
+    ImGui::SetNextWindowPos(viewport->Pos);
+    ImGui::SetNextWindowSize(viewport->Size);
+    //ImGui::SetNextWindowViewport(viewport->ID);
+
+    ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoTitleBar |
+        ImGuiWindowFlags_NoResize |
+        ImGuiWindowFlags_NoMove |
+        ImGuiWindowFlags_NoCollapse |
+        ImGuiWindowFlags_NoBringToFrontOnFocus |
+        ImGuiWindowFlags_NoNavFocus;
+
+    ImGui::Begin("Main Window", nullptr, window_flags);
+
+    App::render_ui();
+
+    ImGui::End();
+    ImGui::Render();
+    ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+    glfwSwapBuffers(window);
+    glfwPollEvents();
+}
+
+App::~App() {
+    if(!game_textures.empty()) {
+        for (auto it = game_textures.begin(); it != game_textures.end(); ++it) {
+            glDeleteTextures(1, &it->second);
+        }
+    }
+
+    ImGui_ImplOpenGL3_Shutdown();
+    ImGui_ImplGlfw_Shutdown();
+    ImGui::DestroyContext();
+    glfwDestroyWindow(window);
+    glfwTerminate();
+}

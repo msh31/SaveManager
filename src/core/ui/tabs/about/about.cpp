@@ -26,8 +26,8 @@ void AboutTab::render(const Fonts& fonts) {
     ImGui::Text("Details");
     ImGui::PopFont();
 
-    ImGui::Text("Version");    ImGui::SameLine(120.0f); ImGui::Text(APP_VERSION.data());
-    ImGui::Text("Author");     ImGui::SameLine(120.0f); ImGui::Text("marco007");
+    ImGui::Text("Version");    ImGui::SameLine(120.0f); ImGui::Text(APP_VERSION);
+    ImGui::Text("Author");     ImGui::SameLine(120.0f); ImGui::Text(APP_AUTHOR);
     ImGui::Text("License");    ImGui::SameLine(120.0f); ImGui::Text("GPLv3");
     ImGui::Text("Source");     ImGui::SameLine(120.0f);
     ImGui::TextLinkOpenURL("click for sauce", "https://github.com/msh31/SaveManager");

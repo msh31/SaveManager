@@ -2,7 +2,17 @@
 #include <filesystem>
 #include "imgui.h"
 
-constexpr std::string_view APP_VERSION = "v1.3.0";
+#define APP_NAME "MSGF" 
+#define APP_AUTHOR "marco007" 
+#define APP_VERSION "1.4.0" 
+
+constexpr int MIN_RES_W = 1280;
+constexpr int MIN_RES_H = 720;
+constexpr int MAX_RES_W = 5120;
+constexpr int MAX_RES_H = 2880;
+
+constexpr int DEF_RES_W = 1600;
+constexpr int DEF_RES_H = 900;
 
 struct Fonts {
     ImFont* regular;

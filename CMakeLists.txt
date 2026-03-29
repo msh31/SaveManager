@@ -85,6 +85,7 @@ set(savemanager_SOURCES
 	"external/imgui/imgui_tables.cpp"
 	"external/imgui/imgui_widgets.cpp"
 	"external/imgui/misc/cpp/imgui_stdlib.cpp"
+	"src/app/app.cpp"
 	"src/core/config/config.cpp"
 	"src/core/detection/custom/custom.cpp"
 	"src/core/detection/detection.cpp"
