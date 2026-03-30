@@ -217,3 +217,23 @@ Detection::DetectionResult Detection::find_saves(Config& config) {
     );
     return result;
 }
+
+std::vector<std::vector<int>> Detection::DetectionResult::get_grouped() const {
+    std::unordered_map<std::string, size_t> key_to_group;
+    std::vector<std::vector<int>> groups;
+
+    for (int i = 0; i < (int)games.size(); i++) {
+        const auto& game = games[i];
+        std::string key = (game.appid != "N/A") ? game.appid : "N/A::" + game.game_name;
+
+        auto it = key_to_group.find(key);
+        if (it != key_to_group.end()) {
+            groups[it->second].push_back(i);
+        } else {
+            key_to_group[key] = groups.size();
+            groups.push_back({i});
+        }
+    }
+
+    return groups;
+}

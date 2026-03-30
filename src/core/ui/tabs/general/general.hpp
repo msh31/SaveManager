@@ -14,22 +14,18 @@ struct GeneralTab {
                                                      TabState& state);
 
     void on_result_changed();
-    static constexpr float image_height = 330.0f;
     void render_cards();
     void render_card(const Game& primary, const Game& active_game, const std::vector<int>& group, int gi);
     void render_modals();
 
     size_t last_game_count = 0;
-
     bool open_restore_modal = false, open_delete_modal = false;
     const Game* pending_restore_game = nullptr;
     const Game* pending_delete_game = nullptr;
-
     std::vector<std::vector<int>> grouped_games;
-    std::unordered_map<std::string, size_t> appid_to_group;
-
     std::future<Detection::DetectionResult> refresh_future;
 
     int spinner_frame = 0;
     const char* spinner = "|/-\\";
+    static constexpr float image_height = 330.0f;
 };

@@ -5,9 +5,6 @@
 #include "core/features/features.hpp"
 #include "core/config/config.hpp"
 
-#include "imgui.h"
-#include "imgui/misc/cpp/imgui_stdlib.h"
-
 void TransferTab::render(const Fonts& fonts, const Detection::DetectionResult& result, Config& config, TabState& state) {
     spinner_frame++;
     if (!initialized) {
@@ -209,9 +206,10 @@ void TransferTab::render(const Fonts& fonts, const Detection::DetectionResult& r
 
     float content_height = ImGui::GetContentRegionAvail().y - 10.0f;
 
+    auto groups = result.get_grouped();
     std::vector<std::string> game_names;
-    for (const auto& game : result.games) {
-        game_names.push_back(game.game_name);
+    for (const auto& group : groups) {
+        game_names.push_back(result.games[group[0]].game_name);
     }
 
     if (!game_names.empty()) {

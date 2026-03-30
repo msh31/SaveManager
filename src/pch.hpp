@@ -20,6 +20,7 @@
 #include "core/globals.hpp"
 
 #include <imgui.h>
+#include <imgui/misc/cpp/imgui_stdlib.h>
 #endif
 
 #ifdef __linux__

@@ -6,34 +6,12 @@
 
 void GeneralTab::on_result_changed() {
     grouped_games = {};
-    appid_to_group = {};
     pending_restore_game = nullptr;
     pending_delete_game = nullptr;
     m_state->selected_game_idx = 0;
     m_state->selected_backup_idx = 0;
 
-    for (int i = 0; i < (int)m_result->games.size(); i++) {
-        const auto& game = m_result->games[i];
-        if (game.appid != "N/A") {
-            auto it = appid_to_group.find(game.appid);
-            if (it != appid_to_group.end()) {
-                grouped_games[it->second].push_back(i);
-            } else {
-                appid_to_group[game.appid] = grouped_games.size();
-                grouped_games.push_back({i});
-            }
-        } else {
-            std::string key = "N/A::" + game.game_name;
-            auto it = appid_to_group.find(key);
-            if (it != appid_to_group.end()) {
-                grouped_games[it->second].push_back(i);
-            } else {
-                appid_to_group[key] = grouped_games.size();
-                grouped_games.push_back({i});
-            }
-        }
-    }
-
+    grouped_games = m_result->get_grouped();
     last_game_count = m_result->games.size();
 }
 
@@ -181,42 +159,42 @@ void GeneralTab::render_card(const Game& primary, const Game& active_game, const
     if(it == m_textures->end()) {
         ImGui::Separator();
     }
-    float button_y = w_siz.y - 42.0f;
+    float button_y = w_siz.y - 40.0f;
     // ImGui::SetCursorPos(ImVec2(0.0f, button_y));
-    float button_spacing = 8.0f;
-    float btn_width = 32.0f;
-    float total = btn_width * 4 + button_spacing * 3;
+    float button_spacing = 4.0f;
+    float btn_width = 62.0f;
+    float total = btn_width * 4 + button_spacing * 1.0;
     float start_x = (w_siz.x - total) * 0.5f;
     ImGui::SetCursorPos(ImVec2(start_x, button_y));
 
     ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(8.0f, 8.0f));
-    if(ImGui::Button("\uf0c7", ImVec2(32.0f, 32.0f))) {
+    if(ImGui::Button("Backup")) { //, ImVec2(32.0f, 32.0f))) {
         Features::backup_game(active_game, *m_config);
     }
     ImGui::SameLine(0.0f, button_spacing);
-    if(ImGui::Button("\uf2ea", ImVec2(32.0f, 32.0f))) {
+    if(ImGui::Button("Restore")) {//, ImVec2(32.0f, 32.0f))) {
         pending_restore_game = &active_game;
         open_restore_modal = true;
     }
-    ImGui::SameLine(0.0f, button_spacing);
-    if(ImGui::Button("\uf07b", ImVec2(32.0f, 32.0f))) {
-#ifdef __linux__
-        pid_t pid = fork();
-        if (pid == 0) {
-            execl("/usr/bin/xdg-open", "xdg-open", active_game.save_path.string().c_str(), nullptr);
-            _exit(1);
-        }
-#endif
-
-#ifdef _WIN32
-        std::string cmd = "explorer.exe \"" + active_game.save_path.string() + "\"";
-        ShellExecuteA(NULL, "open", active_game.save_path.string().c_str(), NULL, NULL, SW_SHOWDEFAULT);
-#endif
-    }
+    // ImGui::SameLine(0.0f, button_spacing);
+//     if(ImGui::Button("\uf07b", ImVec2(32.0f, 32.0f))) {
+// #ifdef __linux__
+//         pid_t pid = fork();
+//         if (pid == 0) {
+//             execl("/usr/bin/xdg-open", "xdg-open", active_game.save_path.string().c_str(), nullptr);
+//             _exit(1);
+//         }
+// #endif
+//
+// #ifdef _WIN32
+//         std::string cmd = "explorer.exe \"" + active_game.save_path.string() + "\"";
+//         ShellExecuteA(NULL, "open", active_game.save_path.string().c_str(), NULL, NULL, SW_SHOWDEFAULT);
+// #endif
+//     }
     ImGui::SameLine(0.0f, button_spacing);
     ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.8f, 0.2f, 0.2f, 1.0f));
     ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.9f, 0.3f, 0.3f, 1.0f));
-    if(ImGui::Button("\uf1f8", ImVec2(32.0f, 32.0f))) {
+    if(ImGui::Button("Delete")) { // ImVec2(32.0f, 32.0f))) {
         pending_delete_game = &active_game;
         open_delete_modal = true;
     }
