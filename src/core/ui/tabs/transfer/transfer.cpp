@@ -57,6 +57,9 @@ void TransferTab::render(const Fonts& fonts, const Detection::DetectionResult& r
     ImGui::PopFont();
     ImGui::Separator();
 
+    ImGui::BeginChild("##transfer_wrapper", ImVec2(0, ImGui::GetContentRegionAvail().y), false,
+                      ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
+
     float window_width = ImGui::GetWindowSize().x;
     float top_height = use_password_auth ? 290.0f : 370.0f;
     float half = (window_width - 20.0f) / 2.0f;
@@ -125,6 +128,16 @@ void TransferTab::render(const Fonts& fonts, const Detection::DetectionResult& r
         }
         ImGui::PopStyleColor(2);
     }
+    ImGui::SameLine();
+    if (connected) {
+        ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.3f, 1.0f, 0.3f, 1.0f));
+        ImGui::BulletText("Connected to %s", dest_addr.c_str());
+        ImGui::PopStyleColor();
+    } else {
+        ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f, 0.3f, 0.3f, 1.0f));
+        ImGui::BulletText("Not connected");
+        ImGui::PopStyleColor();
+    }
     ImGui::EndChild();
 
     ImGui::SameLine(0.0f, 10.0f);
@@ -153,16 +166,6 @@ void TransferTab::render(const Fonts& fonts, const Detection::DetectionResult& r
         config.sftp.auth_pw = use_password_auth;
         config.save();
         Notify::show_notification("Config Saved!", "Settings saved successfully!", 1500);
-    }
-    ImGui::SameLine();
-    if (connected) {
-        ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.3f, 1.0f, 0.3f, 1.0f));
-        ImGui::BulletText("Connected to %s", dest_addr.c_str());
-        ImGui::PopStyleColor();
-    } else {
-        ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f, 0.3f, 0.3f, 1.0f));
-        ImGui::BulletText("Not connected");
-        ImGui::PopStyleColor();
     }
     ImGui::EndChild();
     ImGui::Dummy(ImVec2(0, 8.0f));
@@ -247,7 +250,6 @@ void TransferTab::render(const Fonts& fonts, const Detection::DetectionResult& r
     ImGui::EndChild();
 
     ImGui::SameLine(0.0f, 10.0f);
-    ImGui::SameLine();
 
     ImGui::BeginChild("##transfer_remote", ImVec2(half, bottom_height), true);
     ImGui::PushFont(fonts.medium);
@@ -314,5 +316,6 @@ void TransferTab::render(const Fonts& fonts, const Detection::DetectionResult& r
             ImGui::EndListBox();
         }
     }
+    ImGui::EndChild();
     ImGui::EndChild();
 }
