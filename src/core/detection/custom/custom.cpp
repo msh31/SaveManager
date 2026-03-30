@@ -1,5 +1,4 @@
 #include "custom.hpp"
-#include "core/helpers/custom_games/custom_games.hpp"
 
 void CustomDetector::find_saves(const fs::path& prefix, std::vector<Game>& out_games) const {
     if(!fs::exists(prefix)) {

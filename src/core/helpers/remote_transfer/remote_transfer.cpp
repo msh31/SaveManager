@@ -2,8 +2,6 @@
 #include "core/config/config.hpp"
 #include "core/globals.hpp"
 #include "core/logger/logger.hpp"
-#include <fstream>
-#include <libssh2_sftp.h>
 
 //https://libssh2.org/examples/sftp_write.html
 RemoteTransfer::RemoteTransfer() {}

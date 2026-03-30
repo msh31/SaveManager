@@ -1,5 +1,4 @@
 #pragma once
-
 namespace fs = std::filesystem;
 
 namespace paths {

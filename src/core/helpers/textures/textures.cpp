@@ -2,8 +2,6 @@
 #include "textures.hpp"
 #include "core/helpers/paths.hpp"
 #include "core/logger/logger.hpp"
-#include "imgui.h"
-#include <cstdio>
 
 #include <glad/glad.h>
 #include "../external/stb/stb_image.h"

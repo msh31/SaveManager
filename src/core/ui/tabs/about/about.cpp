@@ -1,5 +1,4 @@
 #include "about.hpp"
-#include "core/globals.hpp"
 
 void AboutTab::render(const Fonts& fonts) {
     ImGui::NewLine();

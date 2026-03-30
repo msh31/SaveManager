@@ -1,12 +1,8 @@
 #include "config.hpp"
-#include "core/helpers/paths.hpp"
-#include "core/network/network.hpp"
 #include "core/logger/logger.hpp"
-#include "../../external/json.hpp"
 #include "core/helpers/translations/steamids.hpp"
 #include "core/helpers/translations/ubi_translations.hpp"
-
-#include <fstream>
+#include "../../external/json.hpp"
 
 using json = nlohmann::json;
 

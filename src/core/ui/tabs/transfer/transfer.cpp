@@ -1,6 +1,4 @@
 #include "transfer.hpp"
-#include "core/globals.hpp"
-#include "core/helpers/remote_transfer/remote_transfer.hpp"
 #include "core/ui/notifications/notification.hpp"
 #include "core/features/features.hpp"
 #include "core/config/config.hpp"

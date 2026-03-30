@@ -1,5 +1,7 @@
 #include "logger.hpp"
 
+//TODO: REFACTOR
+
 logger::logger() {
 	if (fileLoggingEnabled) {
 		logFile.open(logFilePath, std::ios::app);

@@ -6,9 +6,6 @@
 #include "core/config/config.hpp"
 #include "core/logger/logger.hpp"
 
-#include "imgui.h"
-#include "imgui/misc/cpp/imgui_stdlib.h"
-
 void SettingsTab::render(const Fonts& fonts, Config& config) {
     if (update_future.valid() && update_future.wait_for(std::chrono::seconds(0)) == std::future_status::ready) {
         bool result = update_future.get();

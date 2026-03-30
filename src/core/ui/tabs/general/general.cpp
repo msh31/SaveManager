@@ -1,8 +1,6 @@
 #include "general.hpp"
-#include "core/globals.hpp"
 #include "core/ui/notifications/notification.hpp"
 #include "core/features/features.hpp"
-#include "imgui.h"
 
 void GeneralTab::on_result_changed() {
     grouped_games = {};

@@ -16,6 +16,7 @@
 #include <future>
 #include <regex>
 #include <optional>
+#include <unordered_set>
 
 #include "core/globals.hpp"
 
