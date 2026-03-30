@@ -15,7 +15,7 @@ struct GeneralTab {
 
     void on_result_changed();
     void render_cards();
-    void render_card(const Game& primary, const Game& active_game, const std::vector<int>& group, int gi);
+    void render_card(const Game& primary, const Game& active_game, const std::vector<int>& group, int gi, float image_height);
     void render_modals();
 
     size_t last_game_count = 0;
@@ -27,5 +27,4 @@ struct GeneralTab {
 
     int spinner_frame = 0;
     const char* spinner = "|/-\\";
-    static constexpr float image_height = 330.0f;
 };

@@ -57,16 +57,18 @@ std::optional<Detection::DetectionResult> GeneralTab::render(const Fonts& fonts,
 
 void GeneralTab::render_cards() {
     float available_width = ImGui::GetContentRegionAvail().x;
-    float card_height = 380.0f;
     float padding = 10.0f;
-    float min_card_width = 200.0f;
+    float min_card_width = 220.0f;
     float max_card_width = 300.0f;
-    int min_columns = 3;
+    int min_columns = 2;
 
     int columns = (std::max)(min_columns, (int)(available_width / (min_card_width + padding)));
     float card_width = (available_width - (padding * (columns - 1))) / columns;
     card_width = (std::min)(card_width, max_card_width);
     columns = (std::max)(min_columns, (int)((available_width + padding) / (card_width + padding)));
+
+    float image_height = card_width * (340.0f / 215.0f);
+    float card_height = image_height + 60.0f;
 
     if(!grouped_games.empty()) {
         for (int gi = 0; gi < (int)grouped_games.size(); gi++) {
@@ -90,7 +92,7 @@ void GeneralTab::render_cards() {
             ImGui::PushStyleColor(ImGuiCol_Border, ImVec4(0.776f, 0.380f, 0.247f, 1.0f));
             ImGui::BeginChild(card_id.c_str(), ImVec2(card_width, card_height), true,
                               ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
-            render_card(*primary, active_game, group, gi);
+            render_card(*primary, active_game, group, gi, image_height);
             ImGui::EndChild();
             ImGui::PopStyleColor();
         }
@@ -100,7 +102,7 @@ void GeneralTab::render_cards() {
     }
 }
 
-void GeneralTab::render_card(const Game& primary, const Game& active_game, const std::vector<int>& group, int gi) {
+void GeneralTab::render_card(const Game& primary, const Game& active_game, const std::vector<int>& group, int gi, float image_height) {
     auto w_pos = ImGui::GetWindowPos();
     auto w_siz = ImGui::GetWindowSize();
 
@@ -157,24 +159,25 @@ void GeneralTab::render_card(const Game& primary, const Game& active_game, const
     if(it == m_textures->end()) {
         ImGui::Separator();
     }
-    float button_y = w_siz.y - 40.0f;
-    // ImGui::SetCursorPos(ImVec2(0.0f, button_y));
+    float button_y = w_siz.y - 45.0f;
     float button_spacing = 4.0f;
-    float btn_width = 62.0f;
-    float total = btn_width * 4 + button_spacing * 1.0;
-    float start_x = (w_siz.x - total) * 0.5f;
+    // // float btn_width = 70.0f;
+    float padding = ImGui::GetStyle().WindowPadding.x;
+    // float available = w_siz.x - padding * 2 - ImGui::GetStyle().ChildBorderSize * 2;
+    // float btn_width = (available - button_spacing * 2) / 3.0f;
+    float btn_width = (w_siz.x - padding * 2 - button_spacing * 2) / 3.0f;
+    float start_x = (w_siz.x - (btn_width * 3 + button_spacing * 2)) * 0.5f;
     ImGui::SetCursorPos(ImVec2(start_x, button_y));
 
-    ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(8.0f, 8.0f));
-    if(ImGui::Button("Backup")) { //, ImVec2(32.0f, 32.0f))) {
+    ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(4.0f, 4.0f));
+    if(ImGui::Button("Backup", ImVec2(btn_width, 0))) { 
         Features::backup_game(active_game, *m_config);
     }
     ImGui::SameLine(0.0f, button_spacing);
-    if(ImGui::Button("Restore")) {//, ImVec2(32.0f, 32.0f))) {
+    if(ImGui::Button("Restore", ImVec2(btn_width, 0))) {
         pending_restore_game = &active_game;
         open_restore_modal = true;
     }
-    // ImGui::SameLine(0.0f, button_spacing);
 //     if(ImGui::Button("\uf07b", ImVec2(32.0f, 32.0f))) {
 // #ifdef __linux__
 //         pid_t pid = fork();
@@ -192,7 +195,7 @@ void GeneralTab::render_card(const Game& primary, const Game& active_game, const
     ImGui::SameLine(0.0f, button_spacing);
     ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.8f, 0.2f, 0.2f, 1.0f));
     ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.9f, 0.3f, 0.3f, 1.0f));
-    if(ImGui::Button("Delete")) { // ImVec2(32.0f, 32.0f))) {
+    if(ImGui::Button("Delete", ImVec2(btn_width, 0))) { 
         pending_delete_game = &active_game;
         open_delete_modal = true;
     }
