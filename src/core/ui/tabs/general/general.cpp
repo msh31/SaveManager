@@ -58,7 +58,7 @@ std::optional<Detection::DetectionResult> GeneralTab::render(const Fonts& fonts,
 void GeneralTab::render_cards() {
     float available_width = ImGui::GetContentRegionAvail().x;
     float padding = 10.0f;
-    float min_card_width = 220.0f;
+    float min_card_width = 230.0f;
     float max_card_width = 300.0f;
     int min_columns = 2;
 
@@ -161,10 +161,7 @@ void GeneralTab::render_card(const Game& primary, const Game& active_game, const
     }
     float button_y = w_siz.y - 45.0f;
     float button_spacing = 4.0f;
-    // // float btn_width = 70.0f;
     float padding = ImGui::GetStyle().WindowPadding.x;
-    // float available = w_siz.x - padding * 2 - ImGui::GetStyle().ChildBorderSize * 2;
-    // float btn_width = (available - button_spacing * 2) / 3.0f;
     float btn_width = (w_siz.x - padding * 2 - button_spacing * 2) / 3.0f;
     float start_x = (w_siz.x - (btn_width * 3 + button_spacing * 2)) * 0.5f;
     ImGui::SetCursorPos(ImVec2(start_x, button_y));
@@ -178,20 +175,7 @@ void GeneralTab::render_card(const Game& primary, const Game& active_game, const
         pending_restore_game = &active_game;
         open_restore_modal = true;
     }
-//     if(ImGui::Button("\uf07b", ImVec2(32.0f, 32.0f))) {
-// #ifdef __linux__
-//         pid_t pid = fork();
-//         if (pid == 0) {
-//             execl("/usr/bin/xdg-open", "xdg-open", active_game.save_path.string().c_str(), nullptr);
-//             _exit(1);
-//         }
-// #endif
-//
-// #ifdef _WIN32
-//         std::string cmd = "explorer.exe \"" + active_game.save_path.string() + "\"";
-//         ShellExecuteA(NULL, "open", active_game.save_path.string().c_str(), NULL, NULL, SW_SHOWDEFAULT);
-// #endif
-//     }
+
     ImGui::SameLine(0.0f, button_spacing);
     ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.8f, 0.2f, 0.2f, 1.0f));
     ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.9f, 0.3f, 0.3f, 1.0f));
@@ -201,6 +185,22 @@ void GeneralTab::render_card(const Game& primary, const Game& active_game, const
     }
     ImGui::PopStyleColor(2);
     ImGui::PopStyleVar();
+
+    if (ImGui::BeginPopupContextWindow()) {
+        if (ImGui::MenuItem("Open Path")) {
+#ifdef __linux__
+            pid_t pid = fork();
+            if (pid == 0) {
+                execl("/usr/bin/xdg-open", "xdg-open", active_game.save_path.string().c_str(), nullptr);
+                _exit(1);
+            }
+#endif
+#ifdef _WIN32
+            ShellExecuteA(NULL, "open", active_game.save_path.string().c_str(), NULL, NULL, SW_SHOWDEFAULT);
+#endif
+        }
+        ImGui::EndPopup();
+    }
 }
 
 void GeneralTab::render_modals() {
