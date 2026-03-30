@@ -213,7 +213,7 @@ void TransferTab::render(const Fonts& fonts, const Detection::DetectionResult& r
     if (!game_names.empty()) {
         if (state.selected_game_idx >= (int)game_names.size()) state.selected_game_idx = 0;
 
-        ImGui::SetNextItemWidth(250.0f);
+        ImGui::SetNextItemWidth(-FLT_MIN);
         if (ImGui::BeginCombo("##game", game_names[state.selected_game_idx].c_str())) {
             for (int i = 0; i < (int)game_names.size(); i++) {
                 bool is_selected = (state.selected_game_idx == i);
