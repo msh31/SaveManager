@@ -18,6 +18,7 @@ std::optional<Detection::DetectionResult> GeneralTab::render(const Fonts& fonts,
     m_textures = &texture_id;
     m_config = &config;
     m_state = &state;
+    m_fonts = &fonts;
 
     spinner_frame++;
 
@@ -68,7 +69,7 @@ void GeneralTab::render_cards() {
     columns = (std::max)(min_columns, (int)((available_width + padding) / (card_width + padding)));
 
     float image_height = card_width * (340.0f / 215.0f);
-    float card_height = image_height + 60.0f;
+    float card_height = image_height + 50.0f;
 
     if(!grouped_games.empty()) {
         for (int gi = 0; gi < (int)grouped_games.size(); gi++) {
@@ -159,14 +160,17 @@ void GeneralTab::render_card(const Game& primary, const Game& active_game, const
     if(it == m_textures->end()) {
         ImGui::Separator();
     }
-    float button_y = w_siz.y - 45.0f;
+
+    ImGui::PushFont(m_fonts->small);
+    float btn_height = ImGui::GetFrameHeight(); 
+    float button_y = w_siz.y - btn_height - 10.5f;
     float button_spacing = 4.0f;
     float padding = ImGui::GetStyle().WindowPadding.x;
     float btn_width = (w_siz.x - padding * 2 - button_spacing * 2) / 3.0f;
     float start_x = (w_siz.x - (btn_width * 3 + button_spacing * 2)) * 0.5f;
     ImGui::SetCursorPos(ImVec2(start_x, button_y));
+    ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(3.0f, 3.0f));
 
-    ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(4.0f, 4.0f));
     if(ImGui::Button("Backup", ImVec2(btn_width, 0))) { 
         Features::backup_game(active_game, *m_config);
     }
@@ -185,6 +189,7 @@ void GeneralTab::render_card(const Game& primary, const Game& active_game, const
     }
     ImGui::PopStyleColor(2);
     ImGui::PopStyleVar();
+    ImGui::PopFont();
 
     if (ImGui::BeginPopupContextWindow()) {
         if (ImGui::MenuItem("Open Path")) {

@@ -27,4 +27,5 @@ struct GeneralTab {
 
     int spinner_frame = 0;
     const char* spinner = "|/-\\";
+    const Fonts* m_fonts = nullptr;
 };
