@@ -47,7 +47,7 @@ bool Config::init() {
 
     if(!fs::exists(paths::blacklist())) {
         std::ofstream f(paths::blacklist());
-        f << "[]";
+        f << R"(["The Crew Motorfest"])"; //kinda sucks
     }
 
     if(!fs::exists(paths::custom_games())) {
