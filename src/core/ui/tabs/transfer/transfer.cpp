@@ -95,10 +95,13 @@ void TransferTab::render(const Fonts& fonts, const Detection::DetectionResult& r
     } else {
         ImGui::SetNextItemWidth(250.0f);
         ImGui::InputText("Public key", &pubkey);
+        ImGui::SetItemTooltip("Path to your public ssh key in full");
         ImGui::SetNextItemWidth(250.0f);
         ImGui::InputText("Private key", &privkey);
+        ImGui::SetItemTooltip("Path to your private ssh key in full");
         ImGui::SetNextItemWidth(250.0f);
-        ImGui::InputText("Key passphrase", &key_passphrase, ImGuiInputTextFlags_Password);
+        ImGui::InputText("Key passphrase (Optional)", &key_passphrase, ImGuiInputTextFlags_Password);
+        ImGui::SetItemTooltip("Your passphrase for the ssh key");
     }
 
     // ImGui::Dummy(ImVec2(0.0f, 10.0f));

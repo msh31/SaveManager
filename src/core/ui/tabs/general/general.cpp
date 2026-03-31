@@ -43,6 +43,7 @@ std::optional<Detection::DetectionResult> GeneralTab::render(const Fonts& fonts,
                 return Detection::find_saves(config);
             });
         }
+        ImGui::SetItemTooltip("Re-runs the detection logic to find new saves");
     } else {
         char spin_char = spinner[(spinner_frame / 10) % 4];
 
@@ -174,11 +175,14 @@ void GeneralTab::render_card(const Game& primary, const Game& active_game, const
     if(ImGui::Button("Backup", ImVec2(btn_width, 0))) { 
         Features::backup_game(active_game, *m_config);
     }
+    ImGui::SetItemTooltip("Create a save backup for this game");
+    
     ImGui::SameLine(0.0f, button_spacing);
     if(ImGui::Button("Restore", ImVec2(btn_width, 0))) {
         pending_restore_game = &active_game;
         open_restore_modal = true;
     }
+    ImGui::SetItemTooltip("Restore a save backup for this game");
 
     ImGui::SameLine(0.0f, button_spacing);
     ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.8f, 0.2f, 0.2f, 1.0f));
@@ -187,6 +191,7 @@ void GeneralTab::render_card(const Game& primary, const Game& active_game, const
         pending_delete_game = &active_game;
         open_delete_modal = true;
     }
+    ImGui::SetItemTooltip("Delete a save backup for this game");
     ImGui::PopStyleColor(2);
     ImGui::PopStyleVar();
     ImGui::PopFont();

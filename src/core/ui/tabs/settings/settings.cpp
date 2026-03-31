@@ -83,6 +83,7 @@ void SettingsTab::render(const Fonts& fonts, Config& config) {
         }
         Notify::show_notification("Translations", "All translations have been updated!", 2500);
     }
+    ImGui::SetItemTooltip("Forces a new download of the ubisoft id and steam id translations");
 
     ImGui::Separator();
 
