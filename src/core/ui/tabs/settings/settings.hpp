@@ -16,12 +16,15 @@ struct SettingsTab {
     std::string new_game_appid;
 
     std::future<bool> update_future;
-    std::future<bool> update_t_future;
-    bool ubi_ok = false, steam_ok = false;
+    std::future<std::pair<bool, bool>> update_t_future;
 
     std::string backup_path;
     std::string steam_path;
     std::string lutris_path;
     std::string heroic_path;
     bool paths_initialized = false;
+
+    int spinner_frame = 0;
+    const char* spinner = "|/-\\";
+    const Fonts* m_fonts = nullptr;
 };

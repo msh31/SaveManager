@@ -8,6 +8,8 @@
 #include "core/logger/logger.hpp"
 
 void SettingsTab::render(const Fonts& fonts, Config& config) {
+    spinner_frame++;
+
     if (update_future.valid() && update_future.wait_for(std::chrono::seconds(0)) == std::future_status::ready) {
         bool result = update_future.get();
 
@@ -19,19 +21,18 @@ void SettingsTab::render(const Fonts& fonts, Config& config) {
     }
 
     if (update_t_future.valid() && update_t_future.wait_for(std::chrono::seconds(0)) == std::future_status::ready) {
-        bool result = update_t_future.get();
+        auto [ubi, steam] = update_t_future.get();
 
-        if(result) {
+        if(!ubi) {
+            get_logger().error("Failed to download Ubisoft translations");
+            Notify::show_notification("Translations", "Failed to update translations for ubisoft", 2500);
+        }
+        if(!steam) {
+            get_logger().error("Failed to download Steam ID data");
+            Notify::show_notification("Translations", "Failed to update translations for steam appids", 2500);
+        }
+        if(steam && ubi) {
             Notify::show_notification("Translations", "All translations have been updated!", 2500);
-        } else {
-            if(!ubi_ok) {
-                get_logger().error("Failed to download Ubisoft translations");
-                Notify::show_notification("Translations", "Failed to update translations for ubisoft", 2500);
-            }
-            if(!steam_ok) {
-                get_logger().error("Failed to download Steam ID data");
-                Notify::show_notification("Translations", "Failed to update translations for steam appids", 2500);
-            }
         }
     }
 
@@ -84,31 +85,34 @@ void SettingsTab::render(const Fonts& fonts, Config& config) {
     }
 
     ImGui::Separator();
-
-    ImGui::BeginDisabled(is_checking);
-    if(ImGui::Button("Check for updates")) {
+    if(!is_checking) {
+        if(ImGui::Button("Check for updates")) {
             update_future = std::async(std::launch::async, []() {
                 return Network::is_update_available();
             });
+        }
+    } else {
+        char spin_char = spinner[(spinner_frame / 10) % 4];
+
+        std::string loading_text = std::string("Checking for updates...") + spin_char;
+        ImGui::Text("%s", loading_text.c_str());
     }
-    ImGui::EndDisabled();
     ImGui::SameLine();
-    if(ImGui::Button("Update translations")) {
-        ubi_ok = false;
-        steam_ok = false;
+    if(!is_checking_t) {
+        if(ImGui::Button("Update translations")) {
+            update_t_future = std::async(std::launch::async, [this]() -> std::pair<bool, bool> {
+                bool ubi = Network::download_file(ubi_translation_url, paths::ubi_translations().string());
+                bool steam = Network::download_file(steam_translation_url, paths::steam_appids().string());
+                return {ubi, steam};
+            });
+        }
+        ImGui::SetItemTooltip("Forces a new download of the ubisoft id and steam id translations");
+    } else {
+        char spin_char = spinner[(spinner_frame / 10) % 4];
 
-        update_t_future = std::async(std::launch::async, [this]() {
-            if(Network::download_file(ubi_translation_url, paths::ubi_translations().string())) {
-                ubi_ok = true;
-            }
-            if(Network::download_file(steam_translation_url, paths::steam_appids().string())) {
-                steam_ok = true;
-            }
-
-            return ubi_ok && steam_ok;
-        });
+        std::string loading_text = std::string("Updating translations...") + spin_char;
+        ImGui::Text("%s", loading_text.c_str());
     }
-    ImGui::SetItemTooltip("Forces a new download of the ubisoft id and steam id translations");
     ImGui::SameLine();
     if(ImGui::Button("Refresh Cache")) {
         std::error_code ec;
