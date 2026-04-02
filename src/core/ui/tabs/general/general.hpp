@@ -25,6 +25,8 @@ struct GeneralTab {
     std::vector<std::vector<int>> grouped_games;
     std::future<Detection::DetectionResult> refresh_future;
 
+    std::string label_input = "My awesome savegame";
+
     int spinner_frame = 0;
     const char* spinner = "|/-\\";
     const Fonts* m_fonts = nullptr;

@@ -226,11 +226,20 @@ void GeneralTab::render_modals() {
         ImGui::SetNextItemWidth(550.0f);
         if(ImGui::BeginListBox("##state.backups")) {
             for(int i = 0; i < m_state->backups.size(); i++) {
-                if(ImGui::Selectable(m_state->backups[i].filename().string().c_str(), m_state->selected_backup_idx == i)) {
+                auto labels = Features::load_labels(*pending_restore_game, *m_config);
+                auto it = labels.find(m_state->backups[i].filename().string());
+                std::string display = (it != labels.end()) ? it->second + " (" + m_state->backups[i].filename().string() + ")" : m_state->backups[i].filename().string();
+
+                if(ImGui::Selectable(display.c_str(), m_state->selected_backup_idx == i)) {
                     m_state->selected_backup_idx = i;
                 }
             }
             ImGui::EndListBox();
+
+            ImGui::InputText("Backup Label", &label_input);
+            if(ImGui::Button("Save Label")) {
+                Features::save_label(*pending_restore_game, *m_config, m_state->backups[m_state->selected_backup_idx].filename().string(), label_input);
+            }
         }
 
         if(ImGui::Button("Restore") && !m_state->backups.empty()) {

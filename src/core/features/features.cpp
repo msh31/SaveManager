@@ -1,9 +1,12 @@
 #include "features.hpp"
+#include "core/helpers/paths.hpp"
 #include "core/ui/notifications/notification.hpp"
 #include "core/logger/logger.hpp"
 #include "core/config/config.hpp"
 #include "core/helpers/utils.hpp"
 #include "core/helpers/zip_archive/zip_archive.hpp"
+#include "json.hpp"
+using json = nlohmann::json;
 
 void Features::backup_game(const Game& game, Config& config) {
     get_logger().info("creating backup of: " + game.game_name);
@@ -14,7 +17,13 @@ void Features::backup_game(const Game& game, Config& config) {
     }
 
     fs::path zip_name = game_backup_dir / construct_backup_name(game);
-    create_backup(zip_name, game);
+
+    ZipArchive archive(MODE_CREATE_ARCHIVE, zip_name.u8string());
+    if(!archive.add_to_archive(game)) {
+        Notify::show_notification("Backup Creation", "Failed to create backup! Please refer to the logfile!", 2000);
+    } else {
+        Notify::show_notification("Backup created!", "The backup for: " + game.game_name + " has been created!", 2000);
+    }
 }
 
 std::vector<fs::path> Features::get_backups(const Game& game, Config& config) {
@@ -34,16 +43,6 @@ std::vector<fs::path> Features::get_backups(const Game& game, Config& config) {
     }
 
     return backups;
-}
-
-// PRIVATE 
-void Features::create_backup(const fs::path& name, const Game& selected_game) {
-    ZipArchive archive(MODE_CREATE_ARCHIVE, name.u8string());
-    if(!archive.add_to_archive(selected_game)) {
-        Notify::show_notification("Backup Creation", "Failed to create backup! Please refer to the logfile!", 2000);
-    } else {
-        Notify::show_notification("Backup created!", "The backup for: " + selected_game.game_name + " has been created!", 2000);
-    }
 }
 
 void Features::restore_backup(const fs::path& name, const Game& selected_game) {
@@ -69,4 +68,44 @@ std::string Features::construct_backup_name(const Game& game, const std::string&
     }
 
     return "backup_" + filename + "_" + std::string(time_buf) + ".zip";
+}
+
+std::unordered_map<std::string, std::string> Features::load_labels(const Game& game, Config& config) {
+    json data;
+    std::unordered_map<std::string, std::string> backup_labels;
+    std::string file_name = config.settings.backup_path / game.game_name / "labels.json";
+    std::ifstream file(file_name.c_str());
+
+    if(!fs::exists(file_name)) {
+        get_logger().warning("Labels file not found!");
+        return {};
+    }
+
+    if (file.is_open()) {
+        data = json::parse(file);
+
+        for (const auto& entry : data.items()) {
+            backup_labels[entry.key()] = entry.value().get<std::string>();
+        }
+        return backup_labels;
+    } else {
+        get_logger().error("Failed to open labels to load it!");
+    }
+
+    return {};
+}
+
+void Features::save_label(const Game& game, Config& config, const std::string& filename, const std::string& label) {
+    std::string file_name = config.settings.backup_path / game.game_name / "labels.json";
+    auto labels = load_labels(game, config);
+
+    labels[filename] = label;
+
+    json data;
+    for (const auto& [key, value] : labels) {
+        data[key] = value;
+    }
+
+    std::ofstream out(file_name);
+    out << data.dump(4);
 }
