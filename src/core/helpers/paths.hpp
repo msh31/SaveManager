@@ -46,6 +46,8 @@ inline fs::path documents_dir() {
 }
 #endif
 
+inline fs::path log_file() { return config_dir() / "savemanager.log"; }
+
 inline fs::path ubi_translations() { return config_dir() / "ubi_translations.json"; }
 inline fs::path steam_appids() { return config_dir() / "steamids.json"; }
 inline fs::path blacklist() { return config_dir() / "game_blacklist.json"; }
