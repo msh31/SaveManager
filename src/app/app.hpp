@@ -18,6 +18,7 @@ public:
 
     GLFWwindow* window = nullptr;
     std::future<void> are_we_ready;
+    bool refresh_requested;
 private:
     bool setup_opengl();
     bool setup_imgui();

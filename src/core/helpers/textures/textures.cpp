@@ -1,3 +1,4 @@
+#include <filesystem>
 #define STB_IMAGE_IMPLEMENTATION
 #include "textures.hpp"
 #include "core/helpers/paths.hpp"
@@ -25,6 +26,10 @@ GLuint Textures::upload_image_to_gpu(const ImageData& data) {
 }
 
 Textures::ImageData Textures::load_image(const std::string& appid) {
+    if(!fs::exists(paths::cache_dir())) {
+        fs::create_directory(paths::cache_dir());
+    }
+
     Network::download_game_image(appid); //this silently fails, but its fine for now.
 
     auto filename = paths::cache_dir() / (appid + ".jpg");

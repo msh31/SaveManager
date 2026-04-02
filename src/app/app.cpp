@@ -93,6 +93,7 @@ void App::render_ui() {
             ImGui::EndTabItem();
         }
         if (ImGui::BeginTabItem("Settings"))  {
+            settings_tab.m_refresh_requested = &refresh_requested;
             settings_tab.render(fonts, config);
             ImGui::EndTabItem();
         }
@@ -203,6 +204,26 @@ bool App::setup_imgui() {
 
 void App::render() {
     glClear(GL_COLOR_BUFFER_BIT);
+
+    if(refresh_requested) {
+        // get_logger().debug("refresh request received!");
+        for (auto it = game_textures.begin(); it != game_textures.end(); ++it) {
+            glDeleteTextures(1, &it->second);
+        }
+        game_textures.clear();
+        texture_futures.clear();
+
+        for (auto& game : d_result.games) {
+            if(game.appid == "N/A") {
+                continue;
+            }
+
+            texture_futures.push_back(std::async(std::launch::async, Textures::load_image, game.appid));
+            // get_logger().info("Launched texture futures after refresh: " + std::to_string(texture_futures.size()));
+        }
+        refresh_requested = false;
+        // get_logger().debug("refresh request completed!");
+    }
 
     if(!initialized && are_we_ready.valid() && are_we_ready.wait_for(std::chrono::seconds(0)) == std::future_status::ready) {
         are_we_ready.get();

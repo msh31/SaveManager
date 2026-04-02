@@ -1,6 +1,7 @@
 #include "settings.hpp"
 #include "core/helpers/blacklist/blacklist.hpp"
 #include "core/helpers/custom_games/custom_games.hpp"
+#include "core/helpers/paths.hpp"
 #include "core/ui/notifications/notification.hpp"
 #include "core/network/network.hpp"
 #include "core/config/config.hpp"
@@ -84,6 +85,17 @@ void SettingsTab::render(const Fonts& fonts, Config& config) {
         Notify::show_notification("Translations", "All translations have been updated!", 2500);
     }
     ImGui::SetItemTooltip("Forces a new download of the ubisoft id and steam id translations");
+    ImGui::SameLine();
+    if(ImGui::Button("Refresh Cache")) {
+        std::error_code ec;
+        fs::remove_all(paths::cache_dir(), ec);
+        *m_refresh_requested = true;
+
+        if (ec) {
+            get_logger().warning(ec.message());
+        }
+    }
+    ImGui::SetItemTooltip("Deletes cached images and re-downloads them.");
 
     ImGui::Separator();
 
