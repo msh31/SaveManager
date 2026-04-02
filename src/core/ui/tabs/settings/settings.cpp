@@ -6,6 +6,7 @@
 #include "core/network/network.hpp"
 #include "core/config/config.hpp"
 #include "core/logger/logger.hpp"
+#include "imgui.h"
 
 void SettingsTab::render(const Fonts& fonts, Config& config) {
     spinner_frame++;
@@ -39,10 +40,20 @@ void SettingsTab::render(const Fonts& fonts, Config& config) {
     bool is_checking = update_future.valid() && update_future.wait_for(std::chrono::seconds(0)) != std::future_status::ready;
     bool is_checking_t = update_t_future.valid() && update_t_future.wait_for(std::chrono::seconds(0)) != std::future_status::ready;
 
+    float half = (ImGui::GetWindowSize().x - 20.0f) / 2.0f;
+
     ImGui::PushFont(fonts.header);
     ImGui::Text("Settings");
     ImGui::PopFont();
 
+    ImGui::BeginChild("##appearance_support", ImVec2(half, 275.0f), true,
+                      ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
+
+    ImGui::PushFont(fonts.medium);
+    ImGui::Text("Appearance & Launchers");
+    ImGui::PopFont();
+
+    ImGui::Dummy(ImVec2(0.0f, 4.0f));
     ImGui::Checkbox("Dark Mode", &config.settings.dark_mode);
     ImGui::Separator();
    
@@ -54,35 +65,6 @@ void SettingsTab::render(const Fonts& fonts, Config& config) {
     ImGui::Checkbox("Rockstar Games Launcher", &config.settings.rsg_enabled);
     ImGui::SameLine();
     ImGui::Checkbox("Unreal Games (.sav saves)", &config.settings.unreal_enabled);
-    ImGui::Separator();
-
-    ImGui::PushFont(fonts.medium);
-    ImGui::Text("Paths");
-    ImGui::PopFont();
-
-    if (!paths_initialized) {
-        backup_path = config.settings.backup_path.string();
-        steam_path = config.settings.steam_path;
-        lutris_path = config.settings.lutris_path;
-        heroic_path = config.settings.heroic_path;
-        paths_initialized = true;
-    }
-
-    ImGui::InputText("Backup path", &backup_path);
-    ImGui::InputText("Steam path", &steam_path);
-    ImGui::InputText("Lutris path", &lutris_path);
-    ImGui::InputText("Heroic path", &heroic_path);
-
-    ImGui::Separator();
-
-    if (ImGui::Button("Save")) {
-        config.settings.backup_path = fs::path(backup_path).string();
-        config.settings.steam_path = steam_path;
-        config.settings.lutris_path = lutris_path;
-        config.settings.heroic_path = heroic_path;
-        config.save();
-        Notify::show_notification("Config Saved!", "Settings saved successfully!", 1500);
-    }
 
     ImGui::Separator();
     if(!is_checking) {
@@ -124,8 +106,43 @@ void SettingsTab::render(const Fonts& fonts, Config& config) {
         }
     }
     ImGui::SetItemTooltip("Deletes cached images and re-downloads them.");
+    ImGui::EndChild();
+
+    ImGui::SameLine(0.0f, 10.0f);
+
+    ImGui::BeginChild("##paths", ImVec2(half, 275.0f), true,
+                      ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
+    ImGui::PushFont(fonts.medium);
+    ImGui::Text("Paths");
+    ImGui::PopFont();
+
+    if (!paths_initialized) {
+        backup_path = config.settings.backup_path.string();
+        steam_path = config.settings.steam_path;
+        lutris_path = config.settings.lutris_path;
+        heroic_path = config.settings.heroic_path;
+        paths_initialized = true;
+    }
+
+    ImGui::InputText("Backup path", &backup_path);
+    ImGui::InputText("Steam path", &steam_path);
+    ImGui::InputText("Lutris path", &lutris_path);
+    ImGui::InputText("Heroic path", &heroic_path);
 
     ImGui::Separator();
+
+    if (ImGui::Button("Save")) {
+        config.settings.backup_path = fs::path(backup_path).string();
+        config.settings.steam_path = steam_path;
+        config.settings.lutris_path = lutris_path;
+        config.settings.heroic_path = heroic_path;
+        config.save();
+        Notify::show_notification("Config Saved!", "Settings saved successfully!", 1500);
+    }
+    ImGui::EndChild();
+
+    ImGui::BeginChild("##blacklisted_games", ImVec2(half, 310.0f), true,
+                      ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
 
     ImGui::PushFont(fonts.medium);
     ImGui::Text("Blacklisted Games");
@@ -144,6 +161,8 @@ void SettingsTab::render(const Fonts& fonts, Config& config) {
             }
         }
         ImGui::EndChild();
+    } else {
+        ImGui::EndChild();
     }
 
     ImGui::InputText("##blacklist_input", &blacklist_input);
@@ -155,6 +174,12 @@ void SettingsTab::render(const Fonts& fonts, Config& config) {
             blacklist_input.clear();
         }
     }
+    ImGui::EndChild();
+
+    ImGui::SameLine(0.0f, 10.0f);
+
+    ImGui::BeginChild("##custom_games", ImVec2(half, 310.0f), true,
+                      ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
 
     ImGui::PushFont(fonts.medium);
     ImGui::Text("Custom Games");
@@ -173,6 +198,8 @@ void SettingsTab::render(const Fonts& fonts, Config& config) {
             }
         }
         ImGui::EndChild();
+    } else {
+    ImGui::EndChild();
     }
 
     ImGui::InputText("Game Name", &new_game_name);
@@ -193,4 +220,5 @@ void SettingsTab::render(const Fonts& fonts, Config& config) {
             new_game_appid.clear();
         }
     }
+    ImGui::EndChild();
 }
