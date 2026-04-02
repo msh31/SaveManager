@@ -57,7 +57,7 @@ include-directories = [
 ]
 precompile-headers = ["src/pch.hpp"]
 link-libraries = ["CURL::libcurl", "glfw", "libzip::zip", "libssh2::libssh2", "OpenSSL::Crypto"]
-compile-features = ["cxx_std_17"]
+compile-features = ["cxx_std_23"]
 
 [target.savemanager.windows]
 link-libraries = ["ws2_32", "shell32"]

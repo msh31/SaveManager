@@ -77,7 +77,6 @@ std::unordered_map<std::string, std::string> Features::load_labels(const Game& g
     std::ifstream file(file_name.c_str());
 
     if(!fs::exists(file_name)) {
-        get_logger().warning("Labels file not found!");
         return {};
     }
 

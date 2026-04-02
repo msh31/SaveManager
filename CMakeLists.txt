@@ -117,7 +117,7 @@ target_sources(savemanager PRIVATE ${savemanager_SOURCES})
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${savemanager_SOURCES})
 
 target_compile_features(savemanager PRIVATE
-	cxx_std_17
+	cxx_std_23
 )
 
 target_include_directories(savemanager PRIVATE
