@@ -1,4 +1,3 @@
-#include <chrono>
 #ifdef _WIN32
 #include <windows.h>
 #pragma comment(linker, "/subsystem:windows /entry:mainCRTStartup")
