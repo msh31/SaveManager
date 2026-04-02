@@ -23,7 +23,9 @@ struct GeneralTab {
     const Game* pending_restore_game = nullptr;
     const Game* pending_delete_game = nullptr;
     std::vector<std::vector<int>> grouped_games;
+
     std::future<Detection::DetectionResult> refresh_future;
+    std::future<void> backup_future;
 
     std::string label_input = "My awesome savegame";
 

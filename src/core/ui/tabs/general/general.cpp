@@ -37,6 +37,8 @@ std::optional<Detection::DetectionResult> GeneralTab::render(const Fonts& fonts,
     ImGui::PopFont();
 
     bool is_refreshing = refresh_future.valid() && refresh_future.wait_for(std::chrono::seconds(0)) != std::future_status::ready;
+    bool is_backing_up = backup_future.valid() && backup_future.wait_for(std::chrono::seconds(0)) != std::future_status::ready;
+
     if(!is_refreshing) {
         if(ImGui::Button("Refresh")) {
             refresh_future = std::async(std::launch::async, [&config]() {
@@ -47,7 +49,23 @@ std::optional<Detection::DetectionResult> GeneralTab::render(const Fonts& fonts,
     } else {
         char spin_char = spinner[(spinner_frame / 10) % 4];
 
-        std::string loading_text = std::string("Refreshing savegames... ") + spin_char;
+        std::string loading_text = std::string("Refreshing savegames...") + spin_char;
+        ImGui::Text("%s", loading_text.c_str());
+    }
+    ImGui::SameLine();
+    if(!is_backing_up) {
+        if(ImGui::Button("Mass Backup")) {
+            backup_future = std::async(std::launch::async, [this]() {
+                for (auto& entry : m_result->games) {
+                    Features::backup_game(entry, *m_config);
+                }
+            });
+        }
+        ImGui::SetItemTooltip("Creates a backup of all games found!");
+    } else {
+        char spin_char = spinner[(spinner_frame / 10) % 4];
+
+        std::string loading_text = std::string("Creating backups...") + spin_char;
         ImGui::Text("%s", loading_text.c_str());
     }
 
