@@ -228,7 +228,13 @@ void GeneralTab::render_modals() {
             for(int i = 0; i < m_state->backups.size(); i++) {
                 auto labels = Features::load_labels(*pending_restore_game, *m_config);
                 auto it = labels.find(m_state->backups[i].filename().string());
-                std::string display = (it != labels.end()) ? it->second + " (" + m_state->backups[i].filename().string() + ")" : m_state->backups[i].filename().string();
+
+                auto ftime = fs::last_write_time(m_state->backups[i]);
+                std::string date = std::format("{:%d %b %Y %H:%M}", ftime);
+                auto b_size = fs::file_size(m_state->backups[i]) / 1024;
+
+                std::string display_name = " - " + date + " - " + std::to_string(b_size) + "KB";
+                std::string display = (it != labels.end()) ? it->second + display_name : m_state->backups[i].filename().string();
 
                 if(ImGui::Selectable(display.c_str(), m_state->selected_backup_idx == i)) {
                     m_state->selected_backup_idx = i;
@@ -259,9 +265,23 @@ void GeneralTab::render_modals() {
         ImGui::SetNextItemWidth(550.0f);
         if(ImGui::BeginListBox("##state.backups")) {
             for(int i = 0; i < m_state->backups.size(); i++) {
-                if(ImGui::Selectable(m_state->backups[i].filename().string().c_str(), m_state->selected_backup_idx == i)) {
+                auto labels = Features::load_labels(*pending_delete_game, *m_config);
+                auto it = labels.find(m_state->backups[i].filename().string());
+
+                auto ftime = fs::last_write_time(m_state->backups[i]);
+                std::string date = std::format("{:%d %b %Y %H:%M}", ftime);
+                auto b_size = fs::file_size(m_state->backups[i]) / 1024;
+
+                std::string display_name = " - " + date + " - " + std::to_string(b_size) + "KB";
+                std::string display = (it != labels.end()) ? it->second + display_name : m_state->backups[i].filename().string();
+
+                if(ImGui::Selectable(display.c_str(), m_state->selected_backup_idx == i)) {
                     m_state->selected_backup_idx = i;
                 }
+
+                // if(ImGui::Selectable(m_state->backups[i].filename().string().c_str(), m_state->selected_backup_idx == i)) {
+                //     m_state->selected_backup_idx = i;
+                // }
             }
             ImGui::EndListBox();
         }
@@ -269,11 +289,16 @@ void GeneralTab::render_modals() {
         ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.8f, 0.2f, 0.2f, 1.0f));
         ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.9f, 0.3f, 0.3f, 1.0f));
         if(ImGui::Button("Delete") && !m_state->backups.empty()) {
+            auto labels = Features::load_labels(*pending_delete_game, *m_config);
             if(fs::remove(m_state->backups[m_state->selected_backup_idx])) {
                 Notify::show_notification("Backup Deletion", "Backup deleted!", 1500);
             } else {
                 Notify::show_notification("Backup Deletion", "Backup could not be deleted!", 1500);
             }
+
+            labels.erase(m_state->backups[m_state->selected_backup_idx].filename().string());
+            Features::save_labels(*pending_delete_game, *m_config, labels);
+
             ImGui::CloseCurrentPopup();
             open_delete_modal = false;
         }

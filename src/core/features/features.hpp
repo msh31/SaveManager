@@ -12,4 +12,5 @@ std::string construct_backup_name(const Game& game, const std::string& custom_na
 
 std::unordered_map<std::string, std::string> load_labels(const Game& game, Config& config);
 void save_label(const Game& game, Config& config, const std::string& filename, const std::string& label);
+void save_labels(const Game& game, Config& config, const std::unordered_map<std::string, std::string>& labels);
 };

@@ -1,5 +1,4 @@
 #include "features.hpp"
-#include "core/helpers/paths.hpp"
 #include "core/ui/notifications/notification.hpp"
 #include "core/logger/logger.hpp"
 #include "core/config/config.hpp"
@@ -107,4 +106,21 @@ void Features::save_label(const Game& game, Config& config, const std::string& f
 
     std::ofstream out(file_name);
     out << data.dump(4);
+}
+
+
+void Features::save_labels(const Game& game, Config& config, const std::unordered_map<std::string, std::string>& labels) {
+    std::string file_name = config.settings.backup_path / game.game_name / "labels.json";
+
+    json data;
+    for (const auto& [key, value] : labels) {
+        data[key] = value;
+    }
+
+    if(data.empty()) {
+        fs::remove(file_name);
+    } else {
+        std::ofstream out(file_name);
+        out << data.dump(4);
+    }
 }
