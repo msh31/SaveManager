@@ -9,16 +9,16 @@ bool ZipArchive::add_to_archive(const Game& game) {
             fs::path relative = fs::relative(entry.path(), game.save_path);
             get_logger().info("Adding: " + relative.string() + " to the backup for " + game.game_name);
 
-            zip_source_t* source = zip_source_file(archive, entry.path().c_str(), 0, 0);
+            zip_source_t* source = zip_source_file(archive, entry.path().string().c_str(), 0, 0);
             if (!source) {
                 get_logger().error("Failed to create source for: " + entry.path().string());
-                failed_files.push_back(entry.path());
+                failed_files.push_back(entry.path().string());
                 continue;
             }
 
             if (zip_file_add(archive, relative.string().c_str(), source, ZIP_FL_OVERWRITE) < 0) {
                 get_logger().error("Failed to add file: " + std::string(zip_strerror(archive)));
-                failed_files.push_back(entry.path());
+                failed_files.push_back(entry.path().string());
             }
             file_count++;
         }
