@@ -149,7 +149,7 @@ void GeneralTab::render_card(const Game& primary, const Game& active_game, const
         ImGui::Separator();
     }
 
-    ImGui::PushFont(m_fonts->small);
+    ImGui::PushFont(m_fonts->small_font);
     float btn_height = ImGui::GetFrameHeight(); 
     float button_y = w_siz.y - btn_height - 10.5f;
     float button_spacing = 4.0f;

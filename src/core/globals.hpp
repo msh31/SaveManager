@@ -16,7 +16,7 @@ constexpr int DEF_RES_H = 900;
 struct Fonts {
     ImFont* regular;
     ImFont* medium;
-    ImFont* small;
+    ImFont* small_font;
     ImFont* bold;
 
     ImFont* title;

@@ -190,7 +190,7 @@ bool App::setup_imgui() {
 
     fonts.regular = io.Fonts->AddFontFromMemoryTTF((void*)jbm_reg, jbm_reg_len, 20.0f, &cfg_reg);
     fonts.title = io.Fonts->AddFontFromMemoryTTF((void*)jbm_reg, jbm_reg_len, 34.0f, &cfg_title);
-    fonts.small = io.Fonts->AddFontFromMemoryTTF((void*)jbm_reg, jbm_reg_len, 18.0f, &cfg_small);
+    fonts.small_font = io.Fonts->AddFontFromMemoryTTF((void*)jbm_reg, jbm_reg_len, 18.0f, &cfg_small);
     fonts.medium = io.Fonts->AddFontFromMemoryTTF((void*)jbm_med, jbm_med_len, 20.0f, &cfg_med);
     fonts.bold = io.Fonts->AddFontFromMemoryTTF((void*)jbm_bold, jbm_bold_len, 20.0f, &cfg_bold);
     fonts.header = io.Fonts->AddFontFromMemoryTTF((void*)jbm_reg, jbm_reg_len, 28.0f, &cfg_head);
