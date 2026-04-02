@@ -74,7 +74,7 @@ void Network::download_game_image(const std::string& appid) {
     std::string output_file = appid + ".jpg";
     fs::path img_path = paths::cache_dir() / output_file; 
 
-    if (fs::exists(img_path)) {
+    if (fs::exists(img_path) && fs::file_size(img_path) > 0) {
         return;
     }
 

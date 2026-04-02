@@ -53,20 +53,26 @@ Textures::ImageData Textures::load_image(const std::string& appid) {
     fread(file_data, 1, file_size, f);
     fclose(f);
 
-    int width = 0, height = 0;
-    unsigned char* pixels = stbi_load_from_memory((const unsigned char*)file_data, file_size, &width, &height, nullptr, 4);
-    if (pixels == NULL) {
+    ImageData image_data;
+    if(file_size > 0) {
+        int width = 0, height = 0;
+        unsigned char* pixels = stbi_load_from_memory((const unsigned char*)file_data, file_size, &width, &height, nullptr, 4);
+        if (pixels == NULL) {
+            IM_FREE(file_data);
+            return {};
+        }
+
+        image_data.pixels.assign(pixels, pixels + (width * height * 4));
+        image_data.width = width;
+        image_data.height = height;
+        image_data.appid = appid;
+
+        stbi_image_free(pixels);
+        IM_FREE(file_data);
+    } else {
         IM_FREE(file_data);
         return {};
     }
 
-    ImageData image_data;
-    image_data.pixels.assign(pixels, pixels + (width * height * 4));
-    image_data.width = width;
-    image_data.height = height;
-    image_data.appid = appid;
-
-    stbi_image_free(pixels);
-    IM_FREE(file_data);
     return image_data;
 }
