@@ -282,8 +282,8 @@ void GeneralTab::render_modals() {
     if(ImGui::BeginPopupModal("Delete Backup", nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
         ImGui::SetNextItemWidth(550.0f);
         if(ImGui::BeginListBox("##state.backups")) {
+            auto labels = Features::load_labels(*pending_delete_game, *m_config);
             for(int i = 0; i < m_state->backups.size(); i++) {
-                auto labels = Features::load_labels(*pending_delete_game, *m_config);
                 auto it = labels.find(m_state->backups[i].filename().string());
 
                 auto ftime = fs::last_write_time(m_state->backups[i]);
