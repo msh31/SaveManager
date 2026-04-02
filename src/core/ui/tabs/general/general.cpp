@@ -91,12 +91,13 @@ void GeneralTab::render_cards() {
 
             const Game& active_game = m_result->games[group[0]];
 
-            ImGui::PushStyleColor(ImGuiCol_Border, ImVec4(0.776f, 0.380f, 0.247f, 1.0f));
+            auto card_min = ImGui::GetCursorScreenPos();
+
             ImGui::BeginChild(card_id.c_str(), ImVec2(card_width, card_height), true,
                               ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
             render_card(*primary, active_game, group, gi, image_height);
             ImGui::EndChild();
-            ImGui::PopStyleColor();
+            ImGui::GetWindowDrawList()->AddRect(card_min, ImVec2(card_min.x + card_width, card_min.y + card_height), IM_COL32(198, 97, 63, 255));
         }
 
     } else {
@@ -118,20 +119,6 @@ void GeneralTab::render_card(const Game& primary, const Game& active_game, const
             ImVec2(1, 1),
             IM_COL32(255, 255, 255, 255)
         );
-        ImGui::GetWindowDrawList()->AddLine(
-            ImVec2(w_pos.x, w_pos.y + image_height),
-            ImVec2(w_pos.x + w_siz.x, w_pos.y + image_height),
-            IM_COL32(198, 97, 63, 255),
-            2.0f
-        );
-        // ImGui::GetWindowDrawList()->AddRectFilled(
-        //     w_pos,
-        //     ImVec2(w_pos.x + w_siz.x, w_pos.y + 40.0f),
-        //     IM_COL32(0, 0, 0, 200)
-        // );
-        // ImGui::SetCursorPos(ImVec2(8.0f, 8.0f));
-        // ImGui::TextWrapped("%s", primary.game_name.c_str());
-        // ImGui::SetCursorPos(ImVec2(0, image_height));
     }
     else {
         ImVec2 center(w_pos.x + w_siz.x * 0.5f, w_pos.y + image_height * 0.5f);
@@ -150,12 +137,12 @@ void GeneralTab::render_card(const Game& primary, const Game& active_game, const
             ImVec2(center.x + 12, center.y + 10),
             col, 2.0f
         );
-        ImGui::GetWindowDrawList()->AddLine(
-            ImVec2(w_pos.x, w_pos.y + image_height),
-            ImVec2(w_pos.x + w_siz.x, w_pos.y + image_height),
-            IM_COL32(198, 97, 63, 255),
-            2.0f
-        );
+        // ImGui::GetWindowDrawList()->AddLine(
+        //     ImVec2(w_pos.x, w_pos.y + image_height),
+        //     ImVec2(w_pos.x + w_siz.x, w_pos.y + image_height),
+        //     IM_COL32(198, 97, 63, 255),
+        //     2.0f
+        // );
     }
 
     if(it == m_textures->end()) {
