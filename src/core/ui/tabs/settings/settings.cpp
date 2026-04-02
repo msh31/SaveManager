@@ -18,7 +18,25 @@ void SettingsTab::render(const Fonts& fonts, Config& config) {
         }
     }
 
+    if (update_t_future.valid() && update_t_future.wait_for(std::chrono::seconds(0)) == std::future_status::ready) {
+        bool result = update_t_future.get();
+
+        if(result) {
+            Notify::show_notification("Translations", "All translations have been updated!", 2500);
+        } else {
+            if(!ubi_ok) {
+                get_logger().error("Failed to download Ubisoft translations");
+                Notify::show_notification("Translations", "Failed to update translations for ubisoft", 2500);
+            }
+            if(!steam_ok) {
+                get_logger().error("Failed to download Steam ID data");
+                Notify::show_notification("Translations", "Failed to update translations for steam appids", 2500);
+            }
+        }
+    }
+
     bool is_checking = update_future.valid() && update_future.wait_for(std::chrono::seconds(0)) != std::future_status::ready;
+    bool is_checking_t = update_t_future.valid() && update_t_future.wait_for(std::chrono::seconds(0)) != std::future_status::ready;
 
     ImGui::PushFont(fonts.header);
     ImGui::Text("Settings");
@@ -76,13 +94,19 @@ void SettingsTab::render(const Fonts& fonts, Config& config) {
     ImGui::EndDisabled();
     ImGui::SameLine();
     if(ImGui::Button("Update translations")) {
-        if(!Network::download_file(ubi_translation_url, paths::ubi_translations().string())) {
-            get_logger().error("Failed to download Ubisoft translations");
-        }
-        if(!Network::download_file(steam_translation_url, paths::steam_appids().string())) {
-            get_logger().error("Failed to download Steam ID data");
-        }
-        Notify::show_notification("Translations", "All translations have been updated!", 2500);
+        ubi_ok = false;
+        steam_ok = false;
+
+        update_t_future = std::async(std::launch::async, [this]() {
+            if(Network::download_file(ubi_translation_url, paths::ubi_translations().string())) {
+                ubi_ok = true;
+            }
+            if(Network::download_file(steam_translation_url, paths::steam_appids().string())) {
+                steam_ok = true;
+            }
+
+            return ubi_ok && steam_ok;
+        });
     }
     ImGui::SetItemTooltip("Forces a new download of the ubisoft id and steam id translations");
     ImGui::SameLine();

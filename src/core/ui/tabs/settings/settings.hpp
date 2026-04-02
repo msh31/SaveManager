@@ -16,6 +16,8 @@ struct SettingsTab {
     std::string new_game_appid;
 
     std::future<bool> update_future;
+    std::future<bool> update_t_future;
+    bool ubi_ok = false, steam_ok = false;
 
     std::string backup_path;
     std::string steam_path;
