@@ -215,6 +215,12 @@ Detection::DetectionResult Detection::find_saves(Config& config) {
         }),
         result.games.end()
     );
+    result.games.erase(
+        std::remove_if(result.games.begin(), result.games.end(), [](const Game& game) {
+            return !fs::is_directory(game.save_path) || fs::is_empty(game.save_path);
+        }),
+        result.games.end()
+    );
     return result;
 }
 
