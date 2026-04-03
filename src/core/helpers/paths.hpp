@@ -7,9 +7,9 @@ inline fs::path home_dir() {
 #if defined(__linux__) || defined(__APPLE__)
     home = std::getenv("HOME");
 #elif defined(_WIN32)
-    home = std::getenv("APPDATA");
+    home = std::getenv("USERPROFILE");
 #endif
-    if (!home) throw std::runtime_error("HOME/APPDATA not set, how did you manage to do this?");
+    if (!home) throw std::runtime_error("HOME not set, how did you manage to do this?");
     return fs::path(home);
 }
 
