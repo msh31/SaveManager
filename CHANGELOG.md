@@ -8,16 +8,22 @@
 - Nobody Wants To Die
 - High on Life
 - SpongeBob SquarePants: Titans of the Tide
+- Assassin's Creed Mirage 
+- Assassin's Creed Shadows 
 
 ### Added
 - Unreal support on Windows
 - Mass Backup button 
+- Refresh cache button 
 - Backup labels
 - Dark / Light Mode toggle
+- Copy log to clipboard
+- Automatic log cleanup (If above 100 lines)
 
 ### Fixed
 - Duplicate cards for games with N/A appid [#7](https://github.com/msh31/SaveManager/issues/7)
 - Incorrect Game name (shown by steam appid or N/A) on some games that are not yet supported (Backups will not work properly since the names are similar if N/A) [#2](https://github.com/msh31/SaveManager/issues/2)
+- A crash caused by attempting to load corrupted translation files.
 
 ### Changes
 - An Internet connection is no longer required by default 
@@ -25,12 +31,12 @@
 - Overall UI improvements for better User Experience
 - Improved overall detection accuracy
 - Use %USERPROFILE% (C:\Users\username) as home dir instead of appdata for Windows
+- Codebase changes in the entrypoint and other areas
 
 
 ### Known Issues / Limitations
 - Original Anno editions not supported due to install path limitations (You can add them manually though!)
 - Grouping issues with unknown / partially supported games (Similar to #2 but has since improved)
-
 
 
 ## [1.3.0] - 2026-03-26
