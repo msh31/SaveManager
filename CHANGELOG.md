@@ -1,10 +1,16 @@
 # Changelog
 
-## [1.4.0] - 2026-03-??
-### New Game support
-- 
+## [1.4.0] - 2026-04-04
+### New verified supported games
+- Mafia The Old Country
+- Clair Obscur: Expedition 33
+- Metal Gear Solid Delta: Snake Eater
+- Nobody Wants To Die
+- High on Life
+- SpongeBob SquarePants: Titans of the Tide
 
 ### Added
+- Unreal support on Windows
 - Mass Backup button 
 - Backup labels
 - Dark / Light Mode toggle
@@ -18,9 +24,12 @@
 - Codebase changes in the entrypoint
 - Overall UI improvements for better User Experience
 - Improved overall detection accuracy
+- Use %USERPROFILE% (C:\Users\username) as home dir instead of appdata for Windows
+
 
 ### Known Issues / Limitations
 - Original Anno editions not supported due to install path limitations (You can add them manually though!)
+- Grouping issues with unknown / partially supported games (Similar to #2 but has since improved)
 
 
 
