@@ -17,6 +17,9 @@
 ### Known Issues / Limitations
 
 
+## [1.4.1] - 2026-04-04
+### Fixed
+- Unreal cover art / showing up as N/A on Linux
 
 ## [1.4.0] - 2026-04-04
 ### New verified supported games
