@@ -48,6 +48,7 @@ void UnrealDetector::find_saves(const fs::path& prefix, std::vector<Game>& out_g
         game.type = UNREAL;
         game.save_path = entry;
         std::string found_name;
+        bool found_in_translations = false;
 
         std::vector<std::string> path_comps;
         for (const auto& part : entry) {
@@ -64,6 +65,7 @@ void UnrealDetector::find_saves(const fs::path& prefix, std::vector<Game>& out_g
                 if (*comp_it != "Saved" && *comp_it != "Steam" && *comp_it != "Epic" && !is_numeric) {
                     game.game_name = translations::get_steam_name(the_name->second).value_or(the_name->first.data());
                     game.appid = the_name->second; //translations::get_steam_id(game.game_name).value_or("N/A");
+                    found_in_translations = true;
                     break;
                 }
             }
@@ -75,21 +77,23 @@ void UnrealDetector::find_saves(const fs::path& prefix, std::vector<Game>& out_g
             }
         }
 
-        for (; it != entry.end(); ++it) {
-            if (*it == "compatdata") {
-                ++it; // next component is the appid
-                std::string appid = it->string();
+        if (!found_in_translations) {
+            for (; it != entry.end(); ++it) {
+                if (*it == "compatdata") {
+                    ++it; // next component is the appid
+                    std::string appid = it->string();
 
-                game.game_name = translations::get_steam_name(appid).value_or("N/A");
-                game.appid = appid;
+                    game.game_name = translations::get_steam_name(appid).value_or("N/A");
+                    game.appid = appid;
 
-                break;
-            } else if(*it == "default") {
-                ++it;
-                std::string name = it->string();
-                game.game_name = name;
-                game.appid = "N/A";
-                break;
+                    break;
+                } else if(*it == "default") {
+                    ++it;
+                    std::string name = it->string();
+                    game.game_name = name;
+                    game.appid = "N/A";
+                    break;
+                }
             }
         }
 
