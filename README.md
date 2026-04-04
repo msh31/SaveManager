@@ -9,22 +9,23 @@
 
 [Download](#download) • [Features](#features) • [Contributing](CONTRIBUTING.md) • [License](#license)
 
-<img src="assets/output_hq.gif" alt="App Preview" width="800"/>
+<img src="assets/output.gif" alt="App Preview" width="800"/>
 
 </div>
 
 ---
 
-SaveManager is a local save manager for PC games. It handles backup and restore for Ubisoft and Rockstar saves across Windows and Linux.
+SaveManager is a local save manager for PC games. It handles backup and restore for Ubisoft, Rockstar, and Unreal Engine saves across Windows and Linux.
 
 ## Download
-
 Available for Windows and Linux (x86-64) on the [releases page](https://github.com/msh31/SaveManager/releases).
 
-## Features
+## Supported Games
+See [SUPPORTED_GAMES.md](docs/SUPPORTED_GAMES.md)
 
+## Features
 - **Backup & Restore** — create and restore save backups
-- **Automatic Detection** — finds Ubisoft and Rockstar saves on Windows; Steam/Proton, Wine, and Lutris on Linux
+- **Automatic Detection** — finds Ubisoft, Rockstar, and Unreal Engine saves on Windows; Steam/Proton, Wine, Lutris, and Heroic on Linux
 - **Configurable** — custom backup paths, per-store toggles, and platform-specific settings
 - **Cross-platform** — Windows and Linux (x86-64)
 
@@ -40,8 +41,8 @@ Available for Windows and Linux (x86-64) on the [releases page](https://github.c
 |-------|---------|-------|
 | Ubisoft | Yes | Yes (Steam/Proton, Wine, Lutris, Heroic) |
 | Rockstar | Yes | Yes (Steam/Proton, Lutris, Heroic) |
-| Unreal Engine | Planned | Yes (Steam/Proton, Lutris, Heroic) |
-> Unreal Engine games are detected via .sav files, regardless of store. (It is also not perfect)
+| Unreal Engine | Yes | Yes (Steam/Proton, Lutris, Heroic) |
+> Unreal Engine games are detected via GVAS .sav files. UE3 games and games using custom save formats are not supported.
 ---
 
 ## Changelog
@@ -49,7 +50,7 @@ See [CHANGELOG.md](CHANGELOG.md) for a complete history of all changes made to t
 
 ## Contributing
 
-See [CONTRIBUTING.md](CONTRIBUTING.md) for build instructions and contribution guidelines.
+See [CONTRIBUTING.md](docs/CONTRIBUTING.md) for build instructions and contribution guidelines.
 
 ## License
 
