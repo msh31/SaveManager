@@ -51,13 +51,15 @@ include-directories = [
     "vendor/imgui",
 ]
 precompile-headers = ["src/pch.hpp"]
-link-libraries = ["CURL::libcurl", "glfw", "libzip::zip", "libssh2::libssh2", "OpenSSL::Crypto", "imgui::imgui", "glad::glad", "nlohmann_json::nlohmann_json", "stb::stb"]
+link-libraries = ["CURL::libcurl", "glfw", "libzip::zip", "Libssh2::libssh2", "OpenSSL::Crypto", "imgui::imgui", "glad::glad", "nlohmann_json::nlohmann_json", "stb::stb"]
 compile-features = ["cxx_std_23"]
 cmake-after = """
-target_include_directories(savemanager PRIVATE "${imgui_PACKAGE_FOLDER_RELEASE}/res/bindings")
+find_path(IMGUI_INCLUDE_DIR imgui.h REQUIRED)
+cmake_path(GET IMGUI_INCLUDE_DIR PARENT_PATH IMGUI_ROOT_DIR)
+target_include_directories(savemanager PRIVATE "${IMGUI_ROOT_DIR}/res/bindings")
 target_sources(savemanager PRIVATE
-    "${imgui_PACKAGE_FOLDER_RELEASE}/res/bindings/imgui_impl_glfw.cpp"
-    "${imgui_PACKAGE_FOLDER_RELEASE}/res/bindings/imgui_impl_opengl3.cpp"
+    "${IMGUI_ROOT_DIR}/res/bindings/imgui_impl_glfw.cpp"
+    "${IMGUI_ROOT_DIR}/res/bindings/imgui_impl_opengl3.cpp"
 )
 """
 

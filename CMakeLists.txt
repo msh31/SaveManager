@@ -111,7 +111,7 @@ target_link_libraries(savemanager PRIVATE
 	CURL::libcurl
 	glfw
 	libzip::zip
-	libssh2::libssh2
+	Libssh2::libssh2
 	OpenSSL::Crypto
 	imgui::imgui
 	glad::glad
@@ -136,8 +136,10 @@ if(NOT CMKR_VS_STARTUP_PROJECT)
 endif()
 
 set(CMKR_TARGET savemanager)
-target_include_directories(savemanager PRIVATE "${imgui_PACKAGE_FOLDER_RELEASE}/res/bindings")
+find_path(IMGUI_INCLUDE_DIR imgui.h REQUIRED)
+cmake_path(GET IMGUI_INCLUDE_DIR PARENT_PATH IMGUI_ROOT_DIR)
+target_include_directories(savemanager PRIVATE "${IMGUI_ROOT_DIR}/res/bindings")
 target_sources(savemanager PRIVATE
-    "${imgui_PACKAGE_FOLDER_RELEASE}/res/bindings/imgui_impl_glfw.cpp"
-    "${imgui_PACKAGE_FOLDER_RELEASE}/res/bindings/imgui_impl_opengl3.cpp"
+    "${IMGUI_ROOT_DIR}/res/bindings/imgui_impl_glfw.cpp"
+    "${IMGUI_ROOT_DIR}/res/bindings/imgui_impl_opengl3.cpp"
 )
