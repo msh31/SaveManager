@@ -1,5 +1,6 @@
 #include "unreal.hpp"
 #include "core/helpers/translations/translations.hpp"
+#include <core/logger/logger.hpp>
 
 void UnrealDetector::find_saves(const fs::path& prefix, std::vector<Game>& out_games) const {
     if(!fs::exists(prefix)) {
@@ -35,6 +36,7 @@ void UnrealDetector::find_saves(const fs::path& prefix, std::vector<Game>& out_g
                     path_str.find("Settings") != std::string::npos) { //might cause issues but works fine for now
                     continue;
                 }
+                //get_logger().debug(path_str);
                 directories.insert(file.parent_path());
             }
         }
@@ -45,6 +47,33 @@ void UnrealDetector::find_saves(const fs::path& prefix, std::vector<Game>& out_g
         Game game;
         game.type = UNREAL;
         game.save_path = entry;
+        std::string found_name;
+
+        std::vector<std::string> path_comps;
+        for (const auto& part : entry) {
+            path_comps.push_back(part.string());
+        }
+        auto comp_it = std::find(path_comps.begin(), path_comps.end(), "SaveGames");
+        //get_logger().debug(*comp_it);
+
+        while (comp_it != path_comps.begin()) {
+            --comp_it;
+            bool is_numeric = std::all_of(comp_it->begin(), comp_it->end(), ::isdigit);
+
+            if (auto the_name = translations.find(*comp_it); the_name != translations.end()) {
+                if (*comp_it != "Saved" && *comp_it != "Steam" && *comp_it != "Epic" && !is_numeric) {
+                    game.game_name = translations::get_steam_name(the_name->second).value_or(the_name->first.data());
+                    game.appid = the_name->second; //translations::get_steam_id(game.game_name).value_or("N/A");
+                    break;
+                }
+            }
+            else if (*comp_it != "Saved" && *comp_it != "Steam" && *comp_it != "Epic" && !is_numeric) {
+                found_name = *comp_it;
+                game.game_name = found_name;
+                game.appid = "N/A";
+                break;
+            }
+        }
 
         for (; it != entry.end(); ++it) {
             if (*it == "compatdata") {
@@ -63,6 +92,12 @@ void UnrealDetector::find_saves(const fs::path& prefix, std::vector<Game>& out_g
                 break;
             }
         }
+
+        if (game.game_name.empty() && !found_name.empty()) {
+            game.game_name = found_name;
+            game.appid = "N/A";
+        }
         out_games.push_back(game);
+        //get_logger().debug(game.game_name);
     }
 }
