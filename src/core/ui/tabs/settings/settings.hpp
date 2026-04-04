@@ -5,6 +5,7 @@ class Config;
 
 struct SettingsTab {
     void render(const Fonts& fonts, Config& config);
+    bool* m_refresh_requested = nullptr;
 
     std::string_view ubi_translation_url = "https://raw.githubusercontent.com/msh31/smdata/refs/heads/main/ubi_translations.json";
     std::string_view steam_translation_url = "https://raw.githubusercontent.com/msh31/smdata/refs/heads/main/steamids.json";
@@ -14,6 +15,16 @@ struct SettingsTab {
     std::string new_game_path; 
     std::string new_game_appid;
 
-
     std::future<bool> update_future;
+    std::future<std::pair<bool, bool>> update_t_future;
+
+    std::string backup_path;
+    std::string steam_path;
+    std::string lutris_path;
+    std::string heroic_path;
+    bool paths_initialized = false;
+
+    int spinner_frame = 0;
+    const char* spinner = "|/-\\";
+    const Fonts* m_fonts = nullptr;
 };

@@ -1,8 +1,4 @@
 #pragma once
-#include "../../external/json.hpp"
-#include <unordered_set>
-
-using json = nlohmann::json;
 
 namespace Blacklist {
     void init();

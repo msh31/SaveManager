@@ -21,9 +21,10 @@ struct Game {
 };
 
 namespace Detection {
-    struct DetectionResult {
-        std::vector<Game> games;
-    };
+struct DetectionResult {
+    std::vector<Game> games;
+    std::vector<std::vector<int>> get_grouped() const;
+};
 
-    DetectionResult find_saves(Config& config);
+DetectionResult find_saves(Config& config);
 };

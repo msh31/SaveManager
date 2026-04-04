@@ -112,6 +112,7 @@ void scan_prefix_dir(const fs::path& compatdata, Detection::DetectionResult& res
         if (config.settings.ubi_enabled) {
             detectors.ubisoft_detect.find_saves(drive_c / "Program Files (x86)/Ubisoft/Ubisoft Game Launcher/savegames", result.games);
         }
+        detectors.custom_detect.find_saves(drive_c, result.games);
 
         if (fs::exists(users_dir)) {
             for (const auto& user : fs::directory_iterator(users_dir)) {
@@ -119,18 +120,14 @@ void scan_prefix_dir(const fs::path& compatdata, Detection::DetectionResult& res
 
                 if(config.settings.ubi_enabled) {
                     detectors.ubisoft_detect.find_anno_saves(user.path() / "Documents", result.games);
-                    detectors.ubisoft_detect.find_anno_saves(user.path() / "AppData/Roaming", result.games);
-                    detectors.custom_detect.find_saves(user.path(), result.games);
                 }
                 if (config.settings.rsg_enabled) {
                     detectors.rockstar_detect.find_saves(user.path() / "Documents/Rockstar Games", result.games);
                     detectors.rockstar_detect.find_legacy_saves(user.path() / "Documents", result.games);
                     detectors.rockstar_detect.find_legacy_saves(user.path() / "AppData/Local/Rockstar Games", result.games);
-                    detectors.custom_detect.find_saves(user.path(), result.games);
                 }
                 if (config.settings.unreal_enabled) {
                     detectors.unreal_detect.find_saves(user.path(), result.games);
-                    detectors.custom_detect.find_saves(user.path(), result.games);
                 }
             }
         }
@@ -194,15 +191,17 @@ Detection::DetectionResult Detection::find_saves(Config& config) {
         detectors.ubisoft_detect.find_saves("C:\\Program Files (x86)\\Ubisoft\\Ubisoft Game Launcher\\savegames", result.games);
         detectors.ubisoft_detect.find_anno_saves(paths::documents_dir(), result.games);
         detectors.ubisoft_detect.find_anno_saves(paths::home_dir() / "AppData/Roaming", result.games);
-        detectors.custom_detect.find_saves(paths::home_dir(), result.games);
     }
 
     if(config.settings.rsg_enabled) {
         detectors.rockstar_detect.find_saves(paths::documents_dir() / "Rockstar Games", result.games);
         detectors.rockstar_detect.find_legacy_saves(paths::documents_dir(), result.games);
         detectors.rockstar_detect.find_legacy_saves(paths::home_dir() / "AppData/Local/Rockstar Games", result.games);
-        detectors.custom_detect.find_saves(paths::home_dir(), result.games);
     }
+    if (config.settings.unreal_enabled) {
+        detectors.unreal_detect.find_saves(paths::home_dir(), result.games);
+    }
+    detectors.custom_detect.find_saves(paths::home_dir(), result.games);
 #endif
 
     if (result.games.empty()) {
@@ -215,5 +214,31 @@ Detection::DetectionResult Detection::find_saves(Config& config) {
         }),
         result.games.end()
     );
+    result.games.erase(
+        std::remove_if(result.games.begin(), result.games.end(), [](const Game& game) {
+            return !fs::is_directory(game.save_path) || fs::is_empty(game.save_path);
+        }),
+        result.games.end()
+    );
     return result;
+}
+
+std::vector<std::vector<int>> Detection::DetectionResult::get_grouped() const {
+    std::unordered_map<std::string, size_t> key_to_group;
+    std::vector<std::vector<int>> groups;
+
+    for (int i = 0; i < (int)games.size(); i++) {
+        const auto& game = games[i];
+        std::string key = (game.appid != "N/A") ? game.appid : "N/A::" + game.game_name;
+
+        auto it = key_to_group.find(key);
+        if (it != key_to_group.end()) {
+            groups[it->second].push_back(i);
+        } else {
+            key_to_group[key] = groups.size();
+            groups.push_back({i});
+        }
+    }
+
+    return groups;
 }

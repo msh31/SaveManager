@@ -1,5 +1,4 @@
 #pragma once
-
 namespace fs = std::filesystem;
 
 namespace paths {
@@ -8,9 +7,9 @@ inline fs::path home_dir() {
 #if defined(__linux__) || defined(__APPLE__)
     home = std::getenv("HOME");
 #elif defined(_WIN32)
-    home = std::getenv("APPDATA");
+    home = std::getenv("USERPROFILE");
 #endif
-    if (!home) throw std::runtime_error("HOME/APPDATA not set, how did you manage to do this?");
+    if (!home) throw std::runtime_error("HOME not set, how did you manage to do this?");
     return fs::path(home);
 }
 
@@ -46,6 +45,8 @@ inline fs::path documents_dir() {
     return fs::path(userprofile) / "Documents";
 }
 #endif
+
+inline fs::path log_file() { return config_dir() / "savemanager.log"; }
 
 inline fs::path ubi_translations() { return config_dir() / "ubi_translations.json"; }
 inline fs::path steam_appids() { return config_dir() / "steamids.json"; }

@@ -1,6 +1,9 @@
 #include "blacklist.hpp"
 #include "core/helpers/paths.hpp"
 #include "core/logger/logger.hpp"
+#include "json.hpp"
+
+using json = nlohmann::json;
 
 void Blacklist::init() {
     json data;

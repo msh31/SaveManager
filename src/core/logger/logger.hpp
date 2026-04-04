@@ -1,5 +1,4 @@
 #pragma once
-#include "core/helpers/paths.hpp"
 
 class logger
 {
@@ -15,6 +14,8 @@ public:
     bool consoleLoggingEnabled = false;
     bool fileLoggingEnabled = true;
 
+    void trim();
+
     void info(const std::string& message);
     void warning(const std::string& message);
     void error(const std::string& message);
@@ -26,7 +27,6 @@ private:
     void log(const std::string& level, const std::string& message);
 
     std::ofstream logFile;
-    fs::path logFilePath = paths::config_dir() / "savemanager.log";
 
     std::mutex log_mutex;
 };

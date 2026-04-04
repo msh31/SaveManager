@@ -1,10 +1,8 @@
 #include "config.hpp"
-#include "core/helpers/paths.hpp"
-#include "core/network/network.hpp"
 #include "core/logger/logger.hpp"
+#include "core/helpers/translations/steamids.hpp"
+#include "core/helpers/translations/ubi_translations.hpp"
 #include "../../external/json.hpp"
-
-#include <fstream>
 
 using json = nlohmann::json;
 
@@ -38,35 +36,23 @@ Config::~Config() {
 
 bool Config::init() {
     if(!fs::exists(paths::ubi_translations())) {
-        get_logger().info("ubi_translations.json not found, downloading...");
-        if(!Network::download_file("https://raw.githubusercontent.com/msh31/smdata/refs/heads/main/ubi_translations.json", paths::ubi_translations().string())) {
-            get_logger().error("Failed to download Ubisoft translations");
-            return false;
-        }
+        std::ofstream f(paths::ubi_translations(), std::ios::binary);
+        f.write(reinterpret_cast<const char*>(ubi_translations_json), ubi_translations_json_len);
     }
 
     if(!fs::exists(paths::steam_appids())) {
-        get_logger().info("steamids.json was not found, downloading...");
-        if(!Network::download_file("https://raw.githubusercontent.com/msh31/smdata/refs/heads/main/steamids.json", paths::steam_appids().string())) {
-            get_logger().error("Failed to download Steam ID data");
-            return false;
-        }
+        std::ofstream f(paths::steam_appids(), std::ios::binary);
+        f.write(reinterpret_cast<const char*>(steamids_json), steamids_json_len);
     }
 
     if(!fs::exists(paths::blacklist())) {
-        get_logger().info("game_blacklist.json was not found, downloading...");
-        if(!Network::download_file("https://raw.githubusercontent.com/msh31/smdata/refs/heads/main/game_blacklist.json", paths::blacklist().string())) {
-            get_logger().error("Failed to download blacklist");
-            return false;
-        }
+        std::ofstream f(paths::blacklist());
+        f << R"(["The Crew Motorfest"])"; //kinda sucks
     }
 
     if(!fs::exists(paths::custom_games())) {
-        get_logger().info("custom_games.json was not found, downloading...");
-        if(!Network::download_file("https://raw.githubusercontent.com/msh31/smdata/refs/heads/main/custom_games.json", paths::custom_games().string())) {
-            get_logger().error("Failed to download custom_games list");
-            return false;
-        }
+        std::ofstream f(paths::custom_games());
+        f << "[]";
     }
 
     return true;
@@ -77,6 +63,7 @@ void Config::save() {
     data["ubi_enabled"] = settings.ubi_enabled;
     data["rsg_enabled"] = settings.rsg_enabled;
     data["unreal_enabled"] = settings.unreal_enabled;
+    data["dark_mode"] = settings.dark_mode;
 
     data["backup_path"] = settings.backup_path.string();
     data["steam_path"] = settings.steam_path;
@@ -129,6 +116,7 @@ void Config::load() {
     settings.ubi_enabled = data.value("ubi_enabled", true);
     settings.rsg_enabled = data.value("rsg_enabled", true);
     settings.unreal_enabled = data.value("unreal_enabled", true);
+    settings.dark_mode = data.value("dark_mode", true);
 
     sftp.dest_addr = data.value("dest_addr", std::string(""));
     sftp.username = data.value("username", std::string(""));
