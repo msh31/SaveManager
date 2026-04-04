@@ -1,5 +1,23 @@
 # Changelog
 
+## [1.5.0] - 2026-04-04
+### New verified supported games
+
+### Added
+- MacOS support (Intel & Apple Silicon)
+
+### Fixed 
+
+
+### Changes
+- Code improvements for better maintainability
+- Use C++23 throughout the whole codebase
+- Use VCPKG for external dependencies
+
+### Known Issues / Limitations
+
+
+
 ## [1.4.0] - 2026-04-04
 ### New verified supported games
 - Mafia The Old Country
