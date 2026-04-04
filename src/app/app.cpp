@@ -7,20 +7,20 @@
 #include "imgui_impl_opengl3.h"
 
 #include "app.hpp"
-#include "core/globals.hpp"
-#include "core/logger/logger.hpp"
+#include "globals.hpp"
+#include "backend/logger/logger.hpp"
 
-#include "core/ui/themes/themes.hpp"
-#include "core/ui/notifications/notification.hpp"
+#include "frontend/ui/themes/themes.hpp"
+#include "frontend/ui/notifications/notification.hpp"
 
-#include "core/ui/fonts/jbm_reg.h"
-#include "core/ui/fonts/jbm_med.h"
-#include "core/ui/fonts/jbm_bold.h"
+#include "frontend/ui/fonts/jbm_reg.h"
+#include "frontend/ui/fonts/jbm_med.h"
+#include "frontend/ui/fonts/jbm_bold.h"
 
-#include "core/detection/detection.hpp"
-#include "core/helpers/translations/translations.hpp"
-#include "core/helpers/blacklist/blacklist.hpp"
-#include "core/helpers/custom_games/custom_games.hpp"
+#include "backend/detection/detection.hpp"
+#include "backend/utils/translations/translations.hpp"
+#include "backend/utils/blacklist/blacklist.hpp"
+#include "backend/utils/custom_games/custom_games.hpp"
 
 void App::init() {
     if(!setup_opengl()) {

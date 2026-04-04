@@ -18,7 +18,7 @@
 #include <optional>
 #include <unordered_set>
 
-#include "core/globals.hpp"
+#include "globals.hpp"
 
 #include <imgui.h>
 #include <imgui_stdlib.h>

@@ -1,13 +1,13 @@
 #pragma once
-#include "core/config/config.hpp"
-#include "core/ui/tabs/settings/settings.hpp"
-#include "core/ui/tabs/log/log.hpp"
-#include "core/ui/tabs/transfer/transfer.hpp"
-#include "core/ui/tabs/about/about.hpp"
-#include "core/ui/tabs/general/general.hpp"
-#include "core/ui/tabs/about/about.hpp"
+#include "backend/config/config.hpp"
+#include "frontend/views/settings/settings.hpp"
+#include "frontend/views/log/log.hpp"
+#include "frontend/views/transfer/transfer.hpp"
+#include "frontend/views/about/about.hpp"
+#include "frontend/views/general/general.hpp"
+#include "frontend/views/about/about.hpp"
 
-#include "core/helpers/textures/textures.hpp"
+#include "frontend/ui/textures/textures.hpp"
 
 class App {
 public:
