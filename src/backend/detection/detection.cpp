@@ -18,8 +18,9 @@ struct Detectors {
 
 std::vector<std::string> get_platform_steam_paths() {
 #ifdef __APPLE__
-    #warning "macOS not currently supported"
-    return {};
+    return {
+        paths::home_dir() / "Library" / "Application Support" / "Steam" / "steamapps" / "libraryfolders.vdf",
+    };
 #endif
 
     try {

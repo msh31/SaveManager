@@ -14,8 +14,10 @@ inline fs::path home_dir() {
 }
 
 inline fs::path config_dir() {
-#if defined(__linux__) || defined(__APPLE__)
+#if defined(__linux__) 
     return home_dir() / ".config" / "savemanager";
+#elif  defined(__APPLE__)
+    return home_dir() / "Library" / "Application Support" / "savemanager";
 #elif defined(_WIN32)
     return home_dir() / "savemanager";
 #endif
@@ -27,10 +29,13 @@ inline fs::path cache_dir() {
     return config_dir() / "cache";
 }
 
-#if defined(__linux__) || defined(__APPLE__)
+#if defined(__linux__) 
 inline fs::path lutris_dir() {
     return home_dir() / "Games";
 }
+#endif
+
+#if defined(__linux__) || defined(__APPLE__)
 inline fs::path heroic_dir() {
     return home_dir() / "Games" / "Heroic";
 }
