@@ -21,7 +21,7 @@
 #include "core/globals.hpp"
 
 #include <imgui.h>
-#include <imgui/misc/cpp/imgui_stdlib.h>
+#include <imgui_stdlib.h>
 #endif
 
 #ifdef __linux__
@@ -35,5 +35,6 @@
 #include <shellapi.h>
 #endif
 
-#include <glad/glad.h>
+#include <KHR/khrplatform.h>
+#include <glad/gl.h>
 #include <GLFW/glfw3.h>

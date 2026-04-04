@@ -1,7 +1,7 @@
 #include "blacklist.hpp"
 #include "core/helpers/paths.hpp"
 #include "core/logger/logger.hpp"
-#include "json.hpp"
+#include <nlohmann/json.hpp>
 
 using json = nlohmann::json;
 

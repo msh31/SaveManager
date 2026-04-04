@@ -34,44 +34,20 @@ endif()
 # Variables
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
-# vcpkg settings
 project(SaveManager
 	LANGUAGES
 		C
 		CXX
 	VERSION
-		1.4.0
+		1.5.0
 	DESCRIPTION
 		"The swiss army knife of save management."
 )
 
-if(CMKR_ROOT_PROJECT AND NOT CMKR_DISABLE_VCPKG)
-	include(FetchContent)
-	# Fix warnings about DOWNLOAD_EXTRACT_TIMESTAMP
-	if(POLICY CMP0135)
-		cmake_policy(SET CMP0135 NEW)
-	endif()
-	message(STATUS "Fetching vcpkg (2026.02.27)...")
-	FetchContent_Declare(vcpkg
-		URL
-			"https://github.com/microsoft/vcpkg/archive/refs/tags/2026.02.27.tar.gz"
-		SUBBUILD_DIR
-			"CMakeFiles/vcpkg-subbuild"
-		SOURCE_DIR
-			vcpkg
-		BINARY_DIR
-			"CMakeFiles/vcpkg-build"
-	)
-	FetchContent_MakeAvailable(vcpkg)
-
-	if(CMAKE_HOST_SYSTEM_NAME STREQUAL Darwin AND CMAKE_OSX_ARCHITECTURES STREQUAL "")
-		set(CMAKE_OSX_ARCHITECTURES ${CMAKE_HOST_SYSTEM_PROCESSOR} CACHE STRING "" FORCE)
-	endif()
-	include("${vcpkg_SOURCE_DIR}/scripts/buildsystems/vcpkg.cmake")
-endif()
-
 # Packages
 find_package(CURL REQUIRED)
+
+find_package(glad REQUIRED)
 
 find_package(glfw3 REQUIRED)
 
@@ -81,17 +57,15 @@ find_package(OpenSSL REQUIRED)
 
 find_package(libssh2 REQUIRED)
 
+find_package(imgui REQUIRED)
+
+find_package(nlohmann_json REQUIRED)
+
+find_package(stb REQUIRED)
+
 # Target: savemanager
 set(savemanager_SOURCES
 	cmake.toml
-	"external/glad/src/glad.c"
-	"external/imgui/backends/imgui_impl_glfw.cpp"
-	"external/imgui/backends/imgui_impl_opengl3.cpp"
-	"external/imgui/imgui.cpp"
-	"external/imgui/imgui_draw.cpp"
-	"external/imgui/imgui_tables.cpp"
-	"external/imgui/imgui_widgets.cpp"
-	"external/imgui/misc/cpp/imgui_stdlib.cpp"
 	"src/app/app.cpp"
 	"src/core/config/config.cpp"
 	"src/core/detection/custom/custom.cpp"
@@ -116,6 +90,7 @@ set(savemanager_SOURCES
 	"src/core/ui/tabs/transfer/transfer.cpp"
 	"src/core/ui/themes/themes.cpp"
 	"src/main.cpp"
+	"vendor/imgui/imgui_stdlib.cpp"
 )
 
 add_executable(savemanager)
@@ -128,11 +103,8 @@ target_compile_features(savemanager PRIVATE
 )
 
 target_include_directories(savemanager PRIVATE
-	external
-	"external/imgui"
-	"external/imgui/backends"
-	"external/glad/include"
 	src
+	"vendor/imgui"
 )
 
 target_link_libraries(savemanager PRIVATE
@@ -141,6 +113,10 @@ target_link_libraries(savemanager PRIVATE
 	libzip::zip
 	libssh2::libssh2
 	OpenSSL::Crypto
+	imgui::imgui
+	glad::glad
+	nlohmann_json::nlohmann_json
+	stb::stb
 )
 
 if(WIN32) # windows
@@ -158,3 +134,10 @@ get_directory_property(CMKR_VS_STARTUP_PROJECT DIRECTORY ${PROJECT_SOURCE_DIR} D
 if(NOT CMKR_VS_STARTUP_PROJECT)
 	set_property(DIRECTORY ${PROJECT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT savemanager)
 endif()
+
+set(CMKR_TARGET savemanager)
+target_include_directories(savemanager PRIVATE "${imgui_PACKAGE_FOLDER_RELEASE}/res/bindings")
+target_sources(savemanager PRIVATE
+    "${imgui_PACKAGE_FOLDER_RELEASE}/res/bindings/imgui_impl_glfw.cpp"
+    "${imgui_PACKAGE_FOLDER_RELEASE}/res/bindings/imgui_impl_opengl3.cpp"
+)

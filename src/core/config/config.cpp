@@ -2,7 +2,7 @@
 #include "core/logger/logger.hpp"
 #include "core/helpers/translations/steamids.hpp"
 #include "core/helpers/translations/ubi_translations.hpp"
-#include "../../external/json.hpp"
+#include <nlohmann/json.hpp>
 
 using json = nlohmann::json;
 

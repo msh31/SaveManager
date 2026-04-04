@@ -3,7 +3,7 @@
 
 #define APP_NAME "SaveManager" 
 #define APP_AUTHOR "marco007" 
-#define APP_VERSION "v1.4.0" 
+#define APP_VERSION "v1.5.0" 
 
 constexpr int MIN_RES_W = 1280;
 constexpr int MIN_RES_H = 720;

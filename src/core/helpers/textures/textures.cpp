@@ -4,8 +4,8 @@
 #include "core/helpers/paths.hpp"
 #include "core/logger/logger.hpp"
 
-#include <glad/glad.h>
-#include "../external/stb/stb_image.h"
+#include <glad/gl.h>
+#include <stb_image.h>
 #include <core/network/network.hpp>
 
 GLuint Textures::upload_image_to_gpu(const ImageData& data) {

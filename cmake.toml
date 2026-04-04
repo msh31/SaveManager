@@ -6,15 +6,14 @@ cmkr-include = "cmkr.cmake"
 [project]
 name = "SaveManager"
 description = "The swiss army knife of save management."
-version = "1.4.0"
+version = "1.5.0"
 languages = ["C", "CXX"]
 msvc-runtime = "dynamic"
 
-[vcpkg]
-version = "2026.02.27"
-packages = ["curl", "glfw3", "libzip", "libssh2", "openssl"]
-
 [find-package.CURL]
+required = true
+
+[find-package.glad]
 required = true
 
 [find-package.glfw3]
@@ -29,6 +28,15 @@ required = true
 [find-package.libssh2]
 required = true
 
+[find-package.imgui]
+required = true
+
+[find-package.nlohmann_json]
+required = true
+
+[find-package.stb]
+required = true
+
 [variables]
 CMAKE_EXPORT_COMPILE_COMMANDS = true
 
@@ -36,29 +44,22 @@ CMAKE_EXPORT_COMPILE_COMMANDS = true
 type = "executable"
 sources = [
     "src/**.cpp",
-
-    # Dear ImGui
-    "external/imgui/imgui.cpp",
-    "external/imgui/imgui_draw.cpp",
-    "external/imgui/imgui_tables.cpp",
-    "external/imgui/imgui_widgets.cpp",
-    "external/imgui/backends/imgui_impl_glfw.cpp",
-    "external/imgui/backends/imgui_impl_opengl3.cpp",
-    "external/imgui/misc/cpp/imgui_stdlib.cpp",
-
-    # GLAD
-    "external/glad/src/glad.c",
+    "vendor/imgui/imgui_stdlib.cpp",
 ]
 include-directories = [
-    "external",
-    "external/imgui",
-    "external/imgui/backends",
-    "external/glad/include",
     "src",
+    "vendor/imgui",
 ]
 precompile-headers = ["src/pch.hpp"]
-link-libraries = ["CURL::libcurl", "glfw", "libzip::zip", "libssh2::libssh2", "OpenSSL::Crypto"]
+link-libraries = ["CURL::libcurl", "glfw", "libzip::zip", "libssh2::libssh2", "OpenSSL::Crypto", "imgui::imgui", "glad::glad", "nlohmann_json::nlohmann_json", "stb::stb"]
 compile-features = ["cxx_std_23"]
+cmake-after = """
+target_include_directories(savemanager PRIVATE "${imgui_PACKAGE_FOLDER_RELEASE}/res/bindings")
+target_sources(savemanager PRIVATE
+    "${imgui_PACKAGE_FOLDER_RELEASE}/res/bindings/imgui_impl_glfw.cpp"
+    "${imgui_PACKAGE_FOLDER_RELEASE}/res/bindings/imgui_impl_opengl3.cpp"
+)
+"""
 
 [target.savemanager.windows]
 link-libraries = ["ws2_32", "shell32"]

@@ -1,0 +1,16 @@
+[requires]
+libzip/1.11.4
+libcurl/8.19.0
+libssh2/1.11.1
+imgui/1.92.6
+glfw/3.4
+opengl/system
+nlohmann_json/3.12.0
+openssl/3.6.1
+glad/2.0.8
+stb/cci.20230920
+[generators]
+CMakeDeps
+CMakeToolchain
+[layout]
+cmake_layout
