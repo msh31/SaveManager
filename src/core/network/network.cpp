@@ -83,7 +83,9 @@ void Network::download_game_image(const std::string& appid) {
         appid +
         "/library_600x900.jpg";
 
-    Network::download_file(url, img_path.string());
+    if (!Network::download_file(url, img_path.string())) {
+        get_logger().error("Could not download " + img_path.string());
+    }
 }
 
 bool Network::is_update_available() {
