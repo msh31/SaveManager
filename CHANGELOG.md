@@ -2,17 +2,21 @@
 
 ## [1.5.0] - 2026-04-04
 ### New verified supported games
+- Grand Theft Auto IV
+- L.A. Noire
+- 
 
 ### Added
 - MacOS support (Intel & Apple Silicon)
 
 ### Fixed 
-
+- Rare issue of Rockstar Games saves not detecting on Windows 
+- 
 
 ### Changes
 - Code improvements for better maintainability
 - Use C++23 throughout the whole codebase
-- Use VCPKG for external dependencies
+- Use Conan for external dependencies
 
 ### Known Issues / Limitations
 

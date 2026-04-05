@@ -7,11 +7,13 @@ Contributions are welcome!
 For unreal engine games, only UE4 / UE5 games are supported due to them sharing a format 
 
 ## Rockstar
+- GTA 3 (Original / The Definitive Edition)
 - GTA Vice City (Original / The Definitive Edition)
 - GTA San Andreas (Original / The Definitive Edition)
-- GTA 3 (Original / The Definitive Edition)
-- Bully
+- Grand Theft Auto IV
 - Grand Theft Auto V (Enhanced / Legacy)
+- Bully
+- L.A. Noire
 - Red Dead Redemption
 - Red Dead Redemption II
 - Manhunt (2)
