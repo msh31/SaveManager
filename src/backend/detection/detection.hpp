@@ -1,24 +1,5 @@
 #pragma once
-namespace fs = std::filesystem;
-
 class Config;
-
-enum PlatformType {
-    UBISOFT = 1,
-    ROCKSTAR,
-    UNREAL,
-    PSP,
-    PPSSPP,
-    CUSTOM
-};
-
-struct Game {
-    PlatformType type;
-    std::string appid;
-    std::optional<std::string> game_id; 
-    std::string game_name;
-    fs::path save_path;
-};
 
 namespace Detection {
 struct DetectionResult {
@@ -26,5 +7,6 @@ struct DetectionResult {
     std::vector<std::vector<int>> get_grouped() const;
 };
 
+void add_game(std::expected<std::vector<Game>, DetectionError> result, const std::string& platform, std::vector<Game>& games);
 DetectionResult find_saves(Config& config);
 };

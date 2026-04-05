@@ -3,43 +3,49 @@
 #include <backend/logger/logger.hpp>
 
 void UnrealDetector::scan_for_saves(const fs::path& path, std::set<fs::path>& directories) const {
-    for (const auto& entry : fs::recursive_directory_iterator(path, fs::directory_options::skip_permission_denied)) {
-        if (entry.path().extension() != ".sav") {
-            continue;
-        }
+    try {
+        for (const auto& entry : fs::recursive_directory_iterator(path, fs::directory_options::skip_permission_denied)) {
+            if (entry.path().extension() != ".sav") {
+                continue;
+            }
 
-        std::ifstream save(entry.path(), std::ifstream::binary);
-        if (!save.is_open()) {
-            continue;
-        }
+            std::ifstream save(entry.path(), std::ifstream::binary);
+            if (!save.is_open()) {
+                continue;
+            }
 
-        char buffer[4];
-        save.read(buffer, 4);
-        if (save.gcount() != 4) {
-            continue;
-        }
+            char buffer[4];
+            save.read(buffer, 4);
+            if (save.gcount() != 4) {
+                continue;
+            }
 
-        if (!std::equal(std::begin(buffer), std::end(buffer), std::begin(header))) {
-            continue;
-        }
+            if (!std::equal(std::begin(buffer), std::end(buffer), std::begin(header))) {
+                continue;
+            }
 
-        std::string path_str = entry.path().parent_path().string();
-        if (path_str.find("Ubisoft") != std::string::npos ||
+            std::string path_str = entry.path().parent_path().string();
+            if (path_str.find("Ubisoft") != std::string::npos ||
                 path_str.find("Rockstar") != std::string::npos ||
                 path_str.find("Application Data BACKUP") != std::string::npos ||
                 path_str.find("Settings") != std::string::npos) {
-            continue;
-        }
+                continue;
+            }
 
-        // get_logger().debug("scan_for_saves: " + path.string());
-        directories.insert(entry.path().parent_path());
+            // get_logger().debug("scan_for_saves: " + path.string());
+            directories.insert(entry.path().parent_path());
+        }
+    } catch(std::filesystem::filesystem_error&) {
+        return;
     }
 }
 
-void UnrealDetector::find_saves(const fs::path& prefix, std::vector<Game>& out_games, UnrealDetector::ScanMode scan_mode) const {
+std::expected<std::vector<Game>, DetectionError> UnrealDetector::find_saves(const fs::path& prefix, UnrealDetector::ScanMode scan_mode) const {
     std::set<fs::path> directories;
+    std::vector<Game> games;
+
     if(!fs::exists(prefix)) {
-        return;
+        return std::unexpected{DetectionError::PathNotFound};
     }
 
     switch (scan_mode) {
@@ -48,12 +54,16 @@ void UnrealDetector::find_saves(const fs::path& prefix, std::vector<Game>& out_g
             break;
         case UnrealDetector::ScanMode::Native:
             for(const auto& folder : fs::directory_iterator(prefix, std::filesystem::directory_options::skip_permission_denied)) {
+                if (!fs::is_directory(folder)) {
+                    continue;
+                }
+
                 fs::path save_games = folder.path() / "Saved" / "SaveGames";
                 fs::path save_games_alt = folder.path() / "SaveGames";
 
                 fs::path target;
                 if (fs::exists(save_games)) {
-                     target = save_games;
+                    target = save_games;
                 }
                 else if (fs::exists(save_games_alt)) { 
                     target = save_games_alt;
@@ -84,7 +94,6 @@ void UnrealDetector::find_saves(const fs::path& prefix, std::vector<Game>& out_g
                     }
                     continue;
                 }
-
 
                 try {
                     scan_for_saves(target, directories);
@@ -154,6 +163,8 @@ void UnrealDetector::find_saves(const fs::path& prefix, std::vector<Game>& out_g
             game.game_name = found_name;
             game.appid = "N/A";
         }
-        out_games.push_back(game);
+        games.push_back(game);
     }
+
+    return games;
 }

@@ -1,10 +1,11 @@
 #include "ubi.hpp"
 #include "backend/utils/translations/translations.hpp"
 
-void UbisoftDetector::find_saves(const fs::path& prefix, std::vector<Game>& out_games) const {
+std::expected<std::vector<Game>, DetectionError> UbisoftDetector::find_saves(const fs::path& prefix) const {
     if(!fs::exists(prefix)) {
-        return;
+        return std::unexpected{DetectionError::PathNotFound};
     }
+    std::vector<Game> games;
 
     for(const auto& uuid_entry : fs::directory_iterator(prefix, std::filesystem::directory_options::skip_permission_denied)) {
         fs::path uuid_folder = uuid_entry.path();
@@ -19,15 +20,17 @@ void UbisoftDetector::find_saves(const fs::path& prefix, std::vector<Game>& out_
             game.appid = translations::get_steam_id(game.game_name).value_or("N/A");
             game.save_path = game_id_folder;
 
-            out_games.push_back(game);
+            games.push_back(game);
         }
     }
+    return games;
 }
 
-void UbisoftDetector::find_anno_saves(const fs::path& prefix, std::vector<Game>& out_games) const {
+std::expected<std::vector<Game>, DetectionError>  UbisoftDetector::find_anno_saves(const fs::path& prefix) const {
     if(!fs::exists(prefix)) {
-        return;
+        return std::unexpected{DetectionError::PathNotFound};
     }
+    std::vector<Game> games;
 
     for(const auto& game : fs::directory_iterator(prefix, std::filesystem::directory_options::skip_permission_denied)) {
         std::string folder_name = game.path().filename().string();
@@ -43,7 +46,8 @@ void UbisoftDetector::find_anno_saves(const fs::path& prefix, std::vector<Game>&
             anno.save_path = fs::exists(save) ? save : game.path(); //a fallback
             // get_logger().info("Anno game: " + anno.game_name + " appid: " + anno.appid);
 
-            out_games.push_back(anno);
+            games.push_back(anno);
         }
     }
+    return games;
 }

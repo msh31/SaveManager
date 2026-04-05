@@ -1,10 +1,10 @@
 #pragma once
-#include "backend/detection/idetector.hpp"
+#include "backend/detection/detection.hpp"
 
-class UbisoftDetector : public IDetector {
+class UbisoftDetector  {
 public:
-    void find_saves(const fs::path& prefix, std::vector<Game>& out_games) const override;
-    void find_anno_saves(const fs::path& prefix, std::vector<Game>& out_games) const;
+    std::expected<std::vector<Game>, DetectionError> find_saves(const fs::path& prefix) const;
+    std::expected<std::vector<Game>, DetectionError> find_anno_saves(const fs::path& prefix) const;
 
 private:
     struct AnnoEntry {

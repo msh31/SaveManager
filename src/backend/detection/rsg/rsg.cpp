@@ -2,10 +2,11 @@
 #include "backend/detection/detection.hpp"
 #include "backend/utils/translations/translations.hpp"
 
-void RockstarDetector::find_saves(const fs::path& prefix, std::vector<Game>& out_games) const {
+std::expected<std::vector<Game>, DetectionError> RockstarDetector::find_saves(const fs::path& prefix) const { 
     if(!fs::exists(prefix)) {
-        return;
+        return std::unexpected{DetectionError::PathNotFound};
     }
+    std::vector<Game> games;
 
     for(const auto& game : fs::directory_iterator(prefix, std::filesystem::directory_options::skip_permission_denied)) {
         fs::path game_folder = game.path();
@@ -29,15 +30,17 @@ void RockstarDetector::find_saves(const fs::path& prefix, std::vector<Game>& out
             game.appid = translations::get_steam_id(game.game_name).value_or("N/A");
             game.save_path = uuid_folder;
 
-            out_games.push_back(game);
+            games.push_back(game);
         }
     }
+    return games;
 }
 
-void RockstarDetector::find_legacy_saves(const fs::path& prefix, std::vector<Game>& out_games) const {
+std::expected<std::vector<Game>, DetectionError> RockstarDetector::find_legacy_saves(const fs::path& prefix) const {
     if(!fs::exists(prefix)) {
-        return;
+        return std::unexpected{DetectionError::PathNotFound};
     }
+    std::vector<Game> games;
 
     for(const auto& game : fs::directory_iterator(prefix, std::filesystem::directory_options::skip_permission_denied)) {
         std::string folder_name = game.path().filename().string();
@@ -49,7 +52,8 @@ void RockstarDetector::find_legacy_saves(const fs::path& prefix, std::vector<Gam
             l_game.appid = translations::get_steam_id(l_game.game_name).value_or("N/A");
             l_game.save_path = game.path();
 
-            out_games.push_back(l_game);
+            games.push_back(l_game);
         }
     }
+    return games;
 }

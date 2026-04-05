@@ -8,6 +8,7 @@
 #include "backend/detection/ubi/ubi.hpp"
 #include "backend/detection/unreal/unreal.hpp"
 #include "backend/detection/custom/custom.hpp"
+#include "globals.hpp"
 
 struct Detectors {
    RockstarDetector rockstar_detect; 
@@ -100,39 +101,61 @@ std::vector<fs::path> get_library_folders(Config& config) {
     return libraries;
 }
 
+void add_game(std::expected<std::vector<Game>, DetectionError> result, const std::string& platform, std::vector<Game>& games) {
+    if (result) {
+        games.append_range(result.value());
+    } else {
+        switch(result.error()) {
+            case DetectionError::PathNotFound:
+                break;
+            case DetectionError::PermissionDenied:
+                get_logger().warning("{}: permission denied", platform);
+                break;
+            case DetectionError::NoSavesFound:
+                get_logger().warning("{}: no saves found", platform);
+                break;
+        }
+    }
+}
+
+//try catch here is band-aid fix
+//an exception escapes somewhere and causes a crash
+//more investigation needed
 void scan_prefix_dir(const fs::path& compatdata, Detection::DetectionResult& result, const Config& config, const Detectors& detectors) {
-    for (const auto& entry : fs::directory_iterator(compatdata)) {
-        fs::path prefix = entry.path();
-        if(!fs::exists(prefix)) {
-            get_logger().warning("Prefix not found!");
-            continue;
-        }
+    try {
+        for (const auto& entry : fs::directory_iterator(compatdata)) {
+            fs::path prefix = entry.path();
+            if(!fs::exists(prefix)) {
+                get_logger().warning("Prefix not found!");
+                continue;
+            }
 
-        fs::path drive_c = fs::exists(prefix / "pfx") ? prefix / "pfx/drive_c" : prefix / "drive_c";
-        fs::path users_dir = drive_c / "users";
-        if (config.settings.ubi_enabled) {
-            detectors.ubisoft_detect.find_saves(drive_c / "Program Files (x86)/Ubisoft/Ubisoft Game Launcher/savegames", result.games);
-        }
-        detectors.custom_detect.find_saves(drive_c, result.games);
+            fs::path drive_c = fs::exists(prefix / "pfx") ? prefix / "pfx/drive_c" : prefix / "drive_c";
+            fs::path users_dir = drive_c / "users";
+            if (config.settings.ubi_enabled) {
+                add_game(detectors.ubisoft_detect.find_saves(drive_c / "Program Files (x86)" / "Ubisoft" / "Ubisoft Game Launcher" / "savegames"), "ubi", result.games);
+            }
+            add_game(detectors.custom_detect.find_saves(drive_c), "custom", result.games); //might be too broad
 
-        if (fs::exists(users_dir)) {
-            for (const auto& user : fs::directory_iterator(users_dir)) {
-                if (user.path().filename() == "Public") continue;
+            if (fs::exists(users_dir)) {
+                for (const auto& user : fs::directory_iterator(users_dir)) {
+                    if (user.path().filename() == "Public") continue;
 
-                if(config.settings.ubi_enabled) {
-                    detectors.ubisoft_detect.find_anno_saves(user.path() / "Documents", result.games);
-                }
-                if (config.settings.rsg_enabled) {
-                    detectors.rockstar_detect.find_saves(user.path() / "Documents/Rockstar Games", result.games);
-                    detectors.rockstar_detect.find_legacy_saves(user.path() / "Documents", result.games);
-                    detectors.rockstar_detect.find_legacy_saves(user.path() / "AppData/Local/Rockstar Games", result.games);
-                }
-                if (config.settings.unreal_enabled) {
-                    detectors.unreal_detect.find_saves(user.path(), result.games);
+                    if(config.settings.ubi_enabled) {
+                        add_game(detectors.ubisoft_detect.find_saves(user.path() / "Documents"), "ubi", result.games);
+                    }
+                    if (config.settings.rsg_enabled) {
+                        add_game(detectors.rockstar_detect.find_saves(user.path() / "Documents" / "Rockstar Games"), "rsg", result.games);
+                        add_game(detectors.rockstar_detect.find_legacy_saves(user.path() / "Documents"), "rsg", result.games);
+                        add_game(detectors.rockstar_detect.find_saves(user.path() / "AppData" / "Local" / "Rockstar Games"), "rsg", result.games);
+                    }
+                    if (config.settings.unreal_enabled) {
+                        add_game(detectors.unreal_detect.find_saves(user.path()), "custom", result.games); 
+                    }
                 }
             }
         }
-    }
+    } catch(std::filesystem::filesystem_error) {};
 }
 
 Detection::DetectionResult Detection::find_saves(Config& config) {

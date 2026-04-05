@@ -1,10 +1,10 @@
 #pragma once
-#include "backend/detection/idetector.hpp"
+#include "backend/detection/detection.hpp"
 
-class RockstarDetector : public IDetector {
+class RockstarDetector {
 public:
-    void find_saves(const fs::path& prefix, std::vector<Game>& out_games) const override;
-    void find_legacy_saves(const fs::path& prefix, std::vector<Game>& out_games) const;
+    std::expected<std::vector<Game>, DetectionError> find_saves(const fs::path& prefix) const;
+    std::expected<std::vector<Game>, DetectionError> find_legacy_saves(const fs::path& prefix) const;
 
 private:
     const std::unordered_map<std::string_view, std::string> legacy_games = { //small enough, for now.

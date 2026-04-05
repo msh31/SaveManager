@@ -17,6 +17,7 @@
 #include <regex>
 #include <optional>
 #include <unordered_set>
+#include <expected>
 
 #include "globals.hpp"
 

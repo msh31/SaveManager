@@ -1,10 +1,10 @@
 #pragma once
-#include "backend/detection/idetector.hpp"
 
+#include "backend/detection/detection.hpp"
 class UnrealDetector {
 public:
     enum class ScanMode { Recursive, Native };
-    void find_saves(const fs::path& prefix, std::vector<Game>& out_games, ScanMode mode = ScanMode::Recursive) const;
+    std::expected<std::vector<Game>, DetectionError> find_saves(const fs::path& prefix, ScanMode mode = ScanMode::Recursive) const;
 private:
     char header[4] = {'G','V','A','S'};
     void scan_for_saves(const fs::path& path, std::set<fs::path>& directories) const;
