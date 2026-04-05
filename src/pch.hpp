@@ -31,9 +31,12 @@
 
 #ifdef _WIN32
 #include <winsock2.h>
-#include <ws2tcpip.h>
 #include <windows.h>
+#include <ws2tcpip.h>
 #include <shellapi.h>
+#include <wchar.h>
+#include <KnownFolders.h>
+#include <shlobj.h>
 #endif
 
 #include <KHR/khrplatform.h>
