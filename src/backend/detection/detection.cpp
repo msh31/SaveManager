@@ -147,10 +147,10 @@ void scan_prefix_dir(const fs::path& compatdata, Detection::DetectionResult& res
                     if (config.settings.rsg_enabled) {
                         add_game(detectors.rockstar_detect.find_saves(user.path() / "Documents" / "Rockstar Games"), "rsg", result.games);
                         add_game(detectors.rockstar_detect.find_legacy_saves(user.path() / "Documents"), "rsg", result.games);
-                        add_game(detectors.rockstar_detect.find_saves(user.path() / "AppData" / "Local" / "Rockstar Games"), "rsg", result.games);
+                        add_game(detectors.rockstar_detect.find_legacy_saves(user.path() / "AppData" / "Local" / "Rockstar Games"), "rsg", result.games);
                     }
                     if (config.settings.unreal_enabled) {
-                        add_game(detectors.unreal_detect.find_saves(user.path()), "custom", result.games); 
+                        add_game(detectors.unreal_detect.find_saves(user.path()), "unreal", result.games); 
                     }
                 }
             }
@@ -212,39 +212,35 @@ Detection::DetectionResult Detection::find_saves(Config& config) {
 
 #ifdef _WIN32
     if(config.settings.ubi_enabled) {
-        detectors.ubisoft_detect.find_saves("C:\\Program Files (x86)\\Ubisoft\\Ubisoft Game Launcher\\savegames", result.games);
-        detectors.ubisoft_detect.find_anno_saves(paths::documents_dir(), result.games);
-        detectors.ubisoft_detect.find_anno_saves(paths::home_dir() / "AppData/Roaming", result.games);
+        add_game(detectors.unreal_detect.find_saves(C:\\Program Files (x86)\\Ubisoft\\Ubisoft Game Launcher\\savegames), "ubi", result.games); 
+        add_game(detectors.unreal_detect.find_anno_saves(paths::documents_dir()), "ubi", result.games); 
+        add_game(detectors.unreal_detect.find_anno_saves(paths::home_dir() / "AppData" / "Roaming"), "ubi", result.games); 
     }
 
     if(config.settings.rsg_enabled) {
-        detectors.rockstar_detect.find_saves(paths::documents_dir() / "Rockstar Games", result.games);
-        detectors.rockstar_detect.find_legacy_saves(paths::documents_dir(), result.games);
-        detectors.rockstar_detect.find_legacy_saves(paths::home_dir() / "AppData/Local/Rockstar Games", result.games);
+        add_game(detectors.rockstar_detect.find_saves(paths::documents_dir() / "Rockstar Games"), "rsg", result.games); 
+        add_game(detectors.rockstar_detect.find_legacy_saves(paths::documents_dir()), "unreal", result.games); 
+        add_game(detectors.rockstar_detect.find_legacy_saves(paths::home_dir() / "AppData" / "Local" / "Rockstar Games"), "rsg", result.games); 
     }
     if (config.settings.unreal_enabled) {
-        detectors.unreal_detect.find_saves(paths::home_dir(), result.games);
+        add_game(detectors.unreal_detect.find_saves(paths::home_dir()), "unreal", result.games); 
     }
-    detectors.custom_detect.find_saves(paths::home_dir(), result.games);
+    add_game(detectors.custom_detect.find_saves(paths::home_dir()), "custom", result.games); 
 #endif
 
 #ifdef __APPLE__
     if(config.settings.ubi_enabled) {
-        // detectors.ubisoft_detect.find_saves("C:\\Program Files (x86)\\Ubisoft\\Ubisoft Game Launcher\\savegames", result.games);
-        // detectors.ubisoft_detect.find_anno_saves(paths::documents_dir(), result.games);
-        // detectors.ubisoft_detect.find_anno_saves(paths::home_dir() / "AppData/Roaming", result.games);
+        //ignored
     }
 
     if(config.settings.rsg_enabled) {
-        // detectors.rockstar_detect.find_saves(paths::documents_dir() / "Rockstar Games", result.games);
-        // detectors.rockstar_detect.find_legacy_saves(paths::documents_dir(), result.games);
-        // detectors.rockstar_detect.find_legacy_saves(paths::home_dir() / "AppData/Local/Rockstar Games", result.games);
+        //ignored
     }
     if (config.settings.unreal_enabled) {
-        detectors.unreal_detect.find_saves(paths::home_dir() / "Library" / "Application Support", result.games, UnrealDetector::ScanMode::Native);
-        detectors.unreal_detect.find_saves(paths::heroic_dir() / "Prefixes", result.games); 
+        add_game(detectors.unreal_detect.find_saves(paths::home_dir() / "Library" / "Application Support"), "unreal", result.games, UnrealDetector::ScanMode::Native); 
+        add_game(detectors.unreal_detect.find_saves(paths::heroic_dir() / "Prefixes"), "unreal", result.games); 
     }
-    detectors.custom_detect.find_saves(paths::home_dir(), result.games);
+    add_game(detectors.custom_detect.find_saves(paths::home_dir()), "custom", result.games); 
 #endif
 
     if (result.games.empty()) {
