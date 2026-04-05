@@ -2,44 +2,97 @@
 #include "backend/utils/translations/translations.hpp"
 #include <backend/logger/logger.hpp>
 
-void UnrealDetector::find_saves(const fs::path& prefix, std::vector<Game>& out_games) const {
+void UnrealDetector::scan_for_saves(const fs::path& path, std::set<fs::path>& directories) const {
+    for (const auto& entry : fs::recursive_directory_iterator(path, fs::directory_options::skip_permission_denied)) {
+        if (entry.path().extension() != ".sav") {
+            continue;
+        }
+
+        std::ifstream save(entry.path(), std::ifstream::binary);
+        if (!save.is_open()) {
+            continue;
+        }
+
+        char buffer[4];
+        save.read(buffer, 4);
+        if (save.gcount() != 4) {
+            continue;
+        }
+
+        if (!std::equal(std::begin(buffer), std::end(buffer), std::begin(header))) {
+            continue;
+        }
+
+        std::string path_str = entry.path().parent_path().string();
+        if (path_str.find("Ubisoft") != std::string::npos ||
+                path_str.find("Rockstar") != std::string::npos ||
+                path_str.find("Application Data BACKUP") != std::string::npos ||
+                path_str.find("Settings") != std::string::npos) {
+            continue;
+        }
+
+        // get_logger().debug("scan_for_saves: " + path.string());
+        directories.insert(entry.path().parent_path());
+    }
+}
+
+void UnrealDetector::find_saves(const fs::path& prefix, std::vector<Game>& out_games, UnrealDetector::ScanMode scan_mode) const {
+    std::set<fs::path> directories;
     if(!fs::exists(prefix)) {
         return;
     }
-    std::set<fs::path> directories;
-    fs::path file;
-    char header[4] = {'G','V','A','S'};
 
-    for(const auto& folder : fs::recursive_directory_iterator(prefix, std::filesystem::directory_options::skip_permission_denied)) { 
-        file = folder.path();
+    switch (scan_mode) {
+        case UnrealDetector::ScanMode::Recursive:
+            scan_for_saves(prefix, directories);
+            break;
+        case UnrealDetector::ScanMode::Native:
+            for(const auto& folder : fs::directory_iterator(prefix, std::filesystem::directory_options::skip_permission_denied)) {
+                fs::path save_games = folder.path() / "Saved" / "SaveGames";
+                fs::path save_games_alt = folder.path() / "SaveGames";
 
-        if(file.extension() == ".sav") {
-            std::ifstream save(file, std::ifstream::binary);
+                fs::path target;
+                if (fs::exists(save_games)) {
+                     target = save_games;
+                }
+                else if (fs::exists(save_games_alt)) { 
+                    target = save_games_alt;
+                }
+                else {
+                    try {
+                        for (const auto& subfolder : fs::directory_iterator(folder, fs::directory_options::skip_permission_denied)) {
+                            if (!fs::is_directory(subfolder)) {
+                                continue;
+                            }
+                            fs::path sub_save_games = subfolder.path() / "Saved" / "SaveGames";
+                            fs::path sub_save_games_alt = subfolder.path() / "SaveGames";
+                            fs::path target_two;
 
-            if(!save.is_open()) {
-                continue;
-            } else {
-                char buffer[4];
-                save.read(buffer, 4);
-                if(save.gcount() != 4) {
+                            if (fs::exists(sub_save_games)) {
+                                target_two = sub_save_games;
+                            }
+                            else if (fs::exists(sub_save_games_alt)) {
+                                target_two = sub_save_games_alt;
+                            } else {
+                                continue;
+                            }
+                            // get_logger().debug("target_two: " + target_two.string());
+                            scan_for_saves(target_two, directories);
+                        }
+                    } catch (const fs::filesystem_error&) {
+                        continue;
+                    }
                     continue;
                 }
 
-                if(!std::equal(std::begin(buffer), std::end(buffer), std::begin(header))) {
-                    continue;
-                }
 
-                std::string path_str = file.parent_path().string();
-                if (path_str.find("Ubisoft") != std::string::npos || 
-                    path_str.find("Rockstar") != std::string::npos ||
-                    path_str.find("Application Data BACKUP") != std::string::npos ||
-                    path_str.find("Settings") != std::string::npos) { //might cause issues but works fine for now
+                try {
+                    scan_for_saves(target, directories);
+                } catch (const fs::filesystem_error&) {
                     continue;
                 }
-                //get_logger().debug(path_str);
-                directories.insert(file.parent_path());
             }
-        }
+            break;
     }
 
     for (const auto& entry : directories) {
@@ -102,6 +155,5 @@ void UnrealDetector::find_saves(const fs::path& prefix, std::vector<Game>& out_g
             game.appid = "N/A";
         }
         out_games.push_back(game);
-        //get_logger().debug(game.game_name);
     }
 }

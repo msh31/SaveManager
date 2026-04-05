@@ -1,10 +1,14 @@
 #pragma once
 #include "backend/detection/idetector.hpp"
 
-class UnrealDetector : public IDetector {
+class UnrealDetector {
 public:
-    void find_saves(const fs::path& prefix, std::vector<Game>& out_games) const override;
+    enum class ScanMode { Recursive, Native };
+    void find_saves(const fs::path& prefix, std::vector<Game>& out_games, ScanMode mode = ScanMode::Recursive) const;
 private:
+    char header[4] = {'G','V','A','S'};
+    void scan_for_saves(const fs::path& path, std::set<fs::path>& directories) const;
+
     const std::unordered_map<std::string_view, std::string> translations = {
         {"MGSDelta", "2417610"},
         {"detnoir", "1939970"},

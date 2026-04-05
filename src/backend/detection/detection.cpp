@@ -205,6 +205,25 @@ Detection::DetectionResult Detection::find_saves(Config& config) {
     detectors.custom_detect.find_saves(paths::home_dir(), result.games);
 #endif
 
+#ifdef __APPLE__
+    if(config.settings.ubi_enabled) {
+        // detectors.ubisoft_detect.find_saves("C:\\Program Files (x86)\\Ubisoft\\Ubisoft Game Launcher\\savegames", result.games);
+        // detectors.ubisoft_detect.find_anno_saves(paths::documents_dir(), result.games);
+        // detectors.ubisoft_detect.find_anno_saves(paths::home_dir() / "AppData/Roaming", result.games);
+    }
+
+    if(config.settings.rsg_enabled) {
+        // detectors.rockstar_detect.find_saves(paths::documents_dir() / "Rockstar Games", result.games);
+        // detectors.rockstar_detect.find_legacy_saves(paths::documents_dir(), result.games);
+        // detectors.rockstar_detect.find_legacy_saves(paths::home_dir() / "AppData/Local/Rockstar Games", result.games);
+    }
+    if (config.settings.unreal_enabled) {
+        detectors.unreal_detect.find_saves(paths::home_dir() / "Library" / "Application Support", result.games, UnrealDetector::ScanMode::Native);
+        detectors.unreal_detect.find_saves(paths::heroic_dir() / "Prefixes", result.games); 
+    }
+    detectors.custom_detect.find_saves(paths::home_dir(), result.games);
+#endif
+
     if (result.games.empty()) {
         get_logger().error("No savegames found!");
     }
