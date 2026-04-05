@@ -25,7 +25,7 @@ void translations::init() {
     try {
         if (ubi_file.is_open() && fs::file_size(paths::ubi_translations()) > 0) {
             ubi_data = json::parse(ubi_file);
-            get_logger().info("Loaded ubi_translations JSON with " + std::to_string(ubi_data.size()) + " franchises");
+            get_logger().info("Loaded ubi_translations JSON with {} franchises", std::to_string(ubi_data.size()));
             for (const auto& [franchise, games] : ubi_data.items()) {
                 for (const auto& [id, name] : games.items()) {
                     auto clean = std::regex_replace(name.get<std::string>(), std::regex(R"(\s*\([^)]*\))"), "");
@@ -36,7 +36,7 @@ void translations::init() {
             get_logger().error("Failed to open ubi translations file!");
         }
     } catch(json::exception& ex) {
-        get_logger().error("Translation error: " + std::string(ex.what()));
+        get_logger().error("Translation error: {}", std::string(ex.what()));
     }
 
     try {
@@ -55,7 +55,7 @@ void translations::init() {
             get_logger().error("Failed to open steamids file!");
         }
     } catch(json::exception& ex) {
-        get_logger().error("Translation error: " + std::string(ex.what()));
+        get_logger().error("Translation error: {}", std::string(ex.what()));
     }
 }
 

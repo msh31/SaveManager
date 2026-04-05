@@ -102,7 +102,7 @@ void SettingsTab::render(const Fonts& fonts, Config& config) {
         *m_refresh_requested = true;
 
         if (ec) {
-            get_logger().warning(ec.message());
+            get_logger().warning("cache refresh error: {}", ec.message());
         }
     }
     ImGui::SetItemTooltip("Deletes cached images and re-downloads them.");

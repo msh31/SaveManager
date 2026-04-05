@@ -37,7 +37,7 @@ std::vector<std::string> get_platform_steam_paths() {
         };
 #endif
     } catch (const std::exception& e) {
-        get_logger().error("Failed to get Steam paths: " + std::string(e.what()));
+        get_logger().error("Failed to get Steam paths: {}", std::string(e.what()));
         return {};
     }
 }

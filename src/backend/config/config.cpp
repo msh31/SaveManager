@@ -22,7 +22,7 @@ Config::Config() {
 
         load();
     } catch (const std::exception& err) {
-        get_logger().error(err.what());
+        get_logger().error("config constructor: {}", err.what());
     }
 }
 
@@ -30,7 +30,7 @@ Config::~Config() {
     try {
         save();
     } catch (const std::exception& err) {
-        get_logger().error(err.what());
+        get_logger().error("config destructor: {}", err.what());
     }
 }
 

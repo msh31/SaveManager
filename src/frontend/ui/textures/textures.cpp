@@ -1,10 +1,8 @@
-#include <filesystem>
 #define STB_IMAGE_IMPLEMENTATION
 #include "textures.hpp"
 #include "backend/utils/paths.hpp"
 #include "backend/logger/logger.hpp"
 
-#include <glad/gl.h>
 #include <stb_image.h>
 #include <backend/networking/network.hpp>
 
@@ -35,7 +33,7 @@ Textures::ImageData Textures::load_image(const std::string& appid) {
     auto filename = paths::cache_dir() / (appid + ".jpg");
     FILE* f = fopen(filename.string().c_str(), "rb");
     if (f == NULL) {
-        get_logger().error("Failed to open: " + appid + ".jpg during loading");
+        get_logger().error("Failed to open: {}.jpg during loading", appid);
         return {};
     }
 
@@ -43,7 +41,7 @@ Textures::ImageData Textures::load_image(const std::string& appid) {
     size_t file_size = (size_t)ftell(f);
 
     if (file_size == -1) {
-        get_logger().error("Failed to seek through: " + appid + ".jpg");
+        get_logger().error("Failed to seek through: {}.jpg", appid);
         fclose(f);
         return {};
     }

@@ -32,7 +32,7 @@ std::string Network::download_to_string(const std::string_view& url) {
     curl_easy_cleanup(curl);
     
     if (res != CURLE_OK) {
-        get_logger().error("Failed to stream: " + std::string(curl_easy_strerror(res)));
+        get_logger().error("Failed to stream: {}", std::string(curl_easy_strerror(res)));
         return {};
     }
     
@@ -48,7 +48,7 @@ bool Network::download_file(const std::string_view& url, const std::string& outp
     
     FILE* fp = fopen(output_path.c_str(), "wb");
     if (!fp) { 
-        get_logger().error("Failed to open file for writing: " + output_path);
+        get_logger().error("Failed to open file for writing: {}", output_path);
         curl_easy_cleanup(curl); 
         return false; 
     }
@@ -63,7 +63,7 @@ bool Network::download_file(const std::string_view& url, const std::string& outp
     curl_easy_cleanup(curl);
     
     if (res != CURLE_OK) {
-        get_logger().error("Failed to download file: " + std::string(curl_easy_strerror(res)));
+        get_logger().error("Failed to download file: {}", std::string(curl_easy_strerror(res)));
         return false;
     }
     
@@ -84,7 +84,7 @@ void Network::download_game_image(const std::string& appid) {
         "/library_600x900.jpg";
 
     if (!Network::download_file(url, img_path.string())) {
-        get_logger().error("Could not download " + img_path.string());
+        get_logger().error("Could not download {}", img_path.string());
     }
 }
 
@@ -100,7 +100,7 @@ bool Network::is_update_available() {
     try {
         data = json::parse(upstream);
     } catch(json::exception& ex) {
-        get_logger().error(ex.what());
+        get_logger().error("JSON parsing error: {}", ex.what());
         return false;
     }
 

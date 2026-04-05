@@ -13,7 +13,7 @@ public:
         archive = zip_open(name.string().c_str(), mode, &zip_error);
 
         if(!archive) {
-            get_logger().error("Failed to open archive: " + name.string());
+            get_logger().error("Failed to open archive: {}", name.string());
         }
     }
 

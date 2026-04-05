@@ -8,7 +8,7 @@
 using json = nlohmann::json;
 
 void Features::backup_game(const Game& game, Config& config) {
-    get_logger().info("creating backup of: " + game.game_name);
+    get_logger().info("creating backup of: {}", game.game_name);
     fs::path game_backup_dir = config.settings.backup_path / sanitize_filename(game.game_name);
 
     if(!fs::exists(game_backup_dir)) {
@@ -30,7 +30,7 @@ std::vector<fs::path> Features::get_backups(const Game& game, Config& config) {
     fs::path game_backup_dir = config.settings.backup_path / sanitize_filename(game.game_name);
 
     if(!fs::exists(game_backup_dir)) {
-        get_logger().error("No backups found for: " + sanitize_filename(game.game_name));
+        get_logger().error("No backups found for: {}", sanitize_filename(game.game_name));
         return {};
     }
 
