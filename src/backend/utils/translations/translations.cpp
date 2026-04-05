@@ -6,15 +6,16 @@ static std::unordered_map<std::string, std::string> ubi_translations;
 static std::unordered_map<std::string, std::string> steam_n2i_translation; //name to appid
 static std::unordered_map<std::string, std::string> steam_i2n_translation; //appid to name
 static const std::unordered_map<std::string_view, std::string> rsg_translations = { //small enough, for now.
-    {"GTAV", "Grand Theft Auto V"},
-    {"GTAV Enhanced", "Grand Theft Auto V Enhanced"},
+    {"GTA III", "Grand Theft Auto III"},
+    {"GTA Vice City", "Grand Theft Auto: Vice City"},
+    {"GTA San Andreas", "Grand Theft Auto: San Andreas"},
+    {"Bully", "Bully: Scholarship Edition"},
+    {"GTA IV", "Grand Theft Auto IV: The Complete Edition"},
+    {"GTA V", "Grand Theft Auto V Legacy"},
     {"GTA San Andreas Definitive Edition", "Grand Theft Auto: San Andreas \u2013 The Definitive Edition"},
     {"GTA Vice City Definitive Edition", "Grand Theft Auto: Vice City \u2013 The Definitive Edition"},
     {"GTA III Definitive Edition", "Grand Theft Auto III \u2013 The Definitive Edition"},
-    {"GTA San Andreas", "Grand Theft Auto: San Andreas"},
-    {"GTA Vice City", "Grand Theft Auto: Vice City"},
-    {"GTA III", "Grand Theft Auto III"},
-    {"Bully", "Bully: Scholarship Edition"},
+    {"GTAV Enhanced", "Grand Theft Auto V Enhanced"},
 };
 
 void translations::init() {
