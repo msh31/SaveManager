@@ -1,67 +1,106 @@
 # Contributing to SaveManager
 
-Contributions are welcome. If you want to report a bug, suggest a feature, or submit a pull request; this document covers what you need to know.
+Contributions are welcome. If you want to report a bug, suggest a feature, or submit a pull request, this document covers what you need to know.
 
 ## Reporting Issues
 
-- Check existing issues before opening a new one
-- Include your OS, how you installed the game (Steam, Lutris, native), and steps to reproduce
+* Check existing issues before opening a new one
+* Include your OS, how you installed the game (Steam, Lutris, Heroic, native), and steps to reproduce
 
 ## Pull Requests
 
-- Keep PRs focused, one thing at a time
-- If you're adding a feature, open an issue first to discuss it
-- Follow the existing code style (C++17, namespace over heavy OOP)
+* Keep PRs focused, one thing at a time
+* If you're adding a feature, open an issue first to discuss it
+* Follow the existing code style (C++23 for example)
 
 ---
 
 ## Building from Source
-After cloning, grab the submodules:
 
-```bash
-git submodule update --init --recursive
-```
+### Prerequisites
 
-### Dependencies
-Bundled in `external/` (no install needed):
+* [CMake](https://cmake.org/) 3.20 or later
+* [Conan 2.x](https://conan.io/) (`pip install conan`)
+* A C++23-capable compiler (GCC 13+, Clang 16+, MSVC 2022)
 
-| Library | Purpose |
-|---------|---------|
-| [nlohmann/json](https://github.com/nlohmann/json) | JSON parsing |
-| [glad](https://github.com/Dav1dde/glad) | OpenGL loader |
-| [Dear ImGui](https://github.com/ocornut/imgui) | GUI |
-| [stb](https://github.com/nothings/stb) | Image loading |
+All dependencies are managed by Conan, no manual installs needed.
 
-System dependencies (glfw3, libzip, curl, libssh2) are managed by vcpkg and installed automatically during the build.
+---
 
-> Game ID data is fetched from GitHub on first launch and cached locally.
-
-The build configuration lives in `cmake.toml` ([cmkr](https://github.com/build-cpp/cmkr)), which auto-generates `CMakeLists.txt` — edit `cmake.toml`, not `CMakeLists.txt` directly.
+> Just change conan-release to conan-debug for debug builds.
 
 ### Linux
 
 ```bash
-cmake -B build
-cmake --build build -j$(nproc)
+conan install . --build=missing
+cmake --preset conan-release
+cmake --build build/Release
 ```
-> Note: use CMake 3.31.x as CMake 4.x.x does not work on some dependencies!
 
-Binary at `build/savemanager`.
+Binary at `build/Release/savemanager`.
 
-### Windows (Visual Studio)
-vcpkg (bundled with VS) pulls in glfw3, libzip, libssh2, and curl automatically same as linux.
+---
 
-Edit `configure-vs.bat` if your VS install path, VS version or vcpkg location differs, then:
+### macOS
+
+```bash
+conan install . --build=missing
+cmake --preset conan-release
+cmake --build build/Release
+```
+
+Binary at `build/Release/savemanager`.
+
+> Full Disk Access may be required for save detection. Grant it under System Settings → Privacy \& Security → Full Disk Access.
+
+---
+
+### Windows
+
+#### Visual Studio 2022
+
+Run the included script:
 
 ```bat
-configure-vs.bat
+create\_vs22\_project.bat
 ```
 
-This generates a VS solution in `build-vs/`. Open it and build from there.
-
-If you have a standalone vcpkg install (make sure to change the version to yours):
+This runs:
 
 ```bat
-cmake -B build -G "Visual Studio 17 2022" -A x64 ^
-  -DCMAKE_TOOLCHAIN_FILE="path\to\vcpkg\scripts\buildsystems\vcpkg.cmake"
+conan install . --build=missing -s build\_type=Debug
+cmake --preset conan-default -G "Visual Studio 17 2022"
 ```
+
+Then open the generated solution in `build/` and build from Visual Studio.
+
+> If the preset name differs on your machine, check the available presets with `cmake --list-presets` after the Conan install step.
+
+#### Command Line (Release)
+
+```bat
+conan install . --build=missing
+cmake --preset conan-default
+cmake --build build --config Release
+```
+
+---
+
+## Dependency Overview
+
+All managed by Conan:
+
+|Library|Purpose|
+|-|-|
+|[Dear ImGui](https://github.com/ocornut/imgui)|GUI|
+|[GLFW](https://www.glfw.org/)|Window/input|
+|[glad](https://github.com/Dav1dde/glad)|OpenGL loader|
+|[nlohmann/json](https://github.com/nlohmann/json)|JSON parsing|
+|[libcurl](https://curl.se/)|Networking|
+|[libssh2](https://www.libssh2.org/)|SFTP transfer|
+|[libzip](https://libzip.org/)|Archive handling|
+|[stb](https://github.com/nothings/stb)|Image loading|
+|[OpenSSL](https://www.openssl.org/)|SSL/TLS|
+
+> Game ID and translation data is fetched from GitHub on first launch and cached locally.
+
