@@ -43,11 +43,16 @@ inline fs::path heroic_dir() {
 
 #if defined(_WIN32)
 inline fs::path documents_dir() {
-    const char* userprofile = std::getenv("USERPROFILE");
-    if (!userprofile)
+    PWSTR path = NULL;
+    HRESULT h_res = SHGetKnownFolderPath(FOLDERID_Documents, 0, NULL, &path);
+    if (SUCCEEDED(h_res)) {
+        fs::path result(path);
+        CoTaskMemFree(path);
+        return result;
+    }
+    else {
         throw std::runtime_error("USERPROFILE not set, how did you manage to do this?");
-    
-    return fs::path(userprofile) / "Documents";
+    }
 }
 #endif
 

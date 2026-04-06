@@ -1,20 +1,29 @@
 # Changelog
 
-## [1.5.0] - 2026-04-04
+## [1.5.0] - 2026-04-20
 ### New verified supported games
+- Grand Theft Auto IV
+- L.A. Noire
+- 
 
 ### Added
+- Basic Save Editor (RDR2 Only at the moment!)
 - MacOS support (Intel & Apple Silicon)
 
 ### Fixed 
-
+- Rare issue of Rockstar Games saves not detecting on Windows 
+- 
 
 ### Changes
+- Detection is now done asynchronously, significantly cuts down startup time 
 - Code improvements for better maintainability
-- Use C++23 throughout the whole codebase
-- Use VCPKG for external dependencies
+- Move codebase to C++23
+- Use Conan for external dependencies
 
 ### Known Issues / Limitations
+- Original Anno editions not supported due to install path limitations (You can add them manually though!)
+- Grouping issues with unknown / partially supported games (Similar to #2 but has since improved)
+- GTA Trilogy Definitive Editions don't have an image on Windows (Due to the emdash, need to find a fix.)
 
 
 ## [1.4.1] - 2026-04-04
