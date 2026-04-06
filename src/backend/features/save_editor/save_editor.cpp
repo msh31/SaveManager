@@ -39,6 +39,7 @@ std::string SanAndreas::get_version_string(size_t offset) {
 
     auto it = version_strings.find(version_hex);
     if (it != version_strings.end()) {
+        save_version = it->second;
         return it->second;
         // get_logger().debug("first: {}, second: {}", it->first, it->second);
     }
@@ -94,4 +95,32 @@ bool SanAndreas::load(fs::path path) {
 
     data = std::vector<uint8_t>(std::istreambuf_iterator<char>(in), {});
     return true;
+}
+
+void SanAndreas::parse_block_zero() {
+    auto bz_offset = block_offsets[0];
+    if(bz_offset + 0x138 > data.size()) {
+        get_logger().error("Expected data length for Block 0 data was not received");
+        return;
+    }
+
+    // const versionId = this.view.getUint32(offset, true);
+    // const saveName = this.readString(offset + 4, 100);
+    auto version_id = get_version_string(bz_offset);
+    save_name = std::string(reinterpret_cast<const char*>(data.data() + bz_offset + 4));
+    get_logger().debug("Found: {}", save_name);
+}
+
+void SanAndreas::parse_block_fifteen() {
+    auto bft_offset = block_offsets[15];
+    std::memcpy(&money, data.data() + bft_offset + 4, 4);
+    std::memcpy(&money_displayed, data.data() + bft_offset + 0x10, 4);
+    health = data[bft_offset + 35];
+    // armor = data[bft_offset + 36];
+    max_armor= data[bft_offset + 36];
+    get_logger().debug("offset block15: {}", bft_offset);
+    get_logger().debug("money: {} money_displayed: {} health: {} max armor: {}", money, money_displayed, health, max_armor);
+    for (int i = 0; i < 40; i++) {
+        get_logger().debug("  [bft+{}] = 0x{:02X}", i, data[bft_offset + i]);
+    }
 }
