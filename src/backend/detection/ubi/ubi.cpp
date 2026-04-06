@@ -1,11 +1,13 @@
 #include "ubi.hpp"
 #include "backend/utils/translations/translations.hpp"
+// #include "backend/logger/logger.hpp"
 
 std::expected<std::vector<Game>, DetectionError> UbisoftDetector::find_saves(const fs::path& prefix) const {
     if(!fs::exists(prefix)) {
         return std::unexpected{DetectionError::PathNotFound};
     }
     std::vector<Game> games;
+    // get_logger().debug("scanning path: {}", prefix.string());
 
     for(const auto& uuid_entry : fs::directory_iterator(prefix, std::filesystem::directory_options::skip_permission_denied)) {
         fs::path uuid_folder = uuid_entry.path();
@@ -31,6 +33,7 @@ std::expected<std::vector<Game>, DetectionError>  UbisoftDetector::find_anno_sav
         return std::unexpected{DetectionError::PathNotFound};
     }
     std::vector<Game> games;
+    // get_logger().debug("scanning path: {}", prefix.string());
 
     for(const auto& game : fs::directory_iterator(prefix, std::filesystem::directory_options::skip_permission_denied)) {
         std::string folder_name = game.path().filename().string();
