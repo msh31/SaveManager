@@ -75,9 +75,7 @@ void SettingsTab::render(const Fonts& fonts, Config& config) {
         }
     } else {
         char spin_char = spinner[(spinner_frame / 10) % 4];
-
-        std::string loading_text = std::string("Checking for updates...") + spin_char;
-        ImGui::Text("%s", loading_text.c_str());
+        ImGui::Text("%s", std::format("Checking for updates {}", spin_char).c_str());
     }
     ImGui::SameLine();
     if(!is_checking_t) {
@@ -91,9 +89,7 @@ void SettingsTab::render(const Fonts& fonts, Config& config) {
         ImGui::SetItemTooltip("Forces a new download of the ubisoft id and steam id translations");
     } else {
         char spin_char = spinner[(spinner_frame / 10) % 4];
-
-        std::string loading_text = std::string("Updating translations...") + spin_char;
-        ImGui::Text("%s", loading_text.c_str());
+        ImGui::Text("%s", std::format("Updating translations {}", spin_char).c_str());
     }
     ImGui::SameLine();
     if(ImGui::Button("Refresh Cache")) {

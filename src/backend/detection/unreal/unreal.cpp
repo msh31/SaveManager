@@ -20,7 +20,7 @@ void UnrealDetector::scan_for_saves(const fs::path& path, std::set<fs::path>& di
                 continue;
             }
 
-            if (!std::equal(std::begin(buffer), std::end(buffer), std::begin(header))) {
+            if (!std::ranges::equal(buffer, header)) {
                 continue;
             }
 
@@ -113,15 +113,16 @@ std::expected<std::vector<Game>, DetectionError> UnrealDetector::find_saves(cons
         bool found_in_translations = false;
 
         std::vector<std::string> path_comps;
-        for (const auto& part : entry) {
-            path_comps.push_back(part.string());
-        }
-        auto comp_it = std::find(path_comps.begin(), path_comps.end(), "SaveGames");
+        std::ranges::transform(entry, std::back_inserter(path_comps),
+                               [](const auto& part) {
+                               return part.string();
+                               });
+        auto comp_it = std::ranges::find(path_comps, "SaveGames");
         //get_logger().debug(*comp_it);
 
         while (comp_it != path_comps.begin()) {
             --comp_it;
-            bool is_numeric = std::all_of(comp_it->begin(), comp_it->end(), ::isdigit);
+            bool is_numeric = std::ranges::all_of(*comp_it, ::isdigit);
 
             if (auto the_name = translations.find(*comp_it); the_name != translations.end()) {
                 if (*comp_it != "Saved" && *comp_it != "Steam" && *comp_it != "Epic" && !is_numeric) {

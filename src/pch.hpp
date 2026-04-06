@@ -18,6 +18,7 @@
 #include <optional>
 #include <unordered_set>
 #include <expected>
+#include <ranges>
 
 #include "globals.hpp"
 

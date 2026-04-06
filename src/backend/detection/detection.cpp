@@ -247,18 +247,12 @@ Detection::DetectionResult Detection::find_saves(Config& config) {
         get_logger().error("No savegames found!");
     }
 
-    result.games.erase(
-        std::remove_if(result.games.begin(), result.games.end(), [](const Game& game) {
-            return Blacklist::is_blacklisted(game.game_name);
-        }),
-        result.games.end()
-    );
-    result.games.erase(
-        std::remove_if(result.games.begin(), result.games.end(), [](const Game& game) {
-            return !fs::is_directory(game.save_path) || fs::is_empty(game.save_path);
-        }),
-        result.games.end()
-    );
+    std::erase_if(result.games, [](const Game& game) {
+        return Blacklist::is_blacklisted(game.game_name);
+    });
+    std::erase_if(result.games, [](const Game& game) {
+        return !fs::is_directory(game.save_path) || fs::is_empty(game.save_path);
+    });
     return result;
 }
 

@@ -14,7 +14,7 @@ bool RemoteTransfer::connect(const std::string& dest_addr, const Config& config,
     
     int result = libssh2_init(0);
     if(result) {
-        get_logger().error("libssh2 initialization failed: {}", std::to_string(result));
+        get_logger().error("libssh2 initialization failed: {}", result);
         return false;
     }
 
@@ -33,7 +33,7 @@ bool RemoteTransfer::connect(const std::string& dest_addr, const Config& config,
     }
 
     if(::connect(sock, SOCKADDR_CAST(&sin), sizeof(struct sockaddr_in))) {
-        get_logger().error("failed to connect to socket: {}", std::string(strerror(errno)));
+        get_logger().error("failed to connect to socket: {}", strerror(errno));
         return false;
     }
 
@@ -46,7 +46,7 @@ bool RemoteTransfer::connect(const std::string& dest_addr, const Config& config,
     libssh2_session_set_blocking(session, 1);
     result = libssh2_session_handshake(session, sock);
     if(result) {
-        get_logger().error("Failure establishing SSH session: {}", std::to_string(result));
+        get_logger().error("Failure establishing SSH session: {}", result);
         return false;
     }
 
@@ -117,7 +117,7 @@ void RemoteTransfer::upload_file(const fs::path& backup_path, const std::string&
                                     LIBSSH2_SFTP_S_IRGRP |
                                     LIBSSH2_SFTP_S_IROTH);
     if(!sftp_handle) {
-        get_logger().error("Unable to open path with SFTP {}", std::to_string(libssh2_sftp_last_error(sftp_session)));
+        get_logger().error("Unable to open path with SFTP {}", libssh2_sftp_last_error(sftp_session));
         return;
     }
 
@@ -175,7 +175,7 @@ void RemoteTransfer::download_file(const fs::path& backup_path, const Config& co
     fs::path local_path = config.settings.backup_path / backup_path.filename();
     sftp_handle = libssh2_sftp_open(sftp_session, backup_path.string().c_str(), LIBSSH2_FXF_READ, 0);
     if(!sftp_handle) {
-        get_logger().error("Unable to open path with SFTP: {}", std::to_string(libssh2_sftp_last_error(sftp_session)));
+        get_logger().error("Unable to open path with SFTP: {}", libssh2_sftp_last_error(sftp_session));
         return;
     }
 

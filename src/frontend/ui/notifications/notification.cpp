@@ -33,8 +33,7 @@ void Notify::render_notifications() {
             ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 8.f);
             ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(10.f, 10.f));
 
-            std::string window_id = "Notification##" + std::to_string(i);
-            ImGui::Begin(window_id.c_str(), nullptr, ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoInputs);
+            ImGui::Begin(std::format("Notification##{}", i).c_str(), nullptr, ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoInputs);
             ImGui::Text("%s", notif.title.c_str());
             ImGui::Separator();
             ImGui::TextWrapped("%s", notif.text.c_str());

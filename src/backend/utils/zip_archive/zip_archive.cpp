@@ -17,7 +17,7 @@ bool ZipArchive::add_to_archive(const Game& game) {
             }
 
             if (zip_file_add(archive, relative.string().c_str(), source, ZIP_FL_OVERWRITE) < 0) {
-                get_logger().error("Failed to add file: {}", std::string(zip_strerror(archive)));
+                get_logger().error("Failed to add file: {}", zip_strerror(archive));
                 failed_files.push_back(entry.path().string());
             }
             file_count++;
@@ -31,8 +31,8 @@ bool ZipArchive::add_to_archive(const Game& game) {
         }
         return false;
     } else {
-        get_logger().success("Added {} files", std::to_string(file_count));
-        get_logger().success("backup for: {} has been created!",game.game_name);
+        get_logger().success("Added {} files", file_count);
+        get_logger().success("backup for: {} has been created!", game.game_name);
         return true;
     }
 }
@@ -53,7 +53,7 @@ bool ZipArchive::extract_archive(const Game& game) {
             zip_file* file = zip_fopen_index(archive, i, 0);
 
             if (!file) {
-                get_logger().warning("Failed to open file in archive: {}", std::string(fileInfo.name));
+                get_logger().warning("Failed to open file in archive: {}", fileInfo.name);
                 failed_files.push_back(fileInfo.name);
                 continue;
             }
@@ -74,7 +74,7 @@ bool ZipArchive::extract_archive(const Game& game) {
                 save_file.write(buffer, bytes_read);
             }
             if (bytes_read == -1) {
-                get_logger().error("Failed to read file in archive: {}", std::string(fileInfo.name));
+                get_logger().error("Failed to read file in archive: {}", fileInfo.name);
                 failed_files.push_back(fileInfo.name);
             }
             zip_fclose(file);
