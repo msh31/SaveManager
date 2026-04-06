@@ -1,5 +1,4 @@
 #pragma once
-#include "globals.hpp"
 
 struct LogTab {
     void render(const Fonts& fonts);

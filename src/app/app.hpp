@@ -1,5 +1,6 @@
 #pragma once
 #include "backend/config/config.hpp"
+#include "frontend/views/editor/editor_view.hpp"
 #include "frontend/views/settings/settings.hpp"
 #include "frontend/views/log/log.hpp"
 #include "frontend/views/transfer/transfer.hpp"
@@ -33,6 +34,7 @@ private:
 
     Config config;
     GeneralTab general_tab;
+    EditorTab editor_tab;
     TransferTab transfer_tab;
     LogTab log_tab;
     AboutTab about_tab;

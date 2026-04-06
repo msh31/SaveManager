@@ -79,6 +79,10 @@ void App::render_ui() {
             }
             ImGui::EndTabItem();
         }
+        if (ImGui::BeginTabItem("Save Editor"))  {
+            editor_tab.render(fonts);
+            ImGui::EndTabItem();
+        }
         if (ImGui::BeginTabItem("Transfer"))  {
             transfer_tab.render(fonts, d_result, config, state);
             ImGui::EndTabItem();
