@@ -237,10 +237,10 @@ Detection::DetectionResult Detection::find_saves(Config& config) {
         //ignored
     }
     if (config.settings.unreal_enabled) {
-        add_game(detectors.unreal_detect.find_saves(paths::home_dir() / "Library" / "Application Support"), "unreal", result.games, UnrealDetector::ScanMode::Native); 
-        add_game(detectors.unreal_detect.find_saves(paths::heroic_dir() / "Prefixes"), "unreal", result.games); 
+        Detection::add_game(detectors.unreal_detect.find_saves(paths::home_dir() / "Library" / "Application Support", UnrealDetector::ScanMode::Native), "unreal", result.games); 
+        Detection::add_game(detectors.unreal_detect.find_saves(paths::heroic_dir() / "Prefixes"), "unreal", result.games); 
     }
-    add_game(detectors.custom_detect.find_saves(paths::home_dir()), "custom", result.games); 
+    Detection::add_game(detectors.custom_detect.find_saves(paths::home_dir()), "custom", result.games); 
 #endif
 
     if (result.games.empty()) {
