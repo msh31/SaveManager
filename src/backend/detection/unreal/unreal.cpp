@@ -107,7 +107,7 @@ std::expected<std::vector<Game>, DetectionError> UnrealDetector::find_saves(cons
     for (const auto& entry : directories) {
         auto it = entry.begin();
         Game game;
-        game.type = UNREAL;
+        game.type = PlatformType::UNREAL;
         game.save_path = entry;
         std::string found_name;
         bool found_in_translations = false;

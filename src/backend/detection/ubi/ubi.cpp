@@ -28,7 +28,7 @@ std::expected<std::vector<Game>, DetectionError> UbisoftDetector::find_saves(con
             }
 
             Game game;
-            game.type = UBISOFT;
+            game.type = PlatformType::UBISOFT;
             game.game_id = game_id_folder.filename().string();
             game.game_name = name.value();
             game.appid = translations::get_steam_id(game.game_name).value_or("N/A");
@@ -54,7 +54,7 @@ std::expected<std::vector<Game>, DetectionError>  UbisoftDetector::find_anno_sav
             // get_logger().info("Anno match: " + folder_name + " at " + game.path().string());
 
             Game anno;
-            anno.type = UBISOFT;
+            anno.type = PlatformType::UBISOFT;
             anno.game_name = it->second.game_name;
             anno.appid = translations::get_steam_id(anno.game_name).value_or("N/A");
             fs::path save = game.path() / it->second.save_subpath;

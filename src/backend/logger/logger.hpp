@@ -1,7 +1,7 @@
 #pragma once
 #include "backend/utils/paths.hpp"
 
-enum log_level {
+enum class log_level {
     INF = 1,
     SUC,
     WRN,
@@ -21,9 +21,6 @@ public:
         static logger instance;
         return instance;
     }
-
-    bool consoleLoggingEnabled = false;
-    bool fileLoggingEnabled = true;
 
     void trim();
 
@@ -60,17 +57,17 @@ public:
 private:
     std::string_view level_to_str(log_level level) {
         switch (level) {
-            case INF:
+            case log_level::INF:
                 return "INF";
-            case SUC:
+            case log_level::SUC:
                 return "SUC";
-            case WRN:
+            case log_level::WRN:
                 return "WRN";
-            case ERR:
+            case log_level::ERR:
                 return "ERR";
-            case DBG:
+            case log_level::DBG:
                 return "DBG";
-            case FTL:
+            case log_level::FTL:
                 return "FTL";
             default:
                 return "";
@@ -80,22 +77,19 @@ private:
     template<typename... Args>
     void log(log_level level, std::format_string<Args...> fmt, Args&&... args) {
         std::lock_guard<std::mutex> lock(log_mutex);
-        if (fileLoggingEnabled) {
-            if (!logFile.is_open()) { // this is called a lazy init apparently
-                logFile.open(paths::log_file(), std::ios::app);
+        if (!log_file.is_open()) { //lazy init 
+            log_file.open(paths::log_file(), std::ios::app);
 
-                if (!logFile.is_open()) {
-                    return;
-                }
+            if (!log_file.is_open()) {
+                return;
             }
-
-            logFile << "[" << level_to_str(level) << "] " << std::format(fmt, std::forward<Args>(args)...) << "\n";
-            logFile.flush();
         }
+
+        log_file << "[" << level_to_str(level) << "] " << std::format(fmt, std::forward<Args>(args)...) << "\n";
+        log_file.flush();
     }
 
-    std::ofstream logFile;
-
+    std::ofstream log_file;
     std::mutex log_mutex;
 };
 

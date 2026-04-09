@@ -25,7 +25,7 @@ std::expected<std::vector<Game>, DetectionError> RockstarDetector::find_saves(co
             fs::path uuid_folder = profile.path();
 
             Game game;
-            game.type = ROCKSTAR;
+            game.type = PlatformType::ROCKSTAR;
             game.game_name = translations::get_game_name_rsg(folder_name).value_or(folder_name);
             game.appid = translations::get_steam_id(game.game_name).value_or("N/A");
             game.save_path = uuid_folder;
@@ -47,7 +47,7 @@ std::expected<std::vector<Game>, DetectionError> RockstarDetector::find_legacy_s
 
         if (auto it = legacy_games.find(folder_name); it != legacy_games.end()) {
             Game l_game;
-            l_game.type = ROCKSTAR;
+            l_game.type = PlatformType::ROCKSTAR;
             l_game.game_name = it->second;
             l_game.appid = translations::get_steam_id(l_game.game_name).value_or("N/A");
             l_game.save_path = game.path();

@@ -3,15 +3,13 @@
 //TODO: REFACTOR
 
 logger::logger() {
-	if (fileLoggingEnabled) {
-		logFile.open(paths::log_file(), std::ios::app);
-        trim();
-	}
+    log_file.open(paths::log_file(), std::ios::app);
+    trim();
 }
 
 logger::~logger() {
-	if (logFile.is_open()) {
-		logFile.close();
+	if (log_file.is_open()) {
+		log_file.close();
 	}
 }
 

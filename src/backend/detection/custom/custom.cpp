@@ -17,7 +17,7 @@ std::expected<std::vector<Game>, DetectionError> CustomDetector::find_saves(cons
         }
 
         Game game;
-        game.type = CUSTOM;
+        game.type = PlatformType::CUSTOM;
         game.game_name = entry.game_name;
         game.appid = entry.appid;
         game.save_path = save_path;
@@ -33,7 +33,7 @@ std::expected<std::vector<Game>, DetectionError> CustomDetector::find_saves(cons
         }
 
         Game game;
-        game.type = CUSTOM;
+        game.type = PlatformType::CUSTOM;
         game.game_name = entry.game_name;
         game.appid = entry.appid;
         game.save_path = save_path;

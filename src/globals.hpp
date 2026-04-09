@@ -43,7 +43,7 @@ enum class DetectionError {
     NoSavesFound,
 };
 
-enum PlatformType {
+enum class PlatformType {
     UBISOFT = 1,
     ROCKSTAR,
     UNREAL,
