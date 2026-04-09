@@ -12,13 +12,25 @@ std::expected<std::vector<Game>, DetectionError> UbisoftDetector::find_saves(con
     for(const auto& uuid_entry : fs::directory_iterator(prefix, std::filesystem::directory_options::skip_permission_denied)) {
         fs::path uuid_folder = uuid_entry.path();
 
+        if(!fs::is_directory(uuid_folder)) {
+            continue;
+        }
+
         for(const auto& game_entry : fs::directory_iterator(uuid_folder)) {
             fs::path game_id_folder = game_entry.path();
+            if(!fs::is_directory(game_id_folder)) {
+                continue;
+            }
+
+            auto name = translations::get_game_name_ubi(game_id_folder.filename().string());
+            if(name == std::nullopt) {
+                continue;
+            }
 
             Game game;
             game.type = UBISOFT;
             game.game_id = game_id_folder.filename().string();
-            game.game_name = translations::get_game_name_ubi(game.game_id.value()).value_or("Unknown Game");
+            game.game_name = name.value();
             game.appid = translations::get_steam_id(game.game_name).value_or("N/A");
             game.save_path = game_id_folder;
 
