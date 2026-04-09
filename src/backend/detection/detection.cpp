@@ -20,7 +20,7 @@ struct Detectors {
 std::vector<std::string> get_platform_steam_paths() {
 #ifdef __APPLE__
     return {
-        paths::home_dir() / "Library" / "Application Support" / "Steam" / "steamapps" / "libraryfolders.vdf",
+        paths::home_dir().string() / "Library" / "Application Support" / "Steam" / "steamapps" / "libraryfolders.vdf",
     };
 #endif
 
@@ -155,7 +155,9 @@ void scan_prefix_dir(const fs::path& compatdata, Detection::DetectionResult& res
                 }
             }
         }
-    } catch(std::filesystem::filesystem_error) {};
+    } catch(const std::filesystem::filesystem_error& fse) {
+        get_logger().error("scan_prefix_dir: {}", fse.what());
+    };
 }
 
 Detection::DetectionResult Detection::find_saves(Config& config) {
@@ -260,7 +262,7 @@ std::vector<std::vector<int>> Detection::DetectionResult::get_grouped() const {
     std::unordered_map<std::string, size_t> key_to_group;
     std::vector<std::vector<int>> groups;
 
-    for (int i = 0; i < (int)games.size(); i++) {
+    for (int i = 0; i < static_cast<int>(games.size()); i++) {
         const auto& game = games[i];
         std::string key = (game.appid != "N/A") ? game.appid : "N/A::" + game.game_name;
 
