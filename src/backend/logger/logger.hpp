@@ -14,15 +14,47 @@ enum class log_level {
 class logger
 {
 public:
-    logger();
+    logger() {
+        trim();
+    }
     ~logger();
+
+    static constexpr int entry_cap = 200;
 
     static logger& get_logger() {
         static logger instance;
         return instance;
     }
 
-    void trim();
+    void trim() {
+        std::lock_guard<std::mutex> lock(log_mutex);
+        std::ifstream in((paths::log_file()));
+        std::vector<std::string> lines;
+        std::string line;
+        while (std::getline(in, line)) {
+            lines.push_back(line);
+        }
+        in.close();
+
+        if (lines.size() > 100) {
+            lines = std::vector<std::string>(lines.end() - 100, lines.end());
+            std::ofstream out((paths::log_file()));
+            for (const auto& l : lines) {
+                out << l << '\n';
+            }
+        }
+    }
+
+    void clear() {
+        std::lock_guard<std::mutex> lock(log_mutex);
+        log_entries.clear();
+        std::ofstream(paths::log_file(), std::ios::trunc);
+    }
+
+    std::deque<std::string> get_entries() const {
+        std::lock_guard<std::mutex> lock(log_mutex);
+        return log_entries;
+    }
 
     template<typename... Args>
     void info(std::format_string<Args...> fmt, Args&&... args) {
@@ -55,6 +87,10 @@ public:
     }
 
 private:
+    std::deque<std::string> log_entries;
+    std::ofstream log_file;
+    mutable std::mutex log_mutex;
+
     std::string_view level_to_str(log_level level) {
         switch (level) {
             case log_level::INF:
@@ -85,12 +121,14 @@ private:
             }
         }
 
-        log_file << "[" << level_to_str(level) << "] " << std::format(fmt, std::forward<Args>(args)...) << "\n";
+        auto line = std::format("[{}] {}", level_to_str(level), std::format(fmt, std::forward<Args>(args)...));
+        log_file << line << "\n";
         log_file.flush();
+        log_entries.push_back(line);
+        if (log_entries.size() > entry_cap) {
+            log_entries.pop_front();
+        }
     }
-
-    std::ofstream log_file;
-    std::mutex log_mutex;
 };
 
 inline logger& get_logger() {

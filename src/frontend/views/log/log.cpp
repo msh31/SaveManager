@@ -1,15 +1,11 @@
 #include "log.hpp"
-#include "backend/utils/paths.hpp"
 #include "backend/logger/logger.hpp"
 #include "frontend/ui/notifications/notification.hpp"
 
 void LogTab::render(const Fonts& fonts) {
-    std::ifstream log_file(paths::log_file());
-
     if (ImGui::Button("Clear")) {
-        std::ofstream clear_file(paths::log_file(), std::ios::trunc);
-        clear_file.close();
         log_buffer.clear();
+        get_logger().clear();
         get_logger().info("Cleared the log!");
     }
     ImGui::SameLine();
@@ -22,19 +18,11 @@ void LogTab::render(const Fonts& fonts) {
 
     if (ImGui::GetTime() - last_read_time > 2.0) {
         last_read_time = ImGui::GetTime();
-
-        if (log_file.is_open()) {
-            std::string buffer;
-            log_buffer.clear();
-            while (std::getline(log_file, buffer)) {
-                log_buffer += buffer + "\n";
-            }
-        }
-        else {
-            ImGui::Text("the log could not be opened.");
+        log_buffer.clear();
+        for (const auto& entry : get_logger().get_entries()) {
+            log_buffer += entry + "\n";
         }
     }
 
     ImGui::TextUnformatted(log_buffer.c_str());
-    // ImGui::SetScrollHereY(1.0f);
 }
