@@ -1,7 +1,5 @@
 #include "save_editor.hpp"
 #include "backend/logger/logger.hpp"
-#include <cstring>
-#include <filesystem>
 
 std::uint32_t SanAndreas::calculate_checksum() {
     std::uint32_t sum = 0;
@@ -98,7 +96,9 @@ bool SanAndreas::open(fs::path path) {
         get_logger().debug("file failed to validate!");
         return false;
     }
+    get_logger().info("parsing savefile: {}", path.filename().c_str());
     parse_block_zero();
+    parse_block_two();
     parse_block_fifteen();
 
     return true;
@@ -114,7 +114,17 @@ void SanAndreas::parse_block_zero() {
     save_version = get_version_string(bz_offset);
     auto ptr = reinterpret_cast<const char*>(data.data() + bz_offset + 4);
     save_name = std::string(ptr, strnlen(ptr, 100));
-    get_logger().debug("Found: {}", save_name);
+    // get_logger().debug("Found: {}", save_name);
+}
+
+void SanAndreas::parse_block_two() {
+    auto bt_offset = block_offsets[2];
+    std::memcpy(&health, data.data() + bt_offset + 0x04 + 0x1C, 4);
+    std::memcpy(&armor, data.data() + bt_offset + 0x04 + 0x20, 4);
+    // get_logger().debug("health: {} armor: {}", health, armor);
+    // for (int i = 0; i < 140; i++) {
+    //     get_logger().debug("  [bft+{}] = 0x{:02X}", i, data[bt_offset + i]);
+    // }
 }
 
 void SanAndreas::parse_block_fifteen() {
@@ -123,9 +133,9 @@ void SanAndreas::parse_block_fifteen() {
     std::memcpy(&money_displayed, data.data() + bft_offset + 0x10, 4);
     max_health = data[bft_offset + 35];
     max_armor= data[bft_offset + 36];
-    get_logger().debug("offset block15: {}", bft_offset);
-    get_logger().debug("money: {} money_displayed: {} health: {} max armor: {}", money, money_displayed, health, max_armor);
-    for (int i = 0; i < 140; i++) {
-        get_logger().debug("  [bft+{}] = 0x{:02X}", i, data[bft_offset + i]);
-    }
+    // get_logger().debug("offset block15: {}", bft_offset);
+    // get_logger().debug("money: {} money_displayed: {} health: {} max armor: {}", money, money_displayed, max_health, max_armor);
+    // for (int i = 0; i < 140; i++) {
+    //     get_logger().debug("  [bft+{}] = 0x{:02X}", i, data[bft_offset + i]);
+    // }
 }

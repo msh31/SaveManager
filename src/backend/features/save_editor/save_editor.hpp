@@ -10,8 +10,8 @@ struct SanAndreas {
     //block 15
     int32_t money = 0;
     int32_t money_displayed = 0;
-    uint8_t health = 0;
-    uint8_t armor = 0;
+    float health = 0.0;
+    float armor = 0.0f;
     int max_health = 176; //temp
     int max_armor = 150;
 private:
@@ -21,6 +21,7 @@ private:
     void find_block_offsets(size_t start_offset = 0);
     std::string get_version_string(size_t offset);
     void parse_block_zero();
+    void parse_block_two();
     void parse_block_fifteen();
 
     std::vector<uint8_t> data;

@@ -1,5 +1,4 @@
 #include "editor_view.hpp"
-#include "backend/logger/logger.hpp"
 #include "frontend/ui/notifications/notification.hpp"
 
 void EditorTab::render(const Fonts& fonts) {
@@ -10,12 +9,13 @@ void EditorTab::render(const Fonts& fonts) {
 
     if(ImGui::Button("Load")) {
         san_andreas.open(path);
-        get_logger().debug("loaded: {}", path);
         Notify::show_notification("Save Editor", "Save loaded succesfully!", 3000);
     }
 
     ImGui::Text("Save Name: %s", san_andreas.save_name.c_str());
     ImGui::Text("Save Version: %s", san_andreas.save_version.c_str());
     ImGui::Text("Money: %d (%d)", san_andreas.money, san_andreas.money_displayed);
+    ImGui::Text("Health: %f/%d", san_andreas.health, san_andreas.max_health);
+    ImGui::Text("Armor: %f/%d", san_andreas.armor, san_andreas.max_armor);
     ImGui::EndChild();
 }

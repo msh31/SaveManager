@@ -19,6 +19,7 @@
 #include <unordered_set>
 #include <expected>
 #include <ranges>
+#include <cstring>
 
 #include "globals.hpp"
 
