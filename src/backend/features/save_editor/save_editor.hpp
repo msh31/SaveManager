@@ -26,6 +26,10 @@ struct SanAndreas {
     //block 20
     uint32_t tag_count = 0;
     std::vector<uint8_t> tag_statuses;
+    //block 24
+    uint8_t usj_count = 0;
+    std::vector<bool> usj_done {};
+    std::vector<bool> usj_found {};
     
 private:
     std::uint32_t calculate_checksum();
@@ -38,6 +42,7 @@ private:
     void parse_block_five();
     void parse_block_fifteen();
     void parse_block_twenty();
+    void parse_block_twenty_four();
 
     std::vector<uint8_t> data;
     std::unordered_map<int, size_t> block_offsets;

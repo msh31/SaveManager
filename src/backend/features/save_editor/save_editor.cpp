@@ -144,3 +144,16 @@ void SanAndreas::parse_block_twenty() {
     tag_statuses.resize(tag_count);
     std::memcpy(tag_statuses.data(), data.data() + bty_offset + 4, tag_count);
 }
+
+void SanAndreas::parse_block_twenty_four() {
+    auto btyf_offset = block_offsets[24];
+    std::memcpy(&usj_count, data.data() + btyf_offset, 4);
+    usj_done.resize(usj_count);
+    usj_found.resize(usj_count);
+
+    for (uint32_t i = 0; i < usj_count; i++) {
+        size_t jump_offset = btyf_offset + 4 + (i * 0x44);
+        usj_done[i] = data[jump_offset + 0x40];
+        usj_found[i] = data[jump_offset + 0x41];
+    }
+}

@@ -43,6 +43,22 @@ void EditorTab::render(const Fonts& fonts) {
         if ((i + 1) % 5 != 0) ImGui::SameLine();
     }
     ImGui::Separator();
+    if(ImGui::Button("Complete Unique Stunt Jumps")) {
+        std::ranges::fill(san_andreas.usj_found, true);
+        std::ranges::fill(san_andreas.usj_done, true);
+    }
+    ImGui::SameLine();
+    if(ImGui::Button("Reset Unique Stunt Jumps")) {
+        std::ranges::fill(san_andreas.usj_found, false);
+        std::ranges::fill(san_andreas.usj_done, false);
+    }
+    ImGui::Text("Unique Stunt Jumps: %d", san_andreas.usj_count);
+    for (int i = 0; i < san_andreas.usj_count; i++) {
+        bool completed = san_andreas.usj_done[i] > 0;
+        ImGui::Checkbox(std::format("Stunt Jump {}", i).c_str(), &completed);
+        if ((i + 1) % 5 != 0) ImGui::SameLine();
+    }
+    ImGui::Separator();
 
     ImGui::EndChild();
 }
