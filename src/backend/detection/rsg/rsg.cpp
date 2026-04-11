@@ -46,10 +46,11 @@ std::expected<std::vector<Game>, DetectionError> RockstarDetector::find_legacy_s
         std::string folder_name = game.path().filename().string();
 
         if (auto it = legacy_games.find(folder_name); it != legacy_games.end()) {
+            auto& [key, game_name] = *it;
             Game l_game;
             l_game.type = PlatformType::ROCKSTAR;
-            l_game.game_name = it->second;
-            l_game.appid = translations::get_steam_id(l_game.game_name).value_or("N/A");
+            l_game.game_name = game_name;
+            l_game.appid = translations::get_steam_id(game_name).value_or("N/A");
             l_game.save_path = game.path();
 
             games.push_back(l_game);

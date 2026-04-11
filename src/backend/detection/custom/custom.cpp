@@ -1,5 +1,4 @@
 #include "custom.hpp"
-#include <backend/logger/logger.hpp>
 
 std::expected<std::vector<Game>, DetectionError> CustomDetector::find_saves(const fs::path& prefix) const {
     if(!fs::exists(prefix)) {
