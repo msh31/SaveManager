@@ -18,6 +18,12 @@ struct SanAndreas {
     int32_t money_displayed = 0;
     int max_health = 176; //temp
     int max_armor = 150;
+    bool free_busted_once = false;
+    bool free_wasted_once = false; //0414
+    bool infinite_run  = false; //0330
+    bool fast_reload  = false; //0331
+    bool fireproof  = false; //055D
+    
 private:
     std::uint32_t calculate_checksum();
     bool validate_checksum();

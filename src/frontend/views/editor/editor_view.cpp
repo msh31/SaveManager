@@ -20,6 +20,18 @@ void EditorTab::render(const Fonts& fonts) {
     ImGui::Text("Armor: %f/%d", san_andreas.armor, san_andreas.max_armor);
     ImGui::Separator();
     ImGui::Checkbox("Lose stuff after wasted", &san_andreas.lose_stuff_after_wasted);
+    ImGui::SameLine();
     ImGui::Checkbox("Lose stuff after busted", &san_andreas.lose_stuff_after_busted);
+    ImGui::Separator();
+    ImGui::Checkbox("Free Busted Once", &san_andreas.free_wasted_once);
+    ImGui::SameLine();
+    ImGui::Checkbox("Free Wasted Once", &san_andreas.free_wasted_once);
+    ImGui::Separator();
+    ImGui::Checkbox("Infinite Run", &san_andreas.infinite_run);
+    ImGui::SameLine();
+    ImGui::Checkbox("Fast Reload", &san_andreas.fast_reload);
+    ImGui::SameLine();
+    ImGui::Checkbox("Fireproof", &san_andreas.fireproof);
+
     ImGui::EndChild();
 }
