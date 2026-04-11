@@ -3,6 +3,7 @@
 
 struct SanAndreas {
     bool open(fs::path path);
+    bool save(fs::path path);
     //block 0
     std::string save_name = {};
     std::string save_version = {};
@@ -27,7 +28,7 @@ struct SanAndreas {
     uint32_t tag_count = 0;
     std::vector<uint8_t> tag_statuses;
     //block 24
-    uint8_t usj_count = 0;
+    uint32_t usj_count = 0;
     std::vector<bool> usj_done {};
     std::vector<bool> usj_found {};
     
@@ -43,6 +44,7 @@ private:
     void parse_block_fifteen();
     void parse_block_twenty();
     void parse_block_twenty_four();
+    void serialize();
 
     std::vector<uint8_t> data;
     std::unordered_map<int, size_t> block_offsets;

@@ -11,6 +11,11 @@ void EditorTab::render(const Fonts& fonts) {
         san_andreas.open(path);
         Notify::show_notification("Save Editor", "Save loaded succesfully!", 3000);
     }
+    ImGui::SameLine();
+    if(ImGui::Button("Save")) {
+        san_andreas.save(path);
+        Notify::show_notification("Save Editor", "Savegame changed saved succesfully!", 3000);
+    }
 
     ImGui::Text("Save Name: %s", san_andreas.save_name.c_str());
     ImGui::Text("Save Version: %s", san_andreas.save_version.c_str());

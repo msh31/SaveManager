@@ -102,7 +102,21 @@ bool SanAndreas::open(fs::path path) {
     parse_block_five();
     parse_block_fifteen();
     parse_block_twenty();
+    parse_block_twenty_four();
 
+    return true;
+}
+bool SanAndreas::save(fs::path path) {
+    serialize();
+    std::uint32_t checksum = calculate_checksum();
+    std::memcpy(data.data() + data.size() - 4, &checksum, 4);
+
+    std::ofstream out(path, std::ios::binary);
+    if(!out) {
+        get_logger().error("Failed to open savegame for writing!");
+        return false;
+    }
+    out.write(reinterpret_cast<const char*>(data.data()), data.size());
     return true;
 }
 
@@ -126,8 +140,8 @@ void SanAndreas::parse_block_two() {
 
 void SanAndreas::parse_block_five() {
     auto bf_offset = block_offsets[5];
-    std::memcpy(&lose_stuff_after_wasted, data.data() + bf_offset + 0x04, 4);
-    std::memcpy(&lose_stuff_after_busted, data.data() + bf_offset + 0x05, 4);
+    lose_stuff_after_wasted = data[bf_offset + 0x04];
+    lose_stuff_after_busted = data[bf_offset + 0x05];
 }
 
 void SanAndreas::parse_block_fifteen() {
@@ -155,5 +169,36 @@ void SanAndreas::parse_block_twenty_four() {
         size_t jump_offset = btyf_offset + 4 + (i * 0x44);
         usj_done[i] = data[jump_offset + 0x40];
         usj_found[i] = data[jump_offset + 0x41];
+    }
+}
+
+void SanAndreas::serialize() {
+    auto bz_offset = block_offsets[0];
+    std::memcpy(data.data() + bz_offset + 4, save_name.c_str(), std::min(save_name.size(), static_cast<size_t>(100)));
+
+    auto bt_offset = block_offsets[2];
+    std::memcpy(data.data() + bt_offset + 0x04 + 0x1C, &health, 4);
+    std::memcpy(data.data() + bt_offset + 0x04 + 0x20, &armor, 4);
+
+    auto bf_offset = block_offsets[5];
+    data[bf_offset + 0x04] = lose_stuff_after_wasted;
+    data[bf_offset + 0x05] = lose_stuff_after_busted;
+
+    auto bft_offset = block_offsets[15];
+    std::memcpy(data.data() + bft_offset + 4, &money, 4);
+    std::memcpy(data.data() + bft_offset + 0x10, &money_displayed, 4);
+    data[bft_offset + 35] = static_cast<uint8_t>(max_health);
+    data[bft_offset + 36] = static_cast<uint8_t>(max_armor);
+
+    auto bty_offset = block_offsets[20];
+    std::memcpy(data.data() + bty_offset, &tag_count, 4);
+    std::memcpy(data.data() + bty_offset + 4, tag_statuses.data(), tag_count);
+
+    auto btyf_offset = block_offsets[24];
+    std::memcpy(data.data() + btyf_offset, &usj_count, 4);
+    for (uint32_t i = 0; i < usj_count; i++) {
+        size_t jump_offset = btyf_offset + 4 + (i * 0x44);
+        data[jump_offset + 0x40] = usj_done[i];
+        data[jump_offset + 0x41] = usj_found[i];
     }
 }
