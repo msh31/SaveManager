@@ -61,20 +61,13 @@ void App::render_ui() {
             if (auto new_d_result = general_tab.render(fonts, d_result, game_textures, config, state)) {
                 d_result = *new_d_result;
 
-                for (auto it = game_textures.begin(); it != game_textures.end(); ++it) {
-                    glDeleteTextures(1, &it->second);
-                }
-
+                for (auto& [appid, texture] : game_textures) glDeleteTextures(1, &texture);
                 game_textures = {};
                 texture_futures.clear();
 
                 for (auto& game : d_result.games) {
-                    if(game.appid == "N/A") {
-                        continue;
-                    }
-
+                    if(game.appid == "N/A") continue;
                     texture_futures.push_back(std::async(std::launch::async, Textures::load_image, game.appid));
-                    // get_logger().info("Launched texture futures after refresh: " + std::to_string(texture_futures.size()));
                 }
             }
             ImGui::EndTabItem();
@@ -209,10 +202,7 @@ void App::render() {
     glClear(GL_COLOR_BUFFER_BIT);
 
     if(refresh_requested) {
-        // get_logger().debug("refresh request received!");
-        for (auto it = game_textures.begin(); it != game_textures.end(); ++it) {
-            glDeleteTextures(1, &it->second);
-        }
+        for (auto& [appid, texture] : game_textures) glDeleteTextures(1, &texture);
         game_textures.clear();
         texture_futures.clear();
 
@@ -286,11 +276,7 @@ void App::render() {
 }
 
 App::~App() {
-    if(!game_textures.empty()) {
-        for (auto it = game_textures.begin(); it != game_textures.end(); ++it) {
-            glDeleteTextures(1, &it->second);
-        }
-    }
+    if(!game_textures.empty()) for (auto& [appid, texture] : game_textures) glDeleteTextures(1, &texture);
 
     ImGui_ImplOpenGL3_Shutdown();
     ImGui_ImplGlfw_Shutdown();
