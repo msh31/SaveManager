@@ -107,7 +107,7 @@ void SanAndreas::parse_block_zero() {
     // const versionId = this.view.getUint32(offset, true);
     // const saveName = this.readString(offset + 4, 100);
     auto version_id = get_version_string(bz_offset);
-    save_name = std::string(reinterpret_cast<const char*>(data.data() + bz_offset + 4));
+    save_name = std::string(reinterpret_cast<const char*>(data.data() + bz_offset + 4), 100);
     get_logger().debug("Found: {}", save_name);
 }
 
