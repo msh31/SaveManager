@@ -2,11 +2,22 @@
 #include <cstdint>
 
 struct SanAndreas {
-    bool load(fs::path path);
+    bool open(fs::path path);
+    //block 0
+    std::string save_name = {};
+    std::string save_version = {};
+    bool has_ever_cheated = false;
+    //block 15
+    int32_t money = 0;
+    int32_t money_displayed = 0;
+    uint8_t health = 0;
+    uint8_t armor = 0;
+    int max_health = 176; //temp
+    int max_armor = 150;
 private:
     std::uint32_t calculate_checksum();
     bool validate_checksum();
-    bool validate_file(fs::path file);
+    bool validate_file();
     void find_block_offsets(size_t start_offset = 0);
     std::string get_version_string(size_t offset);
     void parse_block_zero();
@@ -24,16 +35,4 @@ private:
         {"f6,8d,14,fd", "Version 2.00 Unmodified"},
         {"22,cc,31,5d", "Version 2.00 (German)"}
     };
-
-    //block 0
-    std::string save_name = {};
-    std::string save_version = {};
-    bool has_ever_cheated = false;
-    //block 15
-    int32_t money = 0;
-    int32_t money_displayed = 0;
-    uint8_t health = 0;
-    uint8_t armor = 0;
-    int max_health = 176; //temp
-    int max_armor = 150;
 };

@@ -42,9 +42,9 @@ std::string SanAndreas::get_version_string(size_t offset) {
     return "Unknown Version";
 }
 
-bool SanAndreas::validate_file(fs::path file) {
-    if(fs::file_size(file) != SanAndreas::save_size) {
-        get_logger().error("Invalid file size, expected {} bytes but got {} bytes", SanAndreas::save_size, fs::file_size(file));
+bool SanAndreas::validate_file() {
+    if(data.size() != SanAndreas::save_size) {
+        get_logger().error("Invalid file size, expected {} bytes but got {} bytes", SanAndreas::save_size, data.size());
         return false;
     }
 
@@ -82,7 +82,7 @@ void SanAndreas::find_block_offsets(size_t start_offset) {
     }
 }
 
-bool SanAndreas::load(fs::path path) {
+bool SanAndreas::open(fs::path path) {
     std::ifstream in(path, std::ios::binary);
     if(!in) {
         get_logger().error("Failed to open savegame!");
@@ -90,6 +90,17 @@ bool SanAndreas::load(fs::path path) {
     }
 
     data = std::vector<uint8_t>(std::istreambuf_iterator<char>(in), {});
+
+    find_block_offsets();
+    if(validate_file()) {
+        get_logger().debug("file validated!");
+    } else {
+        get_logger().debug("file failed to validate!");
+        return false;
+    }
+    parse_block_zero();
+    parse_block_fifteen();
+
     return true;
 }
 

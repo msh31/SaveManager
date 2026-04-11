@@ -9,18 +9,8 @@ void EditorTab::render(const Fonts& fonts) {
     ImGui::InputText("Save Path", &path);
 
     if(ImGui::Button("Load")) {
-        san_andreas.load(path);
+        san_andreas.open(path);
         get_logger().debug("loaded: {}", path);
-
-        san_andreas.find_block_offsets();
-
-        if(san_andreas.validate_file(path)) {
-            get_logger().debug("file validated!");
-        } else {
-            get_logger().debug("file failed to validate!");
-        }
-        san_andreas.parse_block_zero();
-        san_andreas.parse_block_fifteen();
         Notify::show_notification("Save Editor", "Save loaded succesfully!", 3000);
     }
 
