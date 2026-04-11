@@ -23,7 +23,7 @@ std::expected<std::vector<Game>, DetectionError> UbisoftDetector::find_saves(con
             }
 
             auto name = translations::get_game_name_ubi(game_id_folder.filename().string());
-            if(name == std::nullopt) {
+            if(!name.has_value()) {
                 continue;
             }
 

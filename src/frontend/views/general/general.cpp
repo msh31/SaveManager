@@ -91,8 +91,7 @@ void GeneralTab::render_cards() {
     float card_height = image_height + 50.0f;
 
     if(!grouped_games.empty()) {
-        for (int gi = 0; gi < (int)grouped_games.size(); gi++) {
-            const auto& group = grouped_games[gi];
+        for (auto [gi, group] : std::views::enumerate(grouped_games)) {
             int row = gi / columns;
             int col = gi % columns;
 

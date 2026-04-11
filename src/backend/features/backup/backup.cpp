@@ -26,7 +26,6 @@ void Features::backup_game(const Game& game, Config& config) {
 }
 
 std::vector<fs::path> Features::get_backups(const Game& game, Config& config) {
-    std::vector<fs::path> backups;
     fs::path game_backup_dir = config.settings.backup_path / sanitize_filename(game.game_name);
 
     if(!fs::exists(game_backup_dir)) {
@@ -34,12 +33,12 @@ std::vector<fs::path> Features::get_backups(const Game& game, Config& config) {
         return {};
     }
 
-    for (const auto& entry : fs::recursive_directory_iterator(game_backup_dir)) {
-        if (entry.is_regular_file() && entry.path().extension() == ".zip") {
-            const auto& full_path = entry.path();
-            backups.emplace_back(full_path);
-        }
-    }
+    auto backups = fs::recursive_directory_iterator(game_backup_dir)
+        | std::views::filter([](const auto& e) {
+            return e.is_regular_file() && e.path().extension() == ".zip";
+        })
+        | std::views::transform(&fs::directory_entry::path)
+        | std::ranges::to<std::vector>();
 
     return backups;
 }
