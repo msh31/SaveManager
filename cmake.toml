@@ -25,7 +25,7 @@ required = true
 [find-package.OpenSSL]
 required = true
 
-[find-package.libssh2]
+[find-package.Libssh2]
 required = true
 
 [find-package.imgui]

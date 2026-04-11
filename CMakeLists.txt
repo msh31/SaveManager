@@ -55,7 +55,7 @@ find_package(libzip REQUIRED)
 
 find_package(OpenSSL REQUIRED)
 
-find_package(libssh2 REQUIRED)
+find_package(Libssh2 REQUIRED)
 
 find_package(imgui REQUIRED)
 
