@@ -149,7 +149,11 @@ void SanAndreas::parse_block_fifteen() {
     std::memcpy(&money, data.data() + bft_offset + 4, 4);
     std::memcpy(&money_displayed, data.data() + bft_offset + 0x10, 4);
     max_health = data[bft_offset + 35];
-    max_armor= data[bft_offset + 36];
+    max_armor = data[bft_offset + 36];
+
+    infinite_run = data[bft_offset + 0x20];
+    fast_reload = data[bft_offset + 0x21];
+    fireproof = data[bft_offset + 0x22];
 }
 
 void SanAndreas::parse_block_twenty() {
@@ -189,6 +193,9 @@ void SanAndreas::serialize() {
     std::memcpy(data.data() + bft_offset + 0x10, &money_displayed, 4);
     data[bft_offset + 35] = static_cast<uint8_t>(max_health);
     data[bft_offset + 36] = static_cast<uint8_t>(max_armor);
+    data[bft_offset + 0x20] = infinite_run;
+    data[bft_offset + 0x21] = fast_reload;
+    data[bft_offset + 0x22] = fireproof;
 
     auto bty_offset = block_offsets[20];
     std::memcpy(data.data() + bty_offset, &tag_count, 4);
