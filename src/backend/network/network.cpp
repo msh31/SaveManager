@@ -15,7 +15,7 @@ size_t Network::stream_callback(void* ptr, size_t size, size_t nmemb, FILE* stre
     return size * nmemb;
 }
 
-std::string Network::download_to_string(const std::string_view& url) {
+std::string Network::download_to_string(std::string_view url) {
     CURL* curl = curl_easy_init();
     if (!curl) {
         get_logger().error("Failed to initialize CURL");
@@ -23,8 +23,9 @@ std::string Network::download_to_string(const std::string_view& url) {
     }
 
     std::string data;
+    std::string url_str{url};
     curl_easy_setopt(curl, CURLOPT_USERAGENT, "SaveManager");
-    curl_easy_setopt(curl, CURLOPT_URL, std::string(url).c_str());
+    curl_easy_setopt(curl, CURLOPT_URL, url_str.c_str());
     curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, stream_callback);
     curl_easy_setopt(curl, CURLOPT_WRITEDATA, &data);
     
@@ -32,14 +33,14 @@ std::string Network::download_to_string(const std::string_view& url) {
     curl_easy_cleanup(curl);
     
     if (res != CURLE_OK) {
-        get_logger().error("Failed to stream: {}", std::string(curl_easy_strerror(res)));
+        get_logger().error("Failed to stream: {}", curl_easy_strerror(res));
         return {};
     }
     
     return data;
 }
 
-bool Network::download_file(const std::string_view& url, const std::string& output_path) {
+bool Network::download_file(std::string_view url, const std::string& output_path) {
     CURL* curl = curl_easy_init();
     if (!curl) {
         get_logger().error("Failed to initialize CURL");
@@ -53,7 +54,8 @@ bool Network::download_file(const std::string_view& url, const std::string& outp
         return false; 
     }
     
-    curl_easy_setopt(curl, CURLOPT_URL, std::string(url).c_str());
+    std::string url_str{url};
+    curl_easy_setopt(curl, CURLOPT_URL, url_str.c_str());
     curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, write_callback);
     curl_easy_setopt(curl, CURLOPT_WRITEDATA, fp);
     
@@ -63,14 +65,14 @@ bool Network::download_file(const std::string_view& url, const std::string& outp
     curl_easy_cleanup(curl);
     
     if (res != CURLE_OK) {
-        get_logger().error("Failed to download file: {}", std::string(curl_easy_strerror(res)));
+        get_logger().error("Failed to download file: {}", curl_easy_strerror(res));
         return false;
     }
     
     return true;
 }
 
-void Network::download_game_image(const std::string& appid) {
+void Network::download_game_image(std::string_view appid) {
     fs::path img_path = paths::cache_dir() / std::format("{}.jpg", appid); 
     if (fs::exists(img_path) && fs::file_size(img_path) > 0) {
         return;

@@ -3,10 +3,9 @@
 #include "backend/utils/custom_games/custom_games.hpp"
 #include "backend/utils/paths.hpp"
 #include "frontend/ui/notifications/notification.hpp"
-#include "backend/networking/network.hpp"
+#include "backend/network/network.hpp"
 #include "backend/config/config.hpp"
 #include "backend/logger/logger.hpp"
-#include "imgui.h"
 
 void SettingsTab::render(const Fonts& fonts, Config& config) {
     spinner_frame++;

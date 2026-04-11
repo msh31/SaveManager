@@ -76,7 +76,7 @@ set(savemanager_SOURCES
 	"src/backend/features/backup/backup.cpp"
 	"src/backend/features/remote_transfer/remote_transfer.cpp"
 	"src/backend/features/save_editor/save_editor.cpp"
-	"src/backend/networking/network.cpp"
+	"src/backend/network/network.cpp"
 	"src/backend/utils/blacklist/blacklist.cpp"
 	"src/backend/utils/custom_games/custom_games.cpp"
 	"src/backend/utils/translations/translations.cpp"

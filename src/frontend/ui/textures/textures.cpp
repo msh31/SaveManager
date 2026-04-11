@@ -4,7 +4,7 @@
 #include "backend/logger/logger.hpp"
 
 #include <stb_image.h>
-#include <backend/networking/network.hpp>
+#include <backend/network/network.hpp>
 
 GLuint Textures::upload_image_to_gpu(const ImageData& data) {
 
