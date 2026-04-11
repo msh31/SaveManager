@@ -54,10 +54,9 @@ void Features::restore_backup(const fs::path& name, const Game& selected_game) {
 }
 
 std::string Features::construct_backup_name(const Game& game, const std::string& custom_name) {
-    auto now = std::time(nullptr);
-    auto tm = *std::localtime(&now);
-    char time_buf[20];
-    std::strftime(time_buf, sizeof(time_buf), "%Y%m%d_%H%M%S", &tm);
+    auto now = std::chrono::system_clock::now();
+    auto timestamp = std::format("{:%Y%m%d_%H%M%S}", now);
+
     std::string game_name = sanitize_filename(game.game_name);
     std::string game_name_sanitized = space2underscore(game_name);
     std::string filename = custom_name;
@@ -66,7 +65,7 @@ std::string Features::construct_backup_name(const Game& game, const std::string&
         filename = game_name_sanitized;
     }
 
-    return "backup_" + filename + "_" + std::string(time_buf) + ".zip";
+    return "backup_" + filename + "_" + timestamp + ".zip";
 }
 
 std::unordered_map<std::string, std::string> Features::load_labels(const Game& game, Config& config) {
