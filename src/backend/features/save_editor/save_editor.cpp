@@ -38,11 +38,7 @@ std::string SanAndreas::get_version_string(size_t offset) {
     }
 
     auto it = version_strings.find(version_hex);
-    if (it != version_strings.end()) {
-        save_version = it->second;
-        return it->second;
-        // get_logger().debug("first: {}, second: {}", it->first, it->second);
-    }
+    if (it != version_strings.end()) return it->second;
     return "Unknown Version";
 }
 
@@ -104,9 +100,7 @@ void SanAndreas::parse_block_zero() {
         return;
     }
 
-    // const versionId = this.view.getUint32(offset, true);
-    // const saveName = this.readString(offset + 4, 100);
-    auto version_id = get_version_string(bz_offset);
+    save_version = get_version_string(bz_offset);
     save_name = std::string(reinterpret_cast<const char*>(data.data() + bz_offset + 4), 100);
     get_logger().debug("Found: {}", save_name);
 }
