@@ -5,7 +5,7 @@
 #include "frontend/views/log/log.hpp"
 #include "frontend/views/transfer/transfer.hpp"
 #include "frontend/views/about/about.hpp"
-#include "frontend/views/general/general.hpp"
+#include "frontend/views/dashboard/dashboard.hpp"
 #include "frontend/views/about/about.hpp"
 
 #include "frontend/ui/textures/textures.hpp"
@@ -33,7 +33,7 @@ private:
     Fonts fonts;
 
     Config config;
-    GeneralTab general_tab;
+    DashboardTab dahsboard_tab;
     EditorTab editor_tab;
     TransferTab transfer_tab;
     LogTab log_tab;

@@ -57,8 +57,8 @@ void App::render_ui() {
     ImGui::AlignTextToFramePadding();
 
     if (ImGui::BeginTabBar("MyTabBar", ImGuiTabBarFlags_Reorderable | ImGuiTabBarFlags_DrawSelectedOverline)) {
-        if (ImGui::BeginTabItem("General"))  {
-            if (auto new_d_result = general_tab.render(fonts, d_result, game_textures, config, state)) {
+        if (ImGui::BeginTabItem("Dashboard"))  {
+            if (auto new_d_result = dahsboard_tab.render(fonts, d_result, game_textures, config, state)) {
                 d_result = *new_d_result;
 
                 for (auto& [appid, texture] : game_textures) glDeleteTextures(1, &texture);

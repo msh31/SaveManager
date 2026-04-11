@@ -2,7 +2,7 @@
 #include "globals.hpp"
 #include "backend/detection/detection.hpp"
 
-struct GeneralTab {
+struct DashboardTab {
     Detection::DetectionResult* m_result = nullptr;
     const std::unordered_map<std::string, GLuint>* m_textures = nullptr;
     Config* m_config = nullptr;

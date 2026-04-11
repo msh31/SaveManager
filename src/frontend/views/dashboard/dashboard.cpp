@@ -1,8 +1,8 @@
-#include "general.hpp"
+#include "dashboard.hpp"
 #include "frontend/ui/notifications/notification.hpp"
 #include "backend/features/backup/backup.hpp"
 
-void GeneralTab::on_result_changed() {
+void DashboardTab::on_result_changed() {
     grouped_games = {};
     pending_restore_game = nullptr;
     pending_delete_game = nullptr;
@@ -13,7 +13,7 @@ void GeneralTab::on_result_changed() {
     last_game_count = m_result->games.size();
 }
 
-std::optional<Detection::DetectionResult> GeneralTab::render(const Fonts& fonts, Detection::DetectionResult& result, const std::unordered_map<std::string, GLuint>& texture_id, Config& config, TabState& state) {
+std::optional<Detection::DetectionResult> DashboardTab::render(const Fonts& fonts, Detection::DetectionResult& result, const std::unordered_map<std::string, GLuint>& texture_id, Config& config, TabState& state) {
     m_result = &result;
     m_textures = &texture_id;
     m_config = &config;
@@ -75,7 +75,7 @@ std::optional<Detection::DetectionResult> GeneralTab::render(const Fonts& fonts,
     return std::nullopt;
 }
 
-void GeneralTab::render_cards() {
+void DashboardTab::render_cards() {
     float available_width = ImGui::GetContentRegionAvail().x;
     float padding = 10.0f;
     float min_card_width = 230.0f;
@@ -122,7 +122,7 @@ void GeneralTab::render_cards() {
     }
 }
 
-void GeneralTab::render_card(const Game& primary, const Game& active_game, const std::vector<int>& group, int gi, float image_height) {
+void DashboardTab::render_card(const Game& primary, const Game& active_game, const std::vector<int>& group, int gi, float image_height) {
     auto w_pos = ImGui::GetWindowPos();
     auto w_siz = ImGui::GetWindowSize();
 
@@ -217,7 +217,7 @@ void GeneralTab::render_card(const Game& primary, const Game& active_game, const
     }
 }
 
-void GeneralTab::render_modals() {
+void DashboardTab::render_modals() {
     if(open_restore_modal) {
         open_restore_modal = false;
         m_state->backups = Features::get_backups(*pending_restore_game, *m_config); 
