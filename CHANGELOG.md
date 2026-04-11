@@ -7,7 +7,7 @@
 - 
 
 ### Added
-- Basic Save Editor (RDR2 Only at the moment!)
+- Basic Save Editor (exclusive to GTA San Andreas)
 - MacOS support (Intel & Apple Silicon)
 
 ### Fixed 
