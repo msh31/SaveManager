@@ -17,7 +17,7 @@ public:
     logger() {
         trim();
     }
-    ~logger();
+    //~logger();
 
     static constexpr int entry_cap = 200;
 
