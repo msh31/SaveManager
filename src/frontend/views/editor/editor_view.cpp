@@ -32,6 +32,17 @@ void EditorTab::render(const Fonts& fonts) {
     ImGui::Checkbox("Fast Reload", &san_andreas.fast_reload);
     ImGui::SameLine();
     ImGui::Checkbox("Fireproof", &san_andreas.fireproof);
+    ImGui::Separator();
+    if(ImGui::Button("Complete Spray Tags")) std::ranges::fill(san_andreas.tag_statuses, 255);
+    ImGui::SameLine();
+    if(ImGui::Button("Reset Spray Tags")) std::ranges::fill(san_andreas.tag_statuses, 0);
+    ImGui::Text("Tag count: %d", san_andreas.tag_count);
+    for (int i = 0; i < san_andreas.tag_count; i++) {
+        bool tagged = san_andreas.tag_statuses[i] > 0;
+        ImGui::Checkbox(std::format("Tag {}", i).c_str(), &tagged);
+        if ((i + 1) % 5 != 0) ImGui::SameLine();
+    }
+    ImGui::Separator();
 
     ImGui::EndChild();
 }

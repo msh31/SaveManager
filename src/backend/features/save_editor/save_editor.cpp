@@ -101,7 +101,7 @@ bool SanAndreas::open(fs::path path) {
     parse_block_two();
     parse_block_five();
     parse_block_fifteen();
-    // parse_block_twenty();
+    parse_block_twenty();
 
     return true;
 }
@@ -125,9 +125,9 @@ void SanAndreas::parse_block_two() {
 }
 
 void SanAndreas::parse_block_five() {
-    auto bt_offset = block_offsets[5];
-    std::memcpy(&lose_stuff_after_wasted, data.data() + bt_offset + 0x04, 4);
-    std::memcpy(&lose_stuff_after_busted, data.data() + bt_offset + 0x05, 4);
+    auto bf_offset = block_offsets[5];
+    std::memcpy(&lose_stuff_after_wasted, data.data() + bf_offset + 0x04, 4);
+    std::memcpy(&lose_stuff_after_busted, data.data() + bf_offset + 0x05, 4);
 }
 
 void SanAndreas::parse_block_fifteen() {
@@ -139,9 +139,8 @@ void SanAndreas::parse_block_fifteen() {
 }
 
 void SanAndreas::parse_block_twenty() {
-    auto bft_offset = block_offsets[15];
-    std::memcpy(&money, data.data() + bft_offset + 4, 4);
-    std::memcpy(&money_displayed, data.data() + bft_offset + 0x10, 4);
-    max_health = data[bft_offset + 35];
-    max_armor= data[bft_offset + 36];
+    auto bty_offset = block_offsets[20];
+    std::memcpy(&tag_count, data.data() + bty_offset, 4);
+    tag_statuses.resize(tag_count);
+    std::memcpy(tag_statuses.data(), data.data() + bty_offset + 4, tag_count);
 }

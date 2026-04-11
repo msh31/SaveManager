@@ -23,6 +23,9 @@ struct SanAndreas {
     bool infinite_run  = false; //0330
     bool fast_reload  = false; //0331
     bool fireproof  = false; //055D
+    //block 20
+    uint32_t tag_count = 0;
+    std::vector<uint8_t> tag_statuses;
     
 private:
     std::uint32_t calculate_checksum();
@@ -34,6 +37,7 @@ private:
     void parse_block_two();
     void parse_block_five();
     void parse_block_fifteen();
+    void parse_block_twenty();
 
     std::vector<uint8_t> data;
     std::unordered_map<int, size_t> block_offsets;
