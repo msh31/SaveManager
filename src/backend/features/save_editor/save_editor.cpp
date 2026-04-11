@@ -121,12 +121,11 @@ void SanAndreas::parse_block_fifteen() {
     auto bft_offset = block_offsets[15];
     std::memcpy(&money, data.data() + bft_offset + 4, 4);
     std::memcpy(&money_displayed, data.data() + bft_offset + 0x10, 4);
-    health = data[bft_offset + 35];
-    // armor = data[bft_offset + 36];
+    max_health = data[bft_offset + 35];
     max_armor= data[bft_offset + 36];
     get_logger().debug("offset block15: {}", bft_offset);
     get_logger().debug("money: {} money_displayed: {} health: {} max armor: {}", money, money_displayed, health, max_armor);
-    for (int i = 0; i < 40; i++) {
+    for (int i = 0; i < 140; i++) {
         get_logger().debug("  [bft+{}] = 0x{:02X}", i, data[bft_offset + i]);
     }
 }
