@@ -149,13 +149,13 @@ void TransferTab::render(const Fonts& fonts, const Detection::DetectionResult& r
     ImGui::Text("File:");
     ImGui::SameLine(140.0f);
     ImGui::PushStyleColor(ImGuiCol_PlotHistogram, ImVec4(0.26f, 0.59f, 0.98f, 1.0f));
-    ImGui::ProgressBar(file_progress, ImVec2(300.0f, 0.0f), transferring ? std::to_string((int)(file_progress * 100)).c_str() : "Idle");
+    ImGui::ProgressBar(file_progress, ImVec2(300.0f, 0.0f), transferring ? std::format("{}%", (int)(file_progress * 100)).c_str() : "Idle");
     ImGui::PopStyleColor();
 
     ImGui::Text("Overall:");
     ImGui::SameLine(140.0f);
     ImGui::PushStyleColor(ImGuiCol_PlotHistogram, ImVec4(0.26f, 0.59f, 0.98f, 1.0f));
-    ImGui::ProgressBar(overall_progress, ImVec2(300.0f, 0.0f), transferring ? std::to_string((int)(overall_progress * 100)).c_str() : "Idle");
+    ImGui::ProgressBar(overall_progress, ImVec2(300.0f, 0.0f), transferring ? std::format("{}%", (int)(overall_progress * 100)).c_str() : "Idle");
     ImGui::PopStyleColor();
 
     ImGui::SetCursorPosY(status_y);
@@ -185,20 +185,19 @@ void TransferTab::render(const Fonts& fonts, const Detection::DetectionResult& r
 
     ImGui::BeginDisabled(!connected || local_selected_count == 0 || is_transferring);
     if (ImGui::Button("Upload")) {
-        std::vector<fs::path> selected_paths;
-        for (size_t i = 0; i < state.backups.size(); i++) {
-            if (state.selected_backups[i]) {
-                selected_paths.push_back(state.backups[i]);
-            }
-        }
+        auto selected_paths = std::views::zip(state.backups, state.selected_backups)
+            | std::views::filter([](const auto& pair) { return std::get<1>(pair); })
+            | std::views::transform([](const auto& pair) { return std::get<0>(pair); })
+            | std::ranges::to<std::vector>();
+
         if (!selected_paths.empty()) {
             total_files = selected_paths.size();
             current_file_index = 0;
 
             future = std::async(std::launch::async, [this, r = remote.get(), selected_paths, &config]() {
-                for (size_t i = 0; i < selected_paths.size(); i++) {
-                    current_file_index = i;
-                    r->upload_file(selected_paths[i], current_remote_path, config);
+                for(auto [gi, path] : std::views::enumerate(selected_paths)) {
+                    current_file_index = static_cast<int>(gi);
+                    r->upload_file(path, current_remote_path, config);
                 }
             });
         }
@@ -221,11 +220,11 @@ void TransferTab::render(const Fonts& fonts, const Detection::DetectionResult& r
 
         ImGui::SetNextItemWidth(-FLT_MIN);
         if (ImGui::BeginCombo("##game", game_names[state.selected_game_idx].c_str())) {
-            for (int i = 0; i < (int)game_names.size(); i++) {
-                bool is_selected = (state.selected_game_idx == i);
-                if (ImGui::Selectable(game_names[i].c_str(), is_selected)) {
-                    state.selected_game_idx = i;
-                    state.backups = Features::get_backups(result.games[i], config);
+            for(auto [gi, name] : std::views::enumerate(game_names)) {
+                bool is_selected = (state.selected_game_idx == static_cast<int>(gi));
+                if (ImGui::Selectable(name.c_str(), is_selected)) {
+                    state.selected_game_idx = static_cast<int>(gi);
+                    state.backups = Features::get_backups(result.games[static_cast<int>(gi)], config);
                     state.selected_backups.clear();
                     state.selected_backups.resize(state.backups.size(), false);
                 }
@@ -236,10 +235,10 @@ void TransferTab::render(const Fonts& fonts, const Detection::DetectionResult& r
 
         if (!state.backups.empty()) {
             if (ImGui::BeginListBox("##backups", ImVec2(-FLT_MIN, content_height))) {
-                for (int i = 0; i < (int)state.backups.size(); i++) {
-                    std::string label = state.backups[i].filename().string() + "##" + std::to_string(i);
-                    if (ImGui::Selectable(label.c_str(), state.selected_backups[i], ImGuiSelectableFlags_AllowDoubleClick)) {
-                        state.selected_backups[i] = !state.selected_backups[i];
+                for (auto [gi, name] : std::views::enumerate(state.backups)) {
+                    std::string label = std::format("{}##{}", name.filename().string(), static_cast<int>(gi));
+                    if (ImGui::Selectable(label.c_str(), state.selected_backups[static_cast<int>(gi)], ImGuiSelectableFlags_AllowDoubleClick)) {
+                        state.selected_backups[static_cast<int>(gi)] = !state.selected_backups[static_cast<int>(gi)];
                     }
                 }
                 ImGui::EndListBox();
@@ -301,18 +300,18 @@ void TransferTab::render(const Fonts& fonts, const Detection::DetectionResult& r
                     selected_remote_idx = -1;
                 }
             }
-            for (int i = 0; i < (int)remote_entries.size(); i++) {
-                if (remote_entries[i].name == "." || remote_entries[i].name == "..") continue;
+            for (auto [gi, entry] : std::views::enumerate(remote_entries)) {
+                if (entry.name == "." || entry.name == "..") continue;
 
-                std::string prefix = remote_entries[i].is_directory ? "[DIR] " : "[FILE] ";
-                std::string label = prefix + remote_entries[i].name + "##" + std::to_string(i);
-                if (ImGui::Selectable(label.c_str(), selected_remote_idx == i, ImGuiSelectableFlags_AllowDoubleClick)) {
-                    if (ImGui::IsMouseDoubleClicked(0) && remote_entries[i].is_directory) {
-                        current_remote_path = current_remote_path + (current_remote_path.back() == '/' ? "" : "/") + remote_entries[i].name;
+                std::string prefix = entry.is_directory ? "[DIR] " : "[FILE] ";
+                std::string label = std::format("{}{}##{}", prefix, entry.name, static_cast<int>(gi));
+                if (ImGui::Selectable(label.c_str(), selected_remote_idx == static_cast<int>(gi), ImGuiSelectableFlags_AllowDoubleClick)) {
+                    if (ImGui::IsMouseDoubleClicked(0) && entry.is_directory) {
+                        current_remote_path = current_remote_path + (current_remote_path.back() == '/' ? "" : "/") + entry.name;
                         remote_entries = remote->list_directory(current_remote_path);
                         selected_remote_idx = -1;
                     } else {
-                        selected_remote_idx = i;
+                        selected_remote_idx = static_cast<int>(gi);
                     }
                 }
             }

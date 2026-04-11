@@ -104,7 +104,7 @@ void GeneralTab::render_cards() {
             }
 
             const Game* primary = &m_result->games[group[0]];
-            std::string card_id = primary->game_name + "##card" + std::to_string(gi);
+            std::string card_id = std::format("{}##card{}", primary->game_name, gi);
 
             const Game& active_game = m_result->games[group[0]];
 
@@ -242,19 +242,19 @@ void GeneralTab::render_modals() {
     if(ImGui::BeginPopupModal("Restore Backup", nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
         ImGui::SetNextItemWidth(550.0f);
         if(ImGui::BeginListBox("##state.backups")) {
-            for(int i = 0; i < m_state->backups.size(); i++) {
-                auto labels = Features::load_labels(*pending_restore_game, *m_config);
-                auto it = labels.find(m_state->backups[i].filename().string());
+            auto labels = Features::load_labels(*pending_restore_game, *m_config);
+            for(auto [gi, backup] : std::views::enumerate(m_state->backups)) {
+                auto it = labels.find(backup.filename().string());
 
-                auto ftime = fs::last_write_time(m_state->backups[i]);
+                auto ftime = fs::last_write_time(backup);
                 std::string date = std::format("{:%d %b %Y %H:%M}", ftime);
-                auto b_size = fs::file_size(m_state->backups[i]) / 1024;
+                auto b_size = fs::file_size(backup) / 1024;
 
-                std::string display_name = " - " + date + " - " + std::to_string(b_size) + "KB";
-                std::string display = (it != labels.end()) ? it->second + display_name : m_state->backups[i].filename().string();
+                std::string display_name = std::format(" - {} - {}KB", date, b_size); 
+                std::string display = (it != labels.end()) ? it->second + display_name : backup.filename().string();
 
-                if(ImGui::Selectable(display.c_str(), m_state->selected_backup_idx == i)) {
-                    m_state->selected_backup_idx = i;
+                if(ImGui::Selectable(display.c_str(), m_state->selected_backup_idx == static_cast<int>(gi))) {
+                    m_state->selected_backup_idx = static_cast<int>(gi);
                 }
             }
             ImGui::EndListBox();
@@ -282,23 +282,19 @@ void GeneralTab::render_modals() {
         ImGui::SetNextItemWidth(550.0f);
         if(ImGui::BeginListBox("##state.backups")) {
             auto labels = Features::load_labels(*pending_delete_game, *m_config);
-            for(int i = 0; i < m_state->backups.size(); i++) {
-                auto it = labels.find(m_state->backups[i].filename().string());
+            for(auto [gi, backup] : std::views::enumerate(m_state->backups)) {
+                auto it = labels.find(backup.filename().string());
 
-                auto ftime = fs::last_write_time(m_state->backups[i]);
+                auto ftime = fs::last_write_time(backup);
                 std::string date = std::format("{:%d %b %Y %H:%M}", ftime);
-                auto b_size = fs::file_size(m_state->backups[i]) / 1024;
+                auto b_size = fs::file_size(backup) / 1024;
 
-                std::string display_name = " - " + date + " - " + std::to_string(b_size) + "KB";
-                std::string display = (it != labels.end()) ? it->second + display_name : m_state->backups[i].filename().string();
+                std::string display_name = std::format(" - {} - {}KB", date, b_size); 
+                std::string display = (it != labels.end()) ? it->second + display_name : backup.filename().string();
 
-                if(ImGui::Selectable(display.c_str(), m_state->selected_backup_idx == i)) {
-                    m_state->selected_backup_idx = i;
+                if(ImGui::Selectable(display.c_str(), m_state->selected_backup_idx == static_cast<int>(gi))) {
+                    m_state->selected_backup_idx = static_cast<int>(gi);
                 }
-
-                // if(ImGui::Selectable(m_state->backups[i].filename().string().c_str(), m_state->selected_backup_idx == i)) {
-                //     m_state->selected_backup_idx = i;
-                // }
             }
             ImGui::EndListBox();
         }

@@ -71,18 +71,12 @@ bool Network::download_file(const std::string_view& url, const std::string& outp
 }
 
 void Network::download_game_image(const std::string& appid) {
-    std::string output_file = appid + ".jpg";
-    fs::path img_path = paths::cache_dir() / output_file; 
-
+    fs::path img_path = paths::cache_dir() / std::format("{}.jpg", appid); 
     if (fs::exists(img_path) && fs::file_size(img_path) > 0) {
         return;
     }
 
-    std::string url =
-        "https://cdn.cloudflare.steamstatic.com/steam/apps/" +
-        appid +
-        "/library_600x900.jpg";
-
+    auto url = std::format("https://cdn.cloudflare.steamstatic.com/steam/apps/{}/library_600x900.jpg", appid);
     if (!Network::download_file(url, img_path.string())) {
         get_logger().error("Could not download {}", img_path.string());
     }

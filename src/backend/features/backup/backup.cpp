@@ -21,7 +21,7 @@ void Features::backup_game(const Game& game, Config& config) {
     if(!archive.add_to_archive(game)) {
         Notify::show_notification("Backup Creation", "Failed to create backup! Please refer to the logfile!", 2000);
     } else {
-        Notify::show_notification("Backup created!", "The backup for: " + game.game_name + " has been created!", 2000);
+        Notify::show_notification("Backup created!", std::format("A backup has been created: {}!", game.game_name), 2000);
     }
 }
 
@@ -48,7 +48,7 @@ void Features::restore_backup(const fs::path& name, const Game& selected_game) {
     if(!archive.extract_archive(selected_game)) {
         Notify::show_notification("Backup Extraction", "Failed to restore backup! Please refer to the logfile!", 2000);
     } else {
-        Notify::show_notification("Backup restored!", "The backup: " + name.string() + " has been restored!", 2000);
+        Notify::show_notification("Backup restored!", std::format("The backup: {} has been restored!", name.string()), 2000);
     }
 }
 
@@ -63,8 +63,7 @@ std::string Features::construct_backup_name(const Game& game, const std::string&
     if(filename.empty()) {
         filename = game_name_sanitized;
     }
-
-    return "backup_" + filename + "_" + timestamp + ".zip";
+    return std::format("backup_{}_{}.zip", filename, timestamp);
 }
 
 std::unordered_map<std::string, std::string> Features::load_labels(const Game& game, Config& config) {

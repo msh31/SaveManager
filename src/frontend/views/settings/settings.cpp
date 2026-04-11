@@ -145,15 +145,17 @@ void SettingsTab::render(const Fonts& fonts, Config& config) {
     ImGui::PopFont();
 
     if (ImGui::BeginChild("blacklist_child", ImVec2(0, 120), true)) {
+        int i = 0;
         for (auto it = Blacklist::blacklisted_games.begin(); it != Blacklist::blacklisted_games.end(); ) {
             ImGui::Text("%s", it->c_str());
             ImGui::SameLine();
             ImGui::SetCursorPosX(ImGui::GetCursorPosX() + 5);
-            if (ImGui::Button(("X##" + std::to_string(std::distance(Blacklist::blacklisted_games.begin(), it))).c_str())) {
+            if (ImGui::Button(std::format("X##{}", i).c_str())) {
                 it = Blacklist::blacklisted_games.erase(it);
                 Blacklist::save();
             } else {
                 ++it;
+                ++i;
             }
         }
         ImGui::EndChild();
@@ -182,15 +184,17 @@ void SettingsTab::render(const Fonts& fonts, Config& config) {
     ImGui::PopFont();
 
     if (ImGui::BeginChild("custom_game_child", ImVec2(0, 120), true)) {
+        int i = 0;
         for (auto it = CustomGamesFile::games.begin(); it != CustomGamesFile::games.end(); ) {
             ImGui::Text("%s", it->game_name.c_str());
             ImGui::SameLine();
             ImGui::SetCursorPosX(ImGui::GetCursorPosX() + 5);
-            if (ImGui::Button(("X##" + std::to_string(std::distance(CustomGamesFile::games.begin(), it))).c_str())) {
+            if (ImGui::Button(std::format("X##{}", i).c_str())) {
                 it = CustomGamesFile::games.erase(it);
                 CustomGamesFile::save();
             } else {
                 ++it;
+                ++i;
             }
         }
         ImGui::EndChild();
