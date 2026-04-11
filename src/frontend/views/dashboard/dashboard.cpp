@@ -2,24 +2,29 @@
 #include "frontend/ui/notifications/notification.hpp"
 #include "backend/features/backup/backup.hpp"
 
-void DashboardTab::on_result_changed() {
+static constexpr const char* spinner = "|/-\\";
+
+// static std::string_view platform_label(PlatformType t) {
+//     switch(t) {
+//         case PlatformType::Steam:   return "Steam";
+//         case PlatformType::Heroic:  return "Heroic";
+//         case PlatformType::Wine:    return "Wine";
+//         // ...
+//     }
+// }
+
+void DashboardTab::on_result_changed(RenderContext& ctx) {
     grouped_games = {};
     pending_restore_game = nullptr;
     pending_delete_game = nullptr;
-    m_state->selected_game_idx = 0;
-    m_state->selected_backup_idx = 0;
-
-    grouped_games = m_result->get_grouped();
-    last_game_count = m_result->games.size();
+    ctx.state.selected_game_idx = 0;
+    ctx.state.selected_backup_idx = 0;
+    grouped_games = ctx.result.get_grouped();
+    last_game_count = ctx.result.games.size();
 }
 
 std::optional<Detection::DetectionResult> DashboardTab::render(const Fonts& fonts, Detection::DetectionResult& result, const std::unordered_map<std::string, GLuint>& texture_id, Config& config, TabState& state) {
-    m_result = &result;
-    m_textures = &texture_id;
-    m_config = &config;
-    m_state = &state;
-    m_fonts = &fonts;
-
+    RenderContext ctx{result, texture_id, config, state, fonts};
     spinner_frame++;
 
     if (refresh_future.valid() && refresh_future.wait_for(std::chrono::seconds(0)) == std::future_status::ready) {
@@ -29,211 +34,89 @@ std::optional<Detection::DetectionResult> DashboardTab::render(const Fonts& font
     }
 
     if(last_game_count != result.games.size()) {
-        on_result_changed();
+        on_result_changed(ctx);
     }
 
-    ImGui::PushFont(fonts.header);
-    ImGui::Text("Detected Games");
+    render_toolbar(ctx);
+    // render_game_list(ctx);
+    render_modals(ctx);
+
+    return std::nullopt;
+}
+
+void DashboardTab::render_toolbar(RenderContext& ctx) {
+    ImGui::PushFont(ctx.fonts.header);
+    ImGui::Text("Dashboard");
     ImGui::PopFont();
 
     bool is_refreshing = refresh_future.valid() && refresh_future.wait_for(std::chrono::seconds(0)) != std::future_status::ready;
     bool is_backing_up = backup_future.valid() && backup_future.wait_for(std::chrono::seconds(0)) != std::future_status::ready;
 
+    ImGui::SetNextItemWidth(350.f);
+    ImGui::InputText("##search", &search_query);
+    ImGui::SameLine();
+
     if(!is_refreshing) {
         if(ImGui::Button("Refresh")) {
-            refresh_future = std::async(std::launch::async, [&config]() {
+            refresh_future = std::async(std::launch::async, [&config = ctx.config]() {
                 return Detection::find_saves(config);
             });
         }
         ImGui::SetItemTooltip("Re-runs the detection logic to find new saves");
     } else {
         char spin_char = spinner[(spinner_frame / 10) % 4];
-
         std::string loading_text = std::string("Refreshing savegames...") + spin_char;
         ImGui::Text("%s", loading_text.c_str());
     }
     ImGui::SameLine();
     if(!is_backing_up) {
         if(ImGui::Button("Mass Backup")) {
-            backup_future = std::async(std::launch::async, [this]() {
-                for (auto& entry : m_result->games) {
-                    Features::backup_game(entry, *m_config);
+            backup_future = std::async(std::launch::async, [this, &result = ctx.result, &config = ctx.config]() {
+                for (auto& entry : result.games) {
+                    Features::backup_game(entry, config);
                 }
             });
         }
         ImGui::SetItemTooltip("Creates a backup of all games found!");
     } else {
         char spin_char = spinner[(spinner_frame / 10) % 4];
-
         std::string loading_text = std::string("Creating backups...") + spin_char;
         ImGui::Text("%s", loading_text.c_str());
     }
-
-    render_cards();
-    render_modals();
-
-    return std::nullopt;
 }
 
-void DashboardTab::render_cards() {
-    float available_width = ImGui::GetContentRegionAvail().x;
-    float padding = 10.0f;
-    float min_card_width = 230.0f;
-    float max_card_width = 300.0f;
-    int min_columns = 2;
+void DashboardTab::render_game_list(RenderContext& ctx) {
+    for (auto [gi, group] : std::views::enumerate(grouped_games)) {
+        const Game& primary = ctx.result.games[group[0]];
 
-    int columns = (std::max)(min_columns, (int)(available_width / (min_card_width + padding)));
-    float card_width = (available_width - (padding * (columns - 1))) / columns;
-    card_width = (std::min)(card_width, max_card_width);
-    columns = (std::max)(min_columns, (int)((available_width + padding) / (card_width + padding)));
+        if (!search_query.empty()) {
 
-    float image_height = card_width * (340.0f / 215.0f);
-    float card_height = image_height + 50.0f;
-
-    if(!grouped_games.empty()) {
-        for (auto [gi, group] : std::views::enumerate(grouped_games)) {
-            int row = gi / columns;
-            int col = gi % columns;
-
-            if(col == 0 && gi > 0) {
-                ImGui::Dummy(ImVec2(0.0f, padding));
-            }
-
-            if(col > 0) {
-                ImGui::SameLine(0.0f, padding);
-            }
-
-            const Game* primary = &m_result->games[group[0]];
-            std::string card_id = std::format("{}##card{}", primary->game_name, gi);
-
-            const Game& active_game = m_result->games[group[0]];
-
-            auto card_min = ImGui::GetCursorScreenPos();
-
-            ImGui::BeginChild(card_id.c_str(), ImVec2(card_width, card_height), true,
-                              ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
-            render_card(*primary, active_game, group, gi, image_height);
-            ImGui::EndChild();
-            ImGui::GetWindowDrawList()->AddRect(card_min, ImVec2(card_min.x + card_width, card_min.y + card_height), IM_COL32(198, 97, 63, 255));
         }
-
-    } else {
-        ImGui::Text("None of the supported games were found on your system!");
+        render_game_row(ctx, group, static_cast<int>(gi));
     }
 }
 
-void DashboardTab::render_card(const Game& primary, const Game& active_game, const std::vector<int>& group, int gi, float image_height) {
-    auto w_pos = ImGui::GetWindowPos();
-    auto w_siz = ImGui::GetWindowSize();
+void DashboardTab::render_game_row(RenderContext&, const std::vector<int>& group, int gi) {
 
-    auto it = m_textures->find(primary.appid);
-    if(it != m_textures->end()) {
-        ImGui::GetWindowDrawList()->AddImage(
-            (ImTextureID)(intptr_t)it->second,
-            w_pos,
-            ImVec2(w_pos.x + w_siz.x, w_pos.y + image_height),
-            ImVec2(0, 0),
-            ImVec2(1, 1),
-            IM_COL32(255, 255, 255, 255)
-        );
-    }
-    else {
-        ImVec2 center(w_pos.x + w_siz.x * 0.5f, w_pos.y + image_height * 0.5f);
-        float r = 30.0f;
-        ImU32 col = IM_COL32(80, 80, 80, 255);
-
-        ImGui::TextWrapped("%s", primary.game_name.c_str());
-
-        ImGui::GetWindowDrawList()->AddCircle(center, r, col, 32, 2.0f);
-        ImGui::GetWindowDrawList()->AddCircleFilled(ImVec2(center.x - 10, center.y - 8), 3, col);
-        ImGui::GetWindowDrawList()->AddCircleFilled(ImVec2(center.x + 10, center.y - 8), 3, col);
-        ImGui::GetWindowDrawList()->AddBezierCubic(
-            ImVec2(center.x - 12, center.y + 10),
-            ImVec2(center.x - 6, center.y + 4),
-            ImVec2(center.x + 6, center.y + 4),
-            ImVec2(center.x + 12, center.y + 10),
-            col, 2.0f
-        );
-        // ImGui::GetWindowDrawList()->AddLine(
-        //     ImVec2(w_pos.x, w_pos.y + image_height),
-        //     ImVec2(w_pos.x + w_siz.x, w_pos.y + image_height),
-        //     IM_COL32(198, 97, 63, 255),
-        //     2.0f
-        // );
-    }
-
-    if(it == m_textures->end()) {
-        ImGui::Separator();
-    }
-
-    ImGui::PushFont(m_fonts->small_font);
-    float btn_height = ImGui::GetFrameHeight(); 
-    float button_y = w_siz.y - btn_height - 10.5f;
-    float button_spacing = 4.0f;
-    float padding = ImGui::GetStyle().WindowPadding.x;
-    float btn_width = (w_siz.x - padding * 2 - button_spacing * 2) / 3.0f;
-    float start_x = (w_siz.x - (btn_width * 3 + button_spacing * 2)) * 0.5f;
-    ImGui::SetCursorPos(ImVec2(start_x, button_y));
-    ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(3.0f, 3.0f));
-
-    if(ImGui::Button("Backup", ImVec2(btn_width, 0))) { 
-        Features::backup_game(active_game, *m_config);
-    }
-    ImGui::SetItemTooltip("Create a save backup for this game");
-    
-    ImGui::SameLine(0.0f, button_spacing);
-    if(ImGui::Button("Restore", ImVec2(btn_width, 0))) {
-        pending_restore_game = &active_game;
-        open_restore_modal = true;
-    }
-    ImGui::SetItemTooltip("Restore a save backup for this game");
-
-    ImGui::SameLine(0.0f, button_spacing);
-    ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.8f, 0.2f, 0.2f, 1.0f));
-    ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.9f, 0.3f, 0.3f, 1.0f));
-    if(ImGui::Button("Delete", ImVec2(btn_width, 0))) { 
-        pending_delete_game = &active_game;
-        open_delete_modal = true;
-    }
-    ImGui::SetItemTooltip("Delete a save backup for this game");
-    ImGui::PopStyleColor(2);
-    ImGui::PopStyleVar();
-    ImGui::PopFont();
-
-    if (ImGui::BeginPopupContextWindow()) {
-        if (ImGui::MenuItem("Open Path")) {
-#ifdef __linux__
-            pid_t pid = fork();
-            if (pid == 0) {
-                execl("/usr/bin/xdg-open", "xdg-open", active_game.save_path.string().c_str(), nullptr);
-                _exit(1);
-            }
-#endif
-#ifdef _WIN32
-            ShellExecuteA(NULL, "open", active_game.save_path.string().c_str(), NULL, NULL, SW_SHOWDEFAULT);
-#endif
-        }
-        ImGui::EndPopup();
-    }
 }
 
-void DashboardTab::render_modals() {
+void DashboardTab::render_modals(RenderContext& ctx) {
     if(open_restore_modal) {
         open_restore_modal = false;
-        m_state->backups = Features::get_backups(*pending_restore_game, *m_config); 
-        m_state->selected_backups.clear();
-        m_state->selected_backups.resize(m_state->backups.size(), false);
-        if(m_state->backups.empty()) {
+        ctx.state.backups = Features::get_backups(*pending_restore_game, ctx.config); 
+        ctx.state.selected_backups.clear();
+        ctx.state.selected_backups.resize(ctx.state.backups.size(), false);
+        if(ctx.state.backups.empty()) {
             open_restore_modal = false;
         }
         ImGui::OpenPopup("Restore Backup");
     }
     if(open_delete_modal) {
         open_delete_modal = false;
-        m_state->backups = Features::get_backups(*pending_delete_game, *m_config); 
-        m_state->selected_backups.clear();
-        m_state->selected_backups.resize(m_state->backups.size(), false);
-        if(m_state->backups.empty()) {
+        ctx.state.backups = Features::get_backups(*pending_delete_game, ctx.config); 
+        ctx.state.selected_backups.clear();
+        ctx.state.selected_backups.resize(ctx.state.backups.size(), false);
+        if(ctx.state.backups.empty()) {
             open_delete_modal = false;
         }
         ImGui::OpenPopup("Delete Backup");
@@ -242,8 +125,8 @@ void DashboardTab::render_modals() {
     if(ImGui::BeginPopupModal("Restore Backup", nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
         ImGui::SetNextItemWidth(550.0f);
         if(ImGui::BeginListBox("##state.backups")) {
-            auto labels = Features::load_labels(*pending_restore_game, *m_config);
-            for(auto [gi, backup] : std::views::enumerate(m_state->backups)) {
+            auto labels = Features::load_labels(*pending_restore_game, ctx.config);
+            for(auto [gi, backup] : std::views::enumerate(ctx.state.backups)) {
                 auto it = labels.find(backup.filename().string());
 
                 auto ftime = fs::last_write_time(backup);
@@ -253,20 +136,20 @@ void DashboardTab::render_modals() {
                 std::string display_name = std::format(" - {} - {}KB", date, b_size); 
                 std::string display = (it != labels.end()) ? it->second + display_name : backup.filename().string();
 
-                if(ImGui::Selectable(display.c_str(), m_state->selected_backup_idx == static_cast<int>(gi))) {
-                    m_state->selected_backup_idx = static_cast<int>(gi);
+                if(ImGui::Selectable(display.c_str(), ctx.state.selected_backup_idx == static_cast<int>(gi))) {
+                    ctx.state.selected_backup_idx = static_cast<int>(gi);
                 }
             }
             ImGui::EndListBox();
 
             ImGui::InputText("Backup Label", &label_input);
             if(ImGui::Button("Save Label")) {
-                Features::save_label(*pending_restore_game, *m_config, m_state->backups[m_state->selected_backup_idx].filename().string(), label_input);
+                Features::save_label(*pending_restore_game, ctx.config, ctx.state.backups[ctx.state.selected_backup_idx].filename().string(), label_input);
             }
         }
 
-        if(ImGui::Button("Restore") && !m_state->backups.empty()) {
-            Features::restore_backup(m_state->backups[m_state->selected_backup_idx], *pending_restore_game);
+        if(ImGui::Button("Restore") && !ctx.state.backups.empty()) {
+            Features::restore_backup(ctx.state.backups[ctx.state.selected_backup_idx], *pending_restore_game);
             ImGui::CloseCurrentPopup();
             open_restore_modal = false;
         }
@@ -281,8 +164,8 @@ void DashboardTab::render_modals() {
     if(ImGui::BeginPopupModal("Delete Backup", nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
         ImGui::SetNextItemWidth(550.0f);
         if(ImGui::BeginListBox("##state.backups")) {
-            auto labels = Features::load_labels(*pending_delete_game, *m_config);
-            for(auto [gi, backup] : std::views::enumerate(m_state->backups)) {
+            auto labels = Features::load_labels(*pending_delete_game, ctx.config);
+            for(auto [gi, backup] : std::views::enumerate(ctx.state.backups)) {
                 auto it = labels.find(backup.filename().string());
 
                 auto ftime = fs::last_write_time(backup);
@@ -292,8 +175,8 @@ void DashboardTab::render_modals() {
                 std::string display_name = std::format(" - {} - {}KB", date, b_size); 
                 std::string display = (it != labels.end()) ? it->second + display_name : backup.filename().string();
 
-                if(ImGui::Selectable(display.c_str(), m_state->selected_backup_idx == static_cast<int>(gi))) {
-                    m_state->selected_backup_idx = static_cast<int>(gi);
+                if(ImGui::Selectable(display.c_str(), ctx.state.selected_backup_idx == static_cast<int>(gi))) {
+                    ctx.state.selected_backup_idx = static_cast<int>(gi);
                 }
             }
             ImGui::EndListBox();
@@ -301,16 +184,16 @@ void DashboardTab::render_modals() {
 
         ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.8f, 0.2f, 0.2f, 1.0f));
         ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.9f, 0.3f, 0.3f, 1.0f));
-        if(ImGui::Button("Delete") && !m_state->backups.empty()) {
-            auto labels = Features::load_labels(*pending_delete_game, *m_config);
-            if(fs::remove(m_state->backups[m_state->selected_backup_idx])) {
+        if(ImGui::Button("Delete") && !ctx.state.backups.empty()) {
+            auto labels = Features::load_labels(*pending_delete_game, ctx.config);
+            if(fs::remove(ctx.state.backups[ctx.state.selected_backup_idx])) {
                 Notify::show_notification("Backup Deletion", "Backup deleted!", 1500);
             } else {
                 Notify::show_notification("Backup Deletion", "Backup could not be deleted!", 1500);
             }
 
-            labels.erase(m_state->backups[m_state->selected_backup_idx].filename().string());
-            Features::save_labels(*pending_delete_game, *m_config, labels);
+            labels.erase(ctx.state.backups[ctx.state.selected_backup_idx].filename().string());
+            Features::save_labels(*pending_delete_game, ctx.config, labels);
 
             ImGui::CloseCurrentPopup();
             open_delete_modal = false;
