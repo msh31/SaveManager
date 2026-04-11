@@ -99,7 +99,9 @@ bool SanAndreas::open(fs::path path) {
     get_logger().info("parsing savefile: {}", path.filename().c_str());
     parse_block_zero();
     parse_block_two();
+    parse_block_five();
     parse_block_fifteen();
+    // parse_block_twenty();
 
     return true;
 }
@@ -129,6 +131,14 @@ void SanAndreas::parse_block_five() {
 }
 
 void SanAndreas::parse_block_fifteen() {
+    auto bft_offset = block_offsets[15];
+    std::memcpy(&money, data.data() + bft_offset + 4, 4);
+    std::memcpy(&money_displayed, data.data() + bft_offset + 0x10, 4);
+    max_health = data[bft_offset + 35];
+    max_armor= data[bft_offset + 36];
+}
+
+void SanAndreas::parse_block_twenty() {
     auto bft_offset = block_offsets[15];
     std::memcpy(&money, data.data() + bft_offset + 4, 4);
     std::memcpy(&money_displayed, data.data() + bft_offset + 0x10, 4);
