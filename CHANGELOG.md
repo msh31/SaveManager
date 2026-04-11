@@ -16,8 +16,9 @@
 
 ### Changes
 - Detection is now done asynchronously, significantly cuts down startup time 
-- Code improvements for better maintainability
+- General code improvements for better maintainability
 - Move codebase to C++23
+- Logger refactor for increased performance
 - Use Conan for external dependencies
 
 ### Known Issues / Limitations
