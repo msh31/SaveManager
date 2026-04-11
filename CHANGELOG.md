@@ -1,6 +1,8 @@
 # Changelog
 
 ## [1.5.0] - 2026-04-20
+<img src="assets/editor150.png" alt="Editor Preview" width="800"/>
+
 ### New verified supported games
 - Grand Theft Auto IV
 - L.A. Noire
