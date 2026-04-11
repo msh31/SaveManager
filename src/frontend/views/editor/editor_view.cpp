@@ -47,9 +47,9 @@ void EditorTab::render(const Fonts& fonts) {
         ImGui::SameLine();
         ImGui::Checkbox("Lose stuff after busted", &san_andreas.lose_stuff_after_busted);
         ImGui::Separator();
-        ImGui::Checkbox("Free Busted Once", &san_andreas.free_wasted_once);
-        ImGui::SameLine();
         ImGui::Checkbox("Free Wasted Once", &san_andreas.free_wasted_once);
+        ImGui::SameLine();
+        ImGui::Checkbox("Free Busted Once", &san_andreas.free_busted_once);
         ImGui::Separator();
         ImGui::Checkbox("Infinite Run", &san_andreas.infinite_run);
         ImGui::SameLine();
