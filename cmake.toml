@@ -45,10 +45,12 @@ type = "executable"
 sources = [
     "src/**.cpp",
     "vendor/imgui/imgui_stdlib.cpp",
+    "vendor/ImGuiFileDialog/*.cpp",
 ]
 include-directories = [
     "src",
     "vendor/imgui",
+    "vendor/ImGuiFileDialog",
 ]
 precompile-headers = ["src/pch.hpp"]
 link-libraries = ["CURL::libcurl", "glfw", "libzip::zip", "Libssh2::libssh2", "OpenSSL::Crypto", "imgui::imgui", "glad::glad", "nlohmann_json::nlohmann_json", "stb::stb"]

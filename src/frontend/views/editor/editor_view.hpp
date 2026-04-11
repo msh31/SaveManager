@@ -3,6 +3,7 @@
 
 struct EditorTab {
     void render(const Fonts& fonts);
+    std::string file_path; 
 
     SanAndreas san_andreas;
 };

@@ -91,6 +91,7 @@ set(savemanager_SOURCES
 	"src/frontend/views/settings/settings.cpp"
 	"src/frontend/views/transfer/transfer.cpp"
 	"src/main.cpp"
+	"vendor/ImGuiFileDialog/ImGuiFileDialog.cpp"
 	"vendor/imgui/imgui_stdlib.cpp"
 )
 
@@ -106,6 +107,7 @@ target_compile_features(savemanager PRIVATE
 target_include_directories(savemanager PRIVATE
 	src
 	"vendor/imgui"
+	"vendor/ImGuiFileDialog"
 )
 
 target_link_libraries(savemanager PRIVATE
