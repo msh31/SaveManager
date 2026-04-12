@@ -119,17 +119,18 @@ void DashboardTab::render_game_row(RenderContext& ctx, const std::vector<int>& g
     int save_count = 0, backup_count = 0;
     auto top = ImGui::GetCursorScreenPos();
     bool& not_collapsed = card_collapsed[primary.game_name]; //defaults to false
-    
-    for (const auto& index : group) {
-        const Game& game = ctx.result.games[index];
-
-        for (const auto& file : fs::directory_iterator(game.save_path, fs::directory_options::skip_permission_denied)) {
-            if (fs::is_regular_file(file)) save_count++;
-            files.emplace_back(file.path(), &game);
-        }
-
-        backup_count += Features::get_backups(game, ctx.config).size();
-    }
+   
+    //TODO: cache this data so it doesnt need to get recomputed every frame. causes high cpu usage
+    // for (const auto& index : group) {
+    //     const Game& game = ctx.result.games[index];
+    //
+    //     for (const auto& file : fs::directory_iterator(game.save_path, fs::directory_options::skip_permission_denied)) {
+    //         if (fs::is_regular_file(file)) save_count++;
+    //         files.emplace_back(file.path(), &game);
+    //     }
+    //
+    //     backup_count += Features::get_backups(game, ctx.config).size();
+    // }
 
     const char* chevron = not_collapsed ? "▼" : "▶";
     auto selectable_id = std::format("##gamename_{}", gi);
