@@ -190,9 +190,9 @@ void DashboardTab::render_save_row(RenderContext& ctx, const fs::path& save_file
     ImGui::Text("%s", save_file.filename().string().c_str());
     ImGui::SameLine(ImGui::GetContentRegionMax().x - total_width);
 
-    ImGui::Text("%s", date_text.c_str());
+    ImGui::TextDisabled("%s", date_text.c_str());
     ImGui::SameLine(0.0f, button_spacing);
-    ImGui::Text("%s", size_text.c_str());
+    ImGui::TextDisabled("%s", size_text.c_str());
     ImGui::SameLine(0.0f, button_spacing);
 
     ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(3.0f, 3.0f));
