@@ -96,7 +96,7 @@ bool SanAndreas::open(fs::path path) {
         get_logger().debug("file failed to validate!");
         return false;
     }
-    get_logger().info("parsing savefile: {}", path.filename().c_str());
+    get_logger().info("parsing savefile: {}", path.filename().string());
     parse_block_zero();
     parse_block_two();
     parse_block_five();
