@@ -175,19 +175,30 @@ void DashboardTab::render_save_row(RenderContext& ctx, const fs::path& save_file
     ImGui::PushID(save_file.string().c_str());
     float button_spacing = 4.0f;
     float btn_width = 80.0f;
-    float total_width = btn_width * 3 + button_spacing * 2;
 
-    ImGui::Indent();
+    std::string date_text = std::format("{:%d/%m/%y %H:%M} | ", fs::last_write_time(save_file));
+    float date_width = ImGui::CalcTextSize(date_text.c_str()).x;
+
+    auto b_size = fs::file_size(save_file) / 1024;
+    std::string size_text = std::format("{}KB  ", b_size);
+
+    float size_width = ImGui::CalcTextSize(size_text.c_str()).x;
+    float total_width = date_width + size_width + btn_width * 3 + button_spacing * 5;
+
     ImGui::Text("%s", save_file.filename().string().c_str());
     ImGui::SameLine(ImGui::GetContentRegionMax().x - total_width);
+
+    ImGui::Text("%s", date_text.c_str());
+    ImGui::SameLine(0.0f, button_spacing);
+    ImGui::Text("%s", size_text.c_str());
+    ImGui::SameLine(0.0f, button_spacing);
 
     ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(3.0f, 3.0f));
     if(ImGui::Button("Backup", ImVec2(btn_width, 0))) { 
         Features::backup_game(game, ctx.config);
     }
     ImGui::SetItemTooltip("Create a backup of this save");
-
-    ImGui::SameLine(0.0f, 4.0f);
+    ImGui::SameLine(0.0f, button_spacing);
     
     if(ImGui::Button("Restore", ImVec2(btn_width, 0))) {
         pending_restore_game = &game;
@@ -195,7 +206,7 @@ void DashboardTab::render_save_row(RenderContext& ctx, const fs::path& save_file
     }
     ImGui::SetItemTooltip("Restore save from backup");
 
-    ImGui::SameLine(0.0f, 4.0f);
+    ImGui::SameLine(0.0f, button_spacing);
     ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.8f, 0.2f, 0.2f, 1.0f));
     ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.9f, 0.3f, 0.3f, 1.0f));
     if(ImGui::Button("Delete", ImVec2(btn_width, 0))) { 
@@ -206,7 +217,6 @@ void DashboardTab::render_save_row(RenderContext& ctx, const fs::path& save_file
 
     ImGui::PopStyleColor(2);
     ImGui::PopStyleVar();
-    ImGui::Unindent();
     ImGui::PopID();
 }
 
