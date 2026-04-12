@@ -161,11 +161,23 @@ void DashboardTab::render_game_row(RenderContext& ctx, const std::vector<int>& g
     ImGui::Text("%s", right_text.c_str());
 
     if (not_collapsed) { 
-        ImGui::TextDisabled("SAVE FILES");
-        for (auto& backup : files) {
-            ImGui::Separator();
-            render_save_row(ctx, backup.first, *backup.second);
-            ImGui::Separator();
+        if(save_count > 0) {
+            ImGui::TextDisabled("SAVE FILES");
+            for (auto& backup : files) {
+                ImGui::Separator();
+                render_save_row(ctx, backup.first, *backup.second);
+                ImGui::Separator();
+            }
+        } else ImGui::TextDisabled("Game detected but no saves were found!");
+        if(backup_count > 0) {
+            ImGui::TextDisabled("BACKUPS");
+            bool& bk_collapsed = backups_collapsed[primary.game_name];
+            if (!bk_collapsed) {
+                auto backups = Features::get_backups(primary, ctx.config);
+                for (auto& backup : backups) {
+                    render_backup_row(ctx, backup, primary);
+                }
+            }
         }
     }
 
@@ -220,6 +232,10 @@ void DashboardTab::render_save_row(RenderContext& ctx, const fs::path& save_file
     ImGui::PopStyleColor(2);
     ImGui::PopStyleVar();
     ImGui::PopID();
+}
+
+void DashboardTab::render_backup_row(RenderContext& ctx, const fs::path& backup, const Game& game) {
+
 }
 
 void DashboardTab::render_modals(RenderContext& ctx) {
