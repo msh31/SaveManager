@@ -18,9 +18,9 @@
 - 
 
 ### Changes
-- Redesigned dashboard UI with per save backups instead of per game
+- Redesigned dashboard UI
 - Detection is now done asynchronously, significantly cuts down startup time 
-- Logger refactor for increased performance
+- Logger refactor for increased performance, now fully in-memory.
 
 ### Development related
 - Use Conan for external dependencies (besides stuff that isn't on there)
