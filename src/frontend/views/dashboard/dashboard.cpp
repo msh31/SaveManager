@@ -20,16 +20,13 @@ static std::string_view get_platform_label(PlatformType t) {
 
 void DashboardTab::on_result_changed(RenderContext& ctx) {
     grouped_games = {};
-    pending_restore_game = nullptr;
-    pending_delete_game = nullptr;
-    ctx.state.selected_game_idx = 0;
-    ctx.state.selected_backup_idx = 0;
     grouped_games = ctx.result.get_grouped();
     last_game_count = ctx.result.games.size();
 }
 
-std::optional<Detection::DetectionResult> DashboardTab::render(const Fonts& fonts, Detection::DetectionResult& result, const std::unordered_map<std::string, GLuint>& texture_id, Config& config, TabState& state) {
-    RenderContext ctx{result, texture_id, config, state, fonts};
+std::optional<Detection::DetectionResult> DashboardTab::render(const Fonts& fonts, 
+                                                               Detection::DetectionResult& result, const std::unordered_map<std::string, GLuint>& texture_id, Config& config) {
+    RenderContext ctx{result, texture_id, config, fonts};
     spinner_frame++;
 
     if (refresh_future.valid() && refresh_future.wait_for(std::chrono::seconds(0)) == std::future_status::ready) {
@@ -244,8 +241,7 @@ void DashboardTab::render_backup_row(RenderContext& ctx, const fs::path& backup,
     
     ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(3.0f, 3.0f));
     if(ImGui::Button("Restore", ImVec2(btn_width, 0))) {
-        pending_restore_game = &game;
-        open_restore_modal = true;
+        Features::restore_backup(backup, game);
     }
     ImGui::SetItemTooltip("Restore save from backup");
     ImGui::SameLine(0.0f, button_spacing);
@@ -262,8 +258,14 @@ void DashboardTab::render_backup_row(RenderContext& ctx, const fs::path& backup,
     ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.8f, 0.2f, 0.2f, 1.0f));
     ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.9f, 0.3f, 0.3f, 1.0f));
     if(ImGui::Button("Delete", ImVec2(btn_width, 0))) { 
-        pending_delete_game = &game;
-        open_delete_modal = true;
+        if(fs::remove(backup)) {
+            auto mutable_labels = labels;
+            mutable_labels.erase(backup.filename().string());
+            Features::save_labels(game, ctx.config, mutable_labels);
+            Notify::show_notification("Backup Deletion", "Backup deleted!", 1500);
+        } else {
+            Notify::show_notification("Backup Deletion", "Backup could not be deleted!", 1500);
+        }
     }
     ImGui::SetItemTooltip("Delete backed up savegame");
 
@@ -273,116 +275,9 @@ void DashboardTab::render_backup_row(RenderContext& ctx, const fs::path& backup,
 }
 
 void DashboardTab::render_modals(RenderContext& ctx) {
-    if(open_restore_modal) {
-        open_restore_modal = false;
-        ctx.state.backups = Features::get_backups(*pending_restore_game, ctx.config); 
-        ctx.state.selected_backups.clear();
-        ctx.state.selected_backups.resize(ctx.state.backups.size(), false);
-        if(ctx.state.backups.empty()) {
-            open_restore_modal = false;
-        }
-        ImGui::OpenPopup("Restore Backup");
-    }
-    if(open_delete_modal) {
-        open_delete_modal = false;
-        ctx.state.backups = Features::get_backups(*pending_delete_game, ctx.config); 
-        ctx.state.selected_backups.clear();
-        ctx.state.selected_backups.resize(ctx.state.backups.size(), false);
-        if(ctx.state.backups.empty()) {
-            open_delete_modal = false;
-        }
-        ImGui::OpenPopup("Delete Backup");
-    }
     if (open_rename_modal) {
         open_rename_modal = false;
         ImGui::OpenPopup("Rename Backup");
-    }
-
-    if(ImGui::BeginPopupModal("Restore Backup", nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
-        ImGui::SetNextItemWidth(550.0f);
-        if(ImGui::BeginListBox("##state.backups")) {
-            auto labels = Features::load_labels(*pending_restore_game, ctx.config);
-            for(auto [gi, backup] : std::views::enumerate(ctx.state.backups)) {
-                auto it = labels.find(backup.filename().string());
-
-                auto ftime = fs::last_write_time(backup);
-                std::string date = std::format("{:%d %b %Y %H:%M}", ftime);
-                auto b_size = fs::file_size(backup) / 1024;
-
-                std::string display_name = std::format(" - {} - {}KB", date, b_size); 
-                std::string display = (it != labels.end()) ? it->second + display_name : backup.filename().string();
-
-                if(ImGui::Selectable(display.c_str(), ctx.state.selected_backup_idx == static_cast<int>(gi))) {
-                    ctx.state.selected_backup_idx = static_cast<int>(gi);
-                }
-            }
-            ImGui::EndListBox();
-
-            ImGui::InputText("Backup Label", &label_input);
-            if(ImGui::Button("Save Label")) {
-                Features::save_label(*pending_restore_game, ctx.config, 
-                                     ctx.state.backups[ctx.state.selected_backup_idx].filename().string(), label_input);
-            }
-        }
-
-        if(ImGui::Button("Restore") && !ctx.state.backups.empty()) {
-            Features::restore_backup(ctx.state.backups[ctx.state.selected_backup_idx], *pending_restore_game);
-            ImGui::CloseCurrentPopup();
-            open_restore_modal = false;
-        }
-        ImGui::SameLine();
-        if(ImGui::Button("Cancel")) {
-            ImGui::CloseCurrentPopup();
-            pending_restore_game = nullptr;
-            open_restore_modal = false;
-        }
-        ImGui::EndPopup();
-    }
-    if(ImGui::BeginPopupModal("Delete Backup", nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
-        ImGui::SetNextItemWidth(550.0f);
-        if(ImGui::BeginListBox("##state.backups")) {
-            auto labels = Features::load_labels(*pending_delete_game, ctx.config);
-            for(auto [gi, backup] : std::views::enumerate(ctx.state.backups)) {
-                auto it = labels.find(backup.filename().string());
-
-                auto ftime = fs::last_write_time(backup);
-                std::string date = std::format("{:%d %b %Y %H:%M}", ftime);
-                auto b_size = fs::file_size(backup) / 1024;
-
-                std::string display_name = std::format(" - {} - {}KB", date, b_size); 
-                std::string display = (it != labels.end()) ? it->second + display_name : backup.filename().string();
-
-                if(ImGui::Selectable(display.c_str(), ctx.state.selected_backup_idx == static_cast<int>(gi))) {
-                    ctx.state.selected_backup_idx = static_cast<int>(gi);
-                }
-            }
-            ImGui::EndListBox();
-        }
-
-        ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.8f, 0.2f, 0.2f, 1.0f));
-        ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.9f, 0.3f, 0.3f, 1.0f));
-        if(ImGui::Button("Delete") && !ctx.state.backups.empty()) {
-            auto labels = Features::load_labels(*pending_delete_game, ctx.config);
-            if(fs::remove(ctx.state.backups[ctx.state.selected_backup_idx])) {
-                Notify::show_notification("Backup Deletion", "Backup deleted!", 1500);
-            } else {
-                Notify::show_notification("Backup Deletion", "Backup could not be deleted!", 1500);
-            }
-
-            labels.erase(ctx.state.backups[ctx.state.selected_backup_idx].filename().string());
-            Features::save_labels(*pending_delete_game, ctx.config, labels);
-
-            ImGui::CloseCurrentPopup();
-            open_delete_modal = false;
-        }
-        ImGui::PopStyleColor(2);
-        ImGui::SameLine();
-        if(ImGui::Button("Cancel")) {
-            ImGui::CloseCurrentPopup();
-            pending_delete_game = nullptr;
-            open_delete_modal = false;
-        }
-        ImGui::EndPopup();
     }
 
     if (ImGui::BeginPopupModal("Rename Backup", nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {

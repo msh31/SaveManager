@@ -20,6 +20,8 @@ public:
     GLFWwindow* window = nullptr;
     std::future<void> are_we_ready;
     bool refresh_requested;
+
+    TabState state;
 private:
     bool setup_opengl();
     bool setup_imgui();
@@ -39,7 +41,6 @@ private:
     LogTab log_tab;
     AboutTab about_tab;
     SettingsTab settings_tab;
-    TabState state;
 
     std::unordered_map<std::string, GLuint> game_textures;
     std::vector<std::future<Textures::ImageData>> texture_futures;

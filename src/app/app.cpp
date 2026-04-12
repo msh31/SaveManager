@@ -58,7 +58,7 @@ void App::render_ui() {
 
     if (ImGui::BeginTabBar("MyTabBar", ImGuiTabBarFlags_Reorderable | ImGuiTabBarFlags_DrawSelectedOverline)) {
         if (ImGui::BeginTabItem("Dashboard"))  {
-            if (auto new_d_result = dahsboard_tab.render(fonts, d_result, game_textures, config, state)) {
+            if (auto new_d_result = dahsboard_tab.render(fonts, d_result, game_textures, config)) {
                 d_result = *new_d_result;
 
                 for (auto& [appid, texture] : game_textures) glDeleteTextures(1, &texture);

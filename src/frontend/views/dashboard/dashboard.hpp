@@ -7,12 +7,8 @@ struct DashboardTab {
     std::unordered_map<std::string, bool> backups_collapsed;
     std::string search_query = "";
 
-    bool open_restore_modal = false;
     bool open_rename_modal = false;
     const Game* pending_rename_game = nullptr;
-    bool open_delete_modal = false;
-    const Game* pending_restore_game = nullptr;
-    const Game* pending_delete_game = nullptr;
 
     std::future<Detection::DetectionResult> refresh_future;
     std::future<void> backup_future;
@@ -24,14 +20,13 @@ struct DashboardTab {
     int spinner_frame = 0;
 
     std::optional<Detection::DetectionResult> render(const Fonts&, Detection::DetectionResult&,
-        const std::unordered_map<std::string, GLuint>&, Config&, TabState&);
+        const std::unordered_map<std::string, GLuint>&, Config&);
 
 private:
     struct RenderContext {
         Detection::DetectionResult& result;
         const std::unordered_map<std::string, GLuint>& textures;
         Config& config;
-        TabState& state;
         const Fonts& fonts;
     };
 
