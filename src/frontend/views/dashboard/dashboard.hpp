@@ -1,5 +1,4 @@
 #pragma once
-#include "globals.hpp"
 #include "backend/detection/detection.hpp"
 
 struct DashboardTab {
@@ -9,6 +8,8 @@ struct DashboardTab {
     std::string search_query = "";
 
     bool open_restore_modal = false;
+    bool open_rename_modal = false;
+    const Game* pending_rename_game = nullptr;
     bool open_delete_modal = false;
     const Game* pending_restore_game = nullptr;
     const Game* pending_delete_game = nullptr;
@@ -16,6 +17,8 @@ struct DashboardTab {
     std::future<Detection::DetectionResult> refresh_future;
     std::future<void> backup_future;
 
+    fs::path pending_rename_backup;
+    std::string rename_input;
     std::string label_input = "My awesome savegame";
     size_t last_game_count = 0;
     int spinner_frame = 0;
@@ -37,6 +40,6 @@ private:
     void render_game_list(RenderContext&);
     void render_game_row(RenderContext&, const std::vector<int>& group, int gi);
     void render_save_row(RenderContext& ctx, const fs::path& save_file, const Game& game);
-    void render_backup_row(RenderContext& ctx, const fs::path& backup);
+    void render_backup_row(RenderContext& ctx, const fs::path& backup, const Game& game, const std::unordered_map<std::string, std::string>& labels);
     void render_modals(RenderContext&);
 };
