@@ -126,8 +126,10 @@ void DashboardTab::render_game_row(RenderContext& ctx, const std::vector<int>& g
         const Game& game = ctx.result.games[index];
 
         for (const auto& file : fs::directory_iterator(game.save_path, fs::directory_options::skip_permission_denied)) {
-            if (fs::is_regular_file(file)) save_count++;
-            files.emplace_back(file.path(), &game);
+            if (fs::is_regular_file(file)) { 
+                save_count++;
+                files.emplace_back(file.path(), &game);
+            }
         }
 
         backup_count += Features::get_backups(game, ctx.config).size();
