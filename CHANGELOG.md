@@ -18,11 +18,14 @@
 - 
 
 ### Changes
+- Redesigned dashboard UI with per save backups instead of per game
 - Detection is now done asynchronously, significantly cuts down startup time 
-- General code improvements for better maintainability
-- Move codebase to C++23
 - Logger refactor for increased performance
-- Use Conan for external dependencies
+
+### Development related
+- Use Conan for external dependencies (besides stuff that isn't on there)
+- Move codebase to C++23
+- General code improvements for better maintainability
 
 ### Known Issues / Limitations
 - Original Anno editions not supported due to install path limitations (You can add them manually though!)
