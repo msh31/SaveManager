@@ -1,9 +1,14 @@
 from conan import ConanFile
-from conan.tools.cmake import cmake_layout
+from conan.tools.cmake import cmake_layout, CMakeToolchain, CMakeDeps
 
 class SaveManager(ConanFile):
     settings = "os", "compiler", "build_type", "arch"
-    generators = "CMakeDeps", "CMakeToolchain"
+
+    def generate(self):
+        tc = CMakeToolchain(self, generator="Ninja")
+        tc.generate()
+        deps = CMakeDeps(self)
+        deps.generate()
 
     def requirements(self):
         self.requires("libcurl/8.19.0")
