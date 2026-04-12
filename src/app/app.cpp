@@ -272,7 +272,7 @@ void App::render() {
     ImGui::Render();
     ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
     glfwSwapBuffers(window);
-    glfwPollEvents();
+    glfwWaitEventsTimeout(1.0/60.0);
 }
 
 App::~App() {
