@@ -22,6 +22,15 @@ void DashboardTab::on_result_changed(RenderContext& ctx) {
     grouped_games = {};
     grouped_games = ctx.result.get_grouped();
     last_game_count = ctx.result.games.size();
+
+    for (const auto& entry : ctx.result.games) {
+        fs::file_time_type current_max;
+        for (const auto& file : fs::directory_iterator(entry.save_path, fs::directory_options::skip_permission_denied)) {
+            auto t = fs::last_write_time(file);
+            if (fs::is_regular_file(file)) if (t > current_max) current_max = t;
+        }
+        game_last_modified.insert({entry.game_name, current_max});
+    }
 }
 
 std::optional<Detection::DetectionResult> DashboardTab::render(const Fonts& fonts, 
@@ -56,8 +65,19 @@ void DashboardTab::render_toolbar(RenderContext& ctx) {
     bool is_refreshing = refresh_future.valid() && refresh_future.wait_for(std::chrono::seconds(0)) != std::future_status::ready;
     bool is_backing_up = backup_future.valid() && backup_future.wait_for(std::chrono::seconds(0)) != std::future_status::ready;
 
-    ImGui::SetNextItemWidth(350.f);
+    float sort_width = ImGui::CalcTextSize("Sort: Alphabetical").x + ImGui::GetStyle().FramePadding.x * 2;
+    float refresh_width = ImGui::CalcTextSize("Refresh").x + ImGui::GetStyle().FramePadding.x * 2;
+    float backup_width = ImGui::CalcTextSize("Mass Backup").x + ImGui::GetStyle().FramePadding.x * 2;
+    float spacing = ImGui::GetStyle().ItemSpacing.x * 3;
+
+    ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x - sort_width - refresh_width - backup_width - spacing);
     ImGui::InputText("##search", &search_query);
+    ImGui::SameLine();
+
+    const char* sort_label = sort_mode == SortMode::Alphabetical ? "Sort: A-Z" : "Sort: Newest";
+    if (ImGui::Button(sort_label)) {
+        sort_mode = sort_mode == SortMode::Alphabetical ? SortMode::Recent : SortMode::Alphabetical;
+    }
     ImGui::SameLine();
 
     if(!is_refreshing) {
@@ -68,9 +88,8 @@ void DashboardTab::render_toolbar(RenderContext& ctx) {
         }
         ImGui::SetItemTooltip("Re-runs the detection logic to find new saves");
     } else {
-        char spin_char = spinner[(spinner_frame / 10) % 4];
-        std::string loading_text = std::string("Refreshing savegames...") + spin_char;
-        ImGui::Text("%s", loading_text.c_str());
+        int index = (spinner_frame / 10) % 4;
+        ImGui::Text("%c", spinner[index]);
     }
     ImGui::SameLine();
     if(!is_backing_up) {
@@ -93,7 +112,22 @@ void DashboardTab::render_game_list(RenderContext& ctx) {
     std::transform(search_query.begin(), search_query.end(), search_query.begin(),
                    ::tolower);
 
-    for (auto [gi, group] : std::views::enumerate(grouped_games)) {
+    auto sorted = grouped_games;
+    switch (sort_mode) {
+        case SortMode::Recent:
+            std::sort(sorted.begin(), sorted.end(), [&](const std::vector<int>& a, const std::vector<int>& b) {
+                return game_last_modified[ctx.result.games[a[0]].game_name] > 
+                game_last_modified[ctx.result.games[b[0]].game_name];
+            });
+        break;
+        case SortMode::Alphabetical:
+            std::sort(sorted.begin(), sorted.end(), [&](const std::vector<int>& a, const std::vector<int>& b) {
+                return ctx.result.games[a[0]].game_name < ctx.result.games[b[0]].game_name;
+            });
+        break;
+    }
+
+    for (auto [gi, group] : std::views::enumerate(sorted)) {
         const Game& primary = ctx.result.games[group[0]];
         std::string game_name = primary.game_name;
 

@@ -30,6 +30,15 @@ private:
         const Fonts& fonts;
     };
 
+    enum class SortMode { 
+        Recent, 
+        Alphabetical 
+    };
+    SortMode sort_mode = SortMode::Alphabetical;
+    std::optional<PlatformType> platform_filter = std::nullopt; // nullopt = all
+
+    std::unordered_map<std::string, fs::file_time_type> game_last_modified;
+
     void on_result_changed(RenderContext&);
     void render_toolbar(RenderContext&);
     void render_game_list(RenderContext&);
