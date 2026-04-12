@@ -1,10 +1,14 @@
 #include "dashboard.hpp"
 #include "frontend/ui/notifications/notification.hpp"
 #include "backend/features/backup/backup.hpp"
+#include <format>
 
 static constexpr const char* spinner = "|/-\\";
 static float button_spacing = 4.0f;
 static float btn_width = 80.0f;
+
+static constexpr const char* ICON_SORT   = "\xef\x83\x9c";
+static constexpr const char* ICON_FILTER = "\xef\x82\xb0";
 
 static std::string_view get_platform_label(PlatformType t) {
     switch(t) {
@@ -75,12 +79,15 @@ void DashboardTab::render_toolbar(RenderContext& ctx) {
     ImGui::InputText("##search", &search_query);
     ImGui::SameLine();
 
-    const char* sort_label = sort_mode == SortMode::Alphabetical ? "↑↓ A-Z" : "↑↓ Newest";
-    if (ImGui::Button(sort_label)) {
+    std::string sort_label = sort_mode == SortMode::Alphabetical 
+        ? std::format("{} A-Z", ICON_SORT) 
+        : std::format("{} Date", ICON_SORT);
+
+    if (ImGui::Button(sort_label.c_str())) {
         sort_mode = sort_mode == SortMode::Alphabetical ? SortMode::Recent : SortMode::Alphabetical;
     }
     ImGui::SameLine();
-    std::string filter_label = platform_filter.has_value() ? std::format("⫧ {}", get_platform_label(*platform_filter)) : "⫧ All";
+    std::string filter_label = platform_filter.has_value() ? std::format("{} {}", ICON_FILTER, get_platform_label(*platform_filter)) : std::format("{} All", ICON_FILTER);
     if (ImGui::Button(filter_label.c_str())) {
         if (!platform_filter.has_value()) {
             platform_filter = PlatformType::UBISOFT;

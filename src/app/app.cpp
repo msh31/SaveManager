@@ -16,6 +16,7 @@
 #include "frontend/ui/fonts/jbm_reg.h"
 #include "frontend/ui/fonts/jbm_med.h"
 #include "frontend/ui/fonts/jbm_bold.h"
+#include "frontend/ui/fonts/font_awesome.hpp"
 
 #include "backend/detection/detection.hpp"
 #include "backend/utils/translations/translations.hpp"
@@ -177,7 +178,7 @@ bool App::setup_imgui() {
     ImGuiIO& io = ImGui::GetIO();
     io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
 
-    ImFontConfig cfg_reg, cfg_med, cfg_small, cfg_bold, cfg_head, cfg_title;
+    ImFontConfig cfg_reg, cfg_med, cfg_small, cfg_bold, cfg_head, cfg_title, cfg_icons;
     cfg_reg.FontDataOwnedByAtlas = false;
     cfg_med.FontDataOwnedByAtlas = false;
     cfg_small.FontDataOwnedByAtlas = false;
@@ -185,7 +186,14 @@ bool App::setup_imgui() {
     cfg_head.FontDataOwnedByAtlas = false;
     cfg_title.FontDataOwnedByAtlas = false;
 
+    cfg_icons.FontDataOwnedByAtlas = false;
+    cfg_icons.MergeMode = true;
+    cfg_icons.PixelSnapH = true;
+    static const ImWchar icon_ranges[] = { 0xe000, 0xf8ff, 0 }; 
+    cfg_icons.GlyphRanges = icon_ranges;
+
     fonts.regular = io.Fonts->AddFontFromMemoryTTF((void*)jbm_reg, jbm_reg_len, 20.0f, &cfg_reg);
+    io.Fonts->AddFontFromMemoryTTF((void*)font_awesome, font_awesome_len, 18.0f, &cfg_icons);
     fonts.title = io.Fonts->AddFontFromMemoryTTF((void*)jbm_reg, jbm_reg_len, 34.0f, &cfg_title);
     fonts.small_font = io.Fonts->AddFontFromMemoryTTF((void*)jbm_reg, jbm_reg_len, 18.0f, &cfg_small);
     fonts.medium = io.Fonts->AddFontFromMemoryTTF((void*)jbm_med, jbm_med_len, 20.0f, &cfg_med);
