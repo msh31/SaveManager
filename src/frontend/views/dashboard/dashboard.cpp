@@ -137,7 +137,7 @@ void DashboardTab::render_game_row(RenderContext& ctx, const std::vector<int>& g
     if(ImGui::Selectable(selectable_id.c_str(), false, ImGuiSelectableFlags_None, ImVec2(0, 30))) {
         not_collapsed = !not_collapsed;
     }
-    ImGui::SameLine(0);
+    ImGui::SameLine(8.0f);
     ImGui::PushFont(ctx.fonts.medium);
     std::string left_text = std::format("{} {}", chevron, primary.game_name);
     ImGui::Text("%s", left_text.c_str());
