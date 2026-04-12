@@ -6,7 +6,7 @@ struct DashboardTab {
     std::vector<std::vector<int>> grouped_games;
     std::unordered_map<std::string, bool> card_collapsed;
     std::unordered_map<std::string, bool> backups_collapsed;
-    std::string search_query = "Search games or saves..";
+    std::string search_query = "";
 
     bool open_restore_modal = false;
     bool open_delete_modal = false;

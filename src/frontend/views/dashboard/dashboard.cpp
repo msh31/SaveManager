@@ -12,6 +12,7 @@ static constexpr const char* spinner = "|/-\\";
 //         // ...
 //     }
 // }
+//
 
 void DashboardTab::on_result_changed(RenderContext& ctx) {
     grouped_games = {};
@@ -38,7 +39,7 @@ std::optional<Detection::DetectionResult> DashboardTab::render(const Fonts& font
     }
 
     render_toolbar(ctx);
-    // render_game_list(ctx);
+    render_game_list(ctx);
     render_modals(ctx);
 
     return std::nullopt;
@@ -86,18 +87,43 @@ void DashboardTab::render_toolbar(RenderContext& ctx) {
 }
 
 void DashboardTab::render_game_list(RenderContext& ctx) {
+    std::transform(search_query.begin(), search_query.end(), search_query.begin(),
+                   ::tolower);
+
     for (auto [gi, group] : std::views::enumerate(grouped_games)) {
         const Game& primary = ctx.result.games[group[0]];
+        std::string game_name = primary.game_name;
 
+        // filter
+        std::transform(game_name.begin(), game_name.end(), game_name.begin(),
+                  ::tolower);
         if (!search_query.empty()) {
+            if(game_name.find(search_query) == std::string::npos) {
+                continue;
+            }
 
         }
         render_game_row(ctx, group, static_cast<int>(gi));
     }
 }
 
-void DashboardTab::render_game_row(RenderContext&, const std::vector<int>& group, int gi) {
+void DashboardTab::render_game_row(RenderContext& ctx, const std::vector<int>& group, int gi) {
+    const Game& primary = ctx.result.games[group[0]];
 
+    auto header_name = std::format("{} [{}] {} saves | {} backups ", primary.game_name.c_str(), "platform", 0, ctx.state.backups.size());
+    if(ImGui::CollapsingHeader(header_name.c_str())) {
+        for (const auto& index : group) {
+            const Game& game = ctx.result.games[index];
+
+            for (const auto& file : fs::directory_iterator(game.save_path, fs::directory_options::skip_permission_denied)) {
+                render_save_row(ctx, file.path(), game);
+            }
+        }
+    }
+}
+
+void DashboardTab::render_save_row(RenderContext& ctx, const fs::path& save_file, const Game& game) {
+    ImGui::Text("%s", save_file.filename().string().c_str());
 }
 
 void DashboardTab::render_modals(RenderContext& ctx) {
