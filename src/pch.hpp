@@ -20,10 +20,12 @@
 #include <expected>
 #include <ranges>
 #include <cstring>
+#include <deque>
 
 #include "globals.hpp"
 
 #include <imgui.h>
+#include <imgui_internal.h>
 #include <imgui_stdlib.h>
 #endif
 
@@ -32,6 +34,7 @@
 #endif
 
 #ifdef _WIN32
+#define NOMINMAX
 #include <winsock2.h>
 #include <windows.h>
 #include <ws2tcpip.h>

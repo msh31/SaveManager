@@ -5,7 +5,7 @@
 #include "frontend/views/log/log.hpp"
 #include "frontend/views/transfer/transfer.hpp"
 #include "frontend/views/about/about.hpp"
-#include "frontend/views/general/general.hpp"
+#include "frontend/views/dashboard/dashboard.hpp"
 #include "frontend/views/about/about.hpp"
 
 #include "frontend/ui/textures/textures.hpp"
@@ -20,6 +20,8 @@ public:
     GLFWwindow* window = nullptr;
     std::future<void> are_we_ready;
     bool refresh_requested;
+
+    TabState state;
 private:
     bool setup_opengl();
     bool setup_imgui();
@@ -33,13 +35,12 @@ private:
     Fonts fonts;
 
     Config config;
-    GeneralTab general_tab;
+    DashboardTab dahsboard_tab;
     EditorTab editor_tab;
     TransferTab transfer_tab;
     LogTab log_tab;
     AboutTab about_tab;
     SettingsTab settings_tab;
-    TabState state;
 
     std::unordered_map<std::string, GLuint> game_textures;
     std::vector<std::future<Textures::ImageData>> texture_futures;

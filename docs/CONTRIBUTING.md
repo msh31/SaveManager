@@ -29,6 +29,9 @@ All dependencies are managed by Conan, no manual installs needed.
 
 > Just change conan-release to conan-debug for debug builds.
 
+> Note: Make sure to update the submodules!
+``git submodule update --init --recursive``
+
 ### Linux
 
 ```bash

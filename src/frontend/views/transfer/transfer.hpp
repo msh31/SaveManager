@@ -1,5 +1,4 @@
 #pragma once
-#include "globals.hpp"
 #include "backend/detection/detection.hpp"
 #include "backend/features/remote_transfer/remote_transfer.hpp"
 
@@ -30,4 +29,5 @@ struct TransferTab {
 
     int spinner_frame = 0;
     const char* spinner = "|/-\\";
+private:
 };

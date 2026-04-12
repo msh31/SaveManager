@@ -18,11 +18,14 @@
 - 
 
 ### Changes
+- Redesigned dashboard UI
 - Detection is now done asynchronously, significantly cuts down startup time 
-- General code improvements for better maintainability
+- Logger refactor for increased performance, now fully in-memory.
+
+### Development related
+- Use Conan for external dependencies (besides stuff that isn't on there)
 - Move codebase to C++23
-- Logger refactor for increased performance
-- Use Conan for external dependencies
+- General code improvements for better maintainability
 
 ### Known Issues / Limitations
 - Original Anno editions not supported due to install path limitations (You can add them manually though!)

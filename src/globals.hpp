@@ -1,6 +1,8 @@
 #pragma once
 #include "imgui.h"
 
+//this entire thing is a it of a mess 
+
 namespace fs = std::filesystem;
 
 #define APP_NAME "SaveManager" 
@@ -25,6 +27,7 @@ struct Fonts {
     ImFont* header;
 };
 
+//TODO: refactor transfer tab so this isnt needed
 struct TabState {
     std::vector<std::filesystem::path> backups;
     std::vector<bool> selected_backups;
