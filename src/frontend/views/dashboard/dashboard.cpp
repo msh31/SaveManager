@@ -199,9 +199,8 @@ void DashboardTab::render_save_row(RenderContext& ctx, const fs::path& save_file
     auto b_size = fs::file_size(save_file) / 1024;
     std::string size_text = std::format("{}KB  ", b_size);
 
-    int button_count = 2;
     float size_width = ImGui::CalcTextSize(size_text.c_str()).x;
-    float total_width = date_width + size_width + btn_width * button_count + button_spacing * 5;
+    float total_width = date_width + size_width + btn_width * 1 + button_spacing * 5;
 
     ImGui::Text("%s", save_file.filename().string().c_str());
     ImGui::SameLine(ImGui::GetContentRegionMax().x - total_width);
@@ -216,14 +215,6 @@ void DashboardTab::render_save_row(RenderContext& ctx, const fs::path& save_file
         Features::backup_game(game, ctx.config);
     }
     ImGui::SetItemTooltip("Create a backup of this save");
-    ImGui::SameLine(0.0f, button_spacing);
-    
-    if(ImGui::Button("Restore", ImVec2(btn_width, 0))) {
-        pending_restore_game = &game;
-        open_restore_modal = true;
-    }
-    ImGui::SetItemTooltip("Restore save from backup");
-
     ImGui::PopStyleVar();
     ImGui::PopID();
 }
@@ -241,7 +232,7 @@ void DashboardTab::render_backup_row(RenderContext& ctx, const fs::path& backup,
     std::string size_text = std::format("{}KB  ", b_size);
     float size_width = ImGui::CalcTextSize(size_text.c_str()).x;
 
-    float total_width = date_width + size_width + btn_width * 2 + button_spacing * 5;
+    float total_width = date_width + size_width + btn_width * 3 + button_spacing * 5;
 
     ImGui::Text("%s", display.c_str());
     ImGui::SameLine(ImGui::GetContentRegionMax().x - total_width);
@@ -252,6 +243,13 @@ void DashboardTab::render_backup_row(RenderContext& ctx, const fs::path& backup,
     ImGui::SameLine(0.0f, button_spacing);
     
     ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(3.0f, 3.0f));
+    if(ImGui::Button("Restore", ImVec2(btn_width, 0))) {
+        pending_restore_game = &game;
+        open_restore_modal = true;
+    }
+    ImGui::SetItemTooltip("Restore save from backup");
+    ImGui::SameLine(0.0f, button_spacing);
+
     if(ImGui::Button("Rename", ImVec2(btn_width, 0))) {
         pending_rename_game = &game;
         pending_rename_backup = backup;
