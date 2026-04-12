@@ -116,31 +116,42 @@ void DashboardTab::render_game_row(RenderContext& ctx, const std::vector<int>& g
     const Game& primary = ctx.result.games[group[0]];
     std::vector<std::pair<fs::path, const Game*>> files = {};
 
+    const float card_padding = 8.0f;
     int save_count = 0, backup_count = 0;
     auto top = ImGui::GetCursorScreenPos();
     bool& not_collapsed = card_collapsed[primary.game_name]; //defaults to false
    
-    //TODO: cache this data so it doesnt need to get recomputed every frame. causes high cpu usage
-    // for (const auto& index : group) {
-    //     const Game& game = ctx.result.games[index];
-    //
-    //     for (const auto& file : fs::directory_iterator(game.save_path, fs::directory_options::skip_permission_denied)) {
-    //         if (fs::is_regular_file(file)) save_count++;
-    //         files.emplace_back(file.path(), &game);
-    //     }
-    //
-    //     backup_count += Features::get_backups(game, ctx.config).size();
-    // }
+    //TODO: cache this data so it doesnt need to get recomputed every frame 
+    for (const auto& index : group) {
+        const Game& game = ctx.result.games[index];
+
+        for (const auto& file : fs::directory_iterator(game.save_path, fs::directory_options::skip_permission_denied)) {
+            if (fs::is_regular_file(file)) save_count++;
+            files.emplace_back(file.path(), &game);
+        }
+
+        backup_count += Features::get_backups(game, ctx.config).size();
+    }
 
     const char* chevron = not_collapsed ? "▼" : "▶";
     auto selectable_id = std::format("##gamename_{}", gi);
 
-    if(ImGui::Selectable(selectable_id.c_str(), false, ImGuiSelectableFlags_None, ImVec2(0, 30))) {
+    ImGui::PushStyleColor(ImGuiCol_Border, ImVec4(198/255.f, 97/255.f, 63/255.f, 1.f));
+    ImGui::PushStyleVar(ImGuiStyleVar_ChildRounding, 4.0f);
+    ImGui::BeginChild(selectable_id.c_str(), ImVec2(0, 0), ImGuiChildFlags_Borders | ImGuiChildFlags_AutoResizeY);
+    ImGui::PopStyleColor();
+
+    if(ImGui::Selectable("##header", false, ImGuiSelectableFlags_None, ImVec2(0, 30))) {
         not_collapsed = !not_collapsed;
     }
     ImGui::SameLine(8.0f);
+
+    ImGui::PushFont(ctx.fonts.bold);
+    ImGui::TextColored(ImColor(198, 97, 63).Value, "%s", chevron);
+    ImGui::PopFont();
+    ImGui::SameLine();
     ImGui::PushFont(ctx.fonts.medium);
-    std::string left_text = std::format("{} {}", chevron, primary.game_name);
+    std::string left_text = std::format("{}", primary.game_name);
     ImGui::Text("%s", left_text.c_str());
     ImGui::PopFont();
     std::string right_text = std::format("{} | {} saves | {} backups", get_platform_label(primary.type), save_count, backup_count);
@@ -148,14 +159,16 @@ void DashboardTab::render_game_row(RenderContext& ctx, const std::vector<int>& g
     ImGui::Text("%s", right_text.c_str());
 
     if (not_collapsed) { 
+        ImGui::TextDisabled("SAVE FILES");
         for (auto& backup : files) {
+            ImGui::Separator();
             render_save_row(ctx, backup.first, *backup.second);
             ImGui::Separator();
         }
     }
-    auto bottom = ImGui::GetCursorScreenPos();
-    float width = ImGui::GetContentRegionAvail().x;
-    ImGui::GetWindowDrawList()->AddRect(top, ImVec2(top.x + width, bottom.y), IM_COL32(198, 97, 63, 255), 4.0f);
+
+    ImGui::EndChild();
+    ImGui::PopStyleVar();
 }
 
 void DashboardTab::render_save_row(RenderContext& ctx, const fs::path& save_file, const Game& game) {
