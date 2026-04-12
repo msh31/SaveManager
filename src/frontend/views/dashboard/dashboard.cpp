@@ -4,15 +4,17 @@
 
 static constexpr const char* spinner = "|/-\\";
 
-// static std::string_view platform_label(PlatformType t) {
-//     switch(t) {
-//         case PlatformType::Steam:   return "Steam";
-//         case PlatformType::Heroic:  return "Heroic";
-//         case PlatformType::Wine:    return "Wine";
-//         // ...
-//     }
-// }
-//
+static std::string_view get_platform_label(PlatformType t) {
+    switch(t) {
+        case PlatformType::UBISOFT:   return "Ubisoft";
+        case PlatformType::ROCKSTAR:  return "Rockstar";
+        case PlatformType::UNREAL:    return "Unreal";
+        case PlatformType::PSP:       return "PSP";
+        case PlatformType::PPSSPP:    return "PPSSPP";
+        case PlatformType::CUSTOM:    return "CUSTOM";
+    }
+    return "";
+}
 
 void DashboardTab::on_result_changed(RenderContext& ctx) {
     grouped_games = {};
@@ -39,7 +41,9 @@ std::optional<Detection::DetectionResult> DashboardTab::render(const Fonts& font
     }
 
     render_toolbar(ctx);
+    ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 2.0f);
     render_game_list(ctx);
+    ImGui::PopStyleVar();
     render_modals(ctx);
 
     return std::nullopt;
@@ -104,26 +108,92 @@ void DashboardTab::render_game_list(RenderContext& ctx) {
 
         }
         render_game_row(ctx, group, static_cast<int>(gi));
+        ImGui::Dummy(ImVec2(0, 6.0f));
     }
 }
 
 void DashboardTab::render_game_row(RenderContext& ctx, const std::vector<int>& group, int gi) {
     const Game& primary = ctx.result.games[group[0]];
+    std::vector<std::pair<fs::path, const Game*>> files = {};
 
-    auto header_name = std::format("{} [{}] {} saves | {} backups ", primary.game_name.c_str(), "platform", 0, ctx.state.backups.size());
-    if(ImGui::CollapsingHeader(header_name.c_str())) {
-        for (const auto& index : group) {
-            const Game& game = ctx.result.games[index];
+    int save_count = 0, backup_count = 0;
+    auto top = ImGui::GetCursorScreenPos();
+    bool& not_collapsed = card_collapsed[primary.game_name]; //defaults to false
+    
+    for (const auto& index : group) {
+        const Game& game = ctx.result.games[index];
 
-            for (const auto& file : fs::directory_iterator(game.save_path, fs::directory_options::skip_permission_denied)) {
-                render_save_row(ctx, file.path(), game);
-            }
+        for (const auto& file : fs::directory_iterator(game.save_path, fs::directory_options::skip_permission_denied)) {
+            if (fs::is_regular_file(file)) save_count++;
+            files.emplace_back(file.path(), &game);
+        }
+
+        backup_count += Features::get_backups(game, ctx.config).size();
+    }
+
+    const char* chevron = not_collapsed ? "▼" : "▶";
+    auto selectable_id = std::format("##gamename_{}", gi);
+
+    if(ImGui::Selectable(selectable_id.c_str(), false, ImGuiSelectableFlags_None, ImVec2(0, 30))) {
+        not_collapsed = !not_collapsed;
+    }
+    ImGui::SameLine(0);
+    ImGui::PushFont(ctx.fonts.medium);
+    std::string left_text = std::format("{} {}", chevron, primary.game_name);
+    ImGui::Text("%s", left_text.c_str());
+    ImGui::PopFont();
+    std::string right_text = std::format("{} | {} saves | {} backups", get_platform_label(primary.type), save_count, backup_count);
+    ImGui::SameLine(ImGui::GetContentRegionMax().x - ImGui::CalcTextSize(right_text.c_str()).x);
+    ImGui::Text("%s", right_text.c_str());
+
+    if (not_collapsed) { 
+        for (auto& backup : files) {
+            render_save_row(ctx, backup.first, *backup.second);
+            ImGui::Separator();
         }
     }
+    auto bottom = ImGui::GetCursorScreenPos();
+    float width = ImGui::GetContentRegionAvail().x;
+    ImGui::GetWindowDrawList()->AddRect(top, ImVec2(top.x + width, bottom.y), IM_COL32(198, 97, 63, 255), 4.0f);
 }
 
 void DashboardTab::render_save_row(RenderContext& ctx, const fs::path& save_file, const Game& game) {
+    ImGui::PushID(save_file.string().c_str());
+    float button_spacing = 4.0f;
+    float btn_width = 80.0f;
+    float total_width = btn_width * 3 + button_spacing * 2;
+
+    ImGui::Indent();
     ImGui::Text("%s", save_file.filename().string().c_str());
+    ImGui::SameLine(ImGui::GetContentRegionMax().x - total_width);
+
+    ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(3.0f, 3.0f));
+    if(ImGui::Button("Backup", ImVec2(btn_width, 0))) { 
+        Features::backup_game(game, ctx.config);
+    }
+    ImGui::SetItemTooltip("Create a backup of this save");
+
+    ImGui::SameLine(0.0f, 4.0f);
+    
+    if(ImGui::Button("Restore", ImVec2(btn_width, 0))) {
+        pending_restore_game = &game;
+        open_restore_modal = true;
+    }
+    ImGui::SetItemTooltip("Restore save from backup");
+
+    ImGui::SameLine(0.0f, 4.0f);
+    ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.8f, 0.2f, 0.2f, 1.0f));
+    ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.9f, 0.3f, 0.3f, 1.0f));
+    if(ImGui::Button("Delete", ImVec2(btn_width, 0))) { 
+        pending_delete_game = &game;
+        open_delete_modal = true;
+    }
+    ImGui::SetItemTooltip("Delete backed up savegame");
+
+    ImGui::PopStyleColor(2);
+    ImGui::PopStyleVar();
+    ImGui::Unindent();
+    ImGui::PopID();
 }
 
 void DashboardTab::render_modals(RenderContext& ctx) {
