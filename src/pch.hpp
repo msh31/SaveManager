@@ -20,6 +20,7 @@
 #include <expected>
 #include <ranges>
 #include <cstring>
+#include <deque>
 
 #include "globals.hpp"
 
@@ -33,6 +34,7 @@
 #endif
 
 #ifdef _WIN32
+#define NOMINMAX
 #include <winsock2.h>
 #include <windows.h>
 #include <ws2tcpip.h>
