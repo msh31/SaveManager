@@ -66,17 +66,33 @@ void DashboardTab::render_toolbar(RenderContext& ctx) {
     bool is_backing_up = backup_future.valid() && backup_future.wait_for(std::chrono::seconds(0)) != std::future_status::ready;
 
     float sort_width = ImGui::CalcTextSize("Sort: Alphabetical").x + ImGui::GetStyle().FramePadding.x * 2;
+    float filter_width = ImGui::CalcTextSize("Filter: Rockstar").x + ImGui::GetStyle().FramePadding.x * 2;
     float refresh_width = ImGui::CalcTextSize("Refresh").x + ImGui::GetStyle().FramePadding.x * 2;
     float backup_width = ImGui::CalcTextSize("Mass Backup").x + ImGui::GetStyle().FramePadding.x * 2;
     float spacing = ImGui::GetStyle().ItemSpacing.x * 3;
 
-    ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x - sort_width - refresh_width - backup_width - spacing);
+    ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x - sort_width - refresh_width - backup_width - filter_width - spacing);
     ImGui::InputText("##search", &search_query);
     ImGui::SameLine();
 
-    const char* sort_label = sort_mode == SortMode::Alphabetical ? "Sort: A-Z" : "Sort: Newest";
+    const char* sort_label = sort_mode == SortMode::Alphabetical ? "↑↓ A-Z" : "↑↓ Newest";
     if (ImGui::Button(sort_label)) {
         sort_mode = sort_mode == SortMode::Alphabetical ? SortMode::Recent : SortMode::Alphabetical;
+    }
+    ImGui::SameLine();
+    std::string filter_label = platform_filter.has_value() ? std::format("⫧ {}", get_platform_label(*platform_filter)) : "⫧ All";
+    if (ImGui::Button(filter_label.c_str())) {
+        if (!platform_filter.has_value()) {
+            platform_filter = PlatformType::UBISOFT;
+        } else {
+            switch (*platform_filter) {
+                case PlatformType::UBISOFT:  platform_filter = PlatformType::ROCKSTAR; break;
+                case PlatformType::ROCKSTAR: platform_filter = PlatformType::UNREAL;   break;
+                case PlatformType::UNREAL:   platform_filter = PlatformType::CUSTOM;   break;
+                case PlatformType::CUSTOM:   platform_filter = std::nullopt;            break;
+                default:                     platform_filter = std::nullopt;            break;
+            }
+        }
     }
     ImGui::SameLine();
 
@@ -128,6 +144,8 @@ void DashboardTab::render_game_list(RenderContext& ctx) {
     }
 
     for (auto [gi, group] : std::views::enumerate(sorted)) {
+        if(platform_filter.has_value() && ctx.result.games[group[0]].type != *platform_filter) continue;
+
         const Game& primary = ctx.result.games[group[0]];
         std::string game_name = primary.game_name;
 
