@@ -113,7 +113,9 @@ void SettingsTab::render(const Fonts& fonts, Config& config) {
 
     if (!paths_initialized) {
         backup_path = config.settings.backup_path.string();
+#ifndef _WIN32
         steam_path = config.settings.steam_path;
+#endif // !_WIN32
 #ifdef __linux__
         lutris_path = config.settings.lutris_path;
 #endif
@@ -122,7 +124,10 @@ void SettingsTab::render(const Fonts& fonts, Config& config) {
     }
 
     ImGui::InputText("Backup path", &backup_path);
+
+#ifndef _WIN32
     ImGui::InputText("Steam path", &steam_path);
+#endif
 #ifdef __linux__
     ImGui::InputText("Lutris path", &lutris_path);
 #endif
@@ -132,7 +137,10 @@ void SettingsTab::render(const Fonts& fonts, Config& config) {
 
     if (ImGui::Button("Save")) {
         config.settings.backup_path = fs::path(backup_path).string();
+
+#ifndef _WIN32
         config.settings.steam_path = steam_path;
+#endif
 #ifdef __linux__
         config.settings.lutris_path = lutris_path;
 #endif

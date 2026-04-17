@@ -66,8 +66,12 @@ void Config::save() {
     data["dark_mode"] = settings.dark_mode;
 
     data["backup_path"] = settings.backup_path.string();
+#ifndef _WIN32
     data["steam_path"] = settings.steam_path;
+#endif
+#ifdef __linux__
     data["lutris_path"] = settings.lutris_path;
+#endif
     data["heroic_path"] = settings.heroic_path;
 
     data["dest_addr"] = sftp.dest_addr;
@@ -96,8 +100,12 @@ void Config::load() {
 
     data = json::parse(file);
     settings.backup_path = data.value("backup_path", std::string(""));
+#ifndef _WIN32
     settings.steam_path = data.value("steam_path", std::string(""));
+#endif
+#ifdef __linux__
     settings.lutris_path = data.value("lutris_path", std::string(""));
+#endif
     settings.heroic_path = data.value("heroic_path", std::string(""));
 
     if (settings.backup_path.empty()) {
@@ -112,7 +120,7 @@ void Config::load() {
     if (settings.heroic_path.empty()) {
         settings.heroic_path = paths::heroic_dir().string();
     }
-#endif // !__WIN32
+#endif // !_WIN32
     settings.ubi_enabled = data.value("ubi_enabled", true);
     settings.rsg_enabled = data.value("rsg_enabled", true);
     settings.unreal_enabled = data.value("unreal_enabled", true);
