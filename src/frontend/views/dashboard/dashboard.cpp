@@ -179,6 +179,7 @@ void DashboardTab::render_game_row(RenderContext& ctx, const std::vector<int>& g
     int save_count = 0, backup_count = 0;
     auto top = ImGui::GetCursorScreenPos();
     bool& not_collapsed = card_collapsed[primary.game_name]; //defaults to false
+    bool& bk_collapsed = backups_collapsed[primary.game_name];
    
     //TODO: cache this data so it doesnt need to get recomputed every frame 
     for (const auto& index : group) {
@@ -194,6 +195,7 @@ void DashboardTab::render_game_row(RenderContext& ctx, const std::vector<int>& g
         backup_count += Features::get_backups(game, ctx.config).size();
     }
     const char* chevron = not_collapsed ? "▼" : "▶";
+    const char* chevron_b = bk_collapsed ? "▶" : "▼";
     auto selectable_id = std::format("##gamename_{}", gi);
 
     ImGui::PushStyleColor(ImGuiCol_Border, ImVec4(198/255.f, 97/255.f, 63/255.f, 1.f));
@@ -229,8 +231,19 @@ void DashboardTab::render_game_row(RenderContext& ctx, const std::vector<int>& g
             }
         } else ImGui::TextDisabled("Game detected but no saves were found!");
         if(backup_count > 0) {
-            ImGui::TextDisabled("BACKUPS");
-            bool& bk_collapsed = backups_collapsed[primary.game_name];
+            if(ImGui::Selectable("##backups", false, ImGuiSelectableFlags_None, ImVec2(0, 30))) {
+                bk_collapsed = !bk_collapsed;
+            }
+            ImGui::SameLine(8.0f);
+
+            ImGui::PushFont(ctx.fonts.bold);
+            ImGui::TextColored(ImColor(198, 97, 63).Value, "%s", chevron_b);
+            ImGui::PopFont();
+            ImGui::SameLine();
+            ImGui::PushFont(ctx.fonts.medium);
+            ImGui::Text("BACKUPS");
+            ImGui::PopFont();
+
             if (!bk_collapsed) {
                 auto backups = Features::get_backups(primary, ctx.config);
                 for (auto& backup : backups) {
