@@ -40,11 +40,6 @@ void App::init() {
         translations::init();
         Blacklist::init();
         CustomGamesFile::init();
-
-        d_result = Detection::find_saves(config);
-        if(d_result.games.empty()) {
-            get_logger().warning("No savegames found!");
-        }
         config.save();
     });
 }
@@ -226,6 +221,18 @@ void App::render() {
         are_we_ready.get();
         initialized = true;
         ThemeManager::apply_theme(config.settings.dark_mode ? ThemeType::Dark : ThemeType::Light);
+
+        detection_future = std::async(std::launch::async, [this]() {
+            return Detection::find_saves(config);
+        });
+
+        if(d_result.games.empty()) {
+            get_logger().warning("No savegames found!");
+        }
+    }
+
+    if(detection_future.valid() && detection_future.wait_for(std::chrono::seconds(0)) == std::future_status::ready) {
+        d_result = detection_future.get();
     }
 
     // if(initialized && texture_futures.empty()) {
