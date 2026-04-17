@@ -78,3 +78,7 @@ template<typename Range, typename Fn> void enumerate(Range& range, Fn fn) {
     }
 #endif
 }
+
+constexpr std::array<std::string_view, 8> extension_blocklist{ 
+    ".dat", ".bin", ".upload", ".bak", ".cfg", ".log", ".tmp", ".ini"
+};

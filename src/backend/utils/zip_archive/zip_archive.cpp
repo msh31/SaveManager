@@ -6,6 +6,9 @@ bool ZipArchive::add_to_archive(const Game& game) {
 
     for (const auto& entry : fs::recursive_directory_iterator(game.save_path)) {
         if (entry.is_regular_file()) {
+            auto ext = entry.path().extension().string();
+            if(std::find(extension_blocklist.begin(), extension_blocklist.end(), ext) != extension_blocklist.end()) continue;
+
             fs::path relative = fs::relative(entry.path(), game.save_path);
             get_logger().info("Adding: {}, to the backup for: {}", relative.string(), game.game_name);
 

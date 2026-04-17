@@ -187,6 +187,9 @@ void DashboardTab::render_game_row(RenderContext& ctx, const std::vector<int>& g
 
         for (const auto& file : fs::directory_iterator(game.save_path, fs::directory_options::skip_permission_denied)) {
             if (fs::is_regular_file(file)) { 
+                auto ext = file.path().extension().string();
+                if(std::find(extension_blocklist.begin(), extension_blocklist.end(), ext) != extension_blocklist.end()) continue;
+
                 save_count++;
                 files.emplace_back(file.path(), &game);
             }
