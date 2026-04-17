@@ -262,7 +262,7 @@ std::vector<std::vector<int>> Detection::DetectionResult::get_grouped() const {
     std::unordered_map<std::string, size_t> key_to_group;
     std::vector<std::vector<int>> groups;
 
-    for (auto [i, game] : std::views::enumerate(games)) {
+    enumerate(games, [&](int i, auto& game) {
         std::string key = (game.appid != "N/A") ? game.appid : "N/A::" + game.game_name;
 
         auto it = key_to_group.find(key);
@@ -272,7 +272,7 @@ std::vector<std::vector<int>> Detection::DetectionResult::get_grouped() const {
             key_to_group[key] = groups.size();
             groups.push_back({static_cast<int>(i)});
         }
-    }
+    });
 
     return groups;
 }

@@ -62,3 +62,19 @@ struct Game {
     std::string game_name;
     std::filesystem::path save_path;
 };
+
+
+//apple clang doesnt support c++23 views as of apr 2026 
+template<typename Range, typename Fn> void enumerate(Range& range, Fn fn) {
+#ifdef __APPLE__
+    int i = 0;
+    for (auto& r : range) {
+        fn(i, r);
+        ++i;
+    }
+#else
+    for (auto [i, element] : std::views::enumerate(range)) {
+        fn(i, element);
+    }
+#endif
+}

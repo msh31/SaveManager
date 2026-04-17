@@ -195,10 +195,10 @@ void TransferTab::render(const Fonts& fonts, const Detection::DetectionResult& r
             current_file_index = 0;
 
             future = std::async(std::launch::async, [this, r = remote.get(), selected_paths, &config]() {
-                for(auto [gi, path] : std::views::enumerate(selected_paths)) {
+                enumerate(selected_paths, [&](int gi, auto& path) {
                     current_file_index = static_cast<int>(gi);
                     r->upload_file(path, current_remote_path, config);
-                }
+                });
             });
         }
     }
@@ -220,7 +220,7 @@ void TransferTab::render(const Fonts& fonts, const Detection::DetectionResult& r
 
         ImGui::SetNextItemWidth(-FLT_MIN);
         if (ImGui::BeginCombo("##game", game_names[state.selected_game_idx].c_str())) {
-            for(auto [gi, name] : std::views::enumerate(game_names)) {
+            enumerate(game_names, [&](int gi, auto& name) {
                 bool is_selected = (state.selected_game_idx == static_cast<int>(gi));
                 if (ImGui::Selectable(name.c_str(), is_selected)) {
                     state.selected_game_idx = static_cast<int>(gi);
@@ -229,18 +229,18 @@ void TransferTab::render(const Fonts& fonts, const Detection::DetectionResult& r
                     state.selected_backups.resize(state.backups.size(), false);
                 }
                 if (is_selected) ImGui::SetItemDefaultFocus();
-            }
+            });
             ImGui::EndCombo();
         }
 
         if (!state.backups.empty()) {
             if (ImGui::BeginListBox("##backups", ImVec2(-FLT_MIN, content_height))) {
-                for (auto [gi, name] : std::views::enumerate(state.backups)) {
+                enumerate(state.backups, [&](int gi, auto& name) { 
                     std::string label = std::format("{}##{}", name.filename().string(), static_cast<int>(gi));
                     if (ImGui::Selectable(label.c_str(), state.selected_backups[static_cast<int>(gi)], ImGuiSelectableFlags_AllowDoubleClick)) {
                         state.selected_backups[static_cast<int>(gi)] = !state.selected_backups[static_cast<int>(gi)];
                     }
-                }
+                });
                 ImGui::EndListBox();
             }
         } else {
@@ -300,8 +300,9 @@ void TransferTab::render(const Fonts& fonts, const Detection::DetectionResult& r
                     selected_remote_idx = -1;
                 }
             }
-            for (auto [gi, entry] : std::views::enumerate(remote_entries)) {
-                if (entry.name == "." || entry.name == "..") continue;
+
+            enumerate(remote_entries, [&](int gi, auto& entry) { 
+                if (entry.name == "." || entry.name == "..") return;
 
                 std::string prefix = entry.is_directory ? "[DIR] " : "[FILE] ";
                 std::string label = std::format("{}{}##{}", prefix, entry.name, static_cast<int>(gi));
@@ -314,7 +315,7 @@ void TransferTab::render(const Fonts& fonts, const Detection::DetectionResult& r
                         selected_remote_idx = static_cast<int>(gi);
                     }
                 }
-            }
+            });
             ImGui::EndListBox();
         }
     }

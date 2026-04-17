@@ -150,24 +150,24 @@ void DashboardTab::render_game_list(RenderContext& ctx) {
         break;
     }
 
-    for (auto [gi, group] : std::views::enumerate(sorted)) {
-        if(platform_filter.has_value() && ctx.result.games[group[0]].type != *platform_filter) continue;
+
+    enumerate(sorted, [&](int gi, auto& group) {
+        if(platform_filter.has_value() && ctx.result.games[group[0]].type != *platform_filter) return;
 
         const Game& primary = ctx.result.games[group[0]];
         std::string game_name = primary.game_name;
 
         // filter
         std::transform(game_name.begin(), game_name.end(), game_name.begin(),
-                  ::tolower);
+                       ::tolower);
         if (!search_query.empty()) {
             if(game_name.find(search_query) == std::string::npos) {
-                continue;
+                return;
             }
-
         }
         render_game_row(ctx, group, static_cast<int>(gi));
         ImGui::Dummy(ImVec2(0, 6.0f));
-    }
+    });
 }
 
 void DashboardTab::render_game_row(RenderContext& ctx, const std::vector<int>& group, int gi) {
