@@ -114,14 +114,18 @@ void SettingsTab::render(const Fonts& fonts, Config& config) {
     if (!paths_initialized) {
         backup_path = config.settings.backup_path.string();
         steam_path = config.settings.steam_path;
+#ifdef __linux__
         lutris_path = config.settings.lutris_path;
+#endif
         heroic_path = config.settings.heroic_path;
         paths_initialized = true;
     }
 
     ImGui::InputText("Backup path", &backup_path);
     ImGui::InputText("Steam path", &steam_path);
+#ifdef __linux__
     ImGui::InputText("Lutris path", &lutris_path);
+#endif
     ImGui::InputText("Heroic path", &heroic_path);
 
     ImGui::Separator();
@@ -129,7 +133,9 @@ void SettingsTab::render(const Fonts& fonts, Config& config) {
     if (ImGui::Button("Save")) {
         config.settings.backup_path = fs::path(backup_path).string();
         config.settings.steam_path = steam_path;
+#ifdef __linux__
         config.settings.lutris_path = lutris_path;
+#endif
         config.settings.heroic_path = heroic_path;
         config.save();
         Notify::show_notification("Config Saved!", "Settings saved successfully!", 1500);
