@@ -8,7 +8,7 @@
 #include "frontend/views/dashboard/dashboard.hpp"
 #include "frontend/views/about/about.hpp"
 
-#include "frontend/ui/textures/textures.hpp"
+// #include "frontend/ui/textures/textures.hpp"
 
 class App {
 public:
@@ -19,7 +19,7 @@ public:
 
     GLFWwindow* window = nullptr;
     std::future<void> are_we_ready;
-    bool refresh_requested;
+    // bool refresh_requested;
 
     TabState state;
 private:
@@ -42,8 +42,8 @@ private:
     AboutTab about_tab;
     SettingsTab settings_tab;
 
-    std::unordered_map<std::string, GLuint> game_textures;
-    std::vector<std::future<Textures::ImageData>> texture_futures;
+    // std::unordered_map<std::string, GLuint> game_textures;
+    // std::vector<std::future<Textures::ImageData>> texture_futures;
 
     Detection::DetectionResult d_result;
 };

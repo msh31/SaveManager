@@ -38,8 +38,8 @@ void DashboardTab::on_result_changed(RenderContext& ctx) {
 }
 
 std::optional<Detection::DetectionResult> DashboardTab::render(const Fonts& fonts, 
-                                                               Detection::DetectionResult& result, const std::unordered_map<std::string, GLuint>& texture_id, Config& config) {
-    RenderContext ctx{result, texture_id, config, fonts};
+                                                               Detection::DetectionResult& result, Config& config) { //const std::unordered_map<std::string, GLuint>& texture_id, Config& config) {
+    RenderContext ctx{result, /*texture_id,*/ config, fonts};
     spinner_frame++;
 
     if (refresh_future.valid() && refresh_future.wait_for(std::chrono::seconds(0)) == std::future_status::ready) {
@@ -212,6 +212,13 @@ void DashboardTab::render_game_row(RenderContext& ctx, const std::vector<int>& g
     ImGui::TextColored(ImColor(198, 97, 63).Value, "%s", chevron);
     ImGui::PopFont();
     ImGui::SameLine();
+
+    // auto it = ctx.textures.find(primary.appid);
+    // if (it != ctx.textures.end() && primary.appid != "N/A") {
+    //     ImGui::Image((ImTextureID)(intptr_t)it->second, ImVec2(64, 30));
+    // }
+    // ImGui::SameLine();
+
     ImGui::PushFont(ctx.fonts.medium);
     std::string left_text = std::format("{}", primary.game_name);
     ImGui::Text("%s", left_text.c_str());

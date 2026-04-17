@@ -91,15 +91,15 @@ void SettingsTab::render(const Fonts& fonts, Config& config) {
         ImGui::Text("%s", std::format("Updating translations {}", spin_char).c_str());
     }
     ImGui::SameLine();
-    if(ImGui::Button("Refresh Cache")) {
-        std::error_code ec;
-        fs::remove_all(paths::cache_dir(), ec);
-        *m_refresh_requested = true;
-
-        if (ec) {
-            get_logger().warning("cache refresh error: {}", ec.message());
-        }
-    }
+    // if(ImGui::Button("Refresh Cache")) {
+    //     std::error_code ec;
+    //     fs::remove_all(paths::cache_dir(), ec);
+    //     *m_refresh_requested = true;
+    //
+    //     if (ec) {
+    //         get_logger().warning("cache refresh error: {}", ec.message());
+    //     }
+    // }
     ImGui::SetItemTooltip("Deletes cached images and re-downloads them.");
     ImGui::EndChild();
 

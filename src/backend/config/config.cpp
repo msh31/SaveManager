@@ -14,11 +14,11 @@ Config::Config() {
             }
         }
 
-        if(!fs::exists(paths::cache_dir())) {
-            if(!fs::create_directories(paths::cache_dir())) {
-                get_logger().error("Failed to create cache directory");
-            }
-        }
+        // if(!fs::exists(paths::cache_dir())) {
+        //     if(!fs::create_directories(paths::cache_dir())) {
+        //         get_logger().error("Failed to create cache directory");
+        //     }
+        // }
 
         load();
     } catch (const std::exception& err) {

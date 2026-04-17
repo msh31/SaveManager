@@ -78,7 +78,8 @@ void Network::download_game_image(std::string_view appid) {
         return;
     }
 
-    auto url = std::format("https://cdn.cloudflare.steamstatic.com/steam/apps/{}/library_600x900.jpg", appid);
+    auto url = std::format("https://cdn.cloudflare.steamstatic.com/steam/apps/{}/header.jpg", appid);
+    // auto url = std::format("https://cdn.cloudflare.steamstatic.com/steam/apps/{}/library_600x900.jpg", appid);
     if (!Network::download_file(url, img_path.string())) {
         get_logger().error("Could not download {}", img_path.string());
     }

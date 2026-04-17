@@ -19,13 +19,12 @@ struct DashboardTab {
     size_t last_game_count = 0;
     int spinner_frame = 0;
 
-    std::optional<Detection::DetectionResult> render(const Fonts&, Detection::DetectionResult&,
-        const std::unordered_map<std::string, GLuint>&, Config&);
+    std::optional<Detection::DetectionResult> render(const Fonts&, Detection::DetectionResult&, Config&);
 
 private:
     struct RenderContext {
         Detection::DetectionResult& result;
-        const std::unordered_map<std::string, GLuint>& textures;
+        // const std::unordered_map<std::string, GLuint>& textures;
         Config& config;
         const Fonts& fonts;
     };
