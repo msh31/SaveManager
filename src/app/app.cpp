@@ -50,11 +50,6 @@ void App::init() {
 }
 
 void App::render_ui() {
-    ImGui::PushFont(fonts.title);
-    ImGui::Text(APP_NAME);
-    ImGui::PopFont();
-    ImGui::Separator();
-
     ImGui::AlignTextToFramePadding();
 
     if (ImGui::BeginTabBar("MyTabBar", ImGuiTabBarFlags_Reorderable | ImGuiTabBarFlags_DrawSelectedOverline)) {
