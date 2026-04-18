@@ -63,8 +63,6 @@ find_package(nlohmann_json REQUIRED)
 
 find_package(stb REQUIRED)
 
-find_package(Tracy REQUIRED)
-
 # Target: savemanager
 set(CMKR_TARGET savemanager)
 add_subdirectory(vendor/nativefiledialog-extended)
@@ -104,12 +102,6 @@ add_executable(savemanager)
 target_sources(savemanager PRIVATE ${savemanager_SOURCES})
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${savemanager_SOURCES})
 
-if(CMAKE_SYSTEM_NAME MATCHES "Linux") # linux
-	target_compile_definitions(savemanager PRIVATE
-		TRACY_ENABLE
-	)
-endif()
-
 target_compile_features(savemanager PRIVATE
 	cxx_std_23
 )
@@ -129,7 +121,6 @@ target_link_libraries(savemanager PRIVATE
 	glad::glad
 	nlohmann_json::nlohmann_json
 	stb::stb
-	Tracy::TracyClient
 	nfd::nfd
 )
 
@@ -156,3 +147,13 @@ target_sources(savemanager PRIVATE
     "${IMGUI_ROOT_DIR}/res/bindings/imgui_impl_glfw.cpp"
     "${IMGUI_ROOT_DIR}/res/bindings/imgui_impl_opengl3.cpp"
 )
+target_compile_definitions(savemanager PRIVATE
+    $<$<CONFIG:Debug>:TRACY_ENABLE>
+)
+if(NOT WIN32)
+    find_package(Tracy REQUIRED)
+    target_link_libraries(savemanager PRIVATE Tracy::TracyClient)
+    target_compile_definitions(savemanager PRIVATE
+        $<$<CONFIG:Debug>:TRACY_ENABLE>
+    )
+endif()

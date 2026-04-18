@@ -37,9 +37,6 @@ required = true
 [find-package.stb]
 required = true
 
-[find-package.Tracy]
-required = true
-
 [variables]
 CMAKE_EXPORT_COMPILE_COMMANDS = true
 
@@ -54,7 +51,7 @@ include-directories = [
     "vendor/imgui",
 ]
 precompile-headers = ["src/pch.hpp"]
-link-libraries = ["CURL::libcurl", "glfw", "libzip::zip", "Libssh2::libssh2", "OpenSSL::Crypto", "imgui::imgui", "glad::glad", "nlohmann_json::nlohmann_json", "stb::stb", "Tracy::TracyClient", "nfd::nfd"]
+link-libraries = ["CURL::libcurl", "glfw", "libzip::zip", "Libssh2::libssh2", "OpenSSL::Crypto", "imgui::imgui", "glad::glad", "nlohmann_json::nlohmann_json", "stb::stb", "nfd::nfd"]
 compile-features = ["cxx_std_23"]
 cmake-before = """
 add_subdirectory(vendor/nativefiledialog-extended)
@@ -67,13 +64,17 @@ target_sources(savemanager PRIVATE
     "${IMGUI_ROOT_DIR}/res/bindings/imgui_impl_glfw.cpp"
     "${IMGUI_ROOT_DIR}/res/bindings/imgui_impl_opengl3.cpp"
 )
+target_compile_definitions(savemanager PRIVATE
+    $<$<CONFIG:Debug>:TRACY_ENABLE>
+)
+if(NOT WIN32)
+    find_package(Tracy REQUIRED)
+    target_link_libraries(savemanager PRIVATE Tracy::TracyClient)
+    target_compile_definitions(savemanager PRIVATE
+        $<$<CONFIG:Debug>:TRACY_ENABLE>
+    )
+endif()
 """
 
 [target.savemanager.windows]
 link-libraries = ["ws2_32", "shell32"]
-
-[target.savemanager.linux]
-compile-definitions = ["TRACY_ENABLE"]
-
-# [target.savemanager.macos]
-# compile-definitions = ["TRACY_ENABLE"]
