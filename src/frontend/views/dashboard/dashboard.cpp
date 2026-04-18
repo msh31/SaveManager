@@ -290,13 +290,13 @@ void DashboardTab::render_game_row(RenderContext& ctx, const std::vector<int>& g
 #ifdef __APPLE__
             extern char **environ;
             pid_t pid;
-            const char* argv[] = { "open", primary.save_path.string().c_str(), nullptr };
+            std::string path = primary.save_path.string();
+
+            const char* argv[] = { "open", path.c_str(), nullptr };
             int status = posix_spawn(&pid, "/usr/bin/open", nullptr, nullptr, (char* const*)argv, environ);
             if (status == 0) {
                 waitpid(pid, &status, 0);
-            } else {
-                get_logger().warning("spawn failed: {}", strerror(status));
-            }
+            } 
 #endif
         }
         ImGui::EndPopup();

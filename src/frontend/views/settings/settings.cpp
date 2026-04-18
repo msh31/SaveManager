@@ -7,6 +7,11 @@
 #include "backend/config/config.hpp"
 #include "backend/logger/logger.hpp"
 
+#ifdef __APPLE__
+#include <spawn.h>
+#include <sys/wait.h>
+#endif
+
 void SettingsTab::render(const Fonts& fonts, Config& config) {
     spinner_frame++;
 
@@ -103,15 +108,16 @@ void SettingsTab::render(const Fonts& fonts, Config& config) {
         ShellExecuteA(NULL, "open", paths::config_dir().string().c_str(), NULL, NULL, SW_SHOWDEFAULT);
 #endif
 #ifdef __APPLE__
-        extern char **environ;
-        pid_t pid;
-        const char* argv[] = { "open", paths::config_dir().string().c_str(), nullptr };
-        int status = posix_spawn(&pid, "/usr/bin/open", nullptr, nullptr, (char* const*)argv, environ);
-        if (status == 0) {
-            waitpid(pid, &status, 0);
-        } else {
-            get_logger().warning("spawn failed: {}", strerror(status));
-        }
+
+            extern char **environ;
+            pid_t pid;
+            std::string path = paths::config_dir().string();
+
+            const char* argv[] = { "open", path.c_str(), nullptr };
+            int status = posix_spawn(&pid, "/usr/bin/open", nullptr, nullptr, (char* const*)argv, environ);
+            if (status == 0) {
+                waitpid(pid, &status, 0);
+            } 
 #endif
     }
     ImGui::SetItemTooltip("Opens your file manager to the config directory.");
