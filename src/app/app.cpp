@@ -174,6 +174,8 @@ bool App::setup_imgui() {
 
     ImGuiIO& io = ImGui::GetIO();
     io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
+    io.IniFilename = nullptr;
+    io.LogFilename = nullptr;
 
     ImFontConfig cfg_reg, cfg_med, cfg_small, cfg_bold, cfg_head, cfg_title, cfg_icons;
     cfg_reg.FontDataOwnedByAtlas = false;
