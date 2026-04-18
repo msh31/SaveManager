@@ -226,9 +226,9 @@ void App::render() {
             return Detection::find_saves(config);
         });
 
-        if(d_result.games.empty()) {
-            get_logger().warning("No savegames found!");
-        }
+        // if(d_result.games.empty()) {
+        //     // get_logger().warning("No savegames found!");
+        // }
     }
 
     if(detection_future.valid() && detection_future.wait_for(std::chrono::seconds(0)) == std::future_status::ready) {
