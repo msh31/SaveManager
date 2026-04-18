@@ -1,7 +1,10 @@
 #include "dashboard.hpp"
 #include "frontend/ui/notifications/notification.hpp"
 #include "backend/features/backup/backup.hpp"
-#include <format>
+#ifdef __APPLE__
+#include <spawn.h>
+#include <sys/wait.h>
+#endif
 
 static constexpr const char* spinner = "|/-\\";
 static float button_spacing = 4.0f;
@@ -270,6 +273,34 @@ void DashboardTab::render_game_row(RenderContext& ctx, const std::vector<int>& g
                 }
             }
         }
+    }
+
+    if (ImGui::BeginPopupContextWindow()) {
+        if (ImGui::MenuItem("Open Path")) {
+#ifdef __linux__
+            pid_t pid = fork();
+            if (pid == 0) {
+                execl("/usr/bin/xdg-open", "xdg-open", primary.save_path.string().c_str(), nullptr);
+                _exit(1);
+            }
+#endif
+#ifdef _WIN32
+            ShellExecuteA(NULL, "open", primary.save_path.string().c_str(), NULL, NULL, SW_SHOWDEFAULT);
+#endif
+#ifdef __APPLE__
+            extern char **environ;
+            std::string path = primary.save_path.string(); // UTF-8
+            pid_t pid;
+            const char* argv[] = { "open", path.c_str(), nullptr };
+            int status = posix_spawn(&pid, "/usr/bin/open", nullptr, nullptr, (char* const*)argv, environ);
+            if (status == 0) {
+                waitpid(pid, &status, 0);
+            } else {
+                get_logger().warning("spawn failed: {}", strerror(status));
+            }
+#endif
+        }
+        ImGui::EndPopup();
     }
 
     ImGui::EndChild();
