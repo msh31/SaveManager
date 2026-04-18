@@ -1,37 +1,48 @@
-name: Build and release Linux x86-64
+name: Release
 
 on:
   push:
-    branches: [ main ]
-    tags: ['v*']
+    tags: [ 'v*' ]
 
 jobs:
   build-linux:
-    if: startsWith(github.ref, 'refs/tags/')
     runs-on: codeberg-tiny
     steps:
       - uses: https://github.com/actions/checkout@v4
         with:
           submodules: recursive
 
-      - name: Cache vcpkg binary cache
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            libx11-dev libxrandr-dev libxinerama-dev libxcursor-dev libxi-dev \
+            libgl1-mesa-dev libgtk-3-dev libwayland-dev wayland-protocols \
+            pkg-config python3-pip ninja-build
+
+      - name: Install Conan
+        run: pip install conan --break-system-packages
+
+      - name: Detect Conan profile
+        run: conan profile detect
+
+      - name: Cache Conan packages
         uses: https://github.com/actions/cache@v4
         with:
-          path: ~/.cache/vcpkg/archives
-          key: vcpkg-linux-${{ hashFiles('cmake.toml') }}
-          restore-keys: vcpkg-linux-
+          path: ~/.conan2/p
+          key: conan-linux-${{ hashFiles('conanfile.py') }}
+          restore-keys: conan-linux-
 
-      - name: Install X11 development libraries
-        run: sudo apt-get update && sudo apt-get install -y libx11-dev libxrandr-dev libxinerama-dev libxcursor-dev libxi-dev libgl1-mesa-dev
+      - name: Install dependencies
+        run: conan install . --build=missing -s build_type=Release
 
-      - name: build_linux
+      - name: Build
         run: |
-          cmake -B build
-          cmake --build build -j$(nproc)
+          cmake --preset conan-release
+          cmake --build --preset conan-release -j$(nproc)
 
       - name: Package AppImage
         run: |
-          # Create .desktop file
           cat > savemanager.desktop << 'EOF'
           [Desktop Entry]
           Name=SaveManager
@@ -41,11 +52,10 @@ jobs:
           Categories=Utility;
           EOF
 
-          # Create a 256x256 placeholder icon
           python3 -c "
           import struct, zlib, pathlib
           w = h = 256
-          row = b'\x00' + bytes([100, 149, 237]) * w
+          row = b'\x00' + bytes([201, 93, 56]) * w
           idat = zlib.compress(row * h)
           def chunk(tag, data):
               c = tag + data
@@ -57,14 +67,13 @@ jobs:
           pathlib.Path('savemanager.png').write_bytes(png)
           "
 
-          # Download linuxdeploy and appimage plugin
           wget -q "https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-x86_64.AppImage"
           wget -q "https://github.com/linuxdeploy/linuxdeploy-plugin-appimage/releases/download/continuous/linuxdeploy-plugin-appimage-x86_64.AppImage"
           chmod +x linuxdeploy-x86_64.AppImage linuxdeploy-plugin-appimage-x86_64.AppImage
 
           ARCH=x86_64 ./linuxdeploy-x86_64.AppImage \
             --appdir AppDir \
-            --executable build/savemanager \
+            --executable build/Release/savemanager \
             --desktop-file savemanager.desktop \
             --icon-file savemanager.png \
             --output appimage
@@ -75,16 +84,19 @@ jobs:
           path: SaveManager-x86_64.AppImage
 
   release:
-    if: startsWith(github.ref, 'refs/tags/')
     needs: [build-linux]
-    runs-on: codeberg-tiny 
+    runs-on: codeberg-tiny
     permissions:
       contents: write
     steps:
       - uses: https://github.com/actions/checkout@v4
       - uses: https://github.com/actions/download-artifact@v4
+
+      - name: Rename artifact
+        run: mv savemanager-linux/SaveManager-x86_64.AppImage SaveManager-Linux-x86_64.AppImage
+
       - name: Create Release
-        run: | 
+        run: |
           RELEASE_ID=$(curl -s -X POST \
             -H "Authorization: token $FORGEJO_TOKEN" \
             -H "Content-Type: application/json" \
@@ -95,7 +107,7 @@ jobs:
           curl -s -X POST \
             -H "Authorization: token $FORGEJO_TOKEN" \
             -H "Content-Type: application/octet-stream" \
-            "https://codeberg.org/api/v1/repos/${{ github.repository }}/releases/${RELEASE_ID}/assets?name=SaveManager-x86_64.AppImage" \
-            --data-binary @savemanager-linux/SaveManager-x86_64.AppImage
+            "https://codeberg.org/api/v1/repos/${{ github.repository }}/releases/${RELEASE_ID}/assets?name=SaveManager-Linux-x86_64.AppImage" \
+            --data-binary @SaveManager-Linux-x86_64.AppImage
         env:
           FORGEJO_TOKEN: ${{ secrets.FORGEJO_TOKEN }}
