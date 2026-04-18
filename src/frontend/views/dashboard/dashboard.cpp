@@ -129,6 +129,8 @@ void DashboardTab::render_toolbar(RenderContext& ctx) {
         std::string loading_text = std::string("Creating backups...") + spin_char;
         ImGui::Text("%s", loading_text.c_str());
     }
+
+    ImGui::Dummy(ImVec2(0.0f, 5.0f));
 }
 
 void DashboardTab::render_game_list(RenderContext& ctx) {
