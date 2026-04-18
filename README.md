@@ -6,7 +6,8 @@
 </p>
 
 <p align="center">
-    <a href="https://codeberg.org/marco007/SaveManager/releases">
+    <!-- yes, github.... codeberg doesnt have windows or mac runners, and i cba setting them up myself rn -->
+    <a href="https://github.com/msh31/SaveManager/releases">
         <img
             src="https://img.shields.io/badge/Download-C95D38?style=for-the-badge&labelColor=0C0D11"
             alt="Download"
