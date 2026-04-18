@@ -1,6 +1,7 @@
 #include "zip_archive.hpp"
 
 bool ZipArchive::add_to_archive(const Game& game) {
+    ZoneScopedN("zip_add_to_archive");
     int file_count = 0;
     std::vector<std::string> failed_files;
 
@@ -41,6 +42,7 @@ bool ZipArchive::add_to_archive(const Game& game) {
 }
 
 bool ZipArchive::extract_archive(const Game& game) {
+    ZoneScopedN("zip_extract_archive");
     int file_count = zip_get_num_entries(archive, 0);
     std::vector<std::string> failed_files;
 

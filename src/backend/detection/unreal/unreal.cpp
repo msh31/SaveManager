@@ -3,6 +3,7 @@
 #include <backend/logger/logger.hpp>
 
 void UnrealDetector::scan_for_saves(const fs::path& path, std::set<fs::path>& directories) const {
+    ZoneScopedN("unreal_scan_for_saves");
     try {
         for (const auto& entry : fs::recursive_directory_iterator(path, fs::directory_options::skip_permission_denied)) {
             if (entry.path().extension() != ".sav") {
@@ -41,6 +42,7 @@ void UnrealDetector::scan_for_saves(const fs::path& path, std::set<fs::path>& di
 }
 
 std::expected<std::vector<Game>, DetectionError> UnrealDetector::find_saves(const fs::path& prefix, UnrealDetector::ScanMode scan_mode) const {
+    ZoneScopedN("unreal_find_saves");
     std::set<fs::path> directories;
     std::vector<Game> games;
 

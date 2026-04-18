@@ -23,6 +23,7 @@ static std::string_view get_platform_label(PlatformType t) {
 }
 
 void DashboardTab::on_result_changed(RenderContext& ctx) {
+    ZoneScopedN("on_result_changed");
     grouped_games = {};
     grouped_games = ctx.result.get_grouped();
     last_game_count = ctx.result.games.size();
@@ -39,6 +40,7 @@ void DashboardTab::on_result_changed(RenderContext& ctx) {
 
 std::optional<Detection::DetectionResult> DashboardTab::render(const Fonts& fonts, 
                                                                Detection::DetectionResult& result, Config& config) { //const std::unordered_map<std::string, GLuint>& texture_id, Config& config) {
+    ZoneScopedN("dashboard_render");
     RenderContext ctx{result, /*texture_id,*/ config, fonts};
     spinner_frame++;
 
@@ -62,6 +64,7 @@ std::optional<Detection::DetectionResult> DashboardTab::render(const Fonts& font
 }
 
 void DashboardTab::render_toolbar(RenderContext& ctx) {
+    ZoneScopedN("dashboard_toolbar");
     ImGui::PushFont(ctx.fonts.header);
     ImGui::Text("Dashboard");
     ImGui::PopFont();
@@ -134,6 +137,7 @@ void DashboardTab::render_toolbar(RenderContext& ctx) {
 }
 
 void DashboardTab::render_game_list(RenderContext& ctx) {
+    ZoneScopedN("dashboard_game_list");
     std::transform(search_query.begin(), search_query.end(), search_query.begin(),
                    ::tolower);
 
@@ -173,6 +177,7 @@ void DashboardTab::render_game_list(RenderContext& ctx) {
 }
 
 void DashboardTab::render_game_row(RenderContext& ctx, const std::vector<int>& group, int gi) {
+    ZoneScopedN("render_game_row");
     const Game& primary = ctx.result.games[group[0]];
     std::vector<std::pair<fs::path, const Game*>> files = {};
     auto labels = Features::load_labels(primary, ctx.config);
@@ -272,6 +277,7 @@ void DashboardTab::render_game_row(RenderContext& ctx, const std::vector<int>& g
 }
 
 void DashboardTab::render_save_row(RenderContext& ctx, const fs::path& save_file, const Game& game) {
+    ZoneScopedN("render_save_row");
     ImGui::PushID(save_file.string().c_str());
 
     std::string date_text = std::format("{:%d/%m/%y %H:%M} | ", fs::last_write_time(save_file));
@@ -301,6 +307,7 @@ void DashboardTab::render_save_row(RenderContext& ctx, const fs::path& save_file
 }
 
 void DashboardTab::render_backup_row(RenderContext& ctx, const fs::path& backup, const Game& game, const std::unordered_map<std::string, std::string>& labels) {
+    ZoneScopedN("render_backup_row");
     ImGui::PushID(backup.string().c_str());
 
     auto it = labels.find(backup.filename().string());
@@ -359,6 +366,7 @@ void DashboardTab::render_backup_row(RenderContext& ctx, const fs::path& backup,
 }
 
 void DashboardTab::render_modals(RenderContext& ctx) {
+    ZoneScopedN("render_modals");
     if (open_rename_modal) {
         open_rename_modal = false;
         ImGui::OpenPopup("Rename Backup");

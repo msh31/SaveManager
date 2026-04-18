@@ -63,6 +63,8 @@ find_package(nlohmann_json REQUIRED)
 
 find_package(stb REQUIRED)
 
+find_package(Tracy REQUIRED)
+
 # Target: savemanager
 set(savemanager_SOURCES
 	cmake.toml
@@ -100,6 +102,10 @@ add_executable(savemanager)
 target_sources(savemanager PRIVATE ${savemanager_SOURCES})
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${savemanager_SOURCES})
 
+target_compile_definitions(savemanager PRIVATE
+	TRACY_ENABLE
+)
+
 target_compile_features(savemanager PRIVATE
 	cxx_std_23
 )
@@ -120,6 +126,7 @@ target_link_libraries(savemanager PRIVATE
 	glad::glad
 	nlohmann_json::nlohmann_json
 	stb::stb
+	Tracy::TracyClient
 )
 
 if(WIN32) # windows

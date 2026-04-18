@@ -37,6 +37,9 @@ required = true
 [find-package.stb]
 required = true
 
+[find-package.Tracy]
+required = true
+
 [variables]
 CMAKE_EXPORT_COMPILE_COMMANDS = true
 
@@ -53,7 +56,8 @@ include-directories = [
     "vendor/ImGuiFileDialog",
 ]
 precompile-headers = ["src/pch.hpp"]
-link-libraries = ["CURL::libcurl", "glfw", "libzip::zip", "Libssh2::libssh2", "OpenSSL::Crypto", "imgui::imgui", "glad::glad", "nlohmann_json::nlohmann_json", "stb::stb"]
+link-libraries = ["CURL::libcurl", "glfw", "libzip::zip", "Libssh2::libssh2", "OpenSSL::Crypto", "imgui::imgui", "glad::glad", "nlohmann_json::nlohmann_json", "stb::stb", "Tracy::TracyClient"]
+compile-definitions = ["TRACY_ENABLE"]
 compile-features = ["cxx_std_23"]
 cmake-after = """
 find_path(IMGUI_INCLUDE_DIR imgui.h REQUIRED)

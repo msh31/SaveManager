@@ -45,6 +45,7 @@ void App::init() {
 }
 
 void App::render_ui() {
+    ZoneScopedN("app_render_ui");
     ImGui::AlignTextToFramePadding();
 
     if (ImGui::BeginTabBar("MyTabBar", ImGuiTabBarFlags_Reorderable | ImGuiTabBarFlags_DrawSelectedOverline)) {
@@ -203,6 +204,7 @@ bool App::setup_imgui() {
 }
 
 void App::render() {
+    ZoneScopedN("app_render");
     glClear(GL_COLOR_BUFFER_BIT);
 
     // if(refresh_requested) {
@@ -285,6 +287,7 @@ void App::render() {
     ImGui::Render();
     ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
     glfwSwapBuffers(window);
+    FrameMark;
     glfwWaitEventsTimeout(1.0/60.0);
 }
 

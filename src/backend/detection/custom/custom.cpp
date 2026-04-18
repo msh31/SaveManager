@@ -1,6 +1,7 @@
 #include "custom.hpp"
 
 std::expected<std::vector<Game>, DetectionError> CustomDetector::find_saves(const fs::path& prefix) const {
+    ZoneScopedN("custom_find_saves");
     if(!fs::exists(prefix)) {
         return std::unexpected{DetectionError::PathNotFound};
     }
