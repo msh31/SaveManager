@@ -49,7 +49,12 @@ void App::render_ui() {
 
     if (ImGui::BeginTabBar("MyTabBar", ImGuiTabBarFlags_Reorderable | ImGuiTabBarFlags_DrawSelectedOverline)) {
         if (ImGui::BeginTabItem("Dashboard"))  {
-            dahsboard_tab.render(fonts, d_result, config);
+            if(d_result.games.empty()) {
+                render_loading_screen();
+            } else {
+                dahsboard_tab.render(fonts, d_result, config);
+            }
+
             // if (auto new_d_result = dahsboard_tab.render(fonts, d_result, game_textures, config)) {
             //     d_result = *new_d_result;
             //
@@ -275,10 +280,7 @@ void App::render() {
             last_dark_mode = config.settings.dark_mode;
         }
         render_ui();
-    } else {
-        render_loading_screen();
-    }
-
+    } 
     ImGui::End();
     ImGui::Render();
     ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
