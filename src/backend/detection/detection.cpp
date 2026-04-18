@@ -103,7 +103,8 @@ std::vector<fs::path> get_library_folders(Config& config) {
 
 void Detection::add_game(std::expected<std::vector<Game>, DetectionError> result, const std::string& platform, std::vector<Game>& games) {
     if (result) {
-        games.append_range(result.value());
+        auto& v = result.value();
+        games.insert(games.end(), v.begin(), v.end());
     } else {
         switch(result.error()) {
             case DetectionError::PathNotFound:
