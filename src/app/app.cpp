@@ -92,7 +92,7 @@ void App::render_ui() {
 
         ImGui::EndTabBar();
     }
-    ImGui::Separator();
+    // ImGui::Separator();
 }
 
 void App::render_loading_screen() {
