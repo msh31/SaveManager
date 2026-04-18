@@ -289,9 +289,8 @@ void DashboardTab::render_game_row(RenderContext& ctx, const std::vector<int>& g
 #endif
 #ifdef __APPLE__
             extern char **environ;
-            std::string path = primary.save_path.string(); // UTF-8
             pid_t pid;
-            const char* argv[] = { "open", path.c_str(), nullptr };
+            const char* argv[] = { "open", primary.save_path.string().c_str(), nullptr };
             int status = posix_spawn(&pid, "/usr/bin/open", nullptr, nullptr, (char* const*)argv, environ);
             if (status == 0) {
                 waitpid(pid, &status, 0);

@@ -91,6 +91,31 @@ void SettingsTab::render(const Fonts& fonts, Config& config) {
         ImGui::Text("%s", std::format("Updating translations {}", spin_char).c_str());
     }
     ImGui::SameLine();
+    if(ImGui::Button("Open config")) {
+#ifdef __linux__
+        pid_t pid = fork();
+        if (pid == 0) {
+            execl("/usr/bin/xdg-open", "xdg-open", paths::config_dir().string().c_str(), nullptr);
+            _exit(1);
+        }
+#endif
+#ifdef _WIN32
+        ShellExecuteA(NULL, "open", paths::config_dir().string().c_str(), NULL, NULL, SW_SHOWDEFAULT);
+#endif
+#ifdef __APPLE__
+        extern char **environ;
+        pid_t pid;
+        const char* argv[] = { "open", paths::config_dir().string().c_str(), nullptr };
+        int status = posix_spawn(&pid, "/usr/bin/open", nullptr, nullptr, (char* const*)argv, environ);
+        if (status == 0) {
+            waitpid(pid, &status, 0);
+        } else {
+            get_logger().warning("spawn failed: {}", strerror(status));
+        }
+#endif
+    }
+    ImGui::SetItemTooltip("Opens your file manager to the config directory.");
+
     // if(ImGui::Button("Refresh Cache")) {
     //     std::error_code ec;
     //     fs::remove_all(paths::cache_dir(), ec);
@@ -100,7 +125,7 @@ void SettingsTab::render(const Fonts& fonts, Config& config) {
     //         get_logger().warning("cache refresh error: {}", ec.message());
     //     }
     // }
-    ImGui::SetItemTooltip("Deletes cached images and re-downloads them.");
+    // ImGui::SetItemTooltip("Deletes cached images and re-downloads them.");
     ImGui::EndChild();
 
     ImGui::SameLine(0.0f, 10.0f);
