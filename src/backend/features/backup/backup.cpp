@@ -12,6 +12,21 @@ void Features::backup_game(const Game& game, Config& config) {
     get_logger().info("creating backup of: {}", game.game_name);
     fs::path game_backup_dir = config.settings.backup_path / sanitize_filename(game.game_name);
 
+    //check here
+    int save_count = 0;
+    for (const auto& file : fs::directory_iterator(game.save_path, fs::directory_options::skip_permission_denied)) {
+        if (fs::is_regular_file(file)) { 
+            auto ext = file.path().extension().string();
+            if(std::find(extension_blocklist.begin(), extension_blocklist.end(), ext) != extension_blocklist.end()) continue;
+            save_count++;
+        }
+    }
+
+    if(save_count <= 0) {
+        get_logger().warning("No valid saves found for: {}, skipping backup", game.game_name); //only applies to mass backup
+        return;
+    }
+
     if(!fs::exists(game_backup_dir)) {
         fs::create_directories(game_backup_dir);
     }
