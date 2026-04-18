@@ -66,6 +66,9 @@ find_package(stb REQUIRED)
 find_package(Tracy REQUIRED)
 
 # Target: savemanager
+set(CMKR_TARGET savemanager)
+add_subdirectory(vendor/nativefiledialog-extended)
+
 set(savemanager_SOURCES
 	cmake.toml
 	"src/app/app.cpp"
@@ -93,7 +96,6 @@ set(savemanager_SOURCES
 	"src/frontend/views/settings/settings.cpp"
 	"src/frontend/views/transfer/transfer.cpp"
 	"src/main.cpp"
-	"vendor/ImGuiFileDialog/ImGuiFileDialog.cpp"
 	"vendor/imgui/imgui_stdlib.cpp"
 )
 
@@ -115,7 +117,6 @@ target_compile_features(savemanager PRIVATE
 target_include_directories(savemanager PRIVATE
 	src
 	"vendor/imgui"
-	"vendor/ImGuiFileDialog"
 )
 
 target_link_libraries(savemanager PRIVATE
@@ -129,6 +130,7 @@ target_link_libraries(savemanager PRIVATE
 	nlohmann_json::nlohmann_json
 	stb::stb
 	Tracy::TracyClient
+	nfd::nfd
 )
 
 if(WIN32) # windows
@@ -147,7 +149,6 @@ if(NOT CMKR_VS_STARTUP_PROJECT)
 	set_property(DIRECTORY ${PROJECT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT savemanager)
 endif()
 
-set(CMKR_TARGET savemanager)
 find_path(IMGUI_INCLUDE_DIR imgui.h REQUIRED)
 cmake_path(GET IMGUI_INCLUDE_DIR PARENT_PATH IMGUI_ROOT_DIR)
 target_include_directories(savemanager PRIVATE "${IMGUI_ROOT_DIR}/res/bindings")

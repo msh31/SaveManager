@@ -1,26 +1,39 @@
 #include "editor_view.hpp"
 #include "frontend/ui/notifications/notification.hpp"
-#include "ImGuiFileDialog.h"
+#include <nfd.h>
+
 
 void EditorTab::render(const Fonts& fonts) {
     ImGui::BeginChild("##sa_editor", ImVec2(0, ImGui::GetContentRegionAvail().y), false,
                       ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
 
     if(ImGui::Button("Open savefile")) {
-        IGFD::FileDialogConfig config;
-        config.path = ".";
-        ImGuiFileDialog::Instance()->OpenDialog("ChooseFileDlgKey", "Choose savefile", ".b", config); //set to b because gta sa uses .b
-    }
-    if (ImGuiFileDialog::Instance()->Display("ChooseFileDlgKey")) {
-        if (ImGuiFileDialog::Instance()->IsOk()) {
-            file_path = ImGuiFileDialog::Instance()->GetFilePathName();
-            if(san_andreas.open(file_path)) {
-                Notify::show_notification("Save Editor", "Save loaded succesfully!", 3000);
+        NFD_Init();
+
+        nfdu8char_t *outPath;
+        nfdu8filteritem_t filters[2] = { { "GTA SAN ANDREAS SAVE FILE", "b" } };
+        nfdopendialogu8args_t args = {0};
+        args.filterList = filters;
+        args.filterCount = 1;
+        nfdresult_t result = NFD_OpenDialogU8_With(&outPath, &args);
+        if (result == NFD_OKAY) {
+            std::string path(outPath);
+            NFD_FreePathU8(outPath);
+            if(san_andreas.open(path)) {
+                file_path = path;
+                Notify::show_notification("Save Editor", "Save loaded successfully!", 3000);
             } else {
                 Notify::show_notification("Save Editor", "Save failed to load!", 3000);
             }
         }
-        ImGuiFileDialog::Instance()->Close();
+        else if (result == NFD_CANCEL) {
+            // puts("User pressed cancel.");
+        }
+        else {
+            Notify::show_notification("Save Editor", "Save failed to load!", 3000);
+        }
+
+        NFD_Quit();
     }
     ImGui::SameLine();
     if(ImGui::Button("Save")) {

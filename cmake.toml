@@ -48,16 +48,17 @@ type = "executable"
 sources = [
     "src/**.cpp",
     "vendor/imgui/imgui_stdlib.cpp",
-    "vendor/ImGuiFileDialog/*.cpp",
 ]
 include-directories = [
     "src",
     "vendor/imgui",
-    "vendor/ImGuiFileDialog",
 ]
 precompile-headers = ["src/pch.hpp"]
-link-libraries = ["CURL::libcurl", "glfw", "libzip::zip", "Libssh2::libssh2", "OpenSSL::Crypto", "imgui::imgui", "glad::glad", "nlohmann_json::nlohmann_json", "stb::stb", "Tracy::TracyClient"]
+link-libraries = ["CURL::libcurl", "glfw", "libzip::zip", "Libssh2::libssh2", "OpenSSL::Crypto", "imgui::imgui", "glad::glad", "nlohmann_json::nlohmann_json", "stb::stb", "Tracy::TracyClient", "nfd::nfd"]
 compile-features = ["cxx_std_23"]
+cmake-before = """
+add_subdirectory(vendor/nativefiledialog-extended)
+"""
 cmake-after = """
 find_path(IMGUI_INCLUDE_DIR imgui.h REQUIRED)
 cmake_path(GET IMGUI_INCLUDE_DIR PARENT_PATH IMGUI_ROOT_DIR)
