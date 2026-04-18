@@ -4,27 +4,30 @@
 ## The big one - Save editor (albeit a basic one)
 <img src="assets/editor150.png" alt="Editor Preview" width="800"/>
 
-### New verified supported games
-- Grand Theft Auto IV
-- L.A. Noire
-- 
-
 ### Added
 - Basic Save Editor (exclusive to GTA San Andreas)
 - MacOS support (Intel & Apple Silicon)
+- Sort (A-Z / Date) and filter by platform in dashboard toolbar
+- Search bar in dashboard
+
 
 ### Fixed 
 - Rare issue of Rockstar Games saves not detecting on Windows 
-- 
+
 
 ### Changes
-- Redesigned dashboard UI
+- Redesigned dashboard UI (was general tab)
 - Detection is now done asynchronously, significantly cuts down startup time 
-- Logger refactor for increased performance, now fully in-memory.
+- Logger moved to in-memory deque, no more disk polling from UI
+- Improved detection error handling
+- Async detection on startup, cards pop in progressively
+
+> [!NOTE]
+On Windows the config directory has changed from ``AppData\Roaming\SaveManager`` to ``C:\Users\username\savemanager``
 
 ### Development related
 - Use Conan for external dependencies (besides stuff that isn't on there)
-- Move codebase to C++23
+- Move codebase to C++23 progressively
 - General code improvements for better maintainability
 
 ### Known Issues / Limitations
