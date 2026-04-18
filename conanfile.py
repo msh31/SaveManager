@@ -21,7 +21,8 @@ class SaveManager(ConanFile):
         self.requires("openssl/3.6.1")
         self.requires("glad/2.0.8")
         self.requires("stb/cci.20230920")
-        self.requires("tracy/0.13.1")
+        if self.settings.os != "Windows":
+            self.requires("tracy/0.13.1")
 
     def configure(self):
         if self.settings.os == "Windows":

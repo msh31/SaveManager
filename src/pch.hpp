@@ -48,4 +48,9 @@
 #include <glad/gl.h>
 #include <GLFW/glfw3.h>
 
+#ifdef __linux__
 #include <tracy/Tracy.hpp>
+#else
+#define ZoneScopedN(x)
+#define FrameMark
+#endif

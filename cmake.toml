@@ -57,7 +57,6 @@ include-directories = [
 ]
 precompile-headers = ["src/pch.hpp"]
 link-libraries = ["CURL::libcurl", "glfw", "libzip::zip", "Libssh2::libssh2", "OpenSSL::Crypto", "imgui::imgui", "glad::glad", "nlohmann_json::nlohmann_json", "stb::stb", "Tracy::TracyClient"]
-compile-definitions = ["TRACY_ENABLE"]
 compile-features = ["cxx_std_23"]
 cmake-after = """
 find_path(IMGUI_INCLUDE_DIR imgui.h REQUIRED)
@@ -71,3 +70,9 @@ target_sources(savemanager PRIVATE
 
 [target.savemanager.windows]
 link-libraries = ["ws2_32", "shell32"]
+
+[target.savemanager.linux]
+compile-definitions = ["TRACY_ENABLE"]
+
+# [target.savemanager.macos]
+# compile-definitions = ["TRACY_ENABLE"]
