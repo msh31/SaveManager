@@ -6,7 +6,7 @@
 
 ### Added
 - Basic Save Editor (exclusive to GTA San Andreas)
-- MacOS support (Intel & Apple Silicon)
+- MacOS support (Apple Silicon)
 - Sort (A-Z / Date) and filter by platform in dashboard toolbar
 - Search bar in dashboard
 

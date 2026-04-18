@@ -18,7 +18,11 @@ jobs:
           sudo apt-get install -y \
             libx11-dev libxrandr-dev libxinerama-dev libxcursor-dev libxi-dev \
             libgl1-mesa-dev libgtk-3-dev libwayland-dev wayland-protocols \
-            pkg-config python3-pip ninja-build
+            pkg-config python3-pip ninja-build \
+            gcc-13 g++-13
+          sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-13 100
+          sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-13 100
+          sudo update-alternatives --install /usr/bin/c++ c++ /usr/bin/g++-13 100
 
       - name: Install Conan
         run: pip install conan --break-system-packages
@@ -34,9 +38,12 @@ jobs:
           restore-keys: conan-linux-
 
       - name: Install dependencies
-        run: conan install . --build=missing -s build_type=Release
+        run: conan install . --build=missing -s build_type=Release -c tools.system.package_manager:mode=install -c tools.system.package_manager:sudo=True
 
       - name: Build
+        env:
+          CC: gcc-13
+          CXX: g++-13
         run: |
           cmake --preset conan-release
           cmake --build --preset conan-release -j$(nproc)
@@ -93,37 +100,6 @@ jobs:
           path: ~/.conan2/p
           key: conan-macos-arm64-${{ hashFiles('conanfile.py') }}
           restore-keys: conan-macos-arm64-
-
-      - name: Install dependencies
-        run: conan install . --build=missing -s build_type=Release
-
-      - name: Build
-        run: |
-          cmake --preset conan-release
-          cmake --build --preset conan-release -j$(nproc)
-
-  build-macos-x86:
-    runs-on: macos-13
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          submodules: recursive
-
-      - name: Install system dependencies
-        run: brew install ninja pkg-config
-
-      - name: Install Conan
-        run: pip3 install conan --break-system-packages
-
-      - name: Detect Conan profile
-        run: conan profile detect
-
-      - name: Cache Conan packages
-        uses: actions/cache@v4
-        with:
-          path: ~/.conan2/p
-          key: conan-macos-x86-${{ hashFiles('conanfile.py') }}
-          restore-keys: conan-macos-x86-
 
       - name: Install dependencies
         run: conan install . --build=missing -s build_type=Release
