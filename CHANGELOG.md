@@ -17,13 +17,13 @@
 
 ### Changes
 - Redesigned dashboard UI (was general tab)
-- Detection is now done asynchronously, significantly cuts down startup time 
 - Logger moved to in-memory deque, no more disk polling from UI
 - Improved detection error handling
-- Async detection on startup, cards pop in progressively
+- Async detection on startup, cards pop in progressively not blocking the UI
 
 > [!NOTE]
-On Windows the config directory has changed from ``AppData\Roaming\SaveManager`` to ``C:\Users\username\savemanager``
+> On Windows the config directory has changed from ``AppData\Roaming\SaveManager`` to ``C:\Users\username\savemanager``
+
 
 ### Development related
 - Use Conan for external dependencies (besides stuff that isn't on there)
@@ -33,7 +33,6 @@ On Windows the config directory has changed from ``AppData\Roaming\SaveManager``
 ### Known Issues / Limitations
 - Original Anno editions not supported due to install path limitations (You can add them manually though!)
 - Grouping issues with unknown / partially supported games (Similar to #2 but has since improved)
-- GTA Trilogy Definitive Editions don't have an image on Windows (Due to the emdash, need to find a fix.)
 
 
 ## [1.4.1] - 2026-04-04
