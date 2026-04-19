@@ -153,8 +153,10 @@ void SettingsTab::render(const Fonts& fonts, Config& config) {
         heroic_path = config.settings.heroic_path;
         paths_initialized = true;
     }
-
+    ImGui::BeginDisabled(true);
     ImGui::InputText("Backup path", &backup_path);
+    ImGui::EndDisabled();
+    ImGui::SetItemTooltip("Change the config path with the '--config-dir' to change this path!");
 
 #ifndef _WIN32
     ImGui::InputText("Steam path", &steam_path);

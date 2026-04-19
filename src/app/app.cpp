@@ -23,6 +23,8 @@
 #include "backend/utils/blacklist/blacklist.hpp"
 #include "backend/utils/custom_games/custom_games.hpp"
 
+App::App(fs::path config_dir) : config(config_dir) {}
+
 void App::init() {
     if(!setup_opengl()) {
         return;

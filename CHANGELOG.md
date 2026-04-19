@@ -9,6 +9,7 @@
 - MacOS support (Apple Silicon)
 - Sort (A-Z / Date) and filter by platform in dashboard toolbar
 - Search bar in dashboard
+- Config directory is now editable (Was previously overwritten everytime it changed) through a cli flag ``--config-dir "path"``
 
 
 ### Fixed 

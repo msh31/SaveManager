@@ -2,6 +2,9 @@
 namespace fs = std::filesystem;
 
 namespace paths {
+inline fs::path g_config_dir;
+inline void set_config_dir(const fs::path& p) { g_config_dir = p; }
+
 inline fs::path home_dir() {
     const char* home;
 #if defined(__linux__) || defined(__APPLE__)
@@ -14,6 +17,10 @@ inline fs::path home_dir() {
 }
 
 inline fs::path config_dir() {
+    if(!g_config_dir.empty()) {
+        return g_config_dir;
+    }
+
 #if defined(__linux__) 
     return home_dir() / ".config" / "savemanager";
 #elif  defined(__APPLE__)

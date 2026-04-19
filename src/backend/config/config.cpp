@@ -1,13 +1,21 @@
 #include "config.hpp"
 #include "backend/logger/logger.hpp"
+#include "backend/utils/paths.hpp"
 #include "backend/utils/translations/steamids.hpp"
 #include "backend/utils/translations/ubi_translations.hpp"
+#include <filesystem>
 #include <nlohmann/json.hpp>
 
 using json = nlohmann::json;
 
-Config::Config() {
+Config::Config(fs::path config_dir) : config_file(config_dir / "config.json") {
     try {
+        if(!fs::exists(config_dir)) {
+            if(!fs::create_directories(config_dir)) {
+                get_logger().error("Failed to create backup directory");
+            }
+        }
+
         if(!fs::exists(paths::backup_dir())) {
             if(!fs::create_directories(paths::backup_dir())) {
                 get_logger().error("Failed to create backup directory");

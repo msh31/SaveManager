@@ -3,7 +3,7 @@
 
 class Config {
 public:
-    Config();
+    Config(fs::path config_dir = paths::config_dir());
     ~Config();
     bool init();
     void save();

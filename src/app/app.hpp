@@ -12,6 +12,7 @@
 
 class App {
 public:
+    App(fs::path config_dir = paths::config_dir());
     ~App();
 
     void init();
