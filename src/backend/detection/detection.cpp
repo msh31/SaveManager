@@ -146,6 +146,8 @@ void scan_prefix_dir(const fs::path& compatdata, Detection::DetectionResult& res
 
                     if(config.settings.ubi_enabled) {
                         Detection::add_game(detectors.ubisoft_detect.find_saves(user.path() / "Documents"), "ubi", result);
+                        Detection::add_game(detectors.ubisoft_detect.find_anno_saves(user.path() / "Documents"), "ubi", result);
+                        Detection::add_game(detectors.ubisoft_detect.find_anno_saves(user.path() / "AppData" / "Roaming"), "ubi", result);
                     }
                     if (config.settings.rsg_enabled) {
                         Detection::add_game(detectors.rockstar_detect.find_saves(user.path() / "Documents" / "Rockstar Games"), "rsg", result);

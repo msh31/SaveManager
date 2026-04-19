@@ -14,6 +14,7 @@
 
 ### Fixed 
 - Rare issue of Rockstar Games saves not detecting on Windows 
+- Anno saves not being detected at all on Linux and not able to managed properly on Windows
 
 
 ### Removed

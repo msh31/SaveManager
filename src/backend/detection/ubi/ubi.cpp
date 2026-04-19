@@ -41,7 +41,7 @@ std::expected<std::vector<Game>, DetectionError> UbisoftDetector::find_saves(con
     return games;
 }
 
-std::expected<std::vector<Game>, DetectionError>  UbisoftDetector::find_anno_saves(const fs::path& prefix) const {
+std::expected<std::vector<Game>, DetectionError> UbisoftDetector::find_anno_saves(const fs::path& prefix) const {
     ZoneScopedN("ubi_find_anno_saves");
     if(!fs::exists(prefix)) {
         return std::unexpected{DetectionError::PathNotFound};
