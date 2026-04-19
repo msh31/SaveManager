@@ -6,7 +6,7 @@ on:
 
 jobs:
   build-linux:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
         with:
@@ -19,15 +19,18 @@ jobs:
             libx11-dev libxrandr-dev libxinerama-dev libxcursor-dev libxi-dev \
             libgl1-mesa-dev libgtk-3-dev libwayland-dev wayland-protocols \
             pkg-config python3-pip ninja-build \
-            gcc-13 g++-13
-          sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-13 100
-          sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-13 100
-          sudo update-alternatives --install /usr/bin/c++ c++ /usr/bin/g++-13 100
+            gcc-14 g++-14
+          sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-14 100
+          sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-14 100
+          sudo update-alternatives --install /usr/bin/c++ c++ /usr/bin/g++-14 100
 
       - name: Install Conan
         run: pip install conan --break-system-packages
 
       - name: Detect Conan profile
+        env:
+          CC: gcc-14
+          CXX: g++-14
         run: conan profile detect
 
       - name: Cache Conan packages
@@ -38,12 +41,15 @@ jobs:
           restore-keys: conan-linux-
 
       - name: Install dependencies
+        env:
+          CC: gcc-14
+          CXX: g++-14
         run: conan install . --build=missing -s build_type=Release -c tools.system.package_manager:mode=install -c tools.system.package_manager:sudo=True
 
       - name: Build
         env:
-          CC: gcc-13
-          CXX: g++-13
+          CC: gcc-14
+          CXX: g++-14
         run: |
           cmake --preset conan-release
           cmake --build --preset conan-release -j$(nproc)
@@ -79,7 +85,7 @@ jobs:
           cmake --build --preset conan-release
 
   build-macos-arm64:
-    runs-on: macos-latest
+    runs-on: macos-26
     steps:
       - uses: actions/checkout@v4
         with:
