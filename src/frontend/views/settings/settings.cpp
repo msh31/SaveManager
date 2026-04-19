@@ -159,12 +159,14 @@ void SettingsTab::render(const Fonts& fonts, Config& config) {
     ImGui::SetItemTooltip("Change the config path with the '--config-dir' to change this path!");
 
 #ifndef _WIN32
+    ImGui::BeginDisabled(true);
     ImGui::InputText("Steam path", &steam_path);
 #endif
 #ifdef __linux__
     ImGui::InputText("Lutris path", &lutris_path);
 #endif
     ImGui::InputText("Heroic path", &heroic_path);
+    ImGui::EndDisabled();
 
     ImGui::Separator();
 

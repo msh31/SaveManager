@@ -16,11 +16,7 @@ inline fs::path home_dir() {
     return fs::path(home);
 }
 
-inline fs::path config_dir() {
-    if(!g_config_dir.empty()) {
-        return g_config_dir;
-    }
-
+inline fs::path default_config_dir() { 
 #if defined(__linux__) 
     return home_dir() / ".config" / "savemanager";
 #elif  defined(__APPLE__)
@@ -29,9 +25,23 @@ inline fs::path config_dir() {
     return home_dir() / "savemanager";
 #endif
 }
+
+inline fs::path config_dir() {
+    if(!g_config_dir.empty()) {
+        return g_config_dir;
+    }
+
+    return default_config_dir();
+}
+
+inline fs::path redirect_file() {
+    return default_config_dir() / "cfg.redirect";
+}
+
 inline fs::path backup_dir() {
     return config_dir() / "backups";
 }
+
 inline fs::path cache_dir() {
     return config_dir() / "cache";
 }
