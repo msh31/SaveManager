@@ -26,12 +26,13 @@ static std::string_view get_platform_label(PlatformType t) {
 }
 
 void DashboardTab::on_result_changed(RenderContext& ctx) {
+    std::shared_lock<std::shared_mutex> lock(ctx.result.d_mutex);
     ZoneScopedN("on_result_changed");
     grouped_games = {};
     grouped_games = ctx.result.get_grouped();
-    last_game_count = ctx.result.games.size();
+    last_game_count = ctx.games.size();
 
-    for (const auto& entry : ctx.result.games) {
+    for (const auto& entry : ctx.games) {
         fs::file_time_type current_max;
         for (const auto& file : fs::directory_iterator(entry.save_path, fs::directory_options::skip_permission_denied)) {
             auto t = fs::last_write_time(file);
@@ -41,19 +42,23 @@ void DashboardTab::on_result_changed(RenderContext& ctx) {
     }
 }
 
-std::optional<Detection::DetectionResult> DashboardTab::render(const Fonts& fonts, 
-                                                               Detection::DetectionResult& result, Config& config) { //const std::unordered_map<std::string, GLuint>& texture_id, Config& config) {
+void DashboardTab::render(const Fonts& fonts, Detection::DetectionResult& result, Config& config) { //const std::unordered_map<std::string, GLuint>& texture_id, Config& config) {
     ZoneScopedN("dashboard_render");
-    RenderContext ctx{result, /*texture_id,*/ config, fonts};
+    std::vector<Game> snapshot;
+    {
+        std::shared_lock<std::shared_mutex> lock(result.d_mutex);
+        snapshot = result.games;
+    }
+
+    RenderContext ctx{result, /*texture_id,*/ config, fonts, snapshot};
     spinner_frame++;
 
     if (refresh_future.valid() && refresh_future.wait_for(std::chrono::seconds(0)) == std::future_status::ready) {
-        auto new_result = refresh_future.get();
         Notify::show_notification("Save refresh", "Saves refreshed!", 2000);
-        return new_result;
+        refresh_future.get();
     }
 
-    if(last_game_count != result.games.size()) {
+    if(last_game_count != snapshot.size()) {
         on_result_changed(ctx);
     }
 
@@ -62,8 +67,6 @@ std::optional<Detection::DetectionResult> DashboardTab::render(const Fonts& font
     render_game_list(ctx);
     ImGui::PopStyleVar();
     render_modals(ctx);
-
-    return std::nullopt;
 }
 
 void DashboardTab::render_toolbar(RenderContext& ctx) {
@@ -111,9 +114,11 @@ void DashboardTab::render_toolbar(RenderContext& ctx) {
 
     if(!is_refreshing) {
         if(ImGui::Button("Refresh")) {
-            refresh_future = std::async(std::launch::async, [&config = ctx.config]() {
-                return Detection::find_saves(config);
-            });
+            {
+                std::unique_lock lock(ctx.result.d_mutex);
+                ctx.result.games.clear();
+            }
+            refresh_future = std::async(std::launch::async, [&result = ctx.result, &config = ctx.config]() { Detection::find_saves(config, result); });
         }
         ImGui::SetItemTooltip("Re-runs the detection logic to find new saves");
     } else {
@@ -123,8 +128,13 @@ void DashboardTab::render_toolbar(RenderContext& ctx) {
     ImGui::SameLine();
     if(!is_backing_up) {
         if(ImGui::Button("Mass Backup")) {
-            backup_future = std::async(std::launch::async, [this, &result = ctx.result, &config = ctx.config]() {
-                for (auto& entry : result.games) {
+            backup_future = std::async(std::launch::async, [&result = ctx.result, &config = ctx.config]() {
+                std::vector<Game> snapshot;
+                {
+                    std::shared_lock lock(result.d_mutex);
+                    snapshot = result.games;
+                }
+                for (auto& entry : snapshot) {
                     Features::backup_game(entry, config);
                 }
             });
@@ -140,6 +150,7 @@ void DashboardTab::render_toolbar(RenderContext& ctx) {
 }
 
 void DashboardTab::render_game_list(RenderContext& ctx) {
+    // std::lock_guard<std::mutex> lock(ctx.result.d_mutex);
     ZoneScopedN("dashboard_game_list");
     std::transform(search_query.begin(), search_query.end(), search_query.begin(),
                    ::tolower);
@@ -148,22 +159,22 @@ void DashboardTab::render_game_list(RenderContext& ctx) {
     switch (sort_mode) {
         case SortMode::Recent:
             std::sort(sorted.begin(), sorted.end(), [&](const std::vector<int>& a, const std::vector<int>& b) {
-                return game_last_modified[ctx.result.games[a[0]].game_name] > 
-                game_last_modified[ctx.result.games[b[0]].game_name];
+                return game_last_modified[ctx.games[a[0]].game_name] > 
+                game_last_modified[ctx.games[b[0]].game_name];
             });
         break;
         case SortMode::Alphabetical:
             std::sort(sorted.begin(), sorted.end(), [&](const std::vector<int>& a, const std::vector<int>& b) {
-                return ctx.result.games[a[0]].game_name < ctx.result.games[b[0]].game_name;
+                return ctx.games[a[0]].game_name < ctx.games[b[0]].game_name;
             });
         break;
     }
 
 
     enumerate(sorted, [&](int gi, auto& group) {
-        if(platform_filter.has_value() && ctx.result.games[group[0]].type != *platform_filter) return;
+        if(platform_filter.has_value() && ctx.games[group[0]].type != *platform_filter) return;
 
-        const Game& primary = ctx.result.games[group[0]];
+        const Game& primary = ctx.games[group[0]];
         std::string game_name = primary.game_name;
 
         // filter
@@ -181,7 +192,7 @@ void DashboardTab::render_game_list(RenderContext& ctx) {
 
 void DashboardTab::render_game_row(RenderContext& ctx, const std::vector<int>& group, int gi) {
     ZoneScopedN("render_game_row");
-    const Game& primary = ctx.result.games[group[0]];
+    const Game& primary = ctx.games[group[0]];
     std::vector<std::pair<fs::path, const Game*>> files = {};
     auto labels = Features::load_labels(primary, ctx.config);
 
@@ -193,7 +204,7 @@ void DashboardTab::render_game_row(RenderContext& ctx, const std::vector<int>& g
    
     //TODO: cache this data so it doesnt need to get recomputed every frame 
     for (const auto& index : group) {
-        const Game& game = ctx.result.games[index];
+        const Game& game = ctx.games[index];
 
         for (const auto& file : fs::directory_iterator(game.save_path, fs::directory_options::skip_permission_denied)) {
             if (fs::is_regular_file(file)) { 

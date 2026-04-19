@@ -21,6 +21,7 @@
 #include <ranges>
 #include <cstring>
 #include <deque>
+#include <shared_mutex>
 
 #include "globals.hpp"
 

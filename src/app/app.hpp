@@ -47,5 +47,5 @@ private:
     // std::vector<std::future<Textures::ImageData>> texture_futures;
 
     Detection::DetectionResult d_result;
-    std::future<Detection::DetectionResult> detection_future;
+    std::future<void> detection_future;
 };

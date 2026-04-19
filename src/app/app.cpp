@@ -52,11 +52,7 @@ void App::render_ui() {
 
     if (ImGui::BeginTabBar("MyTabBar", ImGuiTabBarFlags_Reorderable | ImGuiTabBarFlags_DrawSelectedOverline)) {
         if (ImGui::BeginTabItem("Dashboard"))  {
-            if(d_result.games.empty()) {
-                render_loading_screen();
-            } else {
-                dahsboard_tab.render(fonts, d_result, config);
-            }
+            dahsboard_tab.render(fonts, d_result, config);
 
             // if (auto new_d_result = dahsboard_tab.render(fonts, d_result, game_textures, config)) {
             //     d_result = *new_d_result;
@@ -234,7 +230,7 @@ void App::render() {
         ThemeManager::apply_theme(config.settings.dark_mode ? ThemeType::Dark : ThemeType::Light);
 
         detection_future = std::async(std::launch::async, [this]() {
-            return Detection::find_saves(config);
+            return Detection::find_saves(config, d_result);
         });
 
         // if(d_result.games.empty()) {
@@ -242,9 +238,9 @@ void App::render() {
         // }
     }
 
-    if(detection_future.valid() && detection_future.wait_for(std::chrono::seconds(0)) == std::future_status::ready) {
-        d_result = detection_future.get();
-    }
+    // if(detection_future.valid() && detection_future.wait_for(std::chrono::seconds(0)) == std::future_status::ready) {
+    //     d_result = detection_future.get();
+    // }
 
     // if(initialized && texture_futures.empty()) {
     //     for (auto& game : d_result.games) {

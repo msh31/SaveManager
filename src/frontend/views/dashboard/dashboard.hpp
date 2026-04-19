@@ -10,23 +10,22 @@ struct DashboardTab {
     bool open_rename_modal = false;
     const Game* pending_rename_game = nullptr;
 
-    std::future<Detection::DetectionResult> refresh_future;
+    std::future<void> refresh_future;
     std::future<void> backup_future;
 
     fs::path pending_rename_backup;
     std::string rename_input;
-    std::string label_input = "My awesome savegame";
     size_t last_game_count = 0;
     int spinner_frame = 0;
 
-    std::optional<Detection::DetectionResult> render(const Fonts&, Detection::DetectionResult&, Config&);
-
+    void render(const Fonts&, Detection::DetectionResult&, Config&);
 private:
     struct RenderContext {
         Detection::DetectionResult& result;
         // const std::unordered_map<std::string, GLuint>& textures;
         Config& config;
         const Fonts& fonts;
+        const std::vector<Game>& games;
     };
 
     enum class SortMode { 
