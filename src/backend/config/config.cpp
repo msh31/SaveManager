@@ -58,10 +58,10 @@ bool Config::init() {
         f << R"(["The Crew Motorfest"])"; //kinda sucks
     }
 
-    if(!fs::exists(paths::custom_games())) {
-        std::ofstream f(paths::custom_games());
-        f << "[]";
-    }
+    // if(!fs::exists(paths::custom_games())) {
+    //     std::ofstream f(paths::custom_games());
+    //     f << "[]";
+    // }
 
     return true;
 }

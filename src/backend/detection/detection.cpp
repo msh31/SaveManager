@@ -7,14 +7,14 @@
 #include "backend/detection/rsg/rsg.hpp"
 #include "backend/detection/ubi/ubi.hpp"
 #include "backend/detection/unreal/unreal.hpp"
-#include "backend/detection/custom/custom.hpp"
+// #include "backend/detection/custom/custom.hpp"
 #include "globals.hpp"
 
 struct Detectors {
    RockstarDetector rockstar_detect; 
    UbisoftDetector ubisoft_detect; 
    UnrealDetector unreal_detect; 
-   CustomDetector custom_detect; 
+   // CustomDetector custom_detect; 
 };
 
 std::vector<std::string> get_platform_steam_paths() {
@@ -137,7 +137,7 @@ void scan_prefix_dir(const fs::path& compatdata, Detection::DetectionResult& res
             if (config.settings.ubi_enabled) {
                 Detection::add_game(detectors.ubisoft_detect.find_saves(drive_c / "Program Files (x86)" / "Ubisoft" / "Ubisoft Game Launcher" / "savegames"), "ubi", result.games);
             }
-            Detection::add_game(detectors.custom_detect.find_saves(drive_c), "custom", result.games); //might be too broad
+            // Detection::add_game(detectors.custom_detect.find_saves(drive_c), "custom", result.games); //might be too broad
 
             if (fs::exists(users_dir)) {
                 for (const auto& user : fs::directory_iterator(users_dir)) {
@@ -230,7 +230,7 @@ Detection::DetectionResult Detection::find_saves(Config& config) {
     if (config.settings.unreal_enabled) {
         Detection::add_game(detectors.unreal_detect.find_saves(paths::home_dir()), "unreal", result.games);
     }
-    Detection::add_game(detectors.custom_detect.find_saves(paths::home_dir()), "custom", result.games);
+    // Detection::add_game(detectors.custom_detect.find_saves(paths::home_dir()), "custom", result.games);
 #endif
 
 #ifdef __APPLE__
@@ -245,7 +245,7 @@ Detection::DetectionResult Detection::find_saves(Config& config) {
         Detection::add_game(detectors.unreal_detect.find_saves(paths::home_dir() / "Library" / "Application Support", UnrealDetector::ScanMode::Native), "unreal", result.games); 
         Detection::add_game(detectors.unreal_detect.find_saves(paths::heroic_dir() / "Prefixes"), "unreal", result.games); 
     }
-    Detection::add_game(detectors.custom_detect.find_saves(paths::home_dir()), "custom", result.games); 
+    // Detection::add_game(detectors.custom_detect.find_saves(paths::home_dir()), "custom", result.games); 
 #endif
 
     if (result.games.empty()) {

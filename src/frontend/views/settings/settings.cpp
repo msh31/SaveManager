@@ -1,6 +1,6 @@
 #include "settings.hpp"
 #include "backend/utils/blacklist/blacklist.hpp"
-#include "backend/utils/custom_games/custom_games.hpp"
+// #include "backend/utils/custom_games/custom_games.hpp"
 #include "backend/utils/paths.hpp"
 #include "frontend/ui/notifications/notification.hpp"
 #include "backend/network/network.hpp"
@@ -220,51 +220,51 @@ void SettingsTab::render(const Fonts& fonts, Config& config) {
     }
     ImGui::EndChild();
 
-    ImGui::SameLine(0.0f, 10.0f);
-
-    ImGui::BeginChild("##custom_games", ImVec2(half, 310.0f), true,
-                      ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
-
-    ImGui::PushFont(fonts.medium);
-    ImGui::Text("Custom Games");
-    ImGui::PopFont();
-
-    if (ImGui::BeginChild("custom_game_child", ImVec2(0, 120), true)) {
-        int i = 0;
-        for (auto it = CustomGamesFile::games.begin(); it != CustomGamesFile::games.end(); ) {
-            ImGui::Text("%s", it->game_name.c_str());
-            ImGui::SameLine();
-            ImGui::SetCursorPosX(ImGui::GetCursorPosX() + 5);
-            if (ImGui::Button(std::format("X##{}", i).c_str())) {
-                it = CustomGamesFile::games.erase(it);
-                CustomGamesFile::save();
-            } else {
-                ++it;
-                ++i;
-            }
-        }
-        ImGui::EndChild();
-    } else {
-    ImGui::EndChild();
-    }
-
-    ImGui::InputText("Game Name", &new_game_name);
-    ImGui::InputText("Save Path", &new_game_path);
-    ImGui::InputText("AppID (optional)", &new_game_appid);
-    // ImGui::SameLine();
-    if (ImGui::Button("Add##custom")) {
-        if (!new_game_name.empty() && !new_game_path.empty()) {
-            CustomGamesFile::CustomGame game;
-            game.game_name = new_game_name;
-            game.save_path = new_game_path;
-            game.appid = new_game_appid;
-            CustomGamesFile::games.push_back(game);
-            CustomGamesFile::save();
-
-            new_game_name.clear();
-            new_game_path.clear();
-            new_game_appid.clear();
-        }
-    }
-    ImGui::EndChild();
+    // ImGui::SameLine(0.0f, 10.0f);
+    //
+    // ImGui::BeginChild("##custom_games", ImVec2(half, 310.0f), true,
+    //                   ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
+    //
+    // ImGui::PushFont(fonts.medium);
+    // ImGui::Text("Custom Games");
+    // ImGui::PopFont();
+    //
+    // if (ImGui::BeginChild("custom_game_child", ImVec2(0, 120), true)) {
+    //     int i = 0;
+    //     for (auto it = CustomGamesFile::games.begin(); it != CustomGamesFile::games.end(); ) {
+    //         ImGui::Text("%s", it->game_name.c_str());
+    //         ImGui::SameLine();
+    //         ImGui::SetCursorPosX(ImGui::GetCursorPosX() + 5);
+    //         if (ImGui::Button(std::format("X##{}", i).c_str())) {
+    //             it = CustomGamesFile::games.erase(it);
+    //             CustomGamesFile::save();
+    //         } else {
+    //             ++it;
+    //             ++i;
+    //         }
+    //     }
+    //     ImGui::EndChild();
+    // } else {
+    // ImGui::EndChild();
+    // }
+    //
+    // ImGui::InputText("Game Name", &new_game_name);
+    // ImGui::InputText("Save Path", &new_game_path);
+    // ImGui::InputText("AppID (optional)", &new_game_appid);
+    // // ImGui::SameLine();
+    // if (ImGui::Button("Add##custom")) {
+    //     if (!new_game_name.empty() && !new_game_path.empty()) {
+    //         CustomGamesFile::CustomGame game;
+    //         game.game_name = new_game_name;
+    //         game.save_path = new_game_path;
+    //         game.appid = new_game_appid;
+    //         CustomGamesFile::games.push_back(game);
+    //         CustomGamesFile::save();
+    //
+    //         new_game_name.clear();
+    //         new_game_path.clear();
+    //         new_game_appid.clear();
+    //     }
+    // }
+    // ImGui::EndChild();
 }

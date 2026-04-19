@@ -21,7 +21,7 @@
 #include "backend/detection/detection.hpp"
 #include "backend/utils/translations/translations.hpp"
 #include "backend/utils/blacklist/blacklist.hpp"
-#include "backend/utils/custom_games/custom_games.hpp"
+// #include "backend/utils/custom_games/custom_games.hpp"
 
 App::App(fs::path config_dir) : config(config_dir) {}
 
@@ -41,7 +41,7 @@ void App::init() {
 
         translations::init();
         Blacklist::init();
-        CustomGamesFile::init();
+        // CustomGamesFile::init();
         config.save();
     });
 }

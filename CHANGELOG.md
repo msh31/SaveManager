@@ -16,6 +16,10 @@
 - Rare issue of Rockstar Games saves not detecting on Windows 
 
 
+### Removed
+- Custom game support through the json (Temporarily, it needs improvement)
+
+
 ### Changes
 - Redesigned dashboard UI (was general tab)
 - Logger moved to in-memory deque, no more disk polling from UI
