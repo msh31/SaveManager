@@ -206,7 +206,7 @@ void DashboardTab::render_game_row(RenderContext& ctx, const std::vector<int>& g
     for (const auto& index : group) {
         const Game& game = ctx.games[index];
 
-        for (const auto& file : fs::directory_iterator(game.save_path, fs::directory_options::skip_permission_denied)) {
+        for (const auto& file : fs::recursive_directory_iterator(game.save_path, fs::directory_options::skip_permission_denied)) {
             if (fs::is_regular_file(file)) { 
                 auto ext = file.path().extension().string();
                 if(std::find(extension_blocklist.begin(), extension_blocklist.end(), ext) != extension_blocklist.end()) continue;
