@@ -4,7 +4,7 @@
 class Config;
 
 namespace Features {
-void backup_game(const Game& game, Config& config);
+void backup_game(const Game& game, const fs::path& file, Config& config);
 void restore_backup(const fs::path& name, const Game& selected_game);
 std::vector<fs::path> get_backups(const Game& game, Config& config);
 

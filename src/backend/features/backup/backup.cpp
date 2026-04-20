@@ -7,25 +7,24 @@
 #include <nlohmann/json.hpp>
 using json = nlohmann::json;
 
-void Features::backup_game(const Game& game, Config& config) {
+void Features::backup_game(const Game& game, const fs::path& file, Config& config) {
     ZoneScopedN("backup_game");
     get_logger().info("creating backup of: {}", game.game_name);
     fs::path game_backup_dir = config.settings.backup_path / sanitize_filename(game.game_name);
 
     //check here
-    int save_count = 0;
-    for (const auto& file : fs::directory_iterator(game.save_path, fs::directory_options::skip_permission_denied)) {
-        if (fs::is_regular_file(file)) { 
-            auto ext = file.path().extension().string();
-            if(std::find(extension_blocklist.begin(), extension_blocklist.end(), ext) != extension_blocklist.end()) continue;
-            save_count++;
-        }
-    }
+    // int save_count = 0;
 
-    if(save_count <= 0) {
-        get_logger().warning("No valid saves found for: {}, skipping backup", game.game_name); //only applies to mass backup
+    auto ext = file.extension().string();
+    if(!fs::is_regular_file(file) || std::find(extension_blocklist.begin(), extension_blocklist.end(), ext) != extension_blocklist.end()) {
+        // get_logger().warning("No valid saves found for: {}, skipping backup", game.game_name);
         return;
     }
+
+    // if(save_count <= 0) {
+    //     get_logger().warning("No valid saves found for: {}, skipping backup", game.game_name); //only applies to mass backup
+    //     return;
+    // }
 
     if(!fs::exists(game_backup_dir)) {
         fs::create_directories(game_backup_dir);
@@ -34,7 +33,7 @@ void Features::backup_game(const Game& game, Config& config) {
     fs::path zip_name = game_backup_dir / construct_backup_name(game);
 
     ZipArchive archive(MODE_CREATE_ARCHIVE, zip_name.u8string());
-    if(!archive.add_to_archive(game)) {
+    if(!archive.add_to_archive(game, file)) {
         Notify::show_notification("Backup Creation", "Failed to create backup! Please refer to the logfile!", 2000);
     } else {
         Notify::show_notification("Backup created!", std::format("A backup has been created: {}!", game.game_name), 2000);

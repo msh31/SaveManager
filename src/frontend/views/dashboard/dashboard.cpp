@@ -135,7 +135,15 @@ void DashboardTab::render_toolbar(RenderContext& ctx) {
                     snapshot = result.games;
                 }
                 for (auto& entry : snapshot) {
-                    Features::backup_game(entry, config);
+                    if(fs::is_directory(entry.save_path)) {
+                        for (const auto& file : fs::recursive_directory_iterator(entry.save_path, fs::directory_options::skip_permission_denied)) {
+                            if (fs::is_regular_file(file)) {
+                                auto ext = file.path().extension().string();
+                                if(std::find(extension_blocklist.begin(), extension_blocklist.end(), ext) != extension_blocklist.end()) continue;
+                                Features::backup_game(entry, file.path(), config);
+                            }
+                        }
+                    }
                 }
             });
         }
@@ -340,7 +348,7 @@ void DashboardTab::render_save_row(RenderContext& ctx, const fs::path& save_file
 
     ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(3.0f, 3.0f));
     if(ImGui::Button("Backup", ImVec2(btn_width, 0))) { 
-        Features::backup_game(game, ctx.config);
+        Features::backup_game(game, save_file, ctx.config);
     }
     ImGui::SetItemTooltip("Create a backup of this save");
     ImGui::PopStyleVar();

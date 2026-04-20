@@ -23,7 +23,7 @@ public:
         }
     }
 
-    bool add_to_archive(const Game& game);
+    bool add_to_archive(const Game& game, const fs::path& file);
     bool extract_archive(const Game& game);
 
     // disable copying (prevent accidental double-cleanup)

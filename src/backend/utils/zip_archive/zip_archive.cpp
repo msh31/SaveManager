@@ -1,41 +1,33 @@
 #include "zip_archive.hpp"
 
-bool ZipArchive::add_to_archive(const Game& game) {
+bool ZipArchive::add_to_archive(const Game& game, const fs::path& file) {
     ZoneScopedN("zip_add_to_archive");
     int file_count = 0;
     std::vector<std::string> failed_files;
 
-    for (const auto& entry : fs::recursive_directory_iterator(game.save_path)) {
-        if (entry.is_regular_file()) {
-            auto ext = entry.path().extension().string();
-            if(std::find(extension_blocklist.begin(), extension_blocklist.end(), ext) != extension_blocklist.end()) continue;
+        if (fs::is_regular_file(file)) {
+            get_logger().info("Adding: {}, to the backup for: {}", file.string(), game.game_name);
 
-            fs::path relative = fs::relative(entry.path(), game.save_path);
-            get_logger().info("Adding: {}, to the backup for: {}", relative.string(), game.game_name);
-
-            zip_source_t* source = zip_source_file(archive, entry.path().string().c_str(), 0, 0);
+            zip_source_t* source = zip_source_file(archive, file.string().c_str(), 0, 0);
             if (!source) {
-                get_logger().error("Failed to create source for: {}", entry.path().string());
-                failed_files.push_back(entry.path().string());
-                continue;
+                get_logger().error("Failed to create source for: {}", file.filename().string().c_str());
+                failed_files.push_back(file.filename().string().c_str());
             }
 
-            if (zip_file_add(archive, relative.string().c_str(), source, ZIP_FL_OVERWRITE) < 0) {
+            if (zip_file_add(archive, file.filename().string().c_str(), source, ZIP_FL_OVERWRITE) < 0) {
                 get_logger().error("Failed to add file: {}", zip_strerror(archive));
-                failed_files.push_back(entry.path().string());
+                failed_files.push_back(file.filename().string());
             }
             file_count++;
         }
-    }
 
     if (!failed_files.empty()) {
-        get_logger().error("Failed to add to backup:");
+        get_logger().error("Failed to backup:");
         for (const auto& f : failed_files) {
             get_logger().error("  - {}", f);
         }
         return false;
     } else {
-        get_logger().success("Added {} files", file_count);
         get_logger().success("backup for: {} has been created!", game.game_name);
         return true;
     }
