@@ -136,7 +136,7 @@ void SettingsTab::render(const Fonts& fonts, Config& config) {
 
     ImGui::SameLine(0.0f, 10.0f);
 
-    ImGui::BeginChild("##paths", ImVec2(half, 275.0f), true,
+    ImGui::BeginChild("##paths", ImVec2(half - 10.0f, 275.0f), true,
                       ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
     ImGui::PushFont(fonts.medium);
     ImGui::Text("Paths");
