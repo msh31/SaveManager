@@ -11,4 +11,6 @@ namespace Network {
     void download_game_image(std::string_view appid);
 
     std::string download_to_string(std::string_view url);
+
+    std::tuple<int,int,int> parse_version(std::string_view v);
 };

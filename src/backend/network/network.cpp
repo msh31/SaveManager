@@ -104,9 +104,32 @@ bool Network::is_update_available() {
 
     std::string latest = data.value("tag_name", std::string(""));
     // get_logger().info("Latest: " + latest + " Current: " + std::string(APP_VERSION));
-    if(APP_VERSION == latest || APP_VERSION >= latest) {
-        return false;
-    }
+
+    auto [maj, min, pat] = parse_version(APP_VERSION);
+    auto [l_maj, l_min, l_pat] = parse_version(latest);
+
+    if(maj > l_maj) return false;
+    if(maj < l_maj) return true;
+    if(min > l_min) return false; 
+    if(min < l_min) return true; 
+    if(pat > l_pat) return false;
+    if(pat < l_pat) return true;
+    if(maj == l_maj && min == l_min && pat == l_pat) return false;
 
     return true;
+}
+
+std::tuple<int,int,int> Network::parse_version(std::string_view v) {
+    std::istringstream ss((std::string(v)));
+    std::string segment;
+    int major = 0, minor = 0, patch = 0;
+    int i = 0;
+    while(std::getline(ss, segment, '.') && i < 3) {
+        if(i == 0) segment.erase(0, 1); // strip 'v'
+        if(i == 0) major = std::stoi(segment);
+        if(i == 1) minor = std::stoi(segment);
+        if(i == 2) patch = std::stoi(segment);
+        i++;
+    }
+    return {major, minor, patch};
 }
