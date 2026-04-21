@@ -250,11 +250,11 @@ void Detection::find_saves(Config& config, DetectionResult& d_result) {
     // Detection::add_game(detectors.custom_detect.find_saves(paths::home_dir()), "custom", result); 
 #endif
 
+    std::unique_lock<std::shared_mutex> lock(d_result.d_mutex);
     if (d_result.games.empty()) {
         get_logger().error("No savegames found!");
     }
 
-    std::unique_lock<std::shared_mutex> lock(d_result.d_mutex);
     std::erase_if(d_result.games, [](const Game& game) {
         return Blacklist::is_blacklisted(game.game_name);
     });
