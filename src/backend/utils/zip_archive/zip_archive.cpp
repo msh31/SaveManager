@@ -8,8 +8,10 @@ bool ZipArchive::add_to_archive(const Game& game, const fs::path& file) {
     if (fs::is_regular_file(file)) {
         get_logger().info("Adding: {}, to the backup for: {}", file.string(), game.game_name);
 
+        if(archive == nullptr) return false;
+
         zip_source_t* source = zip_source_file(archive, file.string().c_str(), 0, 0);
-        if (!source) {
+        if (source == nullptr) {
             get_logger().error("Failed to create source for: {}", file.filename().string().c_str());
             failed_files.push_back(file.filename().string().c_str());
             return false;
@@ -37,6 +39,8 @@ bool ZipArchive::add_to_archive(const Game& game, const fs::path& file) {
 
 bool ZipArchive::extract_archive(const Game& game) {
     ZoneScopedN("zip_extract_archive");
+    if(archive == nullptr) return false;
+
     int file_count = zip_get_num_entries(archive, 0);
     std::vector<std::string> failed_files;
 
@@ -51,7 +55,7 @@ bool ZipArchive::extract_archive(const Game& game) {
 
             zip_file* file = zip_fopen_index(archive, i, 0);
 
-            if (!file) {
+            if (file == nullptr) {
                 get_logger().warning("Failed to open file in archive: {}", fileInfo.name);
                 failed_files.push_back(fileInfo.name);
                 continue;
