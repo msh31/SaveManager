@@ -22,6 +22,8 @@
 #include "backend/utils/blacklist/blacklist.hpp"
 // #include "backend/utils/custom_games/custom_games.hpp"
 
+#include <curl/curl.h>
+
 App::App(fs::path config_dir) : config(config_dir) {}
 
 void App::init() {
@@ -43,6 +45,7 @@ void App::init() {
         // CustomGamesFile::init();
         config.save();
     });
+    curl_global_init(CURL_GLOBAL_DEFAULT);
 }
 
 void App::render_ui() {
