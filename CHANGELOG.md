@@ -14,7 +14,15 @@
 
 ### Fixed 
 - Rare issue of Rockstar Games saves not detecting on Windows 
-- Anno saves not being detected at all on Linux and not able to managed properly on Windows
+- Anno save detection on Linux
+- Anno 1800/117 save path now correctly points to profile data
+- Data races in detection and transfer views
+- libcurl write callback corruption bug
+- zip archive null handle UB and resource leaks
+- Version comparison was lexicographic, now numeric
+- Various SFTP handle leaks
+- JSON parsing now handled gracefully
+- Settings path section layout
 
 
 ### Removed
