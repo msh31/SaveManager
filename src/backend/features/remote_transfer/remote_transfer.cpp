@@ -123,8 +123,9 @@ void RemoteTransfer::upload_file(const fs::path& backup_path, const std::string&
 
     std::ifstream file(backup_path, std::ios::binary);
     if(!file.is_open()) {
+        libssh2_sftp_close_handle(sftp_handle);
+        sftp_handle = nullptr;
         get_logger().error("Could not open backup path with SFTP");
-
         return;
     }
 
@@ -150,6 +151,8 @@ void RemoteTransfer::upload_file(const fs::path& backup_path, const std::string&
     } while(file.gcount() > 0);
 
     get_logger().success("File has been uploaded!");
+    libssh2_sftp_close_handle(sftp_handle);
+    sftp_handle = nullptr;
 }
 
 std::vector<RemoteEntry> RemoteTransfer::list_directory(const std::string& path) {
@@ -186,6 +189,7 @@ void RemoteTransfer::download_file(const fs::path& backup_path, const Config& co
     if(!file.is_open()) {
         get_logger().error("Could not open backup path with SFTP");
         libssh2_sftp_close(sftp_handle);
+        sftp_handle = nullptr;
         return;
     }
 
@@ -196,4 +200,5 @@ void RemoteTransfer::download_file(const fs::path& backup_path, const Config& co
     }
     get_logger().success("File has been downloaded!");
     libssh2_sftp_close(sftp_handle);
+    sftp_handle = nullptr;
 }
