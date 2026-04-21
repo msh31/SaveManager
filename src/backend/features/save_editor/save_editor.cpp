@@ -206,7 +206,7 @@ void SanAndreas::serialize() {
     std::memcpy(data.data() + bt_offset + 0x04 + 0x20, &armor, 4);
 
     auto bf_offset = block_offsets[5];
-    if (bf_offset + 0x05 > data.size()) return;
+    if (bf_offset + 0x06 > data.size()) return;
     data[bf_offset + 0x04] = lose_stuff_after_wasted;
     data[bf_offset + 0x05] = lose_stuff_after_busted;
 
