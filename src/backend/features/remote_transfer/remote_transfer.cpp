@@ -160,8 +160,10 @@ std::vector<RemoteEntry> RemoteTransfer::list_directory(const std::string& path)
     std::vector<RemoteEntry> entry;
     LIBSSH2_SFTP_ATTRIBUTES attrs;
 
-    while(libssh2_sftp_readdir(handle, buffer, sizeof(buffer), &attrs) > 0) {
-        entry.push_back({std::string(buffer), LIBSSH2_SFTP_S_ISDIR(attrs.permissions) != 0});
+    ssize_t len;
+    while ((len = libssh2_sftp_readdir(handle, buffer, sizeof(buffer), &attrs)) > 0) {
+        entry.push_back({std::string(buffer, static_cast<size_t>(len)),
+            LIBSSH2_SFTP_S_ISDIR(attrs.permissions) != 0});
     }
 
     libssh2_sftp_closedir(handle);
