@@ -123,6 +123,7 @@ void RemoteTransfer::upload_file(const fs::path& backup_path, const std::string&
     std::ifstream file(backup_path, std::ios::binary);
     if(!file.is_open()) {
         get_logger().error("Could not open backup path with SFTP");
+
         return;
     }
 
@@ -188,7 +189,7 @@ void RemoteTransfer::download_file(const fs::path& backup_path, const Config& co
 
     ssize_t rc;
     while ((rc = libssh2_sftp_read(sftp_handle, mem, sizeof(mem))) > 0) {
-        file.write(mem, rc);
+        if(!file.write(mem, rc)) break;
         bytes_transferred += rc;
     }
     get_logger().success("File has been downloaded!");
