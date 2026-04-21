@@ -18,6 +18,7 @@ bool ZipArchive::add_to_archive(const Game& game, const fs::path& file) {
         if (zip_file_add(archive, file.filename().string().c_str(), source, ZIP_FL_OVERWRITE) < 0) {
             get_logger().error("Failed to add file: {}", zip_strerror(archive));
             failed_files.push_back(file.filename().string());
+            zip_source_free(source);
         }
         file_count++;
     }
