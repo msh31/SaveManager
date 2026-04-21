@@ -1,7 +1,7 @@
 #pragma once
 #include <zip.h>
-#include "backend/detection/detection.hpp"
 #include "backend/logger/logger.hpp"
+#include <types.hpp>
 
 #define MODE_CREATE_ARCHIVE (ZIP_CREATE | ZIP_TRUNCATE)
 #define MODE_EXTRACT_ARCHIVE 0
@@ -18,7 +18,7 @@ public:
     }
 
     ~ZipArchive() {
-        if(archive) {
+        if(archive != nullptr) {
             zip_close(archive);
         }
     }
@@ -31,5 +31,5 @@ public:
     ZipArchive& operator=(const ZipArchive&) = delete;
 
 private:
-    zip_t* archive;
+    zip_t* archive = nullptr;
 };
