@@ -91,6 +91,7 @@ bool RemoteTransfer::disconnect() {
     if(sock != LIBSSH2_INVALID_SOCKET) {
         shutdown(sock, 2);
         LIBSSH2_SOCKET_CLOSE(sock);
+        sock = LIBSSH2_INVALID_SOCKET;
 #ifdef _WIN32
         WSACleanup();
 #endif
