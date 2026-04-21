@@ -106,38 +106,40 @@ void Config::load() {
         return;
     }
 
-    data = json::parse(file);
-    settings.backup_path = data.value("backup_path", std::string(""));
+    try {
+        data = json::parse(file);
+        settings.backup_path = data.value("backup_path", std::string(""));
 #ifndef _WIN32
-    settings.steam_path = data.value("steam_path", std::string(""));
+        settings.steam_path = data.value("steam_path", std::string(""));
 #endif
 #ifdef __linux__
-    settings.lutris_path = data.value("lutris_path", std::string(""));
+        settings.lutris_path = data.value("lutris_path", std::string(""));
 #endif
-    settings.heroic_path = data.value("heroic_path", std::string(""));
+        settings.heroic_path = data.value("heroic_path", std::string(""));
 
-    if (settings.backup_path.empty()) {
-        settings.backup_path = paths::backup_dir();
-    }
+        if (settings.backup_path.empty()) {
+            settings.backup_path = paths::backup_dir();
+        }
 #ifdef __linux__
-    if (settings.lutris_path.empty()) {
-        settings.lutris_path = paths::lutris_dir().string();
-    }
+        if (settings.lutris_path.empty()) {
+            settings.lutris_path = paths::lutris_dir().string();
+        }
 #endif
 #ifndef _WIN32
-    if (settings.heroic_path.empty()) {
-        settings.heroic_path = paths::heroic_dir().string();
-    }
+        if (settings.heroic_path.empty()) {
+            settings.heroic_path = paths::heroic_dir().string();
+        }
 #endif // !_WIN32
-    settings.ubi_enabled = data.value("ubi_enabled", true);
-    settings.rsg_enabled = data.value("rsg_enabled", true);
-    settings.unreal_enabled = data.value("unreal_enabled", true);
-    settings.dark_mode = data.value("dark_mode", true);
+        settings.ubi_enabled = data.value("ubi_enabled", true);
+        settings.rsg_enabled = data.value("rsg_enabled", true);
+        settings.unreal_enabled = data.value("unreal_enabled", true);
+        settings.dark_mode = data.value("dark_mode", true);
 
-    sftp.dest_addr = data.value("dest_addr", std::string(""));
-    sftp.username = data.value("username", std::string(""));
-    sftp.password = data.value("password", std::string(""));
-    sftp.remote_path = data.value("remote_path", std::string(""));
-    sftp.pubkey = data.value("pubkey", fs::path(""));
-    sftp.privkey = data.value("privkey", fs::path(""));
+        sftp.dest_addr = data.value("dest_addr", std::string(""));
+        sftp.username = data.value("username", std::string(""));
+        sftp.password = data.value("password", std::string(""));
+        sftp.remote_path = data.value("remote_path", std::string(""));
+        sftp.pubkey = data.value("pubkey", fs::path(""));
+        sftp.privkey = data.value("privkey", fs::path(""));
+    } catch(json::exception& ex) { get_logger().error("config parsing error: {}", ex.what()); }
 }
