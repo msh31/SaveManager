@@ -10,11 +10,15 @@ void Blacklist::init() {
     std::ifstream file(paths::blacklist().string().c_str());
 
     if (file.is_open()) {
-        data = json::parse(file);
-        get_logger().info("Loaded blacklist JSON");
+        try {
+            data = json::parse(file);
+            get_logger().info("Loaded blacklist JSON");
 
-        for (const auto& entry : data) {
-            blacklisted_games.insert(entry.get<std::string>());
+            for (const auto& entry : data) {
+                blacklisted_games.insert(entry.get<std::string>());
+            }
+        } catch(json::exception& ex) {
+            get_logger().error("blacklist parsing error: {}", ex.what());
         }
     } else {
         get_logger().error("Failed to open blacklist to load it!");

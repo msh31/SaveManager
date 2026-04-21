@@ -91,16 +91,18 @@ std::unordered_map<std::string, std::string> Features::load_labels(const Game& g
     std::string file_name = (config.settings.backup_path / game.game_name / "labels.json").string();
     std::ifstream file(file_name.c_str());
 
-    if(!fs::exists(file_name)) {
-        return {};
-    }
+    if(!fs::exists(file_name)) return {};
 
     if (file.is_open()) {
-        data = json::parse(file);
-
-        for (const auto& entry : data.items()) {
-            backup_labels[entry.key()] = entry.value().get<std::string>();
+        try {
+            data = json::parse(file);
+            for (const auto& entry : data.items()) {
+                backup_labels[entry.key()] = entry.value().get<std::string>();
+            }
+        } catch(json::exception& ex) {
+            get_logger().error("label parsing error: {}", ex.what());
         }
+
         return backup_labels;
     } else {
         get_logger().error("Failed to open labels to load it!");
