@@ -1,6 +1,7 @@
 #pragma once
 #include "backend/detection/detection.hpp"
 #include "backend/features/remote_transfer/remote_transfer.hpp"
+#include "backend/utils/utils.hpp"
 
 class Config;
 

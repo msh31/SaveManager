@@ -7,7 +7,6 @@
 #include "imgui_impl_opengl3.h"
 
 #include "app.hpp"
-#include "globals.hpp"
 #include "backend/logger/logger.hpp"
 
 #include "frontend/ui/themes/themes.hpp"

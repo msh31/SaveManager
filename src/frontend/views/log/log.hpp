@@ -1,5 +1,6 @@
 #pragma once
 
+#include "backend/utils/utils.hpp"
 struct LogTab {
     void render(const Fonts& fonts);
 

@@ -1,6 +1,8 @@
 #pragma once
 #include <cstdint>
 
+namespace fs = std::filesystem;
+
 struct SanAndreas {
     bool open(fs::path path);
     bool save(fs::path path);

@@ -1,5 +1,6 @@
 #pragma once
-#include "backend/detection/detection.hpp"
+#include <types.hpp>
+namespace fs = std::filesystem;
 
 class RockstarDetector {
 public:

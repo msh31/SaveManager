@@ -1,6 +1,7 @@
 #pragma once
+#include <types.hpp>
+namespace fs = std::filesystem;
 
-#include "backend/detection/detection.hpp"
 class UnrealDetector {
 public:
     enum class ScanMode { Recursive, Native };

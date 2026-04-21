@@ -1,4 +1,6 @@
 #pragma once
+#include <types.hpp>
+
 class Config;
 
 namespace Detection {

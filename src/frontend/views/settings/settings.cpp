@@ -1,9 +1,9 @@
 #include "settings.hpp"
+#include "backend/network/network.hpp"
 #include "backend/utils/blacklist/blacklist.hpp"
 // #include "backend/utils/custom_games/custom_games.hpp"
 #include "backend/utils/paths.hpp"
 #include "frontend/ui/notifications/notification.hpp"
-#include "backend/network/network.hpp"
 #include "backend/config/config.hpp"
 #include "backend/logger/logger.hpp"
 

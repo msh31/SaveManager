@@ -2,6 +2,8 @@
 #include <libssh2.h>
 #include <libssh2_sftp.h>
 
+#include <types.hpp>
+
 namespace fs = std::filesystem;
 
 class Config;

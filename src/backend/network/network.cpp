@@ -1,7 +1,8 @@
 #include "network.hpp"
-#include "globals.hpp"
 #include "backend/utils/paths.hpp"
 #include "backend/logger/logger.hpp"
+#include <constants.hpp>
+
 #include <nlohmann/json.hpp>
 using json = nlohmann::json;
 

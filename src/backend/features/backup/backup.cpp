@@ -1,4 +1,5 @@
 #include "backup.hpp"
+#include "constants.hpp"
 #include "frontend/ui/notifications/notification.hpp"
 #include "backend/logger/logger.hpp"
 #include "backend/config/config.hpp"

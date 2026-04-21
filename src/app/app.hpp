@@ -1,4 +1,6 @@
 #pragma once
+#include <constants.hpp>
+
 #include "backend/config/config.hpp"
 #include "frontend/views/editor/editor_view.hpp"
 #include "frontend/views/settings/settings.hpp"

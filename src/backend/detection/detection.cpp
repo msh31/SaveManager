@@ -7,8 +7,8 @@
 #include "backend/detection/rsg/rsg.hpp"
 #include "backend/detection/ubi/ubi.hpp"
 #include "backend/detection/unreal/unreal.hpp"
+#include "backend/utils/utils.hpp"
 // #include "backend/detection/custom/custom.hpp"
-#include "globals.hpp"
 
 struct Detectors {
    RockstarDetector rockstar_detect; 

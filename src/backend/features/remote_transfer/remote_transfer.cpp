@@ -1,6 +1,5 @@
 #include "remote_transfer.hpp"
 #include "backend/config/config.hpp"
-#include "globals.hpp"
 #include "backend/logger/logger.hpp"
 
 //https://libssh2.org/examples/sftp_write.html

@@ -1,4 +1,5 @@
 #include "dashboard.hpp"
+#include "constants.hpp"
 #include "frontend/ui/notifications/notification.hpp"
 #include "backend/features/backup/backup.hpp"
 #ifdef __APPLE__

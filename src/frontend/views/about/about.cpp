@@ -1,4 +1,5 @@
 #include "about.hpp"
+#include <constants.hpp>
 
 void AboutTab::render(const Fonts& fonts) {
     ImGui::NewLine();

@@ -2,6 +2,7 @@
 #include "backend/logger/logger.hpp"
 #include "frontend/ui/notifications/notification.hpp"
 
+//kinda needs no params tbh
 void LogTab::render(const Fonts& fonts) {
     if (ImGui::Button("Clear")) {
         log_buffer.clear();

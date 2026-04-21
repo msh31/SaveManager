@@ -1,5 +1,6 @@
 #pragma once
 #include "backend/detection/detection.hpp"
+namespace fs = std::filesystem;
 
 class Config;
 

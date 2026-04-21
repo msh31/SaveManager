@@ -1,5 +1,8 @@
 #pragma once
 #include "backend/detection/detection.hpp"
+#include <backend/utils/utils.hpp>
+
+namespace fs = std::filesystem;
 
 struct DashboardTab {
     std::vector<std::vector<int>> grouped_games;
