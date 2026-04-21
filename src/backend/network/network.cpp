@@ -56,6 +56,7 @@ bool Network::download_file(std::string_view url, const std::string& output_path
     }
     
     std::string url_str{url};
+    curl_easy_setopt(curl, CURLOPT_USERAGENT, "SaveManager");
     curl_easy_setopt(curl, CURLOPT_URL, url_str.c_str());
     curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, write_callback);
     curl_easy_setopt(curl, CURLOPT_WRITEDATA, fp);
