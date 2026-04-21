@@ -18,19 +18,19 @@
 
 <p><br/></p>
 
-<p align="center">
-  <a href="https://codeberg.org/marco007/SaveManager/commits/branch/main">
-    <img src="https://img.shields.io/github/last-commit/msh31/SaveManager?style=for-the-badge&labelColor=1A1A18&color=C95D38&logo=git&logoColor=FFFFFF&label=commit" alt="Last commit" />
-  </a>
-  <a href="https://codeberg.org/marco007/SaveManager">
-    <img src="https://img.shields.io/badge/Codeberg-2185D0?style=for-the-badge&logo=codeberg&logoColor=white" alt="Codeberg" />
-  </a>
-    <a href="https://github.com/msh31/SaveManager">
-    <img src="https://img.shields.io/badge/GitHub-181717?style=for-the-badge&logo=github&logoColor=white" alt="Github" />
-  </a>
-</p>
-
-<p><br /></p>
+<!-- <p align="center"> -->
+<!--   <a href="https://codeberg.org/marco007/SaveManager/commits/branch/main"> -->
+<!--     <img src="https://img.shields.io/github/last-commit/msh31/SaveManager?style=for-the-badge&labelColor=1A1A18&color=C95D38&logo=git&logoColor=FFFFFF&label=commit" alt="Last commit" /> -->
+<!--   </a> -->
+<!--   <a href="https://codeberg.org/marco007/SaveManager"> -->
+<!--     <img src="https://img.shields.io/badge/Codeberg-2185D0?style=for-the-badge&logo=codeberg&logoColor=white" alt="Codeberg" /> -->
+<!--   </a> -->
+<!--     <a href="https://github.com/msh31/SaveManager"> -->
+<!--     <img src="https://img.shields.io/badge/GitHub-181717?style=for-the-badge&logo=github&logoColor=white" alt="Github" /> -->
+<!--   </a> -->
+<!-- </p> -->
+<!---->
+<!-- <p><br /></p> -->
 
 <p align="center">
       <img src="https://img.shields.io/badge/Windows-0078D6?style=for-the-badge&logo=windows&logoColor=white" alt="Windows"/>
