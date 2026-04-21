@@ -11,6 +11,11 @@ bool RemoteTransfer::connect(const std::string& dest_addr, const Config& config,
     WSAStartup(MAKEWORD(2, 2), &wsadata);
 #endif
     
+    auto fail = [this]() -> bool {
+        disconnect();
+        return false;
+    };
+
     int result = libssh2_init(0);
     if(result) {
         get_logger().error("libssh2 initialization failed: {}", result);
@@ -28,25 +33,25 @@ bool RemoteTransfer::connect(const std::string& dest_addr, const Config& config,
     int rc = inet_pton(AF_INET, dest_addr.c_str(), &sin.sin_addr);
     if(rc <= 0) {
         get_logger().error("Invalid address: {}", dest_addr);
-        return false;
+        return fail();
     }
 
     if(::connect(sock, SOCKADDR_CAST(&sin), sizeof(struct sockaddr_in))) {
         get_logger().error("failed to connect to socket: {}", strerror(errno));
-        return false;
+        return fail();
     }
 
     session = libssh2_session_init();
     if(!session) {
         get_logger().error("Could not initialize SSH session.");
-        return false;
+        return fail();
     }
 
     libssh2_session_set_blocking(session, 1);
     result = libssh2_session_handshake(session, sock);
     if(result) {
         get_logger().error("Failure establishing SSH session: {}", result);
-        return false;
+        return fail();
     }
 
     fingerprint = libssh2_hostkey_hash(session, LIBSSH2_HOSTKEY_HASH_SHA1);
@@ -54,19 +59,19 @@ bool RemoteTransfer::connect(const std::string& dest_addr, const Config& config,
     if(auth_pw) {
         if(libssh2_userauth_password(session, config.sftp.username.c_str(), config.sftp.password.c_str())) {
             get_logger().error("Authentication by password failed.");
-            return false;
+            return fail();
         }
     } else {
         if(libssh2_userauth_publickey_fromfile(session, config.sftp.username.c_str(), config.sftp.pubkey.string().c_str(), config.sftp.privkey.string().c_str(), key_passphrase.empty() ? nullptr : key_passphrase.c_str())) {
             get_logger().error("Authentication by public key failed.");
-            return false;
+            return fail();
         }
     }
 
     sftp_session = libssh2_sftp_init(session);
     if(!sftp_session) {
         get_logger().error("Unable to init SFTP session");
-        return false;
+        return fail();
     }
 
     return true;
@@ -75,13 +80,16 @@ bool RemoteTransfer::connect(const std::string& dest_addr, const Config& config,
 bool RemoteTransfer::disconnect() {
     if(sftp_handle) {
         libssh2_sftp_close(sftp_handle);
+        sftp_handle = nullptr;
     }
     if(sftp_session) {
         libssh2_sftp_shutdown(sftp_session);
+        sftp_session = nullptr;
     }
     if(session) {
         libssh2_session_disconnect(session, "Normal Shutdown");
         libssh2_session_free(session);
+        session = nullptr;
     }
 
     session = nullptr;
