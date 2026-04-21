@@ -11,6 +11,7 @@ std::uint32_t SanAndreas::calculate_checksum() {
 
 bool SanAndreas::validate_checksum() {
     uint32_t saved;
+    if(data.size() < 4) return false;
     std::memcpy(&saved, data.data() + data.size() - 4, 4);
     return saved == calculate_checksum();
 }
