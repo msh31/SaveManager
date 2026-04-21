@@ -5,21 +5,22 @@ bool ZipArchive::add_to_archive(const Game& game, const fs::path& file) {
     int file_count = 0;
     std::vector<std::string> failed_files;
 
-        if (fs::is_regular_file(file)) {
-            get_logger().info("Adding: {}, to the backup for: {}", file.string(), game.game_name);
+    if (fs::is_regular_file(file)) {
+        get_logger().info("Adding: {}, to the backup for: {}", file.string(), game.game_name);
 
-            zip_source_t* source = zip_source_file(archive, file.string().c_str(), 0, 0);
-            if (!source) {
-                get_logger().error("Failed to create source for: {}", file.filename().string().c_str());
-                failed_files.push_back(file.filename().string().c_str());
-            }
-
-            if (zip_file_add(archive, file.filename().string().c_str(), source, ZIP_FL_OVERWRITE) < 0) {
-                get_logger().error("Failed to add file: {}", zip_strerror(archive));
-                failed_files.push_back(file.filename().string());
-            }
-            file_count++;
+        zip_source_t* source = zip_source_file(archive, file.string().c_str(), 0, 0);
+        if (!source) {
+            get_logger().error("Failed to create source for: {}", file.filename().string().c_str());
+            failed_files.push_back(file.filename().string().c_str());
+            return false;
         }
+
+        if (zip_file_add(archive, file.filename().string().c_str(), source, ZIP_FL_OVERWRITE) < 0) {
+            get_logger().error("Failed to add file: {}", zip_strerror(archive));
+            failed_files.push_back(file.filename().string());
+        }
+        file_count++;
+    }
 
     if (!failed_files.empty()) {
         get_logger().error("Failed to backup:");
