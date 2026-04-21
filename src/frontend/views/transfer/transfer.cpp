@@ -3,7 +3,7 @@
 #include "backend/features/backup/backup.hpp"
 #include "backend/config/config.hpp"
 
-void TransferTab::render(const Fonts& fonts, const Detection::DetectionResult& result, Config& config, TabState& state) {
+void TransferTab::render(const Fonts& fonts, Detection::DetectionResult& result, Config& config, TabState& state) {
     ZoneScopedN("transfer_render");
     spinner_frame++;
     if (!initialized) {

@@ -6,7 +6,7 @@
 class Config;
 
 struct TransferTab {
-    void render(const Fonts& fonts, const Detection::DetectionResult& result, Config& config, TabState& state);
+    void render(const Fonts& fonts, Detection::DetectionResult& result, Config& config, TabState& state);
 
     bool initialized = false;
     bool connected = false;
