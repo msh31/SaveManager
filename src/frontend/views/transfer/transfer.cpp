@@ -210,6 +210,7 @@ void TransferTab::render(const Fonts& fonts, const Detection::DetectionResult& r
 
     float content_height = ImGui::GetContentRegionAvail().y - 10.0f;
 
+    std::shared_lock lock(result.d_mutex);
     auto groups = result.get_grouped();
     std::vector<std::string> game_names;
     for (const auto& group : groups) {
