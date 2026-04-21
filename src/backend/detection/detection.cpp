@@ -219,20 +219,20 @@ void Detection::find_saves(Config& config, DetectionResult& d_result) {
 
 #ifdef _WIN32
     if(config.settings.ubi_enabled) {
-        Detection::add_game(detectors.ubisoft_detect.find_saves("C:\\Program Files (x86)\\Ubisoft\\Ubisoft Game Launcher\\savegames"), "ubi", result);
-        Detection::add_game(detectors.ubisoft_detect.find_anno_saves(paths::documents_dir()), "ubi", result);
-        Detection::add_game(detectors.ubisoft_detect.find_anno_saves(paths::home_dir() / "AppData" / "Roaming"), "ubi", result);
+        Detection::add_game(detectors.ubisoft_detect.find_saves("C:\\Program Files (x86)\\Ubisoft\\Ubisoft Game Launcher\\savegames"), "ubi", d_result);
+        Detection::add_game(detectors.ubisoft_detect.find_anno_saves(paths::documents_dir()), "ubi", d_result);
+        Detection::add_game(detectors.ubisoft_detect.find_anno_saves(paths::home_dir() / "AppData" / "Roaming"), "ubi", d_result);
     }
 
     if(config.settings.rsg_enabled) {
-        Detection::add_game(detectors.rockstar_detect.find_saves(paths::documents_dir() / "Rockstar Games"), "rsg", result);
-        Detection::add_game(detectors.rockstar_detect.find_legacy_saves(paths::documents_dir()), "rsg", result);
-        Detection::add_game(detectors.rockstar_detect.find_legacy_saves(paths::home_dir() / "AppData" / "Local" / "Rockstar Games"), "rsg", result);
+        Detection::add_game(detectors.rockstar_detect.find_saves(paths::documents_dir() / "Rockstar Games"), "rsg", d_result);
+        Detection::add_game(detectors.rockstar_detect.find_legacy_saves(paths::documents_dir()), "rsg", d_result);
+        Detection::add_game(detectors.rockstar_detect.find_legacy_saves(paths::home_dir() / "AppData" / "Local" / "Rockstar Games"), "rsg", d_result);
     }
     if (config.settings.unreal_enabled) {
-        Detection::add_game(detectors.unreal_detect.find_saves(paths::home_dir()), "unreal", result);
+        Detection::add_game(detectors.unreal_detect.find_saves(paths::home_dir()), "unreal", d_result);
     }
-    // Detection::add_game(detectors.custom_detect.find_saves(paths::home_dir()), "custom", result);
+    // Detection::add_game(detectors.custom_detect.find_saves(paths::home_dir()), "custom", d_result);
 #endif
 
 #ifdef __APPLE__
