@@ -74,7 +74,7 @@ bool ZipArchive::extract_archive(const Game& game) {
             }
 
             while ((bytes_read = zip_fread(file, buffer, sizeof(buffer))) > 0) {
-                save_file.write(buffer, bytes_read);
+                if(!save_file.write(buffer, bytes_read)) return false;
             }
             if (bytes_read == -1) {
                 get_logger().error("Failed to read file in archive: {}", fileInfo.name);
