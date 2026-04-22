@@ -84,9 +84,10 @@ jobs:
           wget -q "https://github.com/linuxdeploy/linuxdeploy-plugin-appimage/releases/download/continuous/linuxdeploy-plugin-appimage-x86_64.AppImage"
           chmod +x linuxdeploy-x86_64.AppImage linuxdeploy-plugin-appimage-x86_64.AppImage
 
+          BINARY=$(find build -name "savemanager" -type f | head -1)
           ARCH=x86_64 ./linuxdeploy-x86_64.AppImage \
             --appdir AppDir \
-            --executable build/Release/savemanager \
+            --executable "$BINARY" \
             --desktop-file savemanager.desktop \
             --icon-file savemanager.png \
             --output appimage
@@ -126,10 +127,14 @@ jobs:
           cmake --preset conan-release
           cmake --build --preset conan-release
 
+      - name: Locate exe
+        shell: bash
+        run: cp $(find build -name "savemanager.exe" | head -1) savemanager.exe
+
       - uses: actions/upload-artifact@v4
         with:
           name: savemanager-windows
-          path: build/Release/savemanager.exe
+          path: savemanager.exe
 
   build-macos-arm64:
     runs-on: macos-26
@@ -163,7 +168,9 @@ jobs:
           cmake --build --preset conan-release -j$(nproc)
 
       - name: Package
-        run: zip SaveManager-macOS-arm64.zip build/Release/savemanager
+        run: |
+          BINARY=$(find build -name "savemanager" -type f | head -1)
+          zip SaveManager-macOS-arm64.zip "$BINARY"
 
       - uses: actions/upload-artifact@v4
         with:
