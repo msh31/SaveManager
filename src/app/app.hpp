@@ -1,16 +1,20 @@
 #pragma once
-#include "core/config/config.hpp"
-#include "core/ui/tabs/settings/settings.hpp"
-#include "core/ui/tabs/log/log.hpp"
-#include "core/ui/tabs/transfer/transfer.hpp"
-#include "core/ui/tabs/about/about.hpp"
-#include "core/ui/tabs/general/general.hpp"
-#include "core/ui/tabs/about/about.hpp"
+#include <constants.hpp>
 
-#include "core/helpers/textures/textures.hpp"
+#include "backend/config/config.hpp"
+#include "frontend/views/editor/editor_view.hpp"
+#include "frontend/views/settings/settings.hpp"
+#include "frontend/views/log/log.hpp"
+#include "frontend/views/transfer/transfer.hpp"
+#include "frontend/views/about/about.hpp"
+#include "frontend/views/dashboard/dashboard.hpp"
+#include "frontend/views/about/about.hpp"
+
+// #include "frontend/ui/textures/textures.hpp"
 
 class App {
 public:
+    App(fs::path config_dir = paths::config_dir());
     ~App();
 
     void init();
@@ -18,7 +22,9 @@ public:
 
     GLFWwindow* window = nullptr;
     std::future<void> are_we_ready;
-    bool refresh_requested;
+    // bool refresh_requested;
+
+    TabState state;
 private:
     bool setup_opengl();
     bool setup_imgui();
@@ -32,15 +38,16 @@ private:
     Fonts fonts;
 
     Config config;
-    GeneralTab general_tab;
+    DashboardTab dahsboard_tab;
+    EditorTab editor_tab;
     TransferTab transfer_tab;
     LogTab log_tab;
     AboutTab about_tab;
     SettingsTab settings_tab;
-    TabState state;
 
-    std::unordered_map<std::string, GLuint> game_textures;
-    std::vector<std::future<Textures::ImageData>> texture_futures;
+    // std::unordered_map<std::string, GLuint> game_textures;
+    // std::vector<std::future<Textures::ImageData>> texture_futures;
 
     Detection::DetectionResult d_result;
+    std::future<void> detection_future;
 };

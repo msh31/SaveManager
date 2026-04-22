@@ -1,5 +1,6 @@
 savemanager
 vcpkg_installed/
+test_data/
 
 # cmkr
 build*/

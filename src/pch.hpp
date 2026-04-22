@@ -17,11 +17,15 @@
 #include <regex>
 #include <optional>
 #include <unordered_set>
-
-#include "core/globals.hpp"
+#include <expected>
+#include <ranges>
+#include <cstring>
+#include <deque>
+#include <shared_mutex>
 
 #include <imgui.h>
-#include <imgui/misc/cpp/imgui_stdlib.h>
+#include <imgui_internal.h>
+#include <imgui_stdlib.h>
 #endif
 
 #ifdef __linux__
@@ -29,11 +33,23 @@
 #endif
 
 #ifdef _WIN32
+#define NOMINMAX
 #include <winsock2.h>
-#include <ws2tcpip.h>
 #include <windows.h>
+#include <ws2tcpip.h>
 #include <shellapi.h>
+#include <wchar.h>
+#include <KnownFolders.h>
+#include <shlobj.h>
 #endif
 
-#include <glad/glad.h>
+#include <KHR/khrplatform.h>
+#include <glad/gl.h>
 #include <GLFW/glfw3.h>
+
+#ifdef __linux__
+#include <tracy/Tracy.hpp>
+#else
+#define ZoneScopedN(x)
+#define FrameMark
+#endif

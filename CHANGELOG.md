@@ -1,5 +1,54 @@
 # Changelog
 
+## [1.5.0] - 2026-04-23
+## The big one - Save editor (albeit a basic one)
+<img src="assets/editor150.png" alt="Editor Preview" width="800"/>
+
+### Added
+- Basic Save Editor (exclusive to GTA San Andreas)
+- MacOS support (Apple Silicon)
+- Sort (A-Z / Date) and filter by platform in dashboard toolbar
+- Search bar in dashboard
+- Config directory is now editable properly through a cli flag ``--config-dir "path"``
+
+
+### Fixed 
+- Rare issue of Rockstar Games saves not detecting on Windows 
+- Anno save detection on Linux
+- Anno 1800/117 save path now correctly points to profile data
+- Data races in detection and transfer views
+- libcurl write callback corruption bug
+- zip archive null handle UB and resource leaks
+- Version comparison was lexicographic, now numeric
+- Various SFTP handle leaks
+- JSON parsing now handled gracefully
+- Settings path section layout
+
+
+### Removed
+- Custom game support through the json (Temporarily, it needs improvement)
+
+
+### Changes
+- Redesigned dashboard UI (was general tab)
+- Logger moved to in-memory deque, no more disk polling from UI
+- Improved detection error handling
+- Async detection on startup, cards pop in progressively not blocking the UI
+
+> [!NOTE]
+> On Windows the config directory has changed from ``AppData\Roaming\SaveManager`` to ``C:\Users\username\savemanager``
+
+
+### Development related
+- Use Conan for external dependencies (besides stuff that isn't on there)
+- Move codebase to C++23 progressively
+- General code improvements for better maintainability
+
+### Known Issues / Limitations
+- Original Anno editions not supported due to install path limitations (You can add them manually though!)
+- Grouping issues with unknown / partially supported games (Similar to #2 but has since improved)
+
+
 ## [1.4.1] - 2026-04-04
 ### Fixed
 - Unreal cover art / showing up as N/A on Linux

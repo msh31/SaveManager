@@ -7,20 +7,24 @@
 #include "imgui_impl_opengl3.h"
 
 #include "app.hpp"
-#include "core/globals.hpp"
-#include "core/logger/logger.hpp"
+#include "backend/logger/logger.hpp"
 
-#include "core/ui/themes/themes.hpp"
-#include "core/ui/notifications/notification.hpp"
+#include "frontend/ui/themes/themes.hpp"
+#include "frontend/ui/notifications/notification.hpp"
 
-#include "core/ui/fonts/jbm_reg.h"
-#include "core/ui/fonts/jbm_med.h"
-#include "core/ui/fonts/jbm_bold.h"
+#include "frontend/ui/fonts/jbm_reg.h"
+#include "frontend/ui/fonts/jbm_med.h"
+#include "frontend/ui/fonts/jbm_bold.h"
+#include "frontend/ui/fonts/font_awesome.hpp"
 
-#include "core/detection/detection.hpp"
-#include "core/helpers/translations/translations.hpp"
-#include "core/helpers/blacklist/blacklist.hpp"
-#include "core/helpers/custom_games/custom_games.hpp"
+#include "backend/detection/detection.hpp"
+#include "backend/utils/translations/translations.hpp"
+#include "backend/utils/blacklist/blacklist.hpp"
+// #include "backend/utils/custom_games/custom_games.hpp"
+
+#include <curl/curl.h>
+
+App::App(fs::path config_dir) : config(config_dir) {}
 
 void App::init() {
     if(!setup_opengl()) {
@@ -38,45 +42,36 @@ void App::init() {
 
         translations::init();
         Blacklist::init();
-        CustomGamesFile::init();
-
-        d_result = Detection::find_saves(config);
-        if(d_result.games.empty()) {
-            get_logger().warning("No savegames found!");
-        }
+        // CustomGamesFile::init();
         config.save();
     });
+    curl_global_init(CURL_GLOBAL_DEFAULT);
 }
 
 void App::render_ui() {
-    ImGui::PushFont(fonts.title);
-    ImGui::Text(APP_NAME);
-    ImGui::PopFont();
-    ImGui::Separator();
-
+    ZoneScopedN("app_render_ui");
     ImGui::AlignTextToFramePadding();
 
     if (ImGui::BeginTabBar("MyTabBar", ImGuiTabBarFlags_Reorderable | ImGuiTabBarFlags_DrawSelectedOverline)) {
-        if (ImGui::BeginTabItem("General"))  {
-            if (auto new_d_result = general_tab.render(fonts, d_result, game_textures, config, state)) {
-                d_result = *new_d_result;
+        if (ImGui::BeginTabItem("Dashboard"))  {
+            dahsboard_tab.render(fonts, d_result, config);
 
-                for (auto it = game_textures.begin(); it != game_textures.end(); ++it) {
-                    glDeleteTextures(1, &it->second);
-                }
-
-                game_textures = {};
-                texture_futures.clear();
-
-                for (auto& game : d_result.games) {
-                    if(game.appid == "N/A") {
-                        continue;
-                    }
-
-                    texture_futures.push_back(std::async(std::launch::async, Textures::load_image, game.appid));
-                    // get_logger().info("Launched texture futures after refresh: " + std::to_string(texture_futures.size()));
-                }
-            }
+            // if (auto new_d_result = dahsboard_tab.render(fonts, d_result, game_textures, config)) {
+            //     d_result = *new_d_result;
+            //
+            //     for (auto& [appid, texture] : game_textures) glDeleteTextures(1, &texture);
+            //     game_textures = {};
+            //     texture_futures.clear();
+            //
+            //     for (auto& game : d_result.games) {
+            //         if(game.appid == "N/A") continue;
+            //         texture_futures.push_back(std::async(std::launch::async, Textures::load_image, game.appid));
+            //     }
+            // }
+            ImGui::EndTabItem();
+        }
+        if (ImGui::BeginTabItem("Save Editor"))  {
+            editor_tab.render(fonts);
             ImGui::EndTabItem();
         }
         if (ImGui::BeginTabItem("Transfer"))  {
@@ -92,7 +87,7 @@ void App::render_ui() {
             ImGui::EndTabItem();
         }
         if (ImGui::BeginTabItem("Settings"))  {
-            settings_tab.m_refresh_requested = &refresh_requested;
+            // settings_tab.m_refresh_requested = &refresh_requested;
             settings_tab.render(fonts, config);
             ImGui::EndTabItem();
         }
@@ -103,7 +98,7 @@ void App::render_ui() {
 
         ImGui::EndTabBar();
     }
-    ImGui::Separator();
+    // ImGui::Separator();
 }
 
 void App::render_loading_screen() {
@@ -166,7 +161,7 @@ bool App::setup_opengl() {
     glfwSetWindowSizeLimits(window, MIN_RES_W, MIN_RES_H, MAX_RES_W, MAX_RES_H); 
     glfwMakeContextCurrent(window);
     glfwSwapInterval(1);
-    if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
+    if (!gladLoadGL(glfwGetProcAddress)) {
         get_logger().error("Failed to initialize GLAD");
         return false;
     }
@@ -179,8 +174,10 @@ bool App::setup_imgui() {
 
     ImGuiIO& io = ImGui::GetIO();
     io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
+    io.IniFilename = nullptr;
+    io.LogFilename = nullptr;
 
-    ImFontConfig cfg_reg, cfg_med, cfg_small, cfg_bold, cfg_head, cfg_title;
+    ImFontConfig cfg_reg, cfg_med, cfg_small, cfg_bold, cfg_head, cfg_title, cfg_icons;
     cfg_reg.FontDataOwnedByAtlas = false;
     cfg_med.FontDataOwnedByAtlas = false;
     cfg_small.FontDataOwnedByAtlas = false;
@@ -188,7 +185,14 @@ bool App::setup_imgui() {
     cfg_head.FontDataOwnedByAtlas = false;
     cfg_title.FontDataOwnedByAtlas = false;
 
+    cfg_icons.FontDataOwnedByAtlas = false;
+    cfg_icons.MergeMode = true;
+    cfg_icons.PixelSnapH = true;
+    static const ImWchar icon_ranges[] = { 0xe000, 0xf8ff, 0 }; 
+    cfg_icons.GlyphRanges = icon_ranges;
+
     fonts.regular = io.Fonts->AddFontFromMemoryTTF((void*)jbm_reg, jbm_reg_len, 20.0f, &cfg_reg);
+    io.Fonts->AddFontFromMemoryTTF((void*)font_awesome, font_awesome_len, 18.0f, &cfg_icons);
     fonts.title = io.Fonts->AddFontFromMemoryTTF((void*)jbm_reg, jbm_reg_len, 34.0f, &cfg_title);
     fonts.small_font = io.Fonts->AddFontFromMemoryTTF((void*)jbm_reg, jbm_reg_len, 18.0f, &cfg_small);
     fonts.medium = io.Fonts->AddFontFromMemoryTTF((void*)jbm_med, jbm_med_len, 20.0f, &cfg_med);
@@ -202,48 +206,58 @@ bool App::setup_imgui() {
 }
 
 void App::render() {
+    ZoneScopedN("app_render");
     glClear(GL_COLOR_BUFFER_BIT);
 
-    if(refresh_requested) {
-        // get_logger().debug("refresh request received!");
-        for (auto it = game_textures.begin(); it != game_textures.end(); ++it) {
-            glDeleteTextures(1, &it->second);
-        }
-        game_textures.clear();
-        texture_futures.clear();
-
-        for (auto& game : d_result.games) {
-            if(game.appid == "N/A") {
-                continue;
-            }
-
-            texture_futures.push_back(std::async(std::launch::async, Textures::load_image, game.appid));
-            // get_logger().info("Launched texture futures after refresh: " + std::to_string(texture_futures.size()));
-        }
-        refresh_requested = false;
-        // get_logger().debug("refresh request completed!");
-    }
+    // if(refresh_requested) {
+    //     for (auto& [appid, texture] : game_textures) glDeleteTextures(1, &texture);
+    //     game_textures.clear();
+    //     texture_futures.clear();
+    //
+    //     for (auto& game : d_result.games) {
+    //         if(game.appid == "N/A") {
+    //             continue;
+    //         }
+    //
+    //         texture_futures.push_back(std::async(std::launch::async, Textures::load_image, game.appid));
+    //         // get_logger().info("Launched texture futures after refresh: " + std::to_string(texture_futures.size()));
+    //     }
+    //     refresh_requested = false;
+    //     // get_logger().debug("refresh request completed!");
+    // }
 
     if(!initialized && are_we_ready.valid() && are_we_ready.wait_for(std::chrono::seconds(0)) == std::future_status::ready) {
         are_we_ready.get();
         initialized = true;
         ThemeManager::apply_theme(config.settings.dark_mode ? ThemeType::Dark : ThemeType::Light);
+
+        detection_future = std::async(std::launch::async, [this]() {
+            return Detection::find_saves(config, d_result);
+        });
+
+        // if(d_result.games.empty()) {
+        //     // get_logger().warning("No savegames found!");
+        // }
     }
 
-    if(initialized && texture_futures.empty()) {
-        for (auto& game : d_result.games) {
-            if(game.appid == "N/A") continue;
-            texture_futures.push_back(std::async(std::launch::async, Textures::load_image, game.appid));
-        }
-    }
+    // if(detection_future.valid() && detection_future.wait_for(std::chrono::seconds(0)) == std::future_status::ready) {
+    //     d_result = detection_future.get();
+    // }
 
-    for (auto& texture : texture_futures) {
-        if (texture.valid() && texture.wait_for(std::chrono::seconds(0)) == std::future_status::ready) {
-            Textures::ImageData data = texture.get(); 
-            if(data.pixels.empty()) continue;
-            game_textures[data.appid] = Textures::upload_image_to_gpu(data);
-        }
-    }
+    // if(initialized && texture_futures.empty()) {
+    //     for (auto& game : d_result.games) {
+    //         if(game.appid == "N/A") continue;
+    //         texture_futures.push_back(std::async(std::launch::async, Textures::load_image, game.appid));
+    //     }
+    // }
+
+    // for (auto& texture : texture_futures) {
+    //     if (texture.valid() && texture.wait_for(std::chrono::seconds(0)) == std::future_status::ready) {
+    //         Textures::ImageData data = texture.get(); 
+    //         if(data.pixels.empty()) continue;
+    //         game_textures[data.appid] = Textures::upload_image_to_gpu(data);
+    //     }
+    // }
 
     ImGui_ImplOpenGL3_NewFrame();
     ImGui_ImplGlfw_NewFrame();
@@ -270,23 +284,17 @@ void App::render() {
             last_dark_mode = config.settings.dark_mode;
         }
         render_ui();
-    } else {
-        render_loading_screen();
-    }
-
+    } 
     ImGui::End();
     ImGui::Render();
     ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
     glfwSwapBuffers(window);
-    glfwPollEvents();
+    FrameMark;
+    glfwWaitEventsTimeout(1.0/60.0);
 }
 
 App::~App() {
-    if(!game_textures.empty()) {
-        for (auto it = game_textures.begin(); it != game_textures.end(); ++it) {
-            glDeleteTextures(1, &it->second);
-        }
-    }
+    // if(!game_textures.empty()) for (auto& [appid, texture] : game_textures) glDeleteTextures(1, &texture);
 
     ImGui_ImplOpenGL3_Shutdown();
     ImGui_ImplGlfw_Shutdown();
