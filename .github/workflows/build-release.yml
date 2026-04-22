@@ -129,7 +129,7 @@ jobs:
       - uses: actions/upload-artifact@v4
         with:
           name: savemanager-windows
-          path: build/Release/savemanager.exe
+          path: build/build/Release/savemanager.exe
 
   build-macos-arm64:
     runs-on: macos-26
