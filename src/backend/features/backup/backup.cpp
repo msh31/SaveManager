@@ -88,7 +88,7 @@ std::unordered_map<std::string, std::string> Features::load_labels(const Game& g
     ZoneScopedN("load_labels");
     json data;
     std::unordered_map<std::string, std::string> backup_labels;
-    std::string file_name = (config.settings.backup_path / game.game_name / "labels.json").string();
+    std::string file_name = (config.settings.backup_path / sanitize_filename(game.game_name) / "labels.json").string();
     std::ifstream file(file_name.c_str());
 
     if(!fs::exists(file_name)) return {};
@@ -112,7 +112,7 @@ std::unordered_map<std::string, std::string> Features::load_labels(const Game& g
 }
 
 void Features::save_label(const Game& game, Config& config, const std::string& filename, const std::string& label) {
-    std::string file_name = (config.settings.backup_path / game.game_name / "labels.json").string();
+    std::string file_name = (config.settings.backup_path / sanitize_filename(game.game_name) / "labels.json").string();
     auto labels = load_labels(game, config);
 
     labels[filename] = label;
@@ -128,7 +128,7 @@ void Features::save_label(const Game& game, Config& config, const std::string& f
 
 
 void Features::save_labels(const Game& game, Config& config, const std::unordered_map<std::string, std::string>& labels) {
-    std::string file_name = (config.settings.backup_path / game.game_name / "labels.json").string();
+    std::string file_name = (config.settings.backup_path / sanitize_filename(game.game_name) / "labels.json").string();
 
     json data;
     for (const auto& [key, value] : labels) {
