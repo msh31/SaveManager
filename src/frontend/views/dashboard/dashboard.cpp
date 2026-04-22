@@ -388,7 +388,7 @@ void DashboardTab::render_backup_row(RenderContext& ctx, const fs::path& backup,
     ImGui::SameLine(0.0f, button_spacing);
 
     if(ImGui::Button("Rename", ImVec2(btn_width, 0))) {
-        pending_rename_game = &game;
+        pending_rename_game = game;
         pending_rename_backup = backup;
         rename_input = (it != labels.end()) ? it->second : "";
         open_rename_modal = true;
@@ -426,7 +426,7 @@ void DashboardTab::render_modals(RenderContext& ctx) {
         ImGui::Text("%s", pending_rename_backup.filename().string().c_str());
         ImGui::InputText("Label", &rename_input);
         if (ImGui::Button("Save")) {
-            Features::save_label(*pending_rename_game, ctx.config, 
+            Features::save_label(pending_rename_game, ctx.config, 
                                  pending_rename_backup.filename().string(), rename_input);
             ImGui::CloseCurrentPopup();
         }

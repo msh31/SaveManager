@@ -11,7 +11,7 @@ struct DashboardTab {
     std::string search_query = "";
 
     bool open_rename_modal = false;
-    const Game* pending_rename_game = nullptr;
+    Game pending_rename_game = {};
 
     std::future<void> refresh_future;
     std::future<void> backup_future;
