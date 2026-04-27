@@ -17,13 +17,15 @@ void BackupTab::render(const Fonts& fonts, Detection::DetectionResult& d_result,
         reload_backups = false;
     }
 
-    if(backups.empty()) {
+    //TODO: cache this
+    // if(backups.empty()) {
         std::shared_lock lock(d_result.d_mutex);
         std::unordered_map<std::string, fs::path> save_path_lookup;
         for(const auto& game : d_result.games)
             save_path_lookup[sanitize_filename(game.game_name)] = game.save_path;
         lock.unlock();
 
+        backups.clear();
         for (const auto& entry : fs::directory_iterator(paths::backup_dir())) {
             if(!entry.is_directory()) continue;
             BackupEntry bentry;
@@ -40,7 +42,7 @@ void BackupTab::render(const Fonts& fonts, Detection::DetectionResult& d_result,
             if(bentry.entries.empty()) continue;
             backups.push_back(bentry);
         }
-    }
+    // }
 
     for (const auto& entry : backups) {
         render_game_row(fonts, entry, cfg);
@@ -96,6 +98,7 @@ void BackupTab::render_game_row(const Fonts& fonts, const BackupEntry& bentry, C
 
 void BackupTab::render_backup_row(fs::path path, const fs::path& save_path, const std::unordered_map<std::string, std::string>& labels, const std::string& game_name, Config& cfg) {
     ZoneScopedN("render_backup_row");
+    if(!fs::exists(path)) return;
     ImGui::PushID(path.string().c_str());
 
     auto it = labels.find(path.filename().string());
