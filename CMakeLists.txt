@@ -88,6 +88,7 @@ set(savemanager_SOURCES
 	"src/frontend/ui/textures/textures.cpp"
 	"src/frontend/ui/themes/themes.cpp"
 	"src/frontend/views/about/about.cpp"
+	"src/frontend/views/backups/backup_view.cpp"
 	"src/frontend/views/dashboard/dashboard.cpp"
 	"src/frontend/views/editor/editor_view.cpp"
 	"src/frontend/views/log/log.cpp"

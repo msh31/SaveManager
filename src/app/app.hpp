@@ -8,6 +8,7 @@
 #include "frontend/views/transfer/transfer.hpp"
 #include "frontend/views/about/about.hpp"
 #include "frontend/views/dashboard/dashboard.hpp"
+#include "frontend/views/backups/backup_view.hpp"
 #include "frontend/views/about/about.hpp"
 
 // #include "frontend/ui/textures/textures.hpp"
@@ -39,6 +40,7 @@ private:
 
     Config config;
     DashboardTab dahsboard_tab;
+    BackupTab backup_tab;
     EditorTab editor_tab;
     TransferTab transfer_tab;
     LogTab log_tab;
