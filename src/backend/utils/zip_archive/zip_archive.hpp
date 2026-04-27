@@ -3,9 +3,6 @@
 #include "backend/logger/logger.hpp"
 #include <types.hpp>
 
-#define MODE_CREATE_ARCHIVE (ZIP_CREATE | ZIP_TRUNCATE)
-#define MODE_EXTRACT_ARCHIVE 0
-
 class ZipArchive {
 public:
     ZipArchive(int mode, fs::path name) {
@@ -23,8 +20,8 @@ public:
         }
     }
 
-    bool add_to_archive(const Game& game, const fs::path& file);
-    bool extract_archive(const Game& game);
+    bool add_to_archive(const fs::path& file);
+    bool extract_archive(const fs::path& save_path);
 
     // disable copying (prevent accidental double-cleanup)
     ZipArchive(const ZipArchive&) = delete;

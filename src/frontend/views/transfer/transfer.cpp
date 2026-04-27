@@ -226,7 +226,7 @@ void TransferTab::render(const Fonts& fonts, Detection::DetectionResult& result,
                 bool is_selected = (state.selected_game_idx == static_cast<int>(gi));
                 if (ImGui::Selectable(name.c_str(), is_selected)) {
                     state.selected_game_idx = static_cast<int>(gi);
-                    state.backups = Features::get_backups(result.games[static_cast<int>(gi)], config);
+                    state.backups = Features::get_backups(result.games[static_cast<int>(gi)].game_name, config);
                     state.selected_backups.clear();
                     state.selected_backups.resize(state.backups.size(), false);
                 }

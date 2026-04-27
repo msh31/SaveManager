@@ -16,3 +16,4 @@ CMakeLists.txt
 *.png
 *.jpeg
 .idea/
+*.mp4

@@ -1,7 +1,11 @@
 #include "dashboard.hpp"
 #include "constants.hpp"
+
 #include "frontend/ui/notifications/notification.hpp"
 #include "backend/features/backup/backup.hpp"
+#include "../backups/backup_view.hpp"
+
+
 #ifdef __APPLE__
 #include <spawn.h>
 #include <sys/wait.h>
@@ -45,29 +49,41 @@ void DashboardTab::on_result_changed(RenderContext& ctx) {
 
 void DashboardTab::render(const Fonts& fonts, Detection::DetectionResult& result, Config& config) { //const std::unordered_map<std::string, GLuint>& texture_id, Config& config) {
     ZoneScopedN("dashboard_render");
-    std::vector<Game> snapshot;
-    {
-        std::shared_lock<std::shared_mutex> lock(result.d_mutex);
-        snapshot = result.games;
+    static BackupTab backup;
+
+    if (ImGui::BeginTabBar("MyTabBar", ImGuiTabBarFlags_DrawSelectedOverline)) {
+        if (ImGui::BeginTabItem("Games")) {
+            std::vector<Game> snapshot;
+            {
+                std::shared_lock<std::shared_mutex> lock(result.d_mutex);
+                snapshot = result.games;
+            }
+
+            RenderContext ctx{result, /*texture_id,*/ config, fonts, snapshot};
+            spinner_frame++;
+
+            if (refresh_future.valid() && refresh_future.wait_for(std::chrono::seconds(0)) == std::future_status::ready) {
+                Notify::show_notification("Save refresh", "Saves refreshed!", 2000);
+                refresh_future.get();
+            }
+
+            if(last_game_count != snapshot.size()) {
+                on_result_changed(ctx);
+            }
+
+            render_toolbar(ctx);
+            ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 2.0f);
+            render_game_list(ctx);
+            ImGui::PopStyleVar();
+            render_modals(ctx);
+            ImGui::EndTabItem();
+        }
+        if (ImGui::BeginTabItem("Backups"))  {
+            backup.render(fonts, result, config);
+            ImGui::EndTabItem();
+        }
+        ImGui::EndTabBar();
     }
-
-    RenderContext ctx{result, /*texture_id,*/ config, fonts, snapshot};
-    spinner_frame++;
-
-    if (refresh_future.valid() && refresh_future.wait_for(std::chrono::seconds(0)) == std::future_status::ready) {
-        Notify::show_notification("Save refresh", "Saves refreshed!", 2000);
-        refresh_future.get();
-    }
-
-    if(last_game_count != snapshot.size()) {
-        on_result_changed(ctx);
-    }
-
-    render_toolbar(ctx);
-    ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 2.0f);
-    render_game_list(ctx);
-    ImGui::PopStyleVar();
-    render_modals(ctx);
 }
 
 void DashboardTab::render_toolbar(RenderContext& ctx) {
@@ -89,8 +105,8 @@ void DashboardTab::render_toolbar(RenderContext& ctx) {
     ImGui::InputText("##search", &search_query);
     ImGui::SameLine();
 
-    std::string sort_label = sort_mode == SortMode::Alphabetical 
-        ? std::format("{} A-Z", ICON_SORT) 
+    std::string sort_label = sort_mode == SortMode::Alphabetical
+        ? std::format("{} A-Z", ICON_SORT)
         : std::format("{} Date", ICON_SORT);
 
     if (ImGui::Button(sort_label.c_str())) {
@@ -168,7 +184,7 @@ void DashboardTab::render_game_list(RenderContext& ctx) {
     switch (sort_mode) {
         case SortMode::Recent:
             std::sort(sorted.begin(), sorted.end(), [&](const std::vector<int>& a, const std::vector<int>& b) {
-                return game_last_modified[ctx.games[a[0]].game_name] > 
+                return game_last_modified[ctx.games[a[0]].game_name] >
                 game_last_modified[ctx.games[b[0]].game_name];
             });
         break;
@@ -203,20 +219,20 @@ void DashboardTab::render_game_row(RenderContext& ctx, const std::vector<int>& g
     ZoneScopedN("render_game_row");
     const Game& primary = ctx.games[group[0]];
     std::vector<std::pair<fs::path, const Game*>> files = {};
-    auto labels = Features::load_labels(primary, ctx.config);
+    auto labels = Features::load_labels(primary.game_name, ctx.config);
 
     const float card_padding = 8.0f;
     int save_count = 0, backup_count = 0;
     auto top = ImGui::GetCursorScreenPos();
     bool& not_collapsed = card_collapsed[primary.game_name]; //defaults to false
     bool& bk_collapsed = backups_collapsed[primary.game_name];
-   
-    //TODO: cache this data so it doesnt need to get recomputed every frame 
+
+    //TODO: cache this data so it doesnt need to get recomputed every frame
     for (const auto& index : group) {
         const Game& game = ctx.games[index];
 
         for (const auto& file : fs::recursive_directory_iterator(game.save_path, fs::directory_options::skip_permission_denied)) {
-            if (fs::is_regular_file(file)) { 
+            if (fs::is_regular_file(file)) {
                 auto ext = file.path().extension().string();
                 if(std::find(extension_blocklist.begin(), extension_blocklist.end(), ext) != extension_blocklist.end()) continue;
 
@@ -225,7 +241,7 @@ void DashboardTab::render_game_row(RenderContext& ctx, const std::vector<int>& g
             }
         }
 
-        backup_count += Features::get_backups(game, ctx.config).size();
+        backup_count += Features::get_backups(game.game_name, ctx.config).size();
     }
     const char* chevron = not_collapsed ? "▼" : "▶";
     const char* chevron_b = bk_collapsed ? "▶" : "▼";
@@ -256,17 +272,38 @@ void DashboardTab::render_game_row(RenderContext& ctx, const std::vector<int>& g
     std::string left_text = std::format("{}", primary.game_name);
     ImGui::Text("%s", left_text.c_str());
     ImGui::PopFont();
-    std::string right_text = std::format("{} | {} saves | {} backups", get_platform_label(primary.type), 
+    std::string right_text = std::format("{} | {} saves | {} backups", get_platform_label(primary.type),
                                          save_count, backup_count);
     ImGui::SameLine(ImGui::GetContentRegionMax().x - ImGui::CalcTextSize(right_text.c_str()).x);
     ImGui::Text("%s", right_text.c_str());
 
-    if (not_collapsed) { 
+    if (not_collapsed) {
         if(save_count > 0) {
             ImGui::TextDisabled("SAVE FILES");
-            for (auto& backup : files) {
+            static std::string test_str = "-------------";
+            ImGui::SameLine(ImGui::GetContentRegionMax().x - ImGui::CalcTextSize(test_str.c_str()).x);
+
+            ImGui::PushStyleColor(ImGuiCol_Button, ImColor(198, 97, 63).Value);
+            ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImColor(198, 97, 63).Value);
+            if(ImGui::Button("Backup All")) {
+                get_logger().info("creating backup of: {}", primary.game_name);
+
+                fs::path game_backup_dir = ctx.config.settings.backup_path / sanitize_filename(primary.game_name);
+                if(!fs::exists(game_backup_dir)) fs::create_directories(game_backup_dir);
+
+                fs::path zip_name = game_backup_dir / Features::construct_backup_name(primary.game_name);
+
+                ZipArchive za(MODE_CREATE_ARCHIVE, zip_name);
+                bool failed_to_add = false;
+                for(const auto& entry : files) if(!za.add_to_archive(entry.first)) failed_to_add = true;
+                if(failed_to_add) Notify::show_notification("Backup Creation", "Failed to create backup! Please refer to the logfile!", 2000);
+                else Notify::show_notification("Backup Created", "A backup has been for all saves!", 1500);
+            }
+            ImGui::PopStyleColor(2);
+
+            for (auto& save : files) {
                 ImGui::Separator();
-                render_save_row(ctx, backup.first, *backup.second);
+                render_save_row(ctx, save.first, *save.second);
                 ImGui::Separator();
             }
         } else ImGui::TextDisabled("Game detected but no saves were found!");
@@ -285,7 +322,7 @@ void DashboardTab::render_game_row(RenderContext& ctx, const std::vector<int>& g
             ImGui::PopFont();
 
             if (!bk_collapsed) {
-                auto backups = Features::get_backups(primary, ctx.config);
+                auto backups = Features::get_backups(primary.game_name, ctx.config);
                 for (auto& backup : backups) {
                     ImGui::Separator();
                     render_backup_row(ctx, backup, primary, labels);
@@ -316,7 +353,7 @@ void DashboardTab::render_game_row(RenderContext& ctx, const std::vector<int>& g
             int status = posix_spawn(&pid, "/usr/bin/open", nullptr, nullptr, (char* const*)argv, environ);
             if (status == 0) {
                 waitpid(pid, &status, 0);
-            } 
+            }
 #endif
         }
         ImGui::EndPopup();
@@ -348,7 +385,7 @@ void DashboardTab::render_save_row(RenderContext& ctx, const fs::path& save_file
     ImGui::SameLine(0.0f, button_spacing);
 
     ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(3.0f, 3.0f));
-    if(ImGui::Button("Backup", ImVec2(btn_width, 0))) { 
+    if(ImGui::Button("Backup", ImVec2(btn_width, 0))) {
         Features::backup_game(game, save_file, ctx.config);
     }
     ImGui::SetItemTooltip("Create a backup of this save");
@@ -379,10 +416,10 @@ void DashboardTab::render_backup_row(RenderContext& ctx, const fs::path& backup,
     ImGui::SameLine(0.0f, button_spacing);
     ImGui::TextDisabled("%s", size_text.c_str());
     ImGui::SameLine(0.0f, button_spacing);
-    
+
     ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(3.0f, 3.0f));
     if(ImGui::Button("Restore", ImVec2(btn_width, 0))) {
-        Features::restore_backup(backup, game);
+        Features::restore_backup(backup, game.save_path);
     }
     ImGui::SetItemTooltip("Restore save from backup");
     ImGui::SameLine(0.0f, button_spacing);
@@ -398,11 +435,11 @@ void DashboardTab::render_backup_row(RenderContext& ctx, const fs::path& backup,
 
     ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.8f, 0.2f, 0.2f, 1.0f));
     ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.9f, 0.3f, 0.3f, 1.0f));
-    if(ImGui::Button("Delete", ImVec2(btn_width, 0))) { 
+    if(ImGui::Button("Delete", ImVec2(btn_width, 0))) {
         if(fs::remove(backup)) {
             auto mutable_labels = labels;
             mutable_labels.erase(backup.filename().string());
-            Features::save_labels(game, ctx.config, mutable_labels);
+            Features::save_labels(game.game_name, ctx.config, mutable_labels);
             Notify::show_notification("Backup Deletion", "Backup deleted!", 1500);
         } else {
             Notify::show_notification("Backup Deletion", "Backup could not be deleted!", 1500);
@@ -426,7 +463,7 @@ void DashboardTab::render_modals(RenderContext& ctx) {
         ImGui::Text("%s", pending_rename_backup.filename().string().c_str());
         ImGui::InputText("Label", &rename_input);
         if (ImGui::Button("Save")) {
-            Features::save_label(pending_rename_game, ctx.config, 
+            Features::save_label(pending_rename_game.game_name, ctx.config,
                                  pending_rename_backup.filename().string(), rename_input);
             ImGui::CloseCurrentPopup();
         }
