@@ -78,6 +78,10 @@ void App::render_ui() {
             transfer_tab.render(fonts, d_result, config, state);
             ImGui::EndTabItem();
         }
+        if (ImGui::BeginTabItem("Backups"))  {
+            backup_tab.render(fonts, d_result, config);
+            ImGui::EndTabItem();
+        }
         if (ImGui::BeginTabItem("Log"))  {
             log_tab.render(fonts);
             ImGui::EndTabItem();

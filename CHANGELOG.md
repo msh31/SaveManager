@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.5.1] - 2026-04-30
+### Added
+- Backup tab in dashboard to view and manage all backups created
+- Backup All button on save cards (If you want to backup everything at once per-game)
+
+
 ## [1.5.0] - 2026-04-23
 ## The big one - Save editor (albeit a basic one)
 <img src="assets/editor150.png" alt="Editor Preview" width="800"/>

@@ -50,7 +50,7 @@ void DashboardTab::render(const Fonts& fonts, Detection::DetectionResult& result
     ZoneScopedN("dashboard_render");
     static BackupTab backup;
 
-    if (ImGui::BeginTabBar("MyTabBar", ImGuiTabBarFlags_DrawSelectedOverline)) { 
+    if (ImGui::BeginTabBar("MyTabBar", ImGuiTabBarFlags_DrawSelectedOverline)) {
         if (ImGui::BeginTabItem("Games")) {
             std::vector<Game> snapshot;
             {
@@ -78,7 +78,7 @@ void DashboardTab::render(const Fonts& fonts, Detection::DetectionResult& result
             ImGui::EndTabItem();
         }
         if (ImGui::BeginTabItem("Backups"))  {
-            backup.render(fonts, config);
+            backup.render(fonts, result, config);
             ImGui::EndTabItem();
         }
         ImGui::EndTabBar();
@@ -104,8 +104,8 @@ void DashboardTab::render_toolbar(RenderContext& ctx) {
     ImGui::InputText("##search", &search_query);
     ImGui::SameLine();
 
-    std::string sort_label = sort_mode == SortMode::Alphabetical 
-        ? std::format("{} A-Z", ICON_SORT) 
+    std::string sort_label = sort_mode == SortMode::Alphabetical
+        ? std::format("{} A-Z", ICON_SORT)
         : std::format("{} Date", ICON_SORT);
 
     if (ImGui::Button(sort_label.c_str())) {
@@ -183,7 +183,7 @@ void DashboardTab::render_game_list(RenderContext& ctx) {
     switch (sort_mode) {
         case SortMode::Recent:
             std::sort(sorted.begin(), sorted.end(), [&](const std::vector<int>& a, const std::vector<int>& b) {
-                return game_last_modified[ctx.games[a[0]].game_name] > 
+                return game_last_modified[ctx.games[a[0]].game_name] >
                 game_last_modified[ctx.games[b[0]].game_name];
             });
         break;
@@ -225,13 +225,13 @@ void DashboardTab::render_game_row(RenderContext& ctx, const std::vector<int>& g
     auto top = ImGui::GetCursorScreenPos();
     bool& not_collapsed = card_collapsed[primary.game_name]; //defaults to false
     bool& bk_collapsed = backups_collapsed[primary.game_name];
-   
-    //TODO: cache this data so it doesnt need to get recomputed every frame 
+
+    //TODO: cache this data so it doesnt need to get recomputed every frame
     for (const auto& index : group) {
         const Game& game = ctx.games[index];
 
         for (const auto& file : fs::recursive_directory_iterator(game.save_path, fs::directory_options::skip_permission_denied)) {
-            if (fs::is_regular_file(file)) { 
+            if (fs::is_regular_file(file)) {
                 auto ext = file.path().extension().string();
                 if(std::find(extension_blocklist.begin(), extension_blocklist.end(), ext) != extension_blocklist.end()) continue;
 
@@ -271,14 +271,15 @@ void DashboardTab::render_game_row(RenderContext& ctx, const std::vector<int>& g
     std::string left_text = std::format("{}", primary.game_name);
     ImGui::Text("%s", left_text.c_str());
     ImGui::PopFont();
-    std::string right_text = std::format("{} | {} saves | {} backups", get_platform_label(primary.type), 
+    std::string right_text = std::format("{} | {} saves | {} backups", get_platform_label(primary.type),
                                          save_count, backup_count);
     ImGui::SameLine(ImGui::GetContentRegionMax().x - ImGui::CalcTextSize(right_text.c_str()).x);
     ImGui::Text("%s", right_text.c_str());
 
-    if (not_collapsed) { 
+    if (not_collapsed) {
         if(save_count > 0) {
             ImGui::TextDisabled("SAVE FILES");
+
             for (auto& backup : files) {
                 ImGui::Separator();
                 render_save_row(ctx, backup.first, *backup.second);
@@ -331,7 +332,7 @@ void DashboardTab::render_game_row(RenderContext& ctx, const std::vector<int>& g
             int status = posix_spawn(&pid, "/usr/bin/open", nullptr, nullptr, (char* const*)argv, environ);
             if (status == 0) {
                 waitpid(pid, &status, 0);
-            } 
+            }
 #endif
         }
         ImGui::EndPopup();
@@ -363,7 +364,7 @@ void DashboardTab::render_save_row(RenderContext& ctx, const fs::path& save_file
     ImGui::SameLine(0.0f, button_spacing);
 
     ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(3.0f, 3.0f));
-    if(ImGui::Button("Backup", ImVec2(btn_width, 0))) { 
+    if(ImGui::Button("Backup", ImVec2(btn_width, 0))) {
         Features::backup_game(game, save_file, ctx.config);
     }
     ImGui::SetItemTooltip("Create a backup of this save");
@@ -394,7 +395,7 @@ void DashboardTab::render_backup_row(RenderContext& ctx, const fs::path& backup,
     ImGui::SameLine(0.0f, button_spacing);
     ImGui::TextDisabled("%s", size_text.c_str());
     ImGui::SameLine(0.0f, button_spacing);
-    
+
     ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(3.0f, 3.0f));
     if(ImGui::Button("Restore", ImVec2(btn_width, 0))) {
         Features::restore_backup(backup, game.save_path);
@@ -413,7 +414,7 @@ void DashboardTab::render_backup_row(RenderContext& ctx, const fs::path& backup,
 
     ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.8f, 0.2f, 0.2f, 1.0f));
     ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.9f, 0.3f, 0.3f, 1.0f));
-    if(ImGui::Button("Delete", ImVec2(btn_width, 0))) { 
+    if(ImGui::Button("Delete", ImVec2(btn_width, 0))) {
         if(fs::remove(backup)) {
             auto mutable_labels = labels;
             mutable_labels.erase(backup.filename().string());
