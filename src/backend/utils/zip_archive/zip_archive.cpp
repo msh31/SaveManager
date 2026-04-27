@@ -1,12 +1,12 @@
 #include "zip_archive.hpp"
 
-bool ZipArchive::add_to_archive(const Game& game, const fs::path& file) {
+bool ZipArchive::add_to_archive(const fs::path& file) {
     ZoneScopedN("zip_add_to_archive");
     int file_count = 0;
     std::vector<std::string> failed_files;
 
     if (fs::is_regular_file(file)) {
-        get_logger().info("Adding: {}, to the backup for: {}", file.string(), game.game_name);
+        get_logger().info("Adding: {}, to the backup for: {}", file.string(), file.parent_path().string());
 
         if(archive == nullptr) return false;
 
@@ -32,12 +32,12 @@ bool ZipArchive::add_to_archive(const Game& game, const fs::path& file) {
         }
         return false;
     } else {
-        get_logger().success("backup for: {} has been created!", game.game_name);
+        get_logger().success("backup for: {} has been created!", file.parent_path().string());
         return true;
     }
 }
 
-bool ZipArchive::extract_archive(const Game& game) {
+bool ZipArchive::extract_archive(const fs::path& save_path) {
     ZoneScopedN("zip_extract_archive");
     if(archive == nullptr) return false;
 
@@ -50,7 +50,7 @@ bool ZipArchive::extract_archive(const Game& game) {
 
         if (zip_stat_index(archive, i, 0, &fileInfo) == 0) {
             get_logger().info("File Name: {}", fileInfo.name);
-            const auto& output_path = game.save_path / fileInfo.name;
+            const auto& output_path = save_path.parent_path() / fileInfo.name;
             get_logger().info("Saving to: {}", output_path.string());
 
             zip_file* file = zip_fopen_index(archive, i, 0);
@@ -94,7 +94,7 @@ bool ZipArchive::extract_archive(const Game& game) {
         }
         return false;
     } else {
-        get_logger().success("backup for: {} has been restored", game.game_name);
+        get_logger().success("backup for: {} has been restored", save_path.string());
         return true;
     }
 }

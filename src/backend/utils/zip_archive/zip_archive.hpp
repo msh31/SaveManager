@@ -23,8 +23,8 @@ public:
         }
     }
 
-    bool add_to_archive(const Game& game, const fs::path& file);
-    bool extract_archive(const Game& game);
+    bool add_to_archive(const fs::path& file);
+    bool extract_archive(const fs::path& save_path);
 
     // disable copying (prevent accidental double-cleanup)
     ZipArchive(const ZipArchive&) = delete;
