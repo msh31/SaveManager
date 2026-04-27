@@ -55,8 +55,8 @@ void BackupTab::render(const Fonts& fonts, Detection::DetectionResult& d_result,
 
 void BackupTab::render_game_row(const Fonts& fonts, const BackupEntry& bentry, Config& cfg) {
     ZoneScopedN("backup_tab_game_row_render");
-    bool& not_collapsed = card_collapsed[bentry.name];
-    bool& bk_collapsed = backups_collapsed[bentry.name];
+    bool& not_collapsed = card_collapsed[bentry.name.string()];
+    bool& bk_collapsed = backups_collapsed[bentry.name.string()];
     const char* chevron = not_collapsed ? "▼" : "▶";
     const char* chevron_b = bk_collapsed ? "▶" : "▼";
 
