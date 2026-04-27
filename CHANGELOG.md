@@ -1,6 +1,6 @@
 # Changelog
 
-## [1.5.1] - 2026-04-30
+## [1.5.1] - 2026-04-27
 ### Added
 - Backup tab in dashboard to view and manage all backups created
 - Backup All button on save cards (If you want to backup everything at once per-game)
