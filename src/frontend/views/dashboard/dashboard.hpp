@@ -1,6 +1,7 @@
 #pragma once
 #include "backend/detection/detection.hpp"
 #include <backend/utils/utils.hpp>
+#include <backend/utils/zip_archive/zip_archive.hpp>
 
 namespace fs = std::filesystem;
 
@@ -31,13 +32,12 @@ private:
         const std::vector<Game>& games;
     };
 
-    enum class SortMode { 
-        Recent, 
-        Alphabetical 
+    enum class SortMode {
+        Recent,
+        Alphabetical
     };
     SortMode sort_mode = SortMode::Alphabetical;
     std::optional<PlatformType> platform_filter = std::nullopt; // nullopt = all
-
     std::unordered_map<std::string, fs::file_time_type> game_last_modified;
 
     void on_result_changed(RenderContext&);

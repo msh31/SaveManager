@@ -3,9 +3,6 @@
 #include "backend/logger/logger.hpp"
 #include <types.hpp>
 
-#define MODE_CREATE_ARCHIVE (ZIP_CREATE | ZIP_TRUNCATE)
-#define MODE_EXTRACT_ARCHIVE 0
-
 class ZipArchive {
 public:
     ZipArchive(int mode, fs::path name) {

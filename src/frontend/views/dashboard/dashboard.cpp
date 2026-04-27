@@ -5,6 +5,7 @@
 #include "backend/features/backup/backup.hpp"
 #include "../backups/backup_view.hpp"
 
+
 #ifdef __APPLE__
 #include <spawn.h>
 #include <sys/wait.h>
@@ -279,10 +280,30 @@ void DashboardTab::render_game_row(RenderContext& ctx, const std::vector<int>& g
     if (not_collapsed) {
         if(save_count > 0) {
             ImGui::TextDisabled("SAVE FILES");
+            static std::string test_str = "-------------";
+            ImGui::SameLine(ImGui::GetContentRegionMax().x - ImGui::CalcTextSize(test_str.c_str()).x);
 
-            for (auto& backup : files) {
+            ImGui::PushStyleColor(ImGuiCol_Button, ImColor(198, 97, 63).Value);
+            ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImColor(198, 97, 63).Value);
+            if(ImGui::Button("Backup All")) {
+                get_logger().info("creating backup of: {}", primary.game_name);
+
+                fs::path game_backup_dir = ctx.config.settings.backup_path / sanitize_filename(primary.game_name);
+                if(!fs::exists(game_backup_dir)) fs::create_directories(game_backup_dir);
+
+                fs::path zip_name = game_backup_dir / Features::construct_backup_name(primary.game_name);
+
+                ZipArchive za(MODE_CREATE_ARCHIVE, zip_name);
+                bool failed_to_add = false;
+                for(const auto& entry : files) if(!za.add_to_archive(entry.first)) failed_to_add = true;
+                if(failed_to_add) Notify::show_notification("Backup Creation", "Failed to create backup! Please refer to the logfile!", 2000);
+                else Notify::show_notification("Backup Created", "A backup has been for all saves!", 1500);
+            }
+            ImGui::PopStyleColor(2);
+
+            for (auto& save : files) {
                 ImGui::Separator();
-                render_save_row(ctx, backup.first, *backup.second);
+                render_save_row(ctx, save.first, *save.second);
                 ImGui::Separator();
             }
         } else ImGui::TextDisabled("Game detected but no saves were found!");
