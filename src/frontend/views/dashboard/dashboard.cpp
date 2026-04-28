@@ -37,13 +37,20 @@ void DashboardTab::on_result_changed(RenderContext& ctx) {
     grouped_games = ctx.result.get_grouped();
     last_game_count = ctx.games.size();
 
-    for (const auto& entry : ctx.games) {
-        fs::file_time_type current_max;
-        for (const auto& file : fs::directory_iterator(entry.save_path, fs::directory_options::skip_permission_denied)) {
-            auto t = fs::last_write_time(file);
-            if (fs::is_regular_file(file)) if (t > current_max) current_max = t;
+    try {
+        for (const auto& entry : ctx.games) {
+            fs::file_time_type current_max;
+            if (!fs::is_directory(entry.save_path)) continue;
+            get_logger().info("checking path: {}", entry.save_path.string());
+            for (const auto& file : fs::directory_iterator(entry.save_path, fs::directory_options::skip_permission_denied)) {
+                auto t = fs::last_write_time(file);
+                if (fs::is_regular_file(file)) if (t > current_max) current_max = t;
+            }
+            game_last_modified.insert({ entry.game_name, current_max });
         }
-        game_last_modified.insert({entry.game_name, current_max});
+    }
+    catch (fs::filesystem_error& er) {
+        get_logger().error("dashboard(on_result_changed): {}", er.what());
     }
 }
 
@@ -230,7 +237,7 @@ void DashboardTab::render_game_row(RenderContext& ctx, const std::vector<int>& g
     //TODO: cache this data so it doesnt need to get recomputed every frame
     for (const auto& index : group) {
         const Game& game = ctx.games[index];
-
+        if (!fs::is_directory(game.save_path)) continue;
         for (const auto& file : fs::recursive_directory_iterator(game.save_path, fs::directory_options::skip_permission_denied)) {
             if (fs::is_regular_file(file)) {
                 auto ext = file.path().extension().string();
