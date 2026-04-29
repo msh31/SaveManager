@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.5.3] - 2026-04-29
+### Fixed 
+- Backup tab scanning logic causing performance issues 
+
+## [1.5.2] - 2026-04-28
+### Fixed 
+- Possible invalid directory name crash upon startup
+
 ## [1.5.1] - 2026-04-27
 ### Added
 - Backup tab in dashboard to view and manage all backups created
