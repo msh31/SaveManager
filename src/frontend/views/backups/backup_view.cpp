@@ -8,6 +8,7 @@ static constexpr float btn_width = 80.0f;
 static constexpr const char* spinner = "|/-\\";
 
 void BackupTab::add_new_entry(Detection::DetectionResult& d_result) {
+    std::lock_guard lock_em_up(b_mutex);
     std::shared_lock lock(d_result.d_mutex);
     std::unordered_map<std::string, fs::path> save_path_lookup;
     for(const auto& game : d_result.games)
@@ -44,34 +45,32 @@ void BackupTab::render(const Fonts& fonts, Detection::DetectionResult& d_result,
         refresh_future.get();
     }
 
+    std::vector<BackupEntry> snapshot;
+    {
+        std::lock_guard lock(b_mutex);
+        snapshot = backups;
+    }
+
     if(!is_refreshing) {
         if(ImGui::Button("Refresh")) {
-            {
-                std::unique_lock lock(d_result.d_mutex);
-                backups.clear();
-            }
             refresh_future = std::async(std::launch::async, [this, &result = d_result]() { 
                     add_new_entry(result); 
                     });
-            ImGui::SetItemTooltip("Re-runs the detection logic to find new backups");
         }
+        ImGui::SetItemTooltip("Re-runs the detection logic to find new backups");
 
-        if(backups.empty() || reload_backups) {
-            reload_backups = false;
-            {
-                std::unique_lock lock(d_result.d_mutex);
-                backups.clear();
-            }
+        if(snapshot.empty() || reload_backups) {
             refresh_future = std::async(std::launch::async, [this, &result = d_result]() { 
                     add_new_entry(result); 
                     });
+            reload_backups = false;
         }
     } else {
         int index = (spinner_frame / 10) % 4;
         ImGui::Text("%c", spinner[index]);
     }
 
-    for (const auto& entry : backups) {
+    for (const auto& entry : snapshot) {
         render_game_row(fonts, entry, cfg);
         ImGui::Dummy(ImVec2(0, 6.0f));
     }

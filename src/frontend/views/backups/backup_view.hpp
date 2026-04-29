@@ -12,6 +12,8 @@ struct BackupTab {
     };
 
     void render(const Fonts&, Detection::DetectionResult&, Config&);
+
+    std::mutex b_mutex;
     std::vector<BackupEntry> backups;
 private:
     std::future<void> refresh_future;
