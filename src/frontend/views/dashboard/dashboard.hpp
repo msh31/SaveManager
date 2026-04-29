@@ -32,6 +32,13 @@ private:
         const std::vector<Game>& games;
     };
 
+    struct GameCache {
+        std::vector<fs::path> save_files;
+        int backup_count;
+        std::unordered_map<std::string, std::string> labels;
+    };
+    std::unordered_map<std::string, GameCache> game_cache;
+
     enum class SortMode {
         Recent,
         Alphabetical

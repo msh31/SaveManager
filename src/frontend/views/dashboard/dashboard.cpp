@@ -38,16 +38,31 @@ void DashboardTab::on_result_changed(RenderContext& ctx) {
     last_game_count = ctx.games.size();
 
     try {
+        for (const auto& game : ctx.games) {
+            GameCache cache;
+            if (!fs::is_directory(game.save_path)) continue;
+            for (const auto& file : fs::recursive_directory_iterator(game.save_path, fs::directory_options::skip_permission_denied)) {
+                if (!fs::is_regular_file(file)) continue;
+                auto ext = file.path().extension().string();
+                if(std::find(extension_blocklist.begin(), extension_blocklist.end(), ext) != extension_blocklist.end()) continue;
+                cache.save_files.push_back(file.path());
+            }
+            cache.backup_count = Features::get_backups(game.game_name, ctx.config).size();
+            cache.labels = Features::load_labels(game.game_name, ctx.config);
+            game_cache[game.game_name] = cache;
+        }
+
         for (const auto& entry : ctx.games) {
             fs::file_time_type current_max;
             if (!fs::is_directory(entry.save_path)) continue;
-            get_logger().info("checking path: {}", entry.save_path.string());
+            // get_logger().info("checking path: {}", entry.save_path.string());
             for (const auto& file : fs::directory_iterator(entry.save_path, fs::directory_options::skip_permission_denied)) {
                 auto t = fs::last_write_time(file);
                 if (fs::is_regular_file(file)) if (t > current_max) current_max = t;
             }
             game_last_modified.insert({ entry.game_name, current_max });
         }
+
     }
     catch (fs::filesystem_error& er) {
         get_logger().error("dashboard(on_result_changed): {}", er.what());
@@ -225,31 +240,22 @@ void DashboardTab::render_game_list(RenderContext& ctx) {
 void DashboardTab::render_game_row(RenderContext& ctx, const std::vector<int>& group, int gi) {
     ZoneScopedN("render_game_row");
     const Game& primary = ctx.games[group[0]];
-    std::vector<std::pair<fs::path, const Game*>> files = {};
-    auto labels = Features::load_labels(primary.game_name, ctx.config);
 
     const float card_padding = 8.0f;
-    int save_count = 0, backup_count = 0;
     auto top = ImGui::GetCursorScreenPos();
     bool& not_collapsed = card_collapsed[primary.game_name]; //defaults to false
     bool& bk_collapsed = backups_collapsed[primary.game_name];
 
-    //TODO: cache this data so it doesnt need to get recomputed every frame
-    for (const auto& index : group) {
-        const Game& game = ctx.games[index];
-        if (!fs::is_directory(game.save_path)) continue;
-        for (const auto& file : fs::recursive_directory_iterator(game.save_path, fs::directory_options::skip_permission_denied)) {
-            if (fs::is_regular_file(file)) {
-                auto ext = file.path().extension().string();
-                if(std::find(extension_blocklist.begin(), extension_blocklist.end(), ext) != extension_blocklist.end()) continue;
+    std::vector<std::pair<fs::path, const Game*>> files = {};
+    auto& cache = game_cache[primary.game_name];
+    int save_count = cache.save_files.size();
+    int backup_count = cache.backup_count;
+    auto labels = cache.labels;
 
-                save_count++;
-                files.emplace_back(file.path(), &game);
-            }
-        }
-
-        backup_count += Features::get_backups(game.game_name, ctx.config).size();
+    for (const auto& path : cache.save_files) {
+        files.emplace_back(path, &primary);
     }
+
     const char* chevron = not_collapsed ? "▼" : "▶";
     const char* chevron_b = bk_collapsed ? "▶" : "▼";
     auto selectable_id = std::format("##gamename_{}", gi);
