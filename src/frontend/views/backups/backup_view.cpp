@@ -3,8 +3,35 @@
 #include "backend/utils/paths.hpp"
 #include <frontend/ui/notifications/notification.hpp>
 
-static float button_spacing = 4.0f;
-static float btn_width = 80.0f;
+static constexpr float button_spacing = 4.0f;
+static constexpr float btn_width = 80.0f;
+static constexpr const char* spinner = "|/-\\";
+
+void BackupTab::add_new_entry(Detection::DetectionResult& d_result) {
+    std::shared_lock lock(d_result.d_mutex);
+    std::unordered_map<std::string, fs::path> save_path_lookup;
+    for(const auto& game : d_result.games)
+        save_path_lookup[sanitize_filename(game.game_name)] = game.save_path;
+    lock.unlock();
+
+    backups.clear();
+    for (const auto& entry : fs::directory_iterator(paths::backup_dir())) {
+        if(!entry.is_directory()) continue;
+        BackupEntry bentry;
+        bentry.name = entry.path().filename().string();
+        if(auto it = save_path_lookup.find(bentry.name.string()); it != save_path_lookup.end())
+            bentry.save_path = it->second;
+
+        for (const auto& entry_b : fs::directory_iterator(entry)) {
+            if(entry_b.path().filename().extension() != ".zip") continue;
+            bentry.entries.push_back(entry_b.path());
+            bentry.size += fs::file_size(entry_b.path());
+        }
+
+        if(bentry.entries.empty()) continue;
+        backups.push_back(bentry);
+    }
+}
 
 void BackupTab::render(const Fonts& fonts, Detection::DetectionResult& d_result, Config& cfg) {
     ZoneScopedN("backup_tab_render");
@@ -12,37 +39,37 @@ void BackupTab::render(const Fonts& fonts, Detection::DetectionResult& d_result,
     ImGui::BeginChild("##backup_view", ImVec2(0, ImGui::GetContentRegionAvail().y), false,
             ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
 
-    if(reload_backups) {
-        backups.clear();
-        reload_backups = false;
+    bool is_refreshing = refresh_future.valid() && refresh_future.wait_for(std::chrono::seconds(0)) != std::future_status::ready;
+    if (refresh_future.valid() && refresh_future.wait_for(std::chrono::seconds(0)) == std::future_status::ready) {
+        refresh_future.get();
     }
 
-    //TODO: cache this
-    // if(backups.empty()) {
-        std::shared_lock lock(d_result.d_mutex);
-        std::unordered_map<std::string, fs::path> save_path_lookup;
-        for(const auto& game : d_result.games)
-            save_path_lookup[sanitize_filename(game.game_name)] = game.save_path;
-        lock.unlock();
-
-        backups.clear();
-        for (const auto& entry : fs::directory_iterator(paths::backup_dir())) {
-            if(!entry.is_directory()) continue;
-            BackupEntry bentry;
-            bentry.name = entry.path().filename().string();
-            if(auto it = save_path_lookup.find(bentry.name.string()); it != save_path_lookup.end())
-                bentry.save_path = it->second;
-
-            for (const auto& entry_b : fs::directory_iterator(entry)) {
-                if(entry_b.path().filename().extension() != ".zip") continue;
-                bentry.entries.push_back(entry_b.path());
-                bentry.size += fs::file_size(entry_b.path());
+    if(!is_refreshing) {
+        if(ImGui::Button("Refresh")) {
+            {
+                std::unique_lock lock(d_result.d_mutex);
+                backups.clear();
             }
-
-            if(bentry.entries.empty()) continue;
-            backups.push_back(bentry);
+            refresh_future = std::async(std::launch::async, [this, &result = d_result]() { 
+                    add_new_entry(result); 
+                    });
+            ImGui::SetItemTooltip("Re-runs the detection logic to find new backups");
         }
-    // }
+
+        if(backups.empty() || reload_backups) {
+            reload_backups = false;
+            {
+                std::unique_lock lock(d_result.d_mutex);
+                backups.clear();
+            }
+            refresh_future = std::async(std::launch::async, [this, &result = d_result]() { 
+                    add_new_entry(result); 
+                    });
+        }
+    } else {
+        int index = (spinner_frame / 10) % 4;
+        ImGui::Text("%c", spinner[index]);
+    }
 
     for (const auto& entry : backups) {
         render_game_row(fonts, entry, cfg);
