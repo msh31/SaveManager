@@ -6,7 +6,7 @@ cmkr-include = "cmkr.cmake"
 [project]
 name = "SaveManager"
 description = "The swiss army knife of save management."
-version = "1.5.2"
+version = "1.5.3"
 languages = ["C", "CXX"]
 msvc-runtime = "dynamic"
 
