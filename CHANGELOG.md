@@ -1,12 +1,17 @@
 # Changelog
+## [1.5.4] - 2026-04-29
+### Fixed 
+- Dashboard lag caused by filesystem scans and JSON reads every frame
 
 ## [1.5.3] - 2026-04-29
 ### Fixed 
 - Backup tab scanning logic causing performance issues 
 
+
 ## [1.5.2] - 2026-04-28
 ### Fixed 
 - Possible invalid directory name crash upon startup
+
 
 ## [1.5.1] - 2026-04-27
 ### Added
@@ -25,7 +30,6 @@
 - Search bar in dashboard
 - Config directory is now editable properly through a cli flag ``--config-dir "path"``
 
-
 ### Fixed 
 - Rare issue of Rockstar Games saves not detecting on Windows 
 - Anno save detection on Linux
@@ -38,20 +42,16 @@
 - JSON parsing now handled gracefully
 - Settings path section layout
 
-
 ### Removed
 - Custom game support through the json (Temporarily, it needs improvement)
-
 
 ### Changes
 - Redesigned dashboard UI (was general tab)
 - Logger moved to in-memory deque, no more disk polling from UI
 - Improved detection error handling
 - Async detection on startup, cards pop in progressively not blocking the UI
-
 > [!NOTE]
 > On Windows the config directory has changed from ``AppData\Roaming\SaveManager`` to ``C:\Users\username\savemanager``
-
 
 ### Development related
 - Use Conan for external dependencies (besides stuff that isn't on there)
@@ -66,6 +66,7 @@
 ## [1.4.1] - 2026-04-04
 ### Fixed
 - Unreal cover art / showing up as N/A on Linux
+
 
 ## [1.4.0] - 2026-04-04
 ### New verified supported games

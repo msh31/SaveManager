@@ -2,7 +2,7 @@
 
 #define APP_NAME "SaveManager"
 #define APP_AUTHOR "marco007"
-#define APP_VERSION "v1.5.3"
+#define APP_VERSION "v1.5.4"
 
 #define MODE_CREATE_ARCHIVE (ZIP_CREATE | ZIP_TRUNCATE)
 #define MODE_EXTRACT_ARCHIVE 0
