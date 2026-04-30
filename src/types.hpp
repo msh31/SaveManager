@@ -17,6 +17,7 @@ enum class PlatformType {
     UNREAL,
     PSP,
     PPSSPP,
+    MINECRAFT,
     CUSTOM
 };
 

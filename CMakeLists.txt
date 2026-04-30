@@ -73,6 +73,7 @@ set(savemanager_SOURCES
 	"src/backend/config/config.cpp"
 	"src/backend/detection/custom/custom.cpp"
 	"src/backend/detection/detection.cpp"
+	"src/backend/detection/minecraft/minecraft.cpp"
 	"src/backend/detection/rsg/rsg.cpp"
 	"src/backend/detection/ubi/ubi.cpp"
 	"src/backend/detection/unreal/unreal.cpp"

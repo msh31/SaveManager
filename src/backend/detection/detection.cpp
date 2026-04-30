@@ -3,17 +3,21 @@
 #include "backend/utils/blacklist/blacklist.hpp"
 #include "backend/utils/paths.hpp"
 #include "backend/logger/logger.hpp"
+#include "backend/utils/utils.hpp"
 
 #include "backend/detection/rsg/rsg.hpp"
 #include "backend/detection/ubi/ubi.hpp"
 #include "backend/detection/unreal/unreal.hpp"
-#include "backend/utils/utils.hpp"
+#include "backend/detection/minecraft/minecraft.hpp"
+
+
 // #include "backend/detection/custom/custom.hpp"
 
 struct Detectors {
    RockstarDetector rockstar_detect; 
    UbisoftDetector ubisoft_detect; 
    UnrealDetector unreal_detect; 
+   MinecraftDetector minecraft_detect; 
    // CustomDetector custom_detect; 
 };
 
@@ -168,6 +172,9 @@ void scan_prefix_dir(const fs::path& compatdata, Detection::DetectionResult& res
 void Detection::find_saves(Config& config, DetectionResult& d_result) {
     ZoneScopedN("find_saves");
     Detectors detectors;
+
+    //test
+    Detection::add_game(detectors.minecraft_detect.find_saves("/home/unknown/.local/share/ModrinthApp/profiles/"), "minecraft", d_result);
 
 #ifdef __linux__
     // steam
