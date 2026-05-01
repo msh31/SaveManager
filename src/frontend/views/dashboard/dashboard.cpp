@@ -305,6 +305,7 @@ void DashboardTab::render_game_row(RenderContext& ctx, const std::vector<int>& g
             ImGui::PushStyleColor(ImGuiCol_Button, ImColor(198, 97, 63).Value);
             ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImColor(198, 97, 63).Value);
             if(ImGui::Button("Backup All")) {
+                backup_future = std::async(std::launch::async, [this, primary, ctx, files]() {
                 get_logger().info("creating backup of: {}", primary.game_name);
 
                 fs::path game_backup_dir = ctx.config.settings.backup_path / sanitize_filename(primary.game_name);
@@ -317,6 +318,7 @@ void DashboardTab::render_game_row(RenderContext& ctx, const std::vector<int>& g
                 for(const auto& entry : files) if(!za.add_to_archive(entry.first)) failed_to_add = true;
                 if(failed_to_add) Notify::show_notification("Backup Creation", "Failed to create backup! Please refer to the logfile!", 2000);
                 else Notify::show_notification("Backup Created", "A backup has been for all saves!", 1500);
+                });
             }
             ImGui::PopStyleColor(2);
 
