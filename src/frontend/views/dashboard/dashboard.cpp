@@ -408,7 +408,9 @@ void DashboardTab::render_save_row(RenderContext& ctx, const fs::path& save_file
 
     ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(3.0f, 3.0f));
     if(ImGui::Button("Backup", ImVec2(btn_width, 0))) {
-        Features::backup_game(game, save_file, ctx.config);
+        backup_future = std::async(std::launch::async, [game, save_file, &config = ctx.config]() {
+                Features::backup_game(game, save_file, config);
+                });
     }
     ImGui::SetItemTooltip("Create a backup of this save");
     ImGui::PopStyleVar();
