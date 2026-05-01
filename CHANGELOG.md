@@ -1,4 +1,20 @@
 # Changelog
+
+## [1.6.0] - 2026-05-10
+### Added
+- Minecraft support
+- (Experimental) Custom detector support through LUA
+- Grid view toggle
+- Keyboard shortcuts
+- Window size & position persistence
+- Atomic backup writing (Prevents corrupted backups if there is a crash or power loss during backup)
+
+### Fixed
+
+### Changed
+- Creating a single backup of a save or a backup of all is now done asynchronously (Minecraft saves can be big)
+
+
 ## [1.5.4] - 2026-04-29
 ### Fixed 
 - Dashboard lag caused by filesystem scans and JSON reads every frame
