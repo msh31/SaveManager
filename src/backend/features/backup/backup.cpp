@@ -5,6 +5,8 @@
 #include "backend/config/config.hpp"
 #include "backend/utils/utils.hpp"
 #include "backend/utils/zip_archive/zip_archive.hpp"
+#include "types.hpp"
+
 #include <nlohmann/json.hpp>
 using json = nlohmann::json;
 
@@ -17,9 +19,13 @@ void Features::backup_game(const Game& game, const fs::path& file, Config& confi
     // int save_count = 0;
 
     auto ext = file.extension().string();
-    if(!fs::is_regular_file(file) || std::find(extension_blocklist.begin(), extension_blocklist.end(), ext) != extension_blocklist.end()) {
-        // get_logger().warning("No valid saves found for: {}, skipping backup", game.game_name);
-        return;
+    if(game.type != PlatformType::MINECRAFT) {
+        if(!fs::is_regular_file(file) || std::find(extension_blocklist.begin(), extension_blocklist.end(), ext) != extension_blocklist.end()) {
+            // get_logger().warning("No valid saves found for: {}, skipping backup", game.game_name);
+            return;
+        }
+    } else {
+        if(!fs::is_directory(file)) return;
     }
 
     // if(save_count <= 0) {

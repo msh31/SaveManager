@@ -1,5 +1,4 @@
 #include "minecraft.hpp"
-#include <filesystem>
 #include <print>
 // #include "backend/detection/detection.hpp"
 // #include "backend/utils/translations/translations.hpp"

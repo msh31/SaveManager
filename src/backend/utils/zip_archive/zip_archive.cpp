@@ -25,6 +25,30 @@ bool ZipArchive::add_to_archive(const fs::path& file) {
         file_count++;
     }
 
+    if(fs::is_directory(file)) {
+        get_logger().info("Adding: {}, to the backup for: {}", file.string(), file.parent_path().string());
+        if(archive == nullptr) return false;
+
+        for(const auto& entry : fs::recursive_directory_iterator(file, fs::directory_options::skip_permission_denied)) {
+            if(!fs::is_regular_file(entry)) continue;
+            zip_source_t* source = zip_source_file(archive, entry.path().string().c_str(), 0, 0);
+            if (source == nullptr) {
+                get_logger().error("Failed to create source for: {}", entry.path().filename().string().c_str());
+                failed_files.push_back(file.filename().string().c_str());
+                return false;
+            }
+
+            auto file_path = fs::relative(entry.path(), file);
+
+            if (zip_file_add(archive, file_path.string().c_str(), source, ZIP_FL_OVERWRITE) < 0) {
+                get_logger().error("Failed to add file: {}", zip_strerror(archive));
+                failed_files.push_back(file.filename().string());
+                zip_source_free(source);
+            }
+            file_count++;
+        }
+    }
+
     if (!failed_files.empty()) {
         get_logger().error("Failed to backup:");
         for (const auto& f : failed_files) {
