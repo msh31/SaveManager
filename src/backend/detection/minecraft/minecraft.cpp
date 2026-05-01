@@ -15,17 +15,23 @@ std::expected<std::vector<Game>, DetectionError> MinecraftDetector::find_saves(c
         fs::path game_folder = game.path();
         std::string folder_name = game_folder.filename().string();
 
-        std::println("found: {}", folder_name);
+        std::println("found modrinth profile: {}", folder_name);
 
         for(const auto& profile : fs::directory_iterator(game_folder, std::filesystem::directory_options::skip_permission_denied)) {
             if(profile.path().filename().string() != "saves") continue;
+            // std::println("found profile: {}", profile.path().string());
 
-            Game entry;
-            entry.type = PlatformType::MINECRAFT;
-            entry.game_name = "Minecraft";
-            entry.appid = "N/A";
-            entry.save_path = profile.path().string();
-            games.push_back(entry);
+            for(const auto& world : fs::directory_iterator(profile.path(), std::filesystem::directory_options::skip_permission_denied)) {
+                std::println("found world: {}", world.path().string());
+                if(world.path().empty()) continue;
+
+                Game entry;
+                entry.type = PlatformType::MINECRAFT;
+                entry.game_name = "Minecraft";
+                entry.appid = "N/A";
+                entry.save_path = world.path().string();
+                games.push_back(entry);
+            }
         }
     }
     return games;

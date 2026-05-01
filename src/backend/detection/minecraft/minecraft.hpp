@@ -8,7 +8,7 @@ public:
 
 private:
     //To be expanded
-    enum LAUNCHER {
+    enum LAUNCHER_TYPE {
         OFFICIAL = 1,
         MODRINTH,
         CURSEFORGE,

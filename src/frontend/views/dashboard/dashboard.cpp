@@ -5,7 +5,6 @@
 #include "backend/features/backup/backup.hpp"
 #include "../backups/backup_view.hpp"
 
-
 #ifdef __APPLE__
 #include <spawn.h>
 #include <sys/wait.h>
@@ -25,6 +24,7 @@ static std::string_view get_platform_label(PlatformType t) {
         case PlatformType::UNREAL:    return "Unreal";
         case PlatformType::PSP:       return "PSP";
         case PlatformType::PPSSPP:    return "PPSSPP";
+        case PlatformType::MINECRAFT:    return "Minecraft"; //change to launcher?
         case PlatformType::CUSTOM:    return "CUSTOM";
     }
     return "";
@@ -41,11 +41,15 @@ void DashboardTab::on_result_changed(RenderContext& ctx) {
         for (const auto& game : ctx.games) {
             GameCache cache;
             if (!fs::is_directory(game.save_path)) continue;
-            for (const auto& file : fs::recursive_directory_iterator(game.save_path, fs::directory_options::skip_permission_denied)) {
-                if (!fs::is_regular_file(file)) continue;
-                auto ext = file.path().extension().string();
-                if(std::find(extension_blocklist.begin(), extension_blocklist.end(), ext) != extension_blocklist.end()) continue;
-                cache.save_files.push_back(file.path());
+            if(game.type != PlatformType::MINECRAFT) {
+                for (const auto& file : fs::recursive_directory_iterator(game.save_path, fs::directory_options::skip_permission_denied)) {
+                    if (!fs::is_regular_file(file)) continue;
+                    auto ext = file.path().extension().string();
+                    if(std::find(extension_blocklist.begin(), extension_blocklist.end(), ext) != extension_blocklist.end()) continue;
+                    cache.save_files.push_back(file.path());
+                }
+            } else {
+                cache.save_files.push_back(game.save_path);
             }
             cache.backup_count = Features::get_backups(game.game_name, ctx.config).size();
             cache.labels = Features::load_labels(game.game_name, ctx.config);
@@ -292,7 +296,9 @@ void DashboardTab::render_game_row(RenderContext& ctx, const std::vector<int>& g
 
     if (not_collapsed) {
         if(save_count > 0) {
-            ImGui::TextDisabled("SAVE FILES");
+            if(primary.type != PlatformType::MINECRAFT) ImGui::TextDisabled("SAVE FILES");
+            else ImGui::TextDisabled("WORLDS");
+
             static std::string test_str = "-------------";
             ImGui::SameLine(ImGui::GetContentRegionMax().x - ImGui::CalcTextSize(test_str.c_str()).x);
 
@@ -383,8 +389,11 @@ void DashboardTab::render_save_row(RenderContext& ctx, const fs::path& save_file
     std::string date_text = std::format("{:%d/%m/%y %H:%M} | ", fs::last_write_time(save_file));
     float date_width = ImGui::CalcTextSize(date_text.c_str()).x;
 
-    auto b_size = fs::file_size(save_file) / 1024;
-    std::string size_text = std::format("{}KB  ", b_size);
+    std::string size_text;
+    if(game.type != PlatformType::MINECRAFT) {
+        auto b_size = fs::file_size(save_file) / 1024;
+        size_text = std::format("{}KB  ", b_size);
+    } 
 
     float size_width = ImGui::CalcTextSize(size_text.c_str()).x;
     float total_width = date_width + size_width + btn_width * 1 + button_spacing * 5;
