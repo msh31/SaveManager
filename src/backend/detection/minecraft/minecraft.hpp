@@ -11,5 +11,5 @@ private:
     std::vector<Game> scan_curseforge() const;
     std::vector<Game> scan_prism() const;
     std::vector<Game> scan_multimc() const;
-    std::vector<Game> scan_atllauncher() const;
+    // std::vector<Game> scan_atllauncher() const;
 };

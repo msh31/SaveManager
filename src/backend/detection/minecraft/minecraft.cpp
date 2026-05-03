@@ -14,6 +14,7 @@ std::expected<std::vector<Game>, DetectionError> MinecraftDetector::find_saves()
     append(scan_modrinth());
     append(scan_prism());
     append(scan_multimc());
+    append(scan_curseforge());
     return games;
 }
 
@@ -71,10 +72,35 @@ std::vector<Game> MinecraftDetector::scan_modrinth() const {
     return games;
 }
 
-// std::vector<Game> MinecraftDetector::scan_curseforge() const {
-//
-// }
-//
+std::vector<Game> MinecraftDetector::scan_curseforge() const {
+    fs::path curse_path = paths::home_dir() / "Documents" / "curseforge" / "minecraft" / "Instances";
+    std::vector<Game> games;
+
+    if(!fs::exists(curse_path)) return {};
+
+    for(const auto& game : fs::directory_iterator(curse_path, std::filesystem::directory_options::skip_permission_denied)) {
+        fs::path game_folder = game.path();
+        std::string folder_name = game_folder.filename().string();
+
+        for(const auto& profile : fs::directory_iterator(game_folder, std::filesystem::directory_options::skip_permission_denied)) {
+            if(profile.path().filename().string() != "saves") continue;
+
+            for(const auto& world : fs::directory_iterator(profile.path(), std::filesystem::directory_options::skip_permission_denied)) {
+                if(world.path().empty()) continue;
+
+                Game entry;
+                entry.type = PlatformType::MINECRAFT;
+                entry.game_name = "Minecraft";
+                entry.appid = "N/A";
+                entry.save_path = world.path().string();
+                entry.launcher = LauncherType::CURSEFORGE;
+                games.push_back(entry);
+            }
+        }
+    }
+    return games;
+}
+
 std::vector<Game> MinecraftDetector::scan_prism() const {
     fs::path prism_path = paths::home_dir() / ".var" / "app" / "org.prismlauncher.PrismLauncher" / "data" / "PrismLauncher" / "instances";
     std::vector<Game> games;
