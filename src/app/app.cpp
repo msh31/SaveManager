@@ -1,3 +1,4 @@
+#include "backend/utils/paths.hpp"
 #ifdef _WIN32
 #include <windows.h>
 #pragma comment(linker, "/subsystem:windows /entry:mainCRTStartup")
@@ -24,7 +25,7 @@
 
 #include <curl/curl.h>
 
-App::App(fs::path config_dir) : config(config_dir) {}
+App::App(fs::path config_dir) : config(config_dir), plugin(paths::plugin_dir() / "test.lua") {}
 
 void App::init() {
     if(!setup_opengl()) {

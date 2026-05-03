@@ -2,6 +2,7 @@
 #include <constants.hpp>
 
 #include "backend/config/config.hpp"
+#include "backend/plugin/plugin.hpp"
 #include "frontend/views/editor/editor_view.hpp"
 #include "frontend/views/settings/settings.hpp"
 #include "frontend/views/log/log.hpp"
@@ -37,6 +38,7 @@ private:
     void render_loading_screen();
 
     Fonts fonts;
+    Plugin plugin;
 
     Config config;
     DashboardTab dahsboard_tab;
