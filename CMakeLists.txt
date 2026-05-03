@@ -63,6 +63,8 @@ find_package(nlohmann_json REQUIRED)
 
 find_package(stb REQUIRED)
 
+find_package(sol2 REQUIRED)
+
 # Target: savemanager
 set(CMKR_TARGET savemanager)
 add_subdirectory(vendor/nativefiledialog-extended)
@@ -81,6 +83,7 @@ set(savemanager_SOURCES
 	"src/backend/features/remote_transfer/remote_transfer.cpp"
 	"src/backend/features/save_editor/save_editor.cpp"
 	"src/backend/network/network.cpp"
+	"src/backend/plugin/plugin.cpp"
 	"src/backend/utils/blacklist/blacklist.cpp"
 	"src/backend/utils/custom_games/custom_games.cpp"
 	"src/backend/utils/translations/translations.cpp"
@@ -124,6 +127,7 @@ target_link_libraries(savemanager PRIVATE
 	nlohmann_json::nlohmann_json
 	stb::stb
 	nfd::nfd
+	sol2::sol2
 )
 
 if(WIN32) # windows

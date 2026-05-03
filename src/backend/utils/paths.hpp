@@ -42,6 +42,10 @@ inline fs::path backup_dir() {
     return config_dir() / "backups";
 }
 
+inline fs::path plugin_dir() {
+    return config_dir() / "plugins";
+}
+
 inline fs::path cache_dir() {
     return config_dir() / "cache";
 }

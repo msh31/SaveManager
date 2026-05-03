@@ -37,6 +37,9 @@ required = true
 [find-package.stb]
 required = true
 
+[find-package.sol2]
+required = true
+
 [variables]
 CMAKE_EXPORT_COMPILE_COMMANDS = true
 
@@ -51,7 +54,7 @@ include-directories = [
     "vendor/imgui",
 ]
 precompile-headers = ["src/pch.hpp"]
-link-libraries = ["CURL::libcurl", "glfw", "libzip::zip", "Libssh2::libssh2", "OpenSSL::Crypto", "imgui::imgui", "glad::glad", "nlohmann_json::nlohmann_json", "stb::stb", "nfd::nfd"]
+link-libraries = ["CURL::libcurl", "glfw", "libzip::zip", "Libssh2::libssh2", "OpenSSL::Crypto", "imgui::imgui", "glad::glad", "nlohmann_json::nlohmann_json", "stb::stb", "nfd::nfd", "sol2::sol2"]
 compile-features = ["cxx_std_23"]
 cmake-before = """
 add_subdirectory(vendor/nativefiledialog-extended)

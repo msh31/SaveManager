@@ -22,6 +22,12 @@ Config::Config(fs::path config_dir) : config_file(config_dir / "config.json") {
             }
         }
 
+        if(!fs::exists(paths::plugin_dir())) {
+            if(!fs::create_directories(paths::plugin_dir())) {
+                get_logger().error("Failed to create plugins directory");
+            }
+        }
+
         // if(!fs::exists(paths::cache_dir())) {
         //     if(!fs::create_directories(paths::cache_dir())) {
         //         get_logger().error("Failed to create cache directory");
