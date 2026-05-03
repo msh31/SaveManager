@@ -12,7 +12,8 @@
 *.gltf linguist-vendored
 *.glb linguist-vendored
 
-src/core/ui/fonts/*.h linguist-vendored
+src/**.h linguist-vendored
+src/**.c linguist-vendored
 
-assets/* linguist-vendored
+assets/** linguist-vendored
 vendor/** linguist-vendored
