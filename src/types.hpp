@@ -27,7 +27,6 @@ enum class LauncherType {
     CURSEFORGE,
     PRISM,
     MULTIMC,
-    ATLLAUNCHER
 };
 
 struct Game {

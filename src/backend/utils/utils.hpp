@@ -74,7 +74,6 @@ static std::string_view get_launcher_label(LauncherType t) {
         case LauncherType::CURSEFORGE:    return "CurseForge";
         case LauncherType::PRISM:       return "Prism";
         case LauncherType::MULTIMC:    return "MultiMC";
-        case LauncherType::ATLLAUNCHER:    return "ATLLauncher"; 
     }
     return "";
 }
