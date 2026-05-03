@@ -1,23 +1,32 @@
 # Changelog
 
-## [1.6.0] - 2026-05-10
+## [1.6.0] - 2026-05-20
 ### Added
-- Minecraft support
+- Minecraft support (Official / Modrinth / Curseforge / Prismlauncher, MultiMC)
 - (Experimental) Custom detector support through LUA
 - Grid view toggle
 - Keyboard shortcuts
 - Window size & position persistence
 - Atomic backup writing (Prevents corrupted backups if there is a crash or power loss during backup)
 
+
 ### Fixed
+- A crash when you delete a savefile outside of the application
+
 
 ### Changed
 - Creating a single backup of a save or a backup of all is now done asynchronously (Minecraft saves can be big)
 
 
+### Known Issues / Limitations
+- Original Anno editions not supported due to install path limitations (You can add them manually though!)
+- Grouping issues with unknown / partially supported games (Similar to #2 but has since improved)
+
+
 ## [1.5.4] - 2026-04-29
 ### Fixed 
 - Dashboard lag caused by filesystem scans and JSON reads every frame
+
 
 ## [1.5.3] - 2026-04-29
 ### Fixed 
