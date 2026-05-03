@@ -174,7 +174,7 @@ void Detection::find_saves(Config& config, DetectionResult& d_result) {
     Detectors detectors;
 
     //test
-    Detection::add_game(detectors.minecraft_detect.find_saves("/home/unknown/.local/share/ModrinthApp/profiles/"), "minecraft", d_result);
+    Detection::add_game(detectors.minecraft_detect.find_saves(), "minecraft", d_result);
 
 #ifdef __linux__
     // steam
@@ -276,7 +276,7 @@ std::vector<std::vector<int>> Detection::DetectionResult::get_grouped() const {
     std::vector<std::vector<int>> groups;
 
     enumerate(games, [&](int i, auto& game) {
-        std::string key = (game.appid != "N/A") ? game.appid : "N/A::" + game.game_name;
+        std::string key = (game.appid != "N/A") ? game.appid : cache_key(game);
 
         auto it = key_to_group.find(key);
         if (it != key_to_group.end()) {

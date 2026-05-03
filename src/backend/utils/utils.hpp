@@ -1,4 +1,5 @@
 #pragma once
+#include "types.hpp"
 #include <zip.h>
 
 struct Fonts {
@@ -50,4 +51,37 @@ inline std::string sanitize_filename(std::string text) {
         return invalid.find(c) != std::string::npos;
     }, '_');
     return text;
+}
+
+
+static std::string_view get_platform_label(PlatformType t) {
+    switch(t) {
+        case PlatformType::UBISOFT:   return "Ubisoft";
+        case PlatformType::ROCKSTAR:  return "Rockstar";
+        case PlatformType::UNREAL:    return "Unreal";
+        case PlatformType::PSP:       return "PSP";
+        case PlatformType::PPSSPP:    return "PPSSPP";
+        case PlatformType::MINECRAFT:    return "Minecraft"; //change to launcher?
+        case PlatformType::CUSTOM:    return "CUSTOM";
+    }
+    return "";
+}
+
+static std::string_view get_launcher_label(LauncherType t) {
+    switch(t) {
+        case LauncherType::OFFICIAL:   return "Official";
+        case LauncherType::MODRINTH:  return "Modrinth";
+        case LauncherType::CURSEFORGE:    return "CurseForge";
+        case LauncherType::PRISM:       return "Prism";
+        case LauncherType::MULTIMC:    return "MultiMC";
+        case LauncherType::ATLLAUNCHER:    return "ATLLauncher"; 
+    }
+    return "";
+}
+
+inline std::string cache_key(const Game& game) {
+    if(game.type == PlatformType::MINECRAFT) {
+        return "Minecraft";
+    }
+    return game.game_name;
 }

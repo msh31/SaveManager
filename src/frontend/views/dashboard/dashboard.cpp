@@ -4,6 +4,7 @@
 #include "frontend/ui/notifications/notification.hpp"
 #include "backend/features/backup/backup.hpp"
 #include "../backups/backup_view.hpp"
+#include "types.hpp"
 
 #ifdef __APPLE__
 #include <spawn.h>
@@ -17,23 +18,12 @@ static float btn_width = 80.0f;
 static constexpr const char* ICON_SORT   = "\xef\x83\x9c";
 static constexpr const char* ICON_FILTER = "\xef\x82\xb0";
 
-static std::string_view get_platform_label(PlatformType t) {
-    switch(t) {
-        case PlatformType::UBISOFT:   return "Ubisoft";
-        case PlatformType::ROCKSTAR:  return "Rockstar";
-        case PlatformType::UNREAL:    return "Unreal";
-        case PlatformType::PSP:       return "PSP";
-        case PlatformType::PPSSPP:    return "PPSSPP";
-        case PlatformType::MINECRAFT:    return "Minecraft"; //change to launcher?
-        case PlatformType::CUSTOM:    return "CUSTOM";
-    }
-    return "";
-}
-
 void DashboardTab::on_result_changed(RenderContext& ctx) {
     std::shared_lock<std::shared_mutex> lock(ctx.result.d_mutex);
     ZoneScopedN("on_result_changed");
     grouped_games = {};
+    game_cache.clear();
+
     grouped_games = ctx.result.get_grouped();
     last_game_count = ctx.games.size();
 
@@ -53,7 +43,16 @@ void DashboardTab::on_result_changed(RenderContext& ctx) {
             }
             cache.backup_count = Features::get_backups(game.game_name, ctx.config).size();
             cache.labels = Features::load_labels(game.game_name, ctx.config);
-            game_cache[game.game_name] = cache;
+            auto key = cache_key(game);
+            if(game.type == PlatformType::MINECRAFT) {
+                if(game_cache.contains(key)) {
+                    game_cache[key].save_files.push_back(game.save_path);
+                } else {
+                    game_cache[cache_key(game)] = cache;
+                }
+            } else {
+                game_cache[cache_key(game)] = cache;
+            }
         }
 
         for (const auto& entry : ctx.games) {
@@ -247,11 +246,11 @@ void DashboardTab::render_game_row(RenderContext& ctx, const std::vector<int>& g
 
     const float card_padding = 8.0f;
     auto top = ImGui::GetCursorScreenPos();
-    bool& not_collapsed = card_collapsed[primary.game_name]; //defaults to false
-    bool& bk_collapsed = backups_collapsed[primary.game_name];
+    bool& not_collapsed = card_collapsed[cache_key(primary)]; //defaults to false
+    bool& bk_collapsed = backups_collapsed[cache_key(primary)];
 
     std::vector<std::pair<fs::path, const Game*>> files = {};
-    auto& cache = game_cache[primary.game_name];
+    auto& cache = game_cache[cache_key(primary)];
     int save_count = cache.save_files.size();
     int backup_count = cache.backup_count;
     auto labels = cache.labels;

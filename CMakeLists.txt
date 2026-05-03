@@ -39,7 +39,7 @@ project(SaveManager
 		C
 		CXX
 	VERSION
-		1.5.4
+		1.6.0
 	DESCRIPTION
 		"The swiss army knife of save management."
 )

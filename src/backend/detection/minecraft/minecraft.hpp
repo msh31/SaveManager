@@ -1,10 +1,9 @@
 #pragma once
 #include <types.hpp>
-namespace fs = std::filesystem;
 
 class MinecraftDetector {
 public:
-    std::expected<std::vector<Game>, DetectionError> find_saves(const fs::path& prefix) const;
+    std::expected<std::vector<Game>, DetectionError> find_saves() const;
 
 private:
     //To be expanded
@@ -12,7 +11,15 @@ private:
         OFFICIAL = 1,
         MODRINTH,
         CURSEFORGE,
-        BADLION,
-        LUNARCLIENT,
+        PRISM,
+        MULTIMC,
+        ATLLAUNCHER
     };
+
+    std::vector<Game> scan_official() const;
+    std::vector<Game> scan_modrinth() const;
+    std::vector<Game> scan_curseforge() const;
+    std::vector<Game> scan_prism() const;
+    std::vector<Game> scan_multimc() const;
+    std::vector<Game> scan_atllauncher() const;
 };

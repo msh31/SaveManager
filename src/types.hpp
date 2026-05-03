@@ -21,10 +21,20 @@ enum class PlatformType {
     CUSTOM
 };
 
+enum class LauncherType {
+    OFFICIAL = 1,
+    MODRINTH,
+    CURSEFORGE,
+    PRISM,
+    MULTIMC,
+    ATLLAUNCHER
+};
+
 struct Game {
     PlatformType type;
     std::string appid;
     std::optional<std::string> game_id; 
     std::string game_name;
     std::filesystem::path save_path;
+    LauncherType launcher; //minecraft only
 };
