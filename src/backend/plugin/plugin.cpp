@@ -17,5 +17,18 @@ Plugin::Plugin(std::filesystem::path path) {
 
 //TODO
 std::vector<Game> Plugin::find_saves() {
-    return {}; 
+    sol::protected_function fn = lua["find_saves"];
+    auto result = fn();
+    std::vector<Game> games;
+
+    sol::table table = result;
+    for (auto& [key, val] : table) {
+        sol::table entry = val.as<sol::table>();
+        Game g;
+        g.game_name = entry["game_name"].get<std::string>();
+        g.appid = entry["appid"].get<std::string>();
+        g.save_path = entry["save_path"].get<std::string>();
+        games.emplace_back(g);
+    }
+    return games;
 }

@@ -1,4 +1,5 @@
 #include "backend/utils/paths.hpp"
+#include <print>
 #ifdef _WIN32
 #include <windows.h>
 #pragma comment(linker, "/subsystem:windows /entry:mainCRTStartup")
@@ -47,6 +48,12 @@ void App::init() {
         config.save();
     });
     curl_global_init(CURL_GLOBAL_DEFAULT);
+
+    //test
+    for(const auto& entry : plugin.find_saves()) {
+        get_logger().debug("game: {}", entry.game_name);
+        get_logger().debug("path: {}", entry.save_path.string());
+    }
 }
 
 void App::render_ui() {
