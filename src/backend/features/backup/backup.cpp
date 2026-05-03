@@ -38,6 +38,12 @@ void Features::backup_game(const Game& game, const fs::path& file, Config& confi
     fs::path zip_name = game_backup_dir / construct_backup_name(game.game_name);
 
     ZipArchive archive(MODE_CREATE_ARCHIVE, zip_name.u8string());
+
+    //saving the world name 
+    if(game.type == PlatformType::MINECRAFT) {
+        archive.set_comment(file.string());
+    }
+
     if(!archive.add_to_archive(file)) {
         Notify::show_notification("Backup Creation", "Failed to create backup! Please refer to the logfile!", 2000);
     } else {
@@ -67,7 +73,17 @@ std::vector<fs::path> Features::get_backups(const std::string& game, Config& con
 void Features::restore_backup(const fs::path& name, const fs::path& save_path) {
     ZoneScopedN("restore_backup");
     ZipArchive archive(MODE_EXTRACT_ARCHIVE, name.u8string());
-    if(!archive.extract_archive(save_path)) {
+
+    fs::path restore_path;
+    std::string comment = archive.get_comment();
+    if(!comment.empty()) {
+        restore_path = comment;
+        fs::create_directories(restore_path);
+    } else {
+        restore_path = save_path;
+    }
+
+    if(!archive.extract_archive(restore_path)) {
         Notify::show_notification("Backup Extraction", "Failed to restore backup! Please refer to the logfile!", 2000);
     } else {
         Notify::show_notification("Backup restored!", std::format("The backup: {} has been restored!", name.string()), 2000);

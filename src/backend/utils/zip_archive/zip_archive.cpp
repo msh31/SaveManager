@@ -74,7 +74,7 @@ bool ZipArchive::extract_archive(const fs::path& save_path) {
 
         if (zip_stat_index(archive, i, 0, &fileInfo) == 0) {
             get_logger().info("File Name: {}", fileInfo.name);
-            const auto& output_path = save_path.parent_path() / fileInfo.name;
+            const auto& output_path = save_path / fileInfo.name;
             get_logger().info("Saving to: {}", output_path.string());
 
             zip_file* file = zip_fopen_index(archive, i, 0);
@@ -123,3 +123,11 @@ bool ZipArchive::extract_archive(const fs::path& save_path) {
     }
 }
 
+void ZipArchive::set_comment(const std::string& str) {
+    zip_set_archive_comment(archive, str.c_str(), str.size());
+}
+
+const char* ZipArchive::get_comment() {
+    int len = 0;
+    return zip_get_archive_comment(archive, &len, 0);
+}

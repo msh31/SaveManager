@@ -23,6 +23,9 @@ public:
     bool add_to_archive(const fs::path& file);
     bool extract_archive(const fs::path& save_path);
 
+    void set_comment(const std::string&);
+    const char* get_comment();
+
     // disable copying (prevent accidental double-cleanup)
     ZipArchive(const ZipArchive&) = delete;
     ZipArchive& operator=(const ZipArchive&) = delete;
