@@ -1,8 +1,9 @@
 #include "plugin.hpp"
+#include "backend/logger/logger.hpp"
 #include "backend/utils/paths.hpp"
 
 Plugin::Plugin(std::filesystem::path path) {
-    lua.open_libraries(sol::lib::base); //allow print, type, tostring etc
+    lua.open_libraries(sol::lib::base, sol::lib::string, sol::lib::table); //allow print, type, tostring etc
 
     lua.set_function("path_exists", [](const std::string& p) {
             return fs::exists(p);
@@ -19,8 +20,8 @@ Plugin::Plugin(std::filesystem::path path) {
             int index = 1; //fucking lua
 
             for (const auto& entry : fs::directory_iterator(path)) {  
-            table[index] = entry.path().string();  
-            index++;  
+                table[index] = entry.path().string();  
+                index++;  
             }  
 
             return table;
@@ -35,7 +36,13 @@ std::vector<Game> Plugin::find_saves() {
     auto result = fn();
     std::vector<Game> games;
 
-    sol::table table = result;
+    if (!result.valid()) {
+        sol::error err = result;
+        get_logger().error("Lua error: {}", err.what());
+        return {};
+    }
+    
+    sol::table table = result.get<sol::table>();
     for (auto& [key, val] : table) {
         sol::table entry = val.as<sol::table>();
         Game g;
