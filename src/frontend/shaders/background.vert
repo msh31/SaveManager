@@ -3,7 +3,7 @@
 //Vertex Buffer Object - chunk of memory on the gpu;
 //upload vertex data (coords) lives until manually deleted
 
-in vec2 aPos;      //comes from VAO
+layout(location = 0) in vec2 aPos;      //comes from VAO
 out vec2 vUV;      // passed to frag shader
 
 void main() {

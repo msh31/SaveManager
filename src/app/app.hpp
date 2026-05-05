@@ -30,6 +30,10 @@ public:
 private:
     GLuint compile_shader(const fs::path& path, GLenum type);
     GLuint link_program(GLuint vert, GLuint frag);
+    void init_quad();
+    GLuint m_vao;
+    GLuint m_vbo;
+    GLuint m_shader_program;
 
     bool setup_opengl();
     bool setup_imgui();
