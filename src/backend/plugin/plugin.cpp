@@ -4,7 +4,7 @@
 
 Plugin::Plugin(std::filesystem::path path) {
     lua.open_libraries(sol::lib::base, sol::lib::string, sol::lib::table); //allow print, type, tostring etc
-
+    
     lua.set_function("path_exists", [](const std::string& p) {
             return fs::exists(p);
             });
@@ -17,7 +17,7 @@ Plugin::Plugin(std::filesystem::path path) {
             if(!fs::is_directory(path)) return sol::table();
 
             sol::table table = lua.create_table();
-            int index = 1; //fucking lua
+            int index = 1; //lua
 
             for (const auto& entry : fs::directory_iterator(path)) {  
                 table[index] = entry.path().string();  
@@ -28,9 +28,14 @@ Plugin::Plugin(std::filesystem::path path) {
             });
 
     lua.script_file(path); //load and run the script
+
+    if (lua["config"].valid()) {
+        show_parent_path = lua["config"]["show_parent_path"].get_or(false);
+    }
+    // get_logger().debug("config valid: {}", lua["config"].valid());
+    // get_logger().debug("show_parent_path valid: {}", lua["config"]["show_parent_path"].valid());
 }
 
-//TODO
 std::vector<Game> Plugin::find_saves() {
     sol::protected_function fn = lua["find_saves"];
     auto result = fn();
@@ -50,6 +55,7 @@ std::vector<Game> Plugin::find_saves() {
         g.game_name = entry["game_name"].get<std::string>();
         g.appid = entry["appid"].get<std::string>();
         g.save_path = entry["save_path"].get<std::string>();
+        g.show_parent_path = show_parent_path;
         games.emplace_back(g);
     }
     return games;

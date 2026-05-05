@@ -30,10 +30,11 @@ enum class LauncherType {
 };
 
 struct Game {
-    PlatformType type;
+    PlatformType type; //display
     std::string appid;
     std::optional<std::string> game_id; 
     std::string game_name;
     std::filesystem::path save_path;
-    LauncherType launcher; //minecraft only
+    LauncherType launcher; //minecraft only | display
+    bool show_parent_path; //display
 };
