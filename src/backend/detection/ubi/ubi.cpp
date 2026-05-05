@@ -60,6 +60,7 @@ std::expected<std::vector<Game>, DetectionError> UbisoftDetector::find_anno_save
             anno.type = PlatformType::UBISOFT;
             anno.game_name = anno_data.game_name;
             anno.appid = translations::get_steam_id(anno_data.game_name).value_or("N/A");
+            anno.show_parent_path = true;
 
             if(fs::exists(game.path() / "accounts")) {
                 for(const auto& entry : fs::directory_iterator(game.path() / "accounts", std::filesystem::directory_options::skip_permission_denied)) {
