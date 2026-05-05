@@ -26,7 +26,7 @@
 
 #include <curl/curl.h>
 
-App::App(fs::path config_dir) : config(config_dir), plugin(paths::plugin_dir() / "test.lua") {}
+App::App(fs::path config_dir) : config(config_dir) {}
 
 void App::init() {
     if(!setup_opengl()) {
@@ -50,10 +50,10 @@ void App::init() {
     curl_global_init(CURL_GLOBAL_DEFAULT);
 
     //test
-    for(const auto& entry : plugin.find_saves()) {
-        get_logger().debug("game: {}", entry.game_name);
-        get_logger().debug("path: {}", entry.save_path.string());
-    }
+    // for(const auto& entry : plugin.find_saves()) {
+    //     get_logger().debug("game: {}", entry.game_name);
+    //     get_logger().debug("path: {}", entry.save_path.string());
+    // }
 }
 
 void App::render_ui() {

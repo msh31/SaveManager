@@ -1,4 +1,5 @@
 #include "detection.hpp"
+#include "backend/plugin/plugin.hpp"
 #include "backend/config/config.hpp"
 #include "backend/utils/blacklist/blacklist.hpp"
 #include "backend/utils/paths.hpp"
@@ -9,7 +10,6 @@
 #include "backend/detection/ubi/ubi.hpp"
 #include "backend/detection/unreal/unreal.hpp"
 #include "backend/detection/minecraft/minecraft.hpp"
-
 
 // #include "backend/detection/custom/custom.hpp"
 
@@ -173,7 +173,17 @@ void Detection::find_saves(Config& config, DetectionResult& d_result) {
     ZoneScopedN("find_saves");
     Detectors detectors;
 
-    //test
+//cool lua support
+    for (const auto& plugin : fs::directory_iterator(paths::plugin_dir(), fs::directory_options::skip_permission_denied)) {
+        // get_logger().debug("found: {}", plugin.path().string());
+        if(plugin.path().extension() != ".lua") continue;
+        if(!fs::is_regular_file(plugin)) continue;
+
+        Plugin plugins(plugin);
+        Detection::add_game(plugins.find_saves(), "Custom", d_result);
+    }
+
+//TODO: move this & make it platform agnostic
     Detection::add_game(detectors.minecraft_detect.find_saves(), "minecraft", d_result);
 
 #ifdef __linux__

@@ -25,6 +25,7 @@ std::vector<Game> Plugin::find_saves() {
     for (auto& [key, val] : table) {
         sol::table entry = val.as<sol::table>();
         Game g;
+        g.type = PlatformType::CUSTOM;
         g.game_name = entry["game_name"].get<std::string>();
         g.appid = entry["appid"].get<std::string>();
         g.save_path = entry["save_path"].get<std::string>();
