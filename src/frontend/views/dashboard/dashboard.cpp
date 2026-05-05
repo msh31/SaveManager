@@ -402,7 +402,12 @@ void DashboardTab::render_save_row(RenderContext& ctx, const fs::path& save_file
     float size_width = ImGui::CalcTextSize(size_text.c_str()).x;
     float total_width = date_width + size_width + btn_width * 1 + button_spacing * 5;
 
-    ImGui::Text("%s", save_file.filename().string().c_str());
+    if(game.show_parent_path) {
+        ImGui::Text("%s", (save_file.parent_path().filename() / save_file.filename()).string().c_str());
+    } else {
+        ImGui::Text("%s", save_file.filename().string().c_str());
+    }
+
     ImGui::SameLine(ImGui::GetContentRegionMax().x - total_width);
 
     ImGui::TextDisabled("%s", date_text.c_str());
