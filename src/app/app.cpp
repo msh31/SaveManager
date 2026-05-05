@@ -1,3 +1,4 @@
+#include "backend/utils/paths.hpp"
 #ifdef _WIN32
 #include <windows.h>
 #pragma comment(linker, "/subsystem:windows /entry:mainCRTStartup")
@@ -16,6 +17,7 @@
 #include "frontend/ui/fonts/jbm_med.h"
 #include "frontend/ui/fonts/jbm_bold.h"
 #include "frontend/ui/fonts/font_awesome.hpp"
+#include <frontend/shaders/shader.hpp>
 
 #include "backend/detection/detection.hpp"
 #include "backend/utils/translations/translations.hpp"
@@ -44,6 +46,12 @@ void App::init() {
         config.save();
     });
     curl_global_init(CURL_GLOBAL_DEFAULT);
+
+    //async?
+    GLuint vert = compile_shader(default_vert, GL_VERTEX_SHADER);
+    GLuint frag = compile_shader(default_frag, GL_FRAGMENT_SHADER);
+    m_shader_program = link_program(vert, frag);
+    init_quad();
 }
 
 void App::render_ui() {
@@ -162,6 +170,25 @@ GLuint App::compile_shader(const fs::path& path, GLenum type) {
         std::string logs(log_length, '\0');
         glGetShaderInfoLog(shader_id, log_length, NULL, logs.data());
         get_logger().warning("Shader compilation error: {} in: {}", logs, path.string());
+        glDeleteShader(shader_id);
+        return GL_FALSE;
+    }
+    return shader_id;
+}
+
+GLuint App::compile_shader(const char* source, GLenum type) {
+    GLuint shader_id = glCreateShader(type);
+    glShaderSource(shader_id, 1, &source, NULL);
+    glCompileShader(shader_id);
+
+    GLint is_compiled = 0;
+    glGetShaderiv(shader_id, GL_COMPILE_STATUS, &is_compiled);
+    if(is_compiled == GL_FALSE) {
+        GLint log_length = 0;
+        glGetShaderiv(shader_id, GL_INFO_LOG_LENGTH, &log_length);
+        std::string logs(log_length, '\0');
+        glGetShaderInfoLog(shader_id, log_length, NULL, logs.data());
+        get_logger().warning("Shader compilation error: {}", logs);
         glDeleteShader(shader_id);
         return GL_FALSE;
     }
@@ -292,6 +319,11 @@ void App::render() {
     ZoneScopedN("app_render");
     glClear(GL_COLOR_BUFFER_BIT);
 
+    glUseProgram(m_shader_program);
+    glBindVertexArray(m_vao);
+    glDrawArrays(GL_TRIANGLES, 0, 6);
+    glBindVertexArray(0);
+
     // if(refresh_requested) {
     //     for (auto& [appid, texture] : game_textures) glDeleteTextures(1, &texture);
     //     game_textures.clear();
@@ -357,7 +389,8 @@ void App::render() {
         ImGuiWindowFlags_NoMove |
         ImGuiWindowFlags_NoCollapse |
         ImGuiWindowFlags_NoBringToFrontOnFocus |
-        ImGuiWindowFlags_NoNavFocus;
+        ImGuiWindowFlags_NoNavFocus |
+        ImGuiWindowFlags_NoBackground;
 
     ImGui::Begin("Main Window", nullptr, window_flags);
 

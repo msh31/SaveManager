@@ -29,6 +29,7 @@ public:
     TabState state;
 private:
     GLuint compile_shader(const fs::path& path, GLenum type);
+    GLuint compile_shader(const char* source, GLenum type);
     GLuint link_program(GLuint vert, GLuint frag);
     void init_quad();
     GLuint m_vao;
