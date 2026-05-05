@@ -8,5 +8,5 @@ class Plugin {
         std::vector<Game> find_saves();
     private:
         sol::state lua;
-        bool show_parent_path;
+        bool show_parent_path = false;
 };

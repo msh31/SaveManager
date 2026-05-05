@@ -36,5 +36,5 @@ struct Game {
     std::string game_name;
     std::filesystem::path save_path;
     LauncherType launcher; //minecraft only | display
-    bool show_parent_path; //display
+    bool show_parent_path = false; //display
 };
