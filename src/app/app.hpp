@@ -28,6 +28,9 @@ public:
 
     TabState state;
 private:
+    GLuint compile_shader(const fs::path& path, GLenum type);
+    GLuint link_program(GLuint vert, GLuint frag);
+
     bool setup_opengl();
     bool setup_imgui();
 

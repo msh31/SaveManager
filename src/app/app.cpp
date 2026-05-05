@@ -1,5 +1,3 @@
-#include "backend/utils/paths.hpp"
-#include <print>
 #ifdef _WIN32
 #include <windows.h>
 #pragma comment(linker, "/subsystem:windows /entry:mainCRTStartup")
@@ -22,7 +20,6 @@
 #include "backend/detection/detection.hpp"
 #include "backend/utils/translations/translations.hpp"
 #include "backend/utils/blacklist/blacklist.hpp"
-// #include "backend/utils/custom_games/custom_games.hpp"
 
 #include <curl/curl.h>
 
@@ -44,16 +41,9 @@ void App::init() {
 
         translations::init();
         Blacklist::init();
-        // CustomGamesFile::init();
         config.save();
     });
     curl_global_init(CURL_GLOBAL_DEFAULT);
-
-    //test
-    // for(const auto& entry : plugin.find_saves()) {
-    //     get_logger().debug("game: {}", entry.game_name);
-    //     get_logger().debug("path: {}", entry.save_path.string());
-    // }
 }
 
 void App::render_ui() {
@@ -99,18 +89,12 @@ void App::render_ui() {
             ImGui::EndTabItem();
         }
         if (ImGui::BeginTabItem("Settings"))  {
-            // settings_tab.m_refresh_requested = &refresh_requested;
             settings_tab.render(fonts, config);
             ImGui::EndTabItem();
         }
-        // if (ImGui::BeginTabItem("Debug"))  {
-        //     Tabs::render_debug_tab(fonts);
-        //     ImGui::EndTabItem();
-        // }
 
         ImGui::EndTabBar();
     }
-    // ImGui::Separator();
 }
 
 void App::render_loading_screen() {
@@ -150,6 +134,70 @@ void App::render_loading_screen() {
         center.y + 35
     ));
     ImGui::Text("Loading");
+}
+
+GLuint App::compile_shader(const fs::path& path, GLenum type) {
+    GLint is_compiled = 0;
+
+    std::ifstream shader(path);
+    if(!shader.is_open()) return GL_FALSE;
+
+    std::ostringstream shader_content; 
+    shader_content << shader.rdbuf();
+    std::string shader_source = shader_content.str(); 
+
+    GLuint shader_id = glCreateShader(type);
+    if(shader_id == 0) {
+        get_logger().warning("Failed to load shader: {}", path.string());
+    }
+
+    const char* src = shader_source.c_str();
+    glShaderSource(shader_id, 1, &src, NULL);
+    glCompileShader(shader_id);
+    glGetShaderiv(shader_id, GL_COMPILE_STATUS, &is_compiled);
+
+    if(is_compiled == GL_FALSE) {
+        GLint log_length = 0;
+        glGetShaderiv(shader_id, GL_INFO_LOG_LENGTH, &log_length);
+        std::string logs(log_length, '\0');
+        glGetShaderInfoLog(shader_id, log_length, NULL, logs.data());
+        get_logger().warning("Shader compilation error: {} in: {}", logs, path.string());
+        glDeleteShader(shader_id);
+        return GL_FALSE;
+    }
+    return shader_id;
+}
+
+GLuint App::link_program(GLuint vert, GLuint frag) {
+    GLuint pid = glCreateProgram();
+    GLint is_linked = 0;
+
+    glAttachShader(pid, vert);
+    glAttachShader(pid, frag);
+
+    glLinkProgram(pid);
+
+    glGetProgramiv(pid, GL_LINK_STATUS, &is_linked);
+    if(is_linked == GL_FALSE) {
+        GLint log_length = 0;
+        glGetProgramiv(pid, GL_INFO_LOG_LENGTH, &log_length);
+        std::string logs(log_length, '\0');
+        glGetProgramInfoLog(pid, log_length, NULL, logs.data());
+        get_logger().warning("Shader linker error: {}", logs);
+
+        glDeleteProgram(pid);
+
+        glDeleteShader(vert);
+        glDeleteShader(frag);
+        return GL_FALSE;
+    }
+
+    glDetachShader(pid, vert);
+    glDetachShader(pid, frag);
+
+    glDeleteShader(vert);
+    glDeleteShader(frag);
+    return pid;
 }
 
 bool App::setup_opengl() {
