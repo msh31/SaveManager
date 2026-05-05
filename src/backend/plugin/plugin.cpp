@@ -3,6 +3,7 @@
 #include "backend/utils/paths.hpp"
 
 Plugin::Plugin(std::filesystem::path path) {
+    get_logger().info("Loaded plugin: {}", path.filename().string());
     lua.open_libraries(sol::lib::base, sol::lib::string, sol::lib::table); //allow print, type, tostring etc
     
     lua.set_function("path_exists", [](const std::string& p) {
