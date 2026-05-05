@@ -18,3 +18,8 @@ constexpr int DEF_RES_H = 900;
 constexpr std::array<std::string_view, 10> extension_blocklist{
     ".dat", ".bin", ".upload", ".bak", ".cfg", ".log", ".tmp", ".ini", ".set", ".txt"
 };
+
+
+constexpr std::array<std::string_view, 15> g_extension_blocklist{
+    ".png", ".jpg", ".jpeg", ".webp", ".bmp"
+};

@@ -35,7 +35,10 @@ void DashboardTab::on_result_changed(RenderContext& ctx) {
                 for (const auto& file : fs::recursive_directory_iterator(game.save_path, fs::directory_options::skip_permission_denied)) {
                     if (!fs::is_regular_file(file)) continue;
                     auto ext = file.path().extension().string();
-                    if(std::find(extension_blocklist.begin(), extension_blocklist.end(), ext) != extension_blocklist.end()) continue;
+                    if(game.type != PlatformType::CUSTOM) {
+                        if(std::find(extension_blocklist.begin(), extension_blocklist.end(), ext) != extension_blocklist.end()) continue;
+                    }
+                    if(std::find(g_extension_blocklist.begin(), g_extension_blocklist.end(), ext) != g_extension_blocklist.end()) continue;
                     cache.save_files.push_back(file.path());
                 }
             } else {
