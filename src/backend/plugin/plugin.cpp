@@ -12,6 +12,20 @@ Plugin::Plugin(std::filesystem::path path) {
             return paths::home_dir().string();
             });
 
+    lua.set_function("list_dir", [this](const std::string& path) {
+            if(!fs::is_directory(path)) return sol::table();
+
+            sol::table table = lua.create_table();
+            int index = 1; //fucking lua
+
+            for (const auto& entry : fs::directory_iterator(path)) {  
+            table[index] = entry.path().string();  
+            index++;  
+            }  
+
+            return table;
+            });
+
     lua.script_file(path); //load and run the script
 }
 
