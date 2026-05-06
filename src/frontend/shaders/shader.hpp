@@ -22,6 +22,9 @@ inline const char* default_frag = R"(
 in vec2 vUV;       // received from vert shader
 out vec4 fragColor;
 
+uniform vec2 iResolution;
+uniform float iTime;
+
 void main() {
     fragColor = vec4(vUV, 0.0, 1.0);
 }

@@ -1,4 +1,3 @@
-#include "backend/utils/paths.hpp"
 #ifdef _WIN32
 #include <windows.h>
 #pragma comment(linker, "/subsystem:windows /entry:mainCRTStartup")
@@ -317,12 +316,23 @@ bool App::setup_imgui() {
 
 void App::render() {
     ZoneScopedN("app_render");
+
+    int width = 0;
+    int height = 0;
+    glfwGetFramebufferSize(window, &width, &height);
+
     glClear(GL_COLOR_BUFFER_BIT);
 
+    glViewport(0, 0, width, height);
     glUseProgram(m_shader_program);
     glBindVertexArray(m_vao);
+
+//TODO: cache the uniforms
+    glUniform2f(glGetUniformLocation(m_shader_program, "iResolution"), width, height);
+    glUniform1f(glGetUniformLocation(m_shader_program, "iTime"), glfwGetTime());
     glDrawArrays(GL_TRIANGLES, 0, 6);
     glBindVertexArray(0);
+
 
     // if(refresh_requested) {
     //     for (auto& [appid, texture] : game_textures) glDeleteTextures(1, &texture);
