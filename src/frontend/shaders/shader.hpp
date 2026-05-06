@@ -26,6 +26,10 @@ uniform vec2 iResolution;
 uniform float iTime;
 
 void main() {
-    fragColor = vec4(vUV, 0.0, 1.0);
+    float pulse = sin(iTime * 2.0) * 0.5 + 0.5;
+    vec3 gray = vec3(0.145, 0.145, 0.141);
+    vec3 orange = vec3(0.91, 0.44, 0.29);
+    vec3 color = mix(gray, orange * 0.3, pulse * 0.15);
+    fragColor = vec4(color, 1.0);
 }
 )";
