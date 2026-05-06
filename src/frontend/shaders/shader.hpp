@@ -25,11 +25,20 @@ out vec4 fragColor;
 uniform vec2 iResolution;
 uniform float iTime;
 
+float rand(vec2 n) {
+    return fract(sin(dot(n, vec2(12.9898, 4.1414))) * 43758.5453);
+}
+
 void main() {
-    float pulse = sin(iTime * 2.0) * 0.5 + 0.5;
-    vec3 gray = vec3(0.145, 0.145, 0.141);
-    vec3 orange = vec3(0.91, 0.44, 0.29);
-    vec3 color = mix(gray, orange * 0.3, pulse * 0.15);
-    fragColor = vec4(color, 1.0);
+    float aspect = iResolution.x / iResolution.y;
+    vec2 cell = floor(vUV * 10.0); // which cell (10x10 grid)
+    vec2 local = fract(vUV * 10.0); // position within cell
+
+    // vec2 uv = vec2(vUV.x * aspect, vUV.y);
+    // vec2 center = vec2(0.5);// * aspect + sin(iTime) * 0.3, 0.5 + cos(iTime) * 0.3);
+    vec2 center = vec2(rand(cell), rand(cell + 1.0));
+    float d = distance(local, center);
+    if(d < 0.01) fragColor = vec4(1.0);
+    else fragColor = vec4(0.145, 0.145, 0.141, 1.0);
 }
 )";
