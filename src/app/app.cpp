@@ -46,6 +46,7 @@ void App::init() {
     });
     curl_global_init(CURL_GLOBAL_DEFAULT);
 
+    glClearColor(0.145f, 0.145f, 0.141f, 1.0f);
     if(config.settings.animated_background) {
         GLuint vert = compile_shader(default_vert, GL_VERTEX_SHADER);
         GLuint frag = compile_shader(default_frag, GL_FRAGMENT_SHADER);
@@ -53,7 +54,9 @@ void App::init() {
         m_u_resolution = glGetUniformLocation(m_shader_program, "iResolution");
         m_u_time = glGetUniformLocation(m_shader_program, "iTime");
         init_quad();
+        get_logger().info("Shader program: {}", m_shader_program);
     }
+    // get_logger().info("Shader program: {}", m_shader_program);
 }
 
 void App::render_ui() {
