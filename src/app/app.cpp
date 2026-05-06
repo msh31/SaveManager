@@ -50,6 +50,8 @@ void App::init() {
     GLuint vert = compile_shader(default_vert, GL_VERTEX_SHADER);
     GLuint frag = compile_shader(default_frag, GL_FRAGMENT_SHADER);
     m_shader_program = link_program(vert, frag);
+    m_u_resolution = glGetUniformLocation(m_shader_program, "iResolution");
+    m_u_time = glGetUniformLocation(m_shader_program, "iTime");
     init_quad();
 }
 
@@ -327,9 +329,8 @@ void App::render() {
     glUseProgram(m_shader_program);
     glBindVertexArray(m_vao);
 
-//TODO: cache the uniforms
-    glUniform2f(glGetUniformLocation(m_shader_program, "iResolution"), width, height);
-    glUniform1f(glGetUniformLocation(m_shader_program, "iTime"), glfwGetTime());
+    glUniform2f(m_u_resolution, width, height);
+    glUniform1f(m_u_time, glfwGetTime());
     glDrawArrays(GL_TRIANGLES, 0, 6);
     glBindVertexArray(0);
 

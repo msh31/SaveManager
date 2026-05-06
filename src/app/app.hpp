@@ -35,6 +35,8 @@ private:
     GLuint m_vao;
     GLuint m_vbo;
     GLuint m_shader_program;
+    GLint m_u_resolution;
+    GLint m_u_time;
 
     bool setup_opengl();
     bool setup_imgui();
