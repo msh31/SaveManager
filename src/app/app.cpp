@@ -26,6 +26,15 @@
 
 App::App(fs::path config_dir) : config(config_dir) {}
 
+void App::init_background() {
+    GLuint vert = compile_shader(default_vert, GL_VERTEX_SHADER);
+    GLuint frag = compile_shader(default_frag, GL_FRAGMENT_SHADER);
+    m_shader_program = link_program(vert, frag);
+    m_u_resolution = glGetUniformLocation(m_shader_program, "iResolution");
+    m_u_time = glGetUniformLocation(m_shader_program, "iTime");
+    init_quad();
+}
+
 void App::init() {
     if(!setup_opengl()) {
         return;
@@ -47,16 +56,6 @@ void App::init() {
     curl_global_init(CURL_GLOBAL_DEFAULT);
 
     glClearColor(0.145f, 0.145f, 0.141f, 1.0f);
-    if(config.settings.animated_background) {
-        GLuint vert = compile_shader(default_vert, GL_VERTEX_SHADER);
-        GLuint frag = compile_shader(default_frag, GL_FRAGMENT_SHADER);
-        m_shader_program = link_program(vert, frag);
-        m_u_resolution = glGetUniformLocation(m_shader_program, "iResolution");
-        m_u_time = glGetUniformLocation(m_shader_program, "iTime");
-        init_quad();
-        get_logger().info("Shader program: {}", m_shader_program);
-    }
-    // get_logger().info("Shader program: {}", m_shader_program);
 }
 
 void App::render_ui() {
@@ -330,6 +329,11 @@ void App::render() {
     glClear(GL_COLOR_BUFFER_BIT);
     glViewport(0, 0, width, height);
 
+    if(config.settings.animated_background && !is_bg_initialized) {
+        init_background();
+        is_bg_initialized = true;
+    }
+
     if(config.settings.animated_background) {
         glUseProgram(m_shader_program);
         glBindVertexArray(m_vao);
@@ -420,6 +424,9 @@ void App::render() {
     ImGui::End();
     ImGui::Render();
     ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+    glUseProgram(0);
+    glBindVertexArray(0);
+
     glfwSwapBuffers(window);
     FrameMark;
     glfwWaitEventsTimeout(1.0/60.0);

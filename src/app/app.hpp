@@ -28,6 +28,9 @@ public:
 
     TabState state;
 private:
+    void init_background();
+    bool is_bg_initialized = false;
+
     GLuint compile_shader(const fs::path& path, GLenum type);
     GLuint compile_shader(const char* source, GLenum type);
     GLuint link_program(GLuint vert, GLuint frag);
