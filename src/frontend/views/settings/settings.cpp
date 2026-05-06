@@ -59,6 +59,8 @@ void SettingsTab::render(const Fonts& fonts, Config& config) {
 
     ImGui::Dummy(ImVec2(0.0f, 4.0f));
     ImGui::Checkbox("Dark Mode", &config.settings.dark_mode);
+    ImGui::SameLine();
+    ImGui::Checkbox("Animated background", &config.settings.animated_background);
     ImGui::Separator();
    
     ImGui::PushFont(fonts.medium);

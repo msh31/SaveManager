@@ -78,6 +78,7 @@ void Config::save() {
     data["rsg_enabled"] = settings.rsg_enabled;
     data["unreal_enabled"] = settings.unreal_enabled;
     data["dark_mode"] = settings.dark_mode;
+    data["animated_background"] = settings.animated_background;
 
     data["backup_path"] = settings.backup_path.string();
 #ifndef _WIN32
@@ -140,6 +141,7 @@ void Config::load() {
         settings.rsg_enabled = data.value("rsg_enabled", true);
         settings.unreal_enabled = data.value("unreal_enabled", true);
         settings.dark_mode = data.value("dark_mode", true);
+        settings.animated_background = data.value("animated_background", true);
 
         sftp.dest_addr = data.value("dest_addr", std::string(""));
         sftp.username = data.value("username", std::string(""));

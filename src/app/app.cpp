@@ -46,13 +46,14 @@ void App::init() {
     });
     curl_global_init(CURL_GLOBAL_DEFAULT);
 
-    //async?
-    GLuint vert = compile_shader(default_vert, GL_VERTEX_SHADER);
-    GLuint frag = compile_shader(default_frag, GL_FRAGMENT_SHADER);
-    m_shader_program = link_program(vert, frag);
-    m_u_resolution = glGetUniformLocation(m_shader_program, "iResolution");
-    m_u_time = glGetUniformLocation(m_shader_program, "iTime");
-    init_quad();
+    if(config.settings.animated_background) {
+        GLuint vert = compile_shader(default_vert, GL_VERTEX_SHADER);
+        GLuint frag = compile_shader(default_frag, GL_FRAGMENT_SHADER);
+        m_shader_program = link_program(vert, frag);
+        m_u_resolution = glGetUniformLocation(m_shader_program, "iResolution");
+        m_u_time = glGetUniformLocation(m_shader_program, "iTime");
+        init_quad();
+    }
 }
 
 void App::render_ui() {
@@ -324,16 +325,17 @@ void App::render() {
     glfwGetFramebufferSize(window, &width, &height);
 
     glClear(GL_COLOR_BUFFER_BIT);
-
     glViewport(0, 0, width, height);
-    glUseProgram(m_shader_program);
-    glBindVertexArray(m_vao);
 
-    glUniform2f(m_u_resolution, width, height);
-    glUniform1f(m_u_time, glfwGetTime());
-    glDrawArrays(GL_TRIANGLES, 0, 6);
-    glBindVertexArray(0);
+    if(config.settings.animated_background) {
+        glUseProgram(m_shader_program);
+        glBindVertexArray(m_vao);
 
+        glUniform2f(m_u_resolution, width, height);
+        glUniform1f(m_u_time, glfwGetTime());
+        glDrawArrays(GL_TRIANGLES, 0, 6);
+        glBindVertexArray(0);
+    }
 
     // if(refresh_requested) {
     //     for (auto& [appid, texture] : game_textures) glDeleteTextures(1, &texture);
