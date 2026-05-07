@@ -130,6 +130,14 @@ void DashboardTab::render_toolbar(RenderContext& ctx) {
     float spacing = ImGui::GetStyle().ItemSpacing.x * 3;
 
     ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x - sort_width - refresh_width - backup_width - filter_width - spacing);
+
+    if((ImGui::GetIO().KeyCtrl && ImGui::IsKeyPressed(ImGuiKey_F))) {
+        focus_search = true;
+    }
+    if(focus_search) {
+        ImGui::SetKeyboardFocusHere();
+        focus_search = false;
+    }
     ImGui::InputText("##search", &search_query);
     ImGui::SameLine();
 
@@ -157,19 +165,14 @@ void DashboardTab::render_toolbar(RenderContext& ctx) {
     }
     ImGui::SameLine();
 
-    if(!is_refreshing) {
-        if(ImGui::Button("Refresh")) {
-            {
-                std::unique_lock lock(ctx.result.d_mutex);
-                ctx.result.games.clear();
-            }
-            refresh_future = std::async(std::launch::async, [&result = ctx.result, &config = ctx.config]() { Detection::find_saves(config, result); });
+    if(!is_refreshing && (ImGui::Button("Refresh") || (ImGui::GetIO().KeyCtrl && ImGui::IsKeyPressed(ImGuiKey_R)))) {
+        {
+            std::unique_lock lock(ctx.result.d_mutex);
+            ctx.result.games.clear();
         }
-        ImGui::SetItemTooltip("Re-runs the detection logic to find new saves");
-    } else {
-        int index = (spinner_frame / 10) % 4;
-        ImGui::Text("%c", spinner[index]);
+        refresh_future = std::async(std::launch::async, [&result = ctx.result, &config = ctx.config]() { Detection::find_saves(config, result); });
     }
+    ImGui::SetItemTooltip("Re-runs the detection logic to find new saves");
     ImGui::SameLine();
     if(!is_backing_up) {
         if(ImGui::Button("Mass Backup")) {

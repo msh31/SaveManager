@@ -54,4 +54,6 @@ private:
     void render_save_row(RenderContext& ctx, const fs::path& save_file, const Game& game);
     void render_backup_row(RenderContext& ctx, const fs::path& backup, const Game& game, const std::unordered_map<std::string, std::string>& labels);
     void render_modals(RenderContext&);
+
+    bool focus_search = false;
 };
