@@ -169,6 +169,7 @@ void DashboardTab::render_toolbar(RenderContext& ctx) {
         {
             std::unique_lock lock(ctx.result.d_mutex);
             ctx.result.games.clear();
+            grouped_games.clear();
         }
         refresh_future = std::async(std::launch::async, [&result = ctx.result, &config = ctx.config]() { Detection::find_saves(config, result); });
     }
