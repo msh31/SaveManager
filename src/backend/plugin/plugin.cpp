@@ -1,6 +1,7 @@
 #include "plugin.hpp"
 #include "backend/logger/logger.hpp"
 #include "backend/utils/paths.hpp"
+#include "backend/utils/steam/steam.hpp"
 
 Plugin::Plugin(std::filesystem::path path) {
     get_logger().info("Loaded plugin: {}", path.filename().string());
@@ -29,6 +30,13 @@ Plugin::Plugin(std::filesystem::path path) {
 
     lua.set_function("path_exists", [](const std::string& p) {
             return fs::exists(p);
+            });
+
+    lua.set_function("steam_library_paths", []() {
+            auto libs = SteamHelper::get_library_folders();
+            std::vector<std::string> result;
+            for(const auto& p : libs) result.push_back(p.string());
+            return result;
             });
 
     lua.set_function("home_dir", []() {
