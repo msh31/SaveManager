@@ -37,7 +37,7 @@ void BackupTab::add_new_entry(Detection::DetectionResult& d_result) {
 void BackupTab::render(const Fonts& fonts, Detection::DetectionResult& d_result, Config& cfg) {
     ZoneScopedN("backup_tab_render");
 
-    ImGui::BeginChild("##backup_view", ImVec2(0, ImGui::GetContentRegionAvail().y), false);
+    ImGui::BeginChild("##backup_view", ImVec2(0, ImGui::GetContentRegionAvail().y), false, ImGuiWindowFlags_NoBackground);
 
     bool is_refreshing = refresh_future.valid() && refresh_future.wait_for(std::chrono::seconds(0)) != std::future_status::ready;
     if (refresh_future.valid() && refresh_future.wait_for(std::chrono::seconds(0)) == std::future_status::ready) {

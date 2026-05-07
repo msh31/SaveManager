@@ -59,7 +59,7 @@ void TransferTab::render(const Fonts& fonts, Detection::DetectionResult& result,
     ImGui::Separator();
 
     ImGui::BeginChild("##transfer_wrapper", ImVec2(0, ImGui::GetContentRegionAvail().y), false,
-                      ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
+                      ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse | ImGuiWindowFlags_NoBackground);
 
     float window_width = ImGui::GetWindowSize().x;
     float top_height = use_password_auth ? 290.0f : 370.0f;
