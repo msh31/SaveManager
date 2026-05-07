@@ -86,6 +86,7 @@ set(savemanager_SOURCES
 	"src/backend/plugin/plugin.cpp"
 	"src/backend/utils/blacklist/blacklist.cpp"
 	"src/backend/utils/custom_games/custom_games.cpp"
+	"src/backend/utils/steam/steam.cpp"
 	"src/backend/utils/translations/translations.cpp"
 	"src/backend/utils/zip_archive/zip_archive.cpp"
 	"src/frontend/ui/notifications/notification.cpp"
