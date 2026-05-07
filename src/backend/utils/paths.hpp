@@ -62,8 +62,8 @@ inline fs::path heroic_dir() {
 }
 #endif
 
-#if defined(_WIN32)
 inline fs::path documents_dir() {
+#if defined(_WIN32)
     PWSTR path = NULL;
     HRESULT h_res = SHGetKnownFolderPath(FOLDERID_Documents, 0, NULL, &path);
     if (SUCCEEDED(h_res)) {
@@ -74,8 +74,10 @@ inline fs::path documents_dir() {
     else {
         throw std::runtime_error("USERPROFILE not set, how did you manage to do this?");
     }
-}
 #endif
+
+    return home_dir() / "Documents";
+}
 
 inline fs::path log_file() { return config_dir() / "savemanager.log"; }
 

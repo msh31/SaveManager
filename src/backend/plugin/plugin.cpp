@@ -5,13 +5,38 @@
 Plugin::Plugin(std::filesystem::path path) {
     get_logger().info("Loaded plugin: {}", path.filename().string());
     lua.open_libraries(sol::lib::base, sol::lib::string, sol::lib::table); //allow print, type, tostring etc
-    
+   
+    lua.set_function("is_linux", []() {
+                #if defined(__linux__)
+                    return true;
+                #endif
+                return false;
+            });
+
+    lua.set_function("is_macos", []() {
+                #if defined(__APPLE__)
+                    return true;
+                #endif
+                return false;
+            });
+
+    lua.set_function("is_windows", []() {
+                #if defined(_WIN32)
+                    return true;
+                #endif
+                return false;
+            });
+
     lua.set_function("path_exists", [](const std::string& p) {
             return fs::exists(p);
             });
 
     lua.set_function("home_dir", []() {
             return paths::home_dir().string();
+            });
+
+    lua.set_function("documents_dir", []() {
+            return paths::documents_dir().string();
             });
 
     lua.set_function("list_dir", [this](const std::string& path) {
