@@ -5,7 +5,7 @@
 
 void EditorTab::render(const Fonts& fonts) {
     ImGui::BeginChild("##sa_editor", ImVec2(0, ImGui::GetContentRegionAvail().y), false,
-                      ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
+                      ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse| ImGuiWindowFlags_NoBackground);
 
     if(ImGui::Button("Open savefile")) {
         NFD_Init();
