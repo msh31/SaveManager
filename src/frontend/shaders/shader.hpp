@@ -36,9 +36,12 @@ void main() {
 
     // vec2 uv = vec2(vUV.x * aspect, vUV.y);
     // vec2 center = vec2(0.5);// * aspect + sin(iTime) * 0.3, 0.5 + cos(iTime) * 0.3);
-    vec2 center = vec2(rand(cell), rand(cell + 1.0));
+    vec2 center = vec2(
+        fract(rand(cell) + iTime * 0.1),
+        fract(rand(cell + 1.0) + iTime * 0.07)
+    );
     float d = distance(local, center);
-    if(d < 0.01) fragColor = vec4(1.0);
-    else fragColor = vec4(0.145, 0.145, 0.141, 1.0);
+    float circle = smoothstep(0.02, 0.01, d);
+    fragColor = vec4(vec3(0.91, 0.44, 0.29) * circle + vec3(0.145, 0.145, 0.141), 1.0);
 }
 )";
