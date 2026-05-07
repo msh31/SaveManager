@@ -272,6 +272,11 @@ bool App::setup_opengl() {
         return false;
     }
 
+    if(config.win_props.x != -1) {
+        glfwSetWindowPos(window, config.win_props.x, config.win_props.y);
+        glfwSetWindowSize(window, config.win_props.width, config.win_props.height);
+    }
+
     glfwSetWindowSizeLimits(window, MIN_RES_W, MIN_RES_H, MAX_RES_W, MAX_RES_H); 
     glfwMakeContextCurrent(window);
     glfwSwapInterval(1);
@@ -434,6 +439,16 @@ void App::render() {
 
 App::~App() {
     // if(!game_textures.empty()) for (auto& [appid, texture] : game_textures) glDeleteTextures(1, &texture);
+
+    // int mx, my, mw, mh;
+    // glfwGetMonitorWorkarea(glfwGetPrimaryMonitor(), &mx, &my, &mw, &mh); 
+    //
+    // if(config.win_props.x > mx && config.win_props.x < mx + mw) {
+    //
+    // }
+
+    glfwGetWindowPos(window, &config.win_props.x, &config.win_props.y);
+    glfwGetWindowSize(window, &config.win_props.width, &config.win_props.height);
 
     ImGui_ImplOpenGL3_Shutdown();
     ImGui_ImplGlfw_Shutdown();

@@ -96,6 +96,11 @@ void Config::save() {
     data["privkey"] = sftp.privkey.string();
     data["remote_path"] = sftp.remote_path;
 
+    data["x"] = win_props.x;
+    data["y"] = win_props.x;
+    data["width"] = win_props.width;
+    data["height"] = win_props.height;
+
     std::ofstream file(config_file);
     file << data.dump(4);
 }
@@ -149,5 +154,10 @@ void Config::load() {
         sftp.remote_path = data.value("remote_path", std::string(""));
         sftp.pubkey = data.value("pubkey", fs::path(""));
         sftp.privkey = data.value("privkey", fs::path(""));
+
+        win_props.x = data["x"];
+        win_props.y = data["y"];
+        win_props.width = data["width"];
+        win_props.height = data["height"];
     } catch(json::exception& ex) { get_logger().error("config parsing error: {}", ex.what()); }
 }

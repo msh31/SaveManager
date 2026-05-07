@@ -8,6 +8,13 @@ public:
     bool init();
     void save();
 
+    struct WindowProperties {
+        int x = -1;
+        int y = -1;
+        int width = -1;
+        int height = -1;
+    };
+
     struct AppConfig {
         fs::path backup_path;
         bool ubi_enabled = true;
@@ -33,6 +40,7 @@ public:
 
     AppConfig settings;
     SFTPConfig sftp;
+    WindowProperties win_props;
 
 private:
     void load();
