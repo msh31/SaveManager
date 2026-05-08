@@ -35,7 +35,8 @@ void Features::backup_game(const Game& game, const fs::path& file, Config& confi
 
     if(!fs::exists(game_backup_dir)) fs::create_directories(game_backup_dir);
 
-    fs::path zip_name = game_backup_dir / construct_backup_name(game.game_name);
+    fs::path final_path = game_backup_dir / construct_backup_name(game.game_name);
+    fs::path zip_name = final_path.parent_path() / (final_path.filename().string() + ".tmp");
 
     ZipArchive archive(MODE_CREATE_ARCHIVE, zip_name.u8string());
 
@@ -45,8 +46,10 @@ void Features::backup_game(const Game& game, const fs::path& file, Config& confi
     }
 
     if(!archive.add_to_archive(file)) {
+        fs::remove(zip_name);
         Notify::show_notification("Backup Creation", "Failed to create backup! Please refer to the logfile!", 2000);
     } else {
+        fs::rename(zip_name, final_path);
         Notify::show_notification("Backup created!", std::format("A backup has been created: {}!", game.game_name), 2000);
     }
 }
