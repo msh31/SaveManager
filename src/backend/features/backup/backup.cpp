@@ -48,7 +48,10 @@ void Features::backup_game(const Game& game, const fs::path& file, Config& confi
         fs::remove(zip_name);
         Notify::show_notification("Backup Creation", "Failed to create backup! Please refer to the logfile!", 2000);
     } else {
-        fs::rename(zip_name, final_path);
+        std::error_code ec;
+        fs::rename(zip_name, final_path, ec);
+        if(ec) get_logger().error("rename failed: {}", ec.message());
+
         Notify::show_notification("Backup created!", std::format("A backup has been created: {}!", game.game_name), 2000);
     }
 }
