@@ -12,16 +12,23 @@ std::expected<std::vector<Game>, DetectionError> MinecraftDetector::find_saves()
     append(scan_official());
     append(scan_modrinth());
     append(scan_prism());
+#if !defined(__APPLE__)
     append(scan_multimc());
+#endif
     append(scan_curseforge());
     return games;
 }
 
 std::vector<Game> MinecraftDetector::scan_official() const {
+#if defined (__linux__)
     fs::path game_path = paths::home_dir() / ".minecraft";
+#elif defined (__APPLE__)
+    fs::path game_path = paths::home_dir() / "Library" / "Application Support" / "minecraft";
+#endif
     std::vector<Game> games;
 
     if(!fs::exists(game_path)) return {};
+    if(!fs::is_directory(game_path)) return {};
 
     for(const auto& game : fs::directory_iterator(game_path, std::filesystem::directory_options::skip_permission_denied)) {
         fs::path saves_folder = game.path();
@@ -43,7 +50,11 @@ std::vector<Game> MinecraftDetector::scan_official() const {
 }
 
 std::vector<Game> MinecraftDetector::scan_modrinth() const {
+#if defined (__linux__)
     fs::path modrinth_path = paths::home_dir() / ".local" / "share" / "ModrinthApp" / "profiles";
+#elif defined (__APPLE__)
+    fs::path modrinth_path = paths::home_dir() / "Library" / "Application Support" / "ModrinthApp" / "profiles";
+#endif
     std::vector<Game> games;
 
     if(!fs::exists(modrinth_path)) return {};
@@ -51,6 +62,7 @@ std::vector<Game> MinecraftDetector::scan_modrinth() const {
     for(const auto& game : fs::directory_iterator(modrinth_path, std::filesystem::directory_options::skip_permission_denied)) {
         fs::path game_folder = game.path();
         std::string folder_name = game_folder.filename().string();
+        if(!fs::is_directory(folder_name)) return {};
 
         for(const auto& profile : fs::directory_iterator(game_folder, std::filesystem::directory_options::skip_permission_denied)) {
             if(profile.path().filename().string() != "saves") continue;
@@ -72,14 +84,18 @@ std::vector<Game> MinecraftDetector::scan_modrinth() const {
 }
 
 std::vector<Game> MinecraftDetector::scan_curseforge() const {
+#if defined (__linux__) || defined (__APPLE__)
     fs::path curse_path = paths::home_dir() / "Documents" / "curseforge" / "minecraft" / "Instances";
+#endif
     std::vector<Game> games;
 
     if(!fs::exists(curse_path)) return {};
+    if(!fs::is_directory(curse_path)) return {};
 
     for(const auto& game : fs::directory_iterator(curse_path, std::filesystem::directory_options::skip_permission_denied)) {
         fs::path game_folder = game.path();
         std::string folder_name = game_folder.filename().string();
+        if(!fs::is_directory(folder_name)) return {};
 
         for(const auto& profile : fs::directory_iterator(game_folder, std::filesystem::directory_options::skip_permission_denied)) {
             if(profile.path().filename().string() != "saves") continue;
@@ -101,7 +117,11 @@ std::vector<Game> MinecraftDetector::scan_curseforge() const {
 }
 
 std::vector<Game> MinecraftDetector::scan_prism() const {
+#if defined (__linux__) 
     fs::path prism_path = paths::home_dir() / ".var" / "app" / "org.prismlauncher.PrismLauncher" / "data" / "PrismLauncher" / "instances";
+#elif defined (__APPLE__)
+    fs::path prism_path = paths::home_dir() / "Library" / "Application Support" / "PrismLauncher" / "instances";
+#endif
     std::vector<Game> games;
 
     if(!fs::exists(prism_path)) return {};
