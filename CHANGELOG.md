@@ -2,8 +2,8 @@
 
 ## [1.6.0] - 2026-05-20
 ### Added
-- Minecraft (Java) support (Official / Modrinth / Curseforge / Prismlauncher, MultiMC)
 - (Experimental) Custom detector support through LUA plugins
+- Minecraft (Java) support (Official / Modrinth / Curseforge / Prismlauncher, MultiMC)
 - Animated background (off by default)
 - Keyboard shortcuts (Ctrl+R for refresh, Ctrl+F for search, Close modals on ESC)
 - Window size & position persistence
@@ -29,7 +29,7 @@
 
 
 ### Development related
-- All code relating to texture loading / caching has been removed
+- All code relating to textures has been removed
 - 
 
 
