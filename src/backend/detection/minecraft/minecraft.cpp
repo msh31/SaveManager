@@ -12,7 +12,7 @@ std::expected<std::vector<Game>, DetectionError> MinecraftDetector::find_saves()
     append(scan_official());
     append(scan_modrinth());
     append(scan_prism());
-#if !defined(__APPLE__)
+#if !defined(__APPLE__) || !defined(_WIN32)
     append(scan_multimc());
 #endif
     append(scan_curseforge());
@@ -24,6 +24,8 @@ std::vector<Game> MinecraftDetector::scan_official() const {
     fs::path game_path = paths::home_dir() / ".minecraft";
 #elif defined (__APPLE__)
     fs::path game_path = paths::home_dir() / "Library" / "Application Support" / "minecraft";
+#elif defined (_WIN32)
+    fs::path game_path = paths::home_dir() / "AppData" / "Roaming" ".minecraft";
 #endif
     std::vector<Game> games;
 
@@ -54,6 +56,8 @@ std::vector<Game> MinecraftDetector::scan_modrinth() const {
     fs::path modrinth_path = paths::home_dir() / ".local" / "share" / "ModrinthApp" / "profiles";
 #elif defined (__APPLE__)
     fs::path modrinth_path = paths::home_dir() / "Library" / "Application Support" / "ModrinthApp" / "profiles";
+#elif defined (_WIN32)
+        fs::path modrinth_path = paths::home_dir() / "AppData" / "Roaming" / "ModrinthApp" / "profiles";
 #endif
     std::vector<Game> games;
 
@@ -86,6 +90,8 @@ std::vector<Game> MinecraftDetector::scan_modrinth() const {
 std::vector<Game> MinecraftDetector::scan_curseforge() const {
 #if defined (__linux__) || defined (__APPLE__)
     fs::path curse_path = paths::home_dir() / "Documents" / "curseforge" / "minecraft" / "Instances";
+#elif defined (_WIN32)
+	fs::path curse_path = paths::home_dir() / "Documents" / "curseforge" / "minecraft" / "Instances";
 #endif
     std::vector<Game> games;
 
@@ -121,6 +127,8 @@ std::vector<Game> MinecraftDetector::scan_prism() const {
     fs::path prism_path = paths::home_dir() / ".var" / "app" / "org.prismlauncher.PrismLauncher" / "data" / "PrismLauncher" / "instances";
 #elif defined (__APPLE__)
     fs::path prism_path = paths::home_dir() / "Library" / "Application Support" / "PrismLauncher" / "instances";
+#elif defined (_WIN32)
+    fs::path prism_path = paths::home_dir() / "AppData" / "Roaming" / "PrismLauncher" / "instances";
 #endif
     std::vector<Game> games;
 
