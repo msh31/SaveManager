@@ -91,6 +91,7 @@ void DashboardTab::render(const Fonts& fonts, Detection::DetectionResult& result
             if (refresh_future.valid() && refresh_future.wait_for(std::chrono::seconds(0)) == std::future_status::ready) {
                 Notify::show_notification("Save refresh", "Saves refreshed!", 2000);
                 refresh_future.get();
+                on_result_changed(ctx);
             }
 
             if(last_game_count != snapshot.size()) {
