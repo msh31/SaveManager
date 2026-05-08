@@ -37,14 +37,18 @@ void Features::backup_game(const Game& game, const fs::path& file, Config& confi
     fs::path final_path = game_backup_dir / construct_backup_name(game.game_name);
     fs::path zip_name = final_path.parent_path() / (final_path.filename().string() + ".tmp");
 
-    ZipArchive archive(MODE_CREATE_ARCHIVE, zip_name.u8string());
+    //writing happens on the destructor so we scope it to do it immediatly, needs a refactor
+    bool success = false;
+    {
+        ZipArchive archive(MODE_CREATE_ARCHIVE, zip_name.u8string());
 
-    //saving the world name 
-    if(game.type == PlatformType::MINECRAFT) {
-        archive.set_comment(file.string());
-    }
+        //saving the world name 
+        if(game.type == PlatformType::MINECRAFT) archive.set_comment(file.string());
 
-    if(!archive.add_to_archive(file)) {
+        success = archive.add_to_archive(file);
+    } 
+
+    if(!success) {
         fs::remove(zip_name);
         Notify::show_notification("Backup Creation", "Failed to create backup! Please refer to the logfile!", 2000);
     } else {
