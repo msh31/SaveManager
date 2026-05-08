@@ -120,8 +120,9 @@ void BackupTab::render_game_row(const Fonts& fonts, const BackupEntry& bentry, C
 }
 
 void BackupTab::render_backup_row(fs::path path, const fs::path& save_path, const std::unordered_map<std::string, std::string>& labels, const std::string& game_name, Config& cfg) {
-    if(!fs::exists(path)) return;
     ImGui::PushID(path.string().c_str());
+    if(!fs::exists(path)) { ImGui::PopID(); return; }
+    if(!fs::exists(save_path)) { ImGui::PopID(); return; }
 
     auto it = labels.find(path.filename().string());
     std::string display = (it != labels.end()) ? it->second : path.filename().string();

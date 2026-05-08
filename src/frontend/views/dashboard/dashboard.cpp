@@ -1,10 +1,10 @@
 #include "dashboard.hpp"
 #include "constants.hpp"
+#include "types.hpp"
+#include "backend/features/backup/backup.hpp"
 
 #include "frontend/ui/notifications/notification.hpp"
-#include "backend/features/backup/backup.hpp"
-#include "../backups/backup_view.hpp"
-#include "types.hpp"
+#include <frontend/views/backups/backup_view.hpp>
 
 #ifdef __APPLE__
 #include <spawn.h>
@@ -30,6 +30,7 @@ void DashboardTab::on_result_changed(RenderContext& ctx) {
         for (const auto& game : ctx.games) {
             GameCache cache;
             if (!fs::is_directory(game.save_path)) continue;
+
             if(game.type != PlatformType::MINECRAFT) {
                 for (const auto& file : fs::recursive_directory_iterator(game.save_path, fs::directory_options::skip_permission_denied)) {
                     if (!fs::is_regular_file(file)) continue;
@@ -62,6 +63,7 @@ void DashboardTab::on_result_changed(RenderContext& ctx) {
             if (!fs::is_directory(entry.save_path)) continue;
             // get_logger().info("checking path: {}", entry.save_path.string());
             for (const auto& file : fs::directory_iterator(entry.save_path, fs::directory_options::skip_permission_denied)) {
+                if(!fs::exists(file)) continue;
                 auto t = fs::last_write_time(file);
                 if (fs::is_regular_file(file)) if (t > current_max) current_max = t;
             }
@@ -392,6 +394,7 @@ void DashboardTab::render_game_row(RenderContext& ctx, const std::vector<int>& g
 
 void DashboardTab::render_save_row(RenderContext& ctx, const fs::path& save_file, const Game& game) {
     ImGui::PushID(save_file.string().c_str());
+    if(!fs::exists(save_file)) { ImGui::PopID(); return; }
 
     std::string date_text = std::format("{:%d/%m/%y %H:%M} | ", fs::last_write_time(save_file));
     float date_width = ImGui::CalcTextSize(date_text.c_str()).x;
@@ -431,6 +434,7 @@ void DashboardTab::render_save_row(RenderContext& ctx, const fs::path& save_file
 
 void DashboardTab::render_backup_row(RenderContext& ctx, const fs::path& backup, const Game& game, const std::unordered_map<std::string, std::string>& labels) {
     ImGui::PushID(backup.string().c_str());
+    if(!fs::exists(backup)) { ImGui::PopID(); return; }
 
     auto it = labels.find(backup.filename().string());
     std::string display = (it != labels.end()) ? it->second : backup.filename().string();
