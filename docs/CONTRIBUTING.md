@@ -12,6 +12,14 @@ Contributions are welcome. If you want to report a bug, suggest a feature, or su
 
 ---
 
+## Writing Plugins
+
+SaveManager supports Lua plugins for community-contributed game definitions. If you want to add support for a game without modifying the core codebase, write a plugin instead.
+
+See [SCRIPTING.md](docs/SCRIPTING.md) for the full API reference, and submit your plugin to the [savemanager-plugins](https://github.com/msh31/savemanager-plugins) repository.
+
+---
+
 ## Building from Source
 
 ### Prerequisites
@@ -88,10 +96,11 @@ All managed by Conan:
 | [libzip](https://libzip.org/) | Archive handling |
 | [stb](https://github.com/nothings/stb) | Image loading |
 | [OpenSSL](https://www.openssl.org/) | SSL/TLS |
+| [sol2](https://github.com/ThePhD/sol2) | Lua scripting |
 
-Git submodules
+Git submodules:
 | Library | Purpose |
 |-|-|
-| [ImGuiFileDialog](https://github.com/aiekick/ImGuiFileDialog) | ImGui native file dialog for opening saves |
+| [nativefiledialog-extended](https://github.com/btzy/nativefiledialog-extended) | Native OS file picker |
 
 > Game art and translation data is fetched from GitHub on first launch and cached locally.

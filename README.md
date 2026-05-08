@@ -1,9 +1,9 @@
 # SaveManager
 
-<p align="center">
-  <img src="assets/logo.svg" alt="SaveManager Logo" style="width: 192px" />
-  <br>
-</p>
+<!-- <p align="center"> -->
+<!--   <img src="assets/logo.svg" alt="SaveManager Logo" style="width: 192px" /> -->
+<!--   <br> -->
+<!-- </p> -->
 
 <p align="center">
     <!-- yes, github.... codeberg doesnt have windows or mac runners, and i cba setting them up myself rn -->
@@ -45,6 +45,7 @@
 A local and cross-platform save game manager for Ubisoft, Rockstar and Unreal Engine saves. Built with [ImGui](https://github.com/ocornut/imgui) and [OpenGL](https://www.opengl.org)
 
 **Key Features:**
+- Lua plugin system for custom game detections (found [here](https://github.com/msh31/savemanager-plugins))
 - Create and restore backups of individual save files with optional labels
 - Automatic detection that finds your savegames (Steam, Heroic, Lutris, native and Wine!)
 - Experimental Save Editor (only supports GTA San Andreas (classic PC))
@@ -71,8 +72,26 @@ A local and cross-platform save game manager for Ubisoft, Rockstar and Unreal En
 
 ---
 
-## Supported Games
-See [SUPPORTED_GAMES.md](docs/SUPPORTED_GAMES.md)
+## Supported 
+for a full list of the supported games view [SUPPORTED_GAMES.md](docs/SUPPORTED_GAMES.md)
+
+| Store / Savetype | Windows | Linux | macOS |
+|------------------|---------|-------|-------|
+| Ubisoft | Yes | Yes (Steam/Proton, Wine, Lutris, Heroic) | In development |
+| Rockstar | Yes | Yes (Steam/Proton, Lutris, Heroic) | In development |
+| Unreal Engine | Yes | Yes (Steam/Proton, Lutris, Heroic) | Yes |
+| Minecraft | Yes | Yes | Yes | 
+
+> [!NOTE]  
+> Unreal Games are detected via GVAS .sav files. UE3 games and games using custom save formats are not supported. Only UE4/5
+
+> [!NOTE] 
+> Minecraft: the following stores are supported: Official, Modrinth, Curseforge, PrismLauncher (MultiMC is exclusive to linux)
+
+---
+
+## Changelog
+See [CHANGELOG.md](CHANGELOG.md) for a complete history of all changes.
 
 ### Planned Features
 
@@ -80,22 +99,7 @@ See [SUPPORTED_GAMES.md](docs/SUPPORTED_GAMES.md)
 - **PSP ↔ PPSSPP** — convert and transfer saves between physical PSP and emulator
 - **Smart backup deletion** — configurable retention policy for old backups
 - **Backup automation** — headless background process for scheduled backups
-- **Broader game support** — Minecraft, Unity games (Mouse: P.I. For Hire), and more
-
-## Supported Stores
-
-| Store / Savetype | Windows | Linux | macOS |
-|------------------|---------|-------|-------|
-| Ubisoft | Yes | Yes (Steam/Proton, Wine, Lutris, Heroic) | In development |
-| Rockstar | Yes | Yes (Steam/Proton, Lutris, Heroic) | In development |
-| Unreal Engine | Yes | Yes (Steam/Proton, Lutris, Heroic) | Yes |
-
-> Unreal Engine games are detected via GVAS .sav files. UE3 games and games using custom save formats are not supported.
-
----
-
-## Changelog
-See [CHANGELOG.md](CHANGELOG.md) for a complete history of all changes.
+- **Broader game support** — Unity games, Crossover on MacOS and much more built-in (?)
 
 ## Contributing
 
