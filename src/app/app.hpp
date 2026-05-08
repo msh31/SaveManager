@@ -12,8 +12,6 @@
 // #include "frontend/views/backups/backup_view.hpp"
 #include "frontend/views/about/about.hpp"
 
-// #include "frontend/ui/textures/textures.hpp"
-
 class App {
 public:
     App(fs::path config_dir = paths::config_dir());
@@ -24,7 +22,6 @@ public:
 
     GLFWwindow* window = nullptr;
     std::future<void> are_we_ready;
-    // bool refresh_requested;
 
     TabState state;
 private:
@@ -61,9 +58,6 @@ private:
     LogTab log_tab;
     AboutTab about_tab;
     SettingsTab settings_tab;
-
-    // std::unordered_map<std::string, GLuint> game_textures;
-    // std::vector<std::future<Textures::ImageData>> texture_futures;
 
     Detection::DetectionResult d_result;
     std::future<void> detection_future;

@@ -26,7 +26,6 @@ struct DashboardTab {
 private:
     struct RenderContext {
         Detection::DetectionResult& result;
-        // const std::unordered_map<std::string, GLuint>& textures;
         Config& config;
         const Fonts& fonts;
         const std::vector<Game>& games;

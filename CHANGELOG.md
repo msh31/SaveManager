@@ -2,26 +2,35 @@
 
 ## [1.6.0] - 2026-05-20
 ### Added
-- Minecraft support (Official / Modrinth / Curseforge / Prismlauncher, MultiMC)
-- (Experimental) Custom detector support through LUA
-- Grid view toggle
+- Minecraft (Java) support (Official / Modrinth / Curseforge / Prismlauncher, MultiMC)
+- (Experimental) Custom detector support through LUA plugins
 - Animated background (off by default)
-- Keyboard shortcuts
+- Keyboard shortcuts (Ctrl+R for refresh, Ctrl+F for search, Close modals on ESC)
 - Window size & position persistence
 - Atomic backup writing (Prevents corrupted backups if there is a crash or power loss during backup)
 
 
 ### Fixed
 - A crash when you delete a savefile outside of the application
-- Original Anno editions not supported due to install path limitations (lua detectors)
+- Backup tab not being scrollable 
 
 
 ### Changed
 - Creating a single backup of a save or a backup of all is now done asynchronously (Minecraft saves can be big)
 
 
+### Removed
+- Duplicate backup tab (It's under dashboard and no longer standalone)
+
+
 ### Known Issues / Limitations
+- Original Anno editions not supported due to install path limitations (You can make a plugin for this though, specific to your install)
 - Grouping issues with unknown / partially supported games (Similar to #2 but has since improved)
+
+
+### Development related
+- All code relating to texture loading / caching has been removed
+- 
 
 
 ## [1.5.4] - 2026-04-29

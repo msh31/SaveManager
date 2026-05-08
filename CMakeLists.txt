@@ -90,7 +90,6 @@ set(savemanager_SOURCES
 	"src/backend/utils/translations/translations.cpp"
 	"src/backend/utils/zip_archive/zip_archive.cpp"
 	"src/frontend/ui/notifications/notification.cpp"
-	"src/frontend/ui/textures/textures.cpp"
 	"src/frontend/ui/themes/themes.cpp"
 	"src/frontend/views/about/about.cpp"
 	"src/frontend/views/backups/backup_view.cpp"
