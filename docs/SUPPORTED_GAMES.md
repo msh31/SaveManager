@@ -1,5 +1,5 @@
 # Supported Games
-This is a list of games that are verified to be working
+This is a list of games that are verified to be working 
 
 Contributions are welcome!
 
@@ -20,25 +20,32 @@ For unreal engine games, only UE4 / UE5 games are supported due to them sharing 
 - Max Payne 1, 2 & 3
 
 ## Ubisoft
-- Assassin's Creed Unity
 - Assassin's Creed II
+- Assassin's Creed IV Black Flag
+- Assassin's Creed Unity
 - Assassin's Creed Syndicate
 - Assassin's Creed Valhalla
 - Assassin's Creed Mirage 
 - Assassin's Creed Shadows 
-- Anno 117: Pax Romana
 - Anno 1404 
+- Anno 2070
+- Anno 2205
+- Anno 1800
 - Anno 1503 History Edition
 - Anno 1602 History Edition
 - Anno 1701 History Edition
-- Anno 1800
-- Anno 2070
-- Anno 2205
+- Anno 117: Pax Romana
 - Tom Clancy's Ghost Recon Wildlands
 - FarCry 4
 - FarCry 5
+- FarCry 3 (& Blood dragon)
+- Star Wars Outlaws
+- Watch Dogs
+- Watch Dogs 2
+- Watch Dogs Legion
 
 ## Unreal
+- Atomic Heart
 - Maneater
 - Ready or Not
 - Days Gone
@@ -50,3 +57,10 @@ For unreal engine games, only UE4 / UE5 games are supported due to them sharing 
 - Nobody Wants To Die
 - High on Life
 - SpongeBob SquarePants: Titans of the Tide
+
+## Minecraft
+- Official Launcher 
+- Modrinth
+- Curseforge
+- MultiMC (Missing on Mac)
+- Prism Launcher
