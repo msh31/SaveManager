@@ -73,7 +73,6 @@ set(savemanager_SOURCES
 	cmake.toml
 	"src/app/app.cpp"
 	"src/backend/config/config.cpp"
-	"src/backend/detection/custom/custom.cpp"
 	"src/backend/detection/detection.cpp"
 	"src/backend/detection/minecraft/minecraft.cpp"
 	"src/backend/detection/rsg/rsg.cpp"
@@ -153,13 +152,3 @@ target_sources(savemanager PRIVATE
     "${IMGUI_ROOT_DIR}/res/bindings/imgui_impl_glfw.cpp"
     "${IMGUI_ROOT_DIR}/res/bindings/imgui_impl_opengl3.cpp"
 )
-target_compile_definitions(savemanager PRIVATE
-    $<$<CONFIG:Debug>:TRACY_ENABLE>
-)
-if(NOT WIN32)
-    find_package(Tracy REQUIRED)
-    target_link_libraries(savemanager PRIVATE Tracy::TracyClient)
-    target_compile_definitions(savemanager PRIVATE
-        $<$<CONFIG:Debug>:TRACY_ENABLE>
-    )
-endif()

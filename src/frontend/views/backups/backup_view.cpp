@@ -35,7 +35,6 @@ void BackupTab::add_new_entry(Detection::DetectionResult& d_result) {
 }
 
 void BackupTab::render(const Fonts& fonts, Detection::DetectionResult& d_result, Config& cfg) {
-    ZoneScopedN("backup_tab_render");
 
     ImGui::BeginChild("##backup_view", ImVec2(0, ImGui::GetContentRegionAvail().y), false, ImGuiWindowFlags_NoBackground);
 
@@ -79,7 +78,6 @@ void BackupTab::render(const Fonts& fonts, Detection::DetectionResult& d_result,
 }
 
 void BackupTab::render_game_row(const Fonts& fonts, const BackupEntry& bentry, Config& cfg) {
-    ZoneScopedN("backup_tab_game_row_render");
     bool& not_collapsed = card_collapsed[bentry.name.string()];
     bool& bk_collapsed = backups_collapsed[bentry.name.string()];
     const char* chevron = not_collapsed ? "▼" : "▶";
@@ -122,7 +120,6 @@ void BackupTab::render_game_row(const Fonts& fonts, const BackupEntry& bentry, C
 }
 
 void BackupTab::render_backup_row(fs::path path, const fs::path& save_path, const std::unordered_map<std::string, std::string>& labels, const std::string& game_name, Config& cfg) {
-    ZoneScopedN("render_backup_row");
     if(!fs::exists(path)) return;
     ImGui::PushID(path.string().c_str());
 

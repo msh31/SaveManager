@@ -48,7 +48,6 @@ void Detection::add_game(std::expected<std::vector<Game>, DetectionError> result
 //an exception escapes somewhere and causes a crash
 //more investigation needed
 void scan_prefix_dir(const fs::path& compatdata, Detection::DetectionResult& result, const Config& config, const Detectors& detectors) {
-    ZoneScopedN("scan_prefix_dir");
     try {
         for (const auto& entry : fs::directory_iterator(compatdata)) {
             fs::path prefix = entry.path();
@@ -90,7 +89,6 @@ void scan_prefix_dir(const fs::path& compatdata, Detection::DetectionResult& res
 }
 
 void Detection::find_saves(Config& config, DetectionResult& d_result) {
-    ZoneScopedN("find_saves");
     Detectors detectors;
 
 //cool lua support
@@ -204,7 +202,6 @@ void Detection::find_saves(Config& config, DetectionResult& d_result) {
 }
 
 std::vector<std::vector<int>> Detection::DetectionResult::get_grouped() const {
-    ZoneScopedN("get_grouped");
     std::unordered_map<std::string, size_t> key_to_group;
     std::vector<std::vector<int>> groups;
 

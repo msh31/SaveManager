@@ -3,7 +3,6 @@
 #include "backend/utils/translations/translations.hpp"
 
 std::expected<std::vector<Game>, DetectionError> RockstarDetector::find_saves(const fs::path& prefix) const {
-    ZoneScopedN("rsg_find_saves");
     if(!fs::exists(prefix)) {
         return std::unexpected{DetectionError::PathNotFound};
     }
@@ -38,7 +37,6 @@ std::expected<std::vector<Game>, DetectionError> RockstarDetector::find_saves(co
 }
 
 std::expected<std::vector<Game>, DetectionError> RockstarDetector::find_legacy_saves(const fs::path& prefix) const {
-    ZoneScopedN("rsg_find_legacy_saves");
     if(!fs::exists(prefix)) {
         return std::unexpected{DetectionError::PathNotFound};
     }

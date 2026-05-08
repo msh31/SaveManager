@@ -3,7 +3,6 @@
 #include "types.hpp"
 
 std::expected<std::vector<Game>, DetectionError> MinecraftDetector::find_saves() const {
-    ZoneScopedN("minecraft_find_saves");
     std::vector<Game> games;
 
     auto append = [&](std::vector<Game> result) {

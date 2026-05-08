@@ -3,7 +3,6 @@
 // #include "backend/logger/logger.hpp"
 
 std::expected<std::vector<Game>, DetectionError> UbisoftDetector::find_saves(const fs::path& prefix) const {
-    ZoneScopedN("ubi_find_saves");
     if(!fs::exists(prefix)) {
         return std::unexpected{DetectionError::PathNotFound};
     }
@@ -42,7 +41,6 @@ std::expected<std::vector<Game>, DetectionError> UbisoftDetector::find_saves(con
 }
 
 std::expected<std::vector<Game>, DetectionError> UbisoftDetector::find_anno_saves(const fs::path& prefix) const {
-    ZoneScopedN("ubi_find_anno_saves");
     if(!fs::exists(prefix)) {
         return std::unexpected{DetectionError::PathNotFound};
     }

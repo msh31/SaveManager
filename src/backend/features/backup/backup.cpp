@@ -11,7 +11,6 @@
 using json = nlohmann::json;
 
 void Features::backup_game(const Game& game, const fs::path& file, Config& config) {
-    ZoneScopedN("backup_game");
     get_logger().info("creating backup of: {}", game.game_name);
     fs::path game_backup_dir = config.settings.backup_path / sanitize_filename(game.game_name);
 
@@ -55,7 +54,6 @@ void Features::backup_game(const Game& game, const fs::path& file, Config& confi
 }
 
 std::vector<fs::path> Features::get_backups(const std::string& game, Config& config) {
-    ZoneScopedN("get_backups");
     fs::path game_backup_dir = config.settings.backup_path / sanitize_filename(game);
 
     if(!fs::exists(game_backup_dir)) {
@@ -74,7 +72,6 @@ std::vector<fs::path> Features::get_backups(const std::string& game, Config& con
 }
 
 void Features::restore_backup(const fs::path& name, const fs::path& save_path) {
-    ZoneScopedN("restore_backup");
     ZipArchive archive(MODE_EXTRACT_ARCHIVE, name.u8string());
 
     fs::path restore_path;
@@ -108,7 +105,6 @@ std::string Features::construct_backup_name(const std::string& game, const std::
 }
 
 std::unordered_map<std::string, std::string> Features::load_labels(const std::string& game, Config& config) {
-    ZoneScopedN("load_labels");
     json data;
     std::unordered_map<std::string, std::string> backup_labels;
     std::string file_name = (config.settings.backup_path / sanitize_filename(game) / "labels.json").string();

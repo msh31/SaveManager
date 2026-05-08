@@ -4,7 +4,6 @@
 #include "backend/config/config.hpp"
 
 void TransferTab::render(const Fonts& fonts, Detection::DetectionResult& result, Config& config, TabState& state) {
-    ZoneScopedN("transfer_render");
     spinner_frame++;
     if (!initialized) {
         remote = std::make_unique<RemoteTransfer>();

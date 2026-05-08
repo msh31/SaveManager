@@ -59,7 +59,6 @@ void App::init() {
 }
 
 void App::render_ui() {
-    ZoneScopedN("app_render_ui");
     ImGui::AlignTextToFramePadding();
 
     if (ImGui::BeginTabBar("MyTabBar", ImGuiTabBarFlags_Reorderable | ImGuiTabBarFlags_DrawSelectedOverline)) {
@@ -308,8 +307,6 @@ bool App::setup_imgui() {
 }
 
 void App::render() {
-    ZoneScopedN("app_render");
-
     int width = 0;
     int height = 0;
     glfwGetFramebufferSize(window, &width, &height);
@@ -376,7 +373,6 @@ void App::render() {
     glBindVertexArray(0);
 
     glfwSwapBuffers(window);
-    FrameMark;
     glfwWaitEventsTimeout(1.0/60.0);
 }
 
