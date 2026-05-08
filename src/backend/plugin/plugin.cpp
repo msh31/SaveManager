@@ -61,7 +61,7 @@ Plugin::Plugin(std::filesystem::path path) {
             return table;
             });
 
-    lua.script_file(path); //load and run the script
+    lua.script_file(path.string()); //load and run the script
 
     if (lua["config"].valid()) {
         show_parent_path = lua["config"]["show_parent_path"].get_or(false);
