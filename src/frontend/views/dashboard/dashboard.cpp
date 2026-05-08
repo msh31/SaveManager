@@ -307,13 +307,23 @@ void DashboardTab::render_game_row(RenderContext& ctx, const std::vector<int>& g
                 fs::path game_backup_dir = ctx.config.settings.backup_path / sanitize_filename(primary.game_name);
                 if(!fs::exists(game_backup_dir)) fs::create_directories(game_backup_dir);
 
-                fs::path zip_name = game_backup_dir / Features::construct_backup_name(primary.game_name);
+                fs::path final_path = game_backup_dir / Features::construct_backup_name(primary.game_name);
+                fs::path zip_name = final_path.parent_path() / (final_path.filename().string() + ".tmp");
 
                 ZipArchive za(MODE_CREATE_ARCHIVE, zip_name);
                 bool failed_to_add = false;
-                for(const auto& entry : files) if(!za.add_to_archive(entry.first)) failed_to_add = true;
-                if(failed_to_add) Notify::show_notification("Backup Creation", "Failed to create backup! Please refer to the logfile!", 2000);
-                else Notify::show_notification("Backup Created", "A backup has been for all saves!", 1500);
+                for(const auto& entry : files) { 
+                    if(!za.add_to_archive(entry.first)) {
+                        failed_to_add = true;
+                    }
+                }
+                if(failed_to_add) {
+                    fs::remove(zip_name);
+                    Notify::show_notification("Backup Creation", "Failed to create backup! Please refer to the logfile!", 2000);
+                } else { 
+                    fs::rename(zip_name, final_path);
+                    Notify::show_notification("Backup Created", "A backup has been for all saves!", 1500);
+                }
                 });
             }
             ImGui::PopStyleColor(2);
