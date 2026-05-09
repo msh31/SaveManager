@@ -13,17 +13,12 @@
 #include "backend/detection/unreal/unreal.hpp"
 #include "backend/detection/minecraft/minecraft.hpp"
 
-// #include "backend/detection/custom/custom.hpp"
-
 struct Detectors {
    RockstarDetector rockstar_detect; 
    UbisoftDetector ubisoft_detect; 
    UnrealDetector unreal_detect; 
    MinecraftDetector minecraft_detect; 
-   // CustomDetector custom_detect; 
 };
-
-
 
 void Detection::add_game(std::expected<std::vector<Game>, DetectionError> result, const std::string& platform, DetectionResult& d_result) {
     if (result) {
@@ -93,7 +88,7 @@ void Detection::find_saves(Config& config, DetectionResult& d_result) {
 
 //cool lua support
     int plugin_count = 0;
-    for (const auto& plugin : fs::directory_iterator(paths::plugin_dir(), fs::directory_options::skip_permission_denied)) {
+    for (const auto& plugin : fs::recursive_directory_iterator(paths::plugin_dir(), fs::directory_options::skip_permission_denied | fs::directory_options::follow_directory_symlink)) {
         plugin_count++;
         // get_logger().debug("found: {}", plugin.path().string());
         if(plugin.path().extension() != ".lua") continue;
