@@ -1,6 +1,10 @@
 #pragma once
 #include "types.hpp"
+#include <logger/logger.hpp>
+
 #include <zip.h>
+#include <openssl/sha.h>
+#include <openssl/evp.h>
 
 struct ImFont;
 
@@ -85,4 +89,55 @@ inline std::string cache_key(const Game& game) {
         return "Minecraft";
     }
     return game.game_name;
+}
+
+inline std::string hash_file(const std::filesystem::path& path) {
+    if(!std::filesystem::is_regular_file(path)) return {};
+
+    EVP_MD_CTX *mdctx = EVP_MD_CTX_new();
+    if(mdctx == nullptr) {
+        EVP_MD_CTX_free(nullptr);
+        return {};
+    }
+
+    const EVP_MD *md = EVP_get_digestbyname("SHA-256");
+    if(md == nullptr) {
+        EVP_MD_CTX_free(nullptr);
+        return {};
+    }
+
+    if(!EVP_DigestInit_ex(mdctx, md, NULL)) {
+        EVP_MD_CTX_free(nullptr);
+        return {};
+    }
+
+    unsigned char hash[SHA256_DIGEST_LENGTH];
+    unsigned int hash_len = 0;
+    char buffer[8192];
+
+    std::ifstream file(path, std::ios::binary);
+    if(!file.is_open()) {
+        EVP_MD_CTX_free(nullptr);
+        return {};
+    }
+
+    while (file.read(buffer, sizeof(buffer))) {
+        EVP_DigestUpdate(mdctx, buffer, file.gcount());
+    }
+    if (file.gcount() > 0) {
+        EVP_DigestUpdate(mdctx, buffer, file.gcount());
+    }
+    file.close();
+
+    if(!EVP_DigestFinal_ex(mdctx, hash, &hash_len)) {
+        EVP_MD_CTX_free(nullptr);
+        return {};
+    }
+    EVP_MD_CTX_free(nullptr);
+
+    std::stringstream ss;
+    for(int i = 0; i < SHA256_DIGEST_LENGTH; i++){
+        ss << std::hex << std::setw(2) << std::setfill('0') << static_cast<int>(hash[i]);
+    }
+    return ss.str();
 }

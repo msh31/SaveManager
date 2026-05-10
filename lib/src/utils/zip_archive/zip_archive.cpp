@@ -1,8 +1,16 @@
 #include "utils/zip_archive/zip_archive.hpp"
+#include "logger/logger.hpp"
+#include <utils/utils.hpp>
+
+#include <nlohmann/json.hpp>
+#include <zip.h>
+
+using json = nlohmann::json;
 
 bool ZipArchive::add_to_archive(const fs::path& file) {
     int file_count = 0;
     std::vector<std::string> failed_files;
+    std::vector<fs::path> save_files;
 
     if (fs::is_regular_file(file)) {
         get_logger().info("Adding: {}, to the backup for: {}", file.string(), file.parent_path().string());
@@ -22,6 +30,7 @@ bool ZipArchive::add_to_archive(const fs::path& file) {
             zip_source_free(source);
         }
         file_count++;
+        save_files.push_back(file);
     }
 
     if(fs::is_directory(file)) {
@@ -41,10 +50,11 @@ bool ZipArchive::add_to_archive(const fs::path& file) {
 
             if (zip_file_add(archive, file_path.string().c_str(), source, ZIP_FL_OVERWRITE) < 0) {
                 get_logger().error("Failed to add file: {}", zip_strerror(archive));
-                failed_files.push_back(file.filename().string());
+                failed_files.push_back(entry.path().filename());
                 zip_source_free(source);
             }
             file_count++;
+            save_files.push_back(file_path);
         }
     }
 
@@ -55,6 +65,16 @@ bool ZipArchive::add_to_archive(const fs::path& file) {
         }
         return false;
     } else {
+        manifest = build_manifest(save_files);
+        if(manifest.empty()) {
+            get_logger().error("Empty manifest, aborting backup!");
+            return false;
+        }
+        if(!write_manifest_to_zip(archive)) {
+            get_logger().error("Failed to add checksum manifest to backup!");
+            return false;
+        }
+
         get_logger().success("backup for: {} has been created!", file.parent_path().string());
         return true;
     }
@@ -128,4 +148,46 @@ void ZipArchive::set_comment(const std::string& str) {
 const char* ZipArchive::get_comment() {
     int len = 0;
     return zip_get_archive_comment(archive, &len, 0);
+}
+
+std::string ZipArchive::build_manifest(std::vector<fs::path> paths) {
+    json data;
+    std::vector<fs::path> failed_files;
+
+    for(const auto& entry : paths) {
+        auto hash = hash_file(entry);
+        if(hash.empty()) { 
+            failed_files.emplace_back(entry.filename());
+            continue;
+        }
+        data[entry.filename().string()] = hash;
+    }
+    
+    if(!failed_files.empty()) { //TODO: improve this
+        get_logger().error("Failed to hash a file, aborting..");
+        return {};
+    }
+    if(data.empty()) {
+        get_logger().error("Failed to add hash to manifest");
+        return {};
+    }
+    return data.dump();
+}
+
+bool ZipArchive::write_manifest_to_zip(zip_t* archive) {
+    if(archive == nullptr) return false;
+
+    zip_source_t* source = zip_source_buffer(archive, manifest.data(), manifest.size(), 0);
+    if(source == nullptr) {
+        get_logger().error("Failed to create source for manifest");
+        return false;
+    }
+
+    if(zip_file_add(archive, "checksum.json", source, ZIP_FL_OVERWRITE) < 0) {
+        get_logger().error("Failed to add manifest to zip");
+        zip_source_free(source);
+        return false;
+    }
+
+    return true;
 }
