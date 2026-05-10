@@ -17,3 +17,6 @@ CMakeLists.txt
 *.jpeg
 .idea/
 *.mp4
+
+# wip
+ROADMAP.md
