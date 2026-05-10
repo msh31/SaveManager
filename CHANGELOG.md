@@ -1,5 +1,44 @@
 # Changelog
 
+## [1.7.0] - 2026-05-??
+
+### Added
+- Headless CLI (for scripting & automation)
+- SaveWatcher daemon (part of pre-event hooks)
+- Undo last restore
+- Atomic backup restore (Prevents corrupted backup restoration if there is a crash or power loss during the restore process)
+- Scheduled backups
+    - Scheduled integrity scrubbing: periodically re-verify backups to detect corruption and bit rot
+- Backup retention
+    - Smart backup retention with flexible rules (e.g. keep-last, keep-hourly, keep-daily, keep-weekly, keep-monthly, keep-yearly)
+    - Retention presets: Time Machine, Speedrunner, Archivist, Single-Slot Survivor
+    - Pinned snapshots: starred backups are permanently excluded from automatic pruning
+- Zero-byte and shrunk-save quarantine: detect and quarantine suspicious saves instead of replacing the last known good backup blindly
+- Automatic pre-event snapshots before potentially destructive changes:
+  - Proton/Wine version changes
+  - Mod manager launches (MO2, Vortex)
+  - Game uninstalls  
+
+
+### Fixed
+- Backups not visible after uninstall a game
+- Backup all button not renaming backups
+
+
+### Changed
+- Newer existing files are renamed to .savemgr-conflict-<timestamp> instead of being overwritten
+- Each backup ZIP includes SHA-256 checksums for every file to enable integrity verification and corruption detection
+
+
+### Known Issues / Limitations
+- Original Anno editions not supported due to install path limitations (You can make a plugin for this though, specific to your install)
+- Grouping issues with unknown / partially supported games (Similar to #2 but has since improved)
+
+
+### Development related
+- Moved core logic into a [separate library](lib/) which is linked to the gui/cli/daemon
+
+
 ## [1.6.0] - 2026-05-08
 Plugins can be found [here](https://github.com/msh31/savemanager-plugins)
 
