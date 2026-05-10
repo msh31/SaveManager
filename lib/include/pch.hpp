@@ -19,6 +19,8 @@
 #include <cstring>
 #include <deque>
 #include <shared_mutex>
+
+#include <print>
 #endif
 
 #ifdef __linux__
