@@ -6,8 +6,8 @@
 void LogTab::render(const Fonts& fonts) {
     if (ImGui::Button("Clear")) {
         log_buffer.clear();
-        get_logger().clear();
-        get_logger().info("Cleared the log!");
+        get_ringbuffer_sink()->clear();
+        SPDLOG_INFO("Cleared the log!");
     }
     ImGui::SameLine();
     if(ImGui::Button("Copy to clipboard")) {
@@ -20,8 +20,8 @@ void LogTab::render(const Fonts& fonts) {
     if (ImGui::GetTime() - last_read_time > 2.0) {
         last_read_time = ImGui::GetTime();
         log_buffer.clear();
-        for (const auto& entry : get_logger().get_entries()) {
-            log_buffer += entry + "\n";
+        for (const auto& entry : get_ringbuffer_sink()->get_messages()) {
+            log_buffer += entry;
         }
     }
 

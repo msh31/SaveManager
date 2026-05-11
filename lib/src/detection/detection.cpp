@@ -3,7 +3,6 @@
 #include "config/config.hpp"
 #include "utils/blacklist/blacklist.hpp"
 #include "utils/paths.hpp"
-#include "logger/logger.hpp"
 #include "utils/utils.hpp"
 
 #include <utils/steam/steam.hpp>
@@ -14,10 +13,10 @@
 #include "detection/minecraft/minecraft.hpp"
 
 struct Detectors {
-   RockstarDetector rockstar_detect; 
-   UbisoftDetector ubisoft_detect; 
-   UnrealDetector unreal_detect; 
-   MinecraftDetector minecraft_detect; 
+   RockstarDetector rockstar_detect;
+   UbisoftDetector ubisoft_detect;
+   UnrealDetector unreal_detect;
+   MinecraftDetector minecraft_detect;
 };
 
 void Detection::add_game(std::expected<std::vector<Game>, DetectionError> result, const std::string& platform, DetectionResult& d_result) {
@@ -30,10 +29,10 @@ void Detection::add_game(std::expected<std::vector<Game>, DetectionError> result
             case DetectionError::PathNotFound:
                 break;
             case DetectionError::PermissionDenied:
-                get_logger().warning("{}: permission denied", platform);
+                SPDLOG_WARN("{}: permission denied", platform);
                 break;
             case DetectionError::NoSavesFound:
-                get_logger().warning("{}: no saves found", platform);
+                SPDLOG_WARN("{}: no saves found", platform);
                 break;
         }
     }
@@ -47,7 +46,7 @@ void scan_prefix_dir(const fs::path& compatdata, Detection::DetectionResult& res
         for (const auto& entry : fs::directory_iterator(compatdata)) {
             fs::path prefix = entry.path();
             if(!fs::exists(prefix)) {
-                get_logger().warning("Prefix not found!");
+                SPDLOG_WARN("Prefix not found!");
                 continue;
             }
 
@@ -79,7 +78,7 @@ void scan_prefix_dir(const fs::path& compatdata, Detection::DetectionResult& res
             }
         }
     } catch(const std::filesystem::filesystem_error& fse) {
-        get_logger().error("scan_prefix_dir: {}", fse.what());
+        SPDLOG_ERROR("scan_prefix_dir: {}", fse.what());
     };
 }
 
@@ -90,14 +89,14 @@ void Detection::find_saves(Config& config, DetectionResult& d_result) {
     int plugin_count = 0;
     for (const auto& plugin : fs::recursive_directory_iterator(paths::plugin_dir(), fs::directory_options::skip_permission_denied | fs::directory_options::follow_directory_symlink)) {
         plugin_count++;
-        // get_logger().debug("found: {}", plugin.path().string());
+        // SPDLOG_DEBUG("found: {}", plugin.path().string());
         if(plugin.path().extension() != ".lua") continue;
         if(!fs::is_regular_file(plugin)) continue;
 
         Plugin plugins(plugin);
         Detection::add_game(plugins.find_saves(), "Custom", d_result);
     }
-    if(plugin_count > 0) get_logger().info("Loaded {} plugins!", plugin_count);
+    if(plugin_count > 0) SPDLOG_INFO("Loaded {} plugins!", plugin_count);
 
 //TODO: move this & make it platform agnostic
     Detection::add_game(detectors.minecraft_detect.find_saves(), "minecraft", d_result);
@@ -117,7 +116,7 @@ void Detection::find_saves(Config& config, DetectionResult& d_result) {
         if (fs::exists(config.settings.lutris_path)) {
             resolved_lutris = config.settings.lutris_path;
         } else {
-            get_logger().warning("Configured Lutris path does not exist, falling back to defaults");
+            SPDLOG_WARN("Configured Lutris path does not exist, falling back to defaults");
         }
     }
 
@@ -134,7 +133,7 @@ void Detection::find_saves(Config& config, DetectionResult& d_result) {
         if (fs::exists(config.settings.heroic_path)) {
             heroic_base = config.settings.heroic_path;
         } else {
-            get_logger().warning("Configured Heroic path does not exist, falling back to defaults");
+            SPDLOG_WARN("Configured Heroic path does not exist, falling back to defaults");
         }
     }
     fs::path heroic_dir = heroic_base / "Prefixes/default";
@@ -146,7 +145,7 @@ void Detection::find_saves(Config& config, DetectionResult& d_result) {
 
         scan_prefix_dir(heroic_dir, d_result, config, detectors);
     } else {
-        get_logger().warning("Heroic path does not exist!");
+        SPDLOG_WARN("Heroic path does not exist!");
     }
 #endif
 
@@ -177,15 +176,15 @@ void Detection::find_saves(Config& config, DetectionResult& d_result) {
         //ignored
     }
     if (config.settings.unreal_enabled) {
-        Detection::add_game(detectors.unreal_detect.find_saves(paths::home_dir() / "Library" / "Application Support", UnrealDetector::ScanMode::Native), "unreal", d_result); 
-        Detection::add_game(detectors.unreal_detect.find_saves(paths::heroic_dir() / "Prefixes"), "unreal", d_result); 
+        Detection::add_game(detectors.unreal_detect.find_saves(paths::home_dir() / "Library" / "Application Support", UnrealDetector::ScanMode::Native), "unreal", d_result);
+        Detection::add_game(detectors.unreal_detect.find_saves(paths::heroic_dir() / "Prefixes"), "unreal", d_result);
     }
-    // Detection::add_game(detectors.custom_detect.find_saves(paths::home_dir()), "custom", result); 
+    // Detection::add_game(detectors.custom_detect.find_saves(paths::home_dir()), "custom", result);
 #endif
 
     std::unique_lock<std::shared_mutex> lock(d_result.d_mutex);
     if (d_result.games.empty()) {
-        get_logger().error("No savegames found!");
+        SPDLOG_ERROR("No savegames found!");
     }
 
     std::erase_if(d_result.games, [](const Game& game) {

@@ -7,7 +7,6 @@
 #include "imgui_impl_opengl3.h"
 
 #include "app.hpp"
-#include "logger/logger.hpp"
 
 #include "frontend/ui/themes/themes.hpp"
 #include "frontend/ui/notifications/notification.hpp"
@@ -45,7 +44,7 @@ void App::init() {
 
     are_we_ready = std::async(std::launch::async, [this]() {
         if(!config.init()) {
-            get_logger().error("Config is missing and could not be generated!");
+            SPDLOG_ERROR("Config is missing and could not be generated!");
             Notify::show_notification("Config error!", "Config is missing and could not be generated!", 5000);
         }
 
@@ -142,7 +141,7 @@ GLuint App::compile_shader(const fs::path& path, GLenum type) {
 
     GLuint shader_id = glCreateShader(type);
     if(shader_id == 0) {
-        get_logger().warning("Failed to load shader: {}", path.string());
+        SPDLOG_WARN("Failed to load shader: {}", path.string());
     }
 
     const char* src = shader_source.c_str();
@@ -155,7 +154,7 @@ GLuint App::compile_shader(const fs::path& path, GLenum type) {
         glGetShaderiv(shader_id, GL_INFO_LOG_LENGTH, &log_length);
         std::string logs(log_length, '\0');
         glGetShaderInfoLog(shader_id, log_length, NULL, logs.data());
-        get_logger().warning("Shader compilation error: {} in: {}", logs, path.string());
+        SPDLOG_WARN("Shader compilation error: {} in: {}", logs, path.string());
         glDeleteShader(shader_id);
         return GL_FALSE;
     }
@@ -174,7 +173,7 @@ GLuint App::compile_shader(const char* source, GLenum type) {
         glGetShaderiv(shader_id, GL_INFO_LOG_LENGTH, &log_length);
         std::string logs(log_length, '\0');
         glGetShaderInfoLog(shader_id, log_length, NULL, logs.data());
-        get_logger().warning("Shader compilation error: {}", logs);
+        SPDLOG_WARN("Shader compilation error: {}", logs);
         glDeleteShader(shader_id);
         return GL_FALSE;
     }
@@ -196,7 +195,7 @@ GLuint App::link_program(GLuint vert, GLuint frag) {
         glGetProgramiv(pid, GL_INFO_LOG_LENGTH, &log_length);
         std::string logs(log_length, '\0');
         glGetProgramInfoLog(pid, log_length, NULL, logs.data());
-        get_logger().warning("Shader linker error: {}", logs);
+        SPDLOG_WARN("Shader linker error: {}", logs);
 
         glDeleteProgram(pid);
 
@@ -238,7 +237,7 @@ void App::init_quad() {
 
 bool App::setup_opengl() {
     if(!glfwInit()) {
-        get_logger().error("Failed to initialize GLFW.");
+        SPDLOG_ERROR("Failed to initialize GLFW.");
         return false;
     }
 
@@ -249,7 +248,7 @@ bool App::setup_opengl() {
 
     window = glfwCreateWindow(DEF_RES_W, DEF_RES_H, APP_NAME, nullptr, nullptr);
     if(window == nullptr) {
-        get_logger().error("Failed to create GLFW window. OpenGL 3.3 support is required!");
+        SPDLOG_ERROR("Failed to create GLFW window. OpenGL 3.3 support is required!");
         glfwTerminate();
         return false;
     }
@@ -263,7 +262,7 @@ bool App::setup_opengl() {
     glfwMakeContextCurrent(window);
     glfwSwapInterval(1);
     if (!gladLoadGL(glfwGetProcAddress)) {
-        get_logger().error("Failed to initialize GLAD");
+        SPDLOG_ERROR("Failed to initialize GLAD");
         return false;
     }
 

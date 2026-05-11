@@ -1,5 +1,4 @@
 #include "config/config.hpp"
-#include "logger/logger.hpp"
 #include "utils/paths.hpp"
 #include "utils/translations/steamids.hpp"
 #include "utils/translations/ubi_translations.hpp"
@@ -9,33 +8,39 @@ using json = nlohmann::json;
 
 Config::Config(fs::path config_dir) : config_file(config_dir / "config.json") {
     try {
+        if(!fs::exists(paths::log_dir())) {
+            if(!fs::create_directories(paths::log_dir())) {
+                SPDLOG_ERROR("Failed to create log directory");
+            }
+        }
+
         if(!fs::exists(config_dir)) {
             if(!fs::create_directories(config_dir)) {
-                get_logger().error("Failed to create backup directory");
+                SPDLOG_ERROR("Failed to create backup directory");
             }
         }
 
         if(!fs::exists(paths::backup_dir())) {
             if(!fs::create_directories(paths::backup_dir())) {
-                get_logger().error("Failed to create backup directory");
+                SPDLOG_ERROR("Failed to create backup directory");
             }
         }
 
         if(!fs::exists(paths::plugin_dir())) {
             if(!fs::create_directories(paths::plugin_dir())) {
-                get_logger().error("Failed to create plugins directory");
+                SPDLOG_ERROR("Failed to create plugins directory");
             }
         }
 
         // if(!fs::exists(paths::cache_dir())) {
         //     if(!fs::create_directories(paths::cache_dir())) {
-        //         get_logger().error("Failed to create cache directory");
+        //         SPDLOG_ERROR("Failed to create cache directory");
         //     }
         // }
 
         load();
     } catch (const std::exception& err) {
-        get_logger().error("config constructor: {}", err.what());
+        SPDLOG_ERROR("config constructor: {}", err.what());
     }
 }
 
@@ -43,7 +48,7 @@ Config::~Config() {
     try {
         save();
     } catch (const std::exception& err) {
-        get_logger().error("config destructor: {}", err.what());
+        SPDLOG_ERROR("config destructor: {}", err.what());
     }
 }
 
@@ -113,7 +118,7 @@ void Config::load() {
 
     std::ifstream file(config_file.c_str());
     if(!file.is_open()) {
-        get_logger().error("Failed to open config!");
+        SPDLOG_ERROR("Failed to open config!");
         return;
     }
 
@@ -158,5 +163,5 @@ void Config::load() {
         win_props.y = data["y"];
         win_props.width = data["width"];
         win_props.height = data["height"];
-    } catch(json::exception& ex) { get_logger().error("config parsing error: {}", ex.what()); }
+    } catch(json::exception& ex) { SPDLOG_ERROR("config parsing error: {}", ex.what()); }
 }

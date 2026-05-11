@@ -5,7 +5,6 @@
 #include "utils/paths.hpp"
 #include "frontend/ui/notifications/notification.hpp"
 #include "config/config.hpp"
-#include "logger/logger.hpp"
 
 #ifdef __APPLE__
 #include <spawn.h>
@@ -29,11 +28,11 @@ void SettingsTab::render(const Fonts& fonts, Config& config) {
         auto [ubi, steam] = update_t_future.get();
 
         if(!ubi) {
-            get_logger().error("Failed to download Ubisoft translations");
+            SPDLOG_ERROR("Failed to download Ubisoft translations");
             Notify::show_notification("Translations", "Failed to update translations for ubisoft", 2500);
         }
         if(!steam) {
-            get_logger().error("Failed to download Steam ID data");
+            SPDLOG_ERROR("Failed to download Steam ID data");
             Notify::show_notification("Translations", "Failed to update translations for steam appids", 2500);
         }
         if(steam && ubi) {

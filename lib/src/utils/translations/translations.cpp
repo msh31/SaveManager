@@ -1,6 +1,5 @@
 #include "utils/translations/translations.hpp"
 #include "utils/paths.hpp"
-#include "logger/logger.hpp"
 
 static std::unordered_map<std::string, std::string> ubi_translations;
 static std::unordered_map<std::string, std::string> steam_n2i_translation; //name to appid
@@ -12,9 +11,9 @@ static const std::unordered_map<std::string_view, std::string> rsg_translations 
     {"Bully", "Bully: Scholarship Edition"},
     {"GTA IV", "Grand Theft Auto IV: The Complete Edition"},
     {"GTA V", "Grand Theft Auto V Legacy"},
-    {"GTA San Andreas Definitive Edition", "Grand Theft Auto: San Andreas \u2013 The Definitive Edition"},
-    {"GTA Vice City Definitive Edition", "Grand Theft Auto: Vice City \u2013 The Definitive Edition"},
-    {"GTA III Definitive Edition", "Grand Theft Auto III \u2013 The Definitive Edition"},
+    {"GTA San Andreas Definitive Edition", "Grand Theft Auto: San Andreas – The Definitive Edition"},
+    {"GTA Vice City Definitive Edition", "Grand Theft Auto: Vice City – The Definitive Edition"},
+    {"GTA III Definitive Edition", "Grand Theft Auto III – The Definitive Edition"},
     {"GTAV Enhanced", "Grand Theft Auto V Enhanced"},
 };
 
@@ -26,7 +25,7 @@ void translations::init() {
     try {
         if (ubi_file.is_open() && fs::file_size(paths::ubi_translations()) > 0) {
             ubi_data = json::parse(ubi_file);
-            get_logger().info("Loaded ubi_translations JSON with {} franchises", ubi_data.size());
+            SPDLOG_INFO("Loaded ubi_translations JSON with {} franchises", ubi_data.size());
             for (const auto& [franchise, games] : ubi_data.items()) {
                 for (const auto& [id, name] : games.items()) {
                     auto clean = std::regex_replace(name.get<std::string>(), std::regex(R"(\s*\([^)]*\))"), "");
@@ -34,16 +33,16 @@ void translations::init() {
                 }
             }
         } else {
-            get_logger().error("Failed to open ubi translations file!");
+            SPDLOG_ERROR("Failed to open ubi translations file!");
         }
     } catch(json::exception& ex) {
-        get_logger().error("Translation error: {}", ex.what());
+        SPDLOG_ERROR("Translation error: {}", ex.what());
     }
 
     try {
         if (steam_file.is_open() && fs::file_size(paths::steam_appids()) > 0) {
             steam_data = json::parse(steam_file);
-            get_logger().info("Loaded steamids.json!");
+            SPDLOG_INFO("Loaded steamids.json!");
             for (const auto& [platform, games] : steam_data.items()) {
                 for (const auto& game : games) {
                     std::string name = game["name"].get<std::string>();
@@ -51,12 +50,12 @@ void translations::init() {
                     steam_n2i_translation[name] = appid;
                     steam_i2n_translation[appid] = name;
                 }
-            } 
+            }
         } else {
-            get_logger().error("Failed to open steamids file!");
+            SPDLOG_ERROR("Failed to open steamids file!");
         }
     } catch(json::exception& ex) {
-        get_logger().error("Translation error: {}", ex.what());
+        SPDLOG_ERROR("Translation error: {}", ex.what());
     }
 }
 
@@ -67,11 +66,11 @@ std::optional<std::string> translations::get_game_name_ubi(const std::string& ga
     return std::nullopt;
 }
 
-std::optional<std::string> translations::get_steam_id(const std::string& game_name) {    
+std::optional<std::string> translations::get_steam_id(const std::string& game_name) {
     if (auto it = steam_n2i_translation.find(game_name); it != steam_n2i_translation.end()) {
         return it->second;
     }
-    
+
     return std::nullopt;
 }
 
@@ -80,7 +79,7 @@ std::optional<std::string> translations::get_steam_name(const std::string& appid
     if (auto it = steam_i2n_translation.find(appid); it != steam_i2n_translation.end()) {
         return it->second;
     }
-    
+
     return std::nullopt;
 }
 
@@ -90,4 +89,3 @@ std::optional<std::string> translations::get_game_name_rsg(std::string_view fold
     }
     return std::nullopt;
 }
-

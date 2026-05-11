@@ -19,8 +19,12 @@
 #include <cstring>
 #include <deque>
 #include <shared_mutex>
-
 #include <print>
+#include <memory>
+
+#include <spdlog/spdlog.h>
+#include <logger/logger.hpp>  
+#include <spdlog/sinks/daily_file_sink.h>
 #endif
 
 #ifdef __linux__

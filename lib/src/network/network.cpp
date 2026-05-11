@@ -1,6 +1,5 @@
 #include "network/network.hpp"
 #include "utils/paths.hpp"
-#include "logger/logger.hpp"
 #include <constants.hpp>
 
 #include <nlohmann/json.hpp>
@@ -19,7 +18,7 @@ size_t Network::stream_callback(void* ptr, size_t size, size_t nmemb, FILE* stre
 std::string Network::download_to_string(std::string_view url) {
     CURL* curl = curl_easy_init();
     if (!curl) {
-        get_logger().error("Failed to initialize CURL");
+        SPDLOG_ERROR("Failed to initialize CURL");
         return {};
     }
 
@@ -29,53 +28,53 @@ std::string Network::download_to_string(std::string_view url) {
     curl_easy_setopt(curl, CURLOPT_URL, url_str.c_str());
     curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, stream_callback);
     curl_easy_setopt(curl, CURLOPT_WRITEDATA, &data);
-    
+
     CURLcode res = curl_easy_perform(curl);
     curl_easy_cleanup(curl);
-    
+
     if (res != CURLE_OK) {
-        get_logger().error("Failed to stream: {}", curl_easy_strerror(res));
+        SPDLOG_ERROR("Failed to stream: {}", curl_easy_strerror(res));
         return {};
     }
-    
+
     return data;
 }
 
 bool Network::download_file(std::string_view url, const std::string& output_path) {
     CURL* curl = curl_easy_init();
     if (!curl) {
-        get_logger().error("Failed to initialize CURL");
+        SPDLOG_ERROR("Failed to initialize CURL");
         return false;
     }
-    
+
     FILE* fp = fopen(output_path.c_str(), "wb");
-    if (!fp) { 
-        get_logger().error("Failed to open file for writing: {}", output_path);
-        curl_easy_cleanup(curl); 
-        return false; 
+    if (!fp) {
+        SPDLOG_ERROR("Failed to open file for writing: {}", output_path);
+        curl_easy_cleanup(curl);
+        return false;
     }
-    
+
     std::string url_str{url};
     curl_easy_setopt(curl, CURLOPT_USERAGENT, "SaveManager");
     curl_easy_setopt(curl, CURLOPT_URL, url_str.c_str());
     curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, write_callback);
     curl_easy_setopt(curl, CURLOPT_WRITEDATA, fp);
-    
+
     CURLcode res = curl_easy_perform(curl);
-    
+
     fclose(fp);
     curl_easy_cleanup(curl);
-    
+
     if (res != CURLE_OK) {
-        get_logger().error("Failed to download file: {}", curl_easy_strerror(res));
+        SPDLOG_ERROR("Failed to download file: {}", curl_easy_strerror(res));
         return false;
     }
-    
+
     return true;
 }
 
 void Network::download_game_image(std::string_view appid) {
-    fs::path img_path = paths::cache_dir() / std::format("{}.jpg", appid); 
+    fs::path img_path = paths::cache_dir() / std::format("{}.jpg", appid);
     if (fs::exists(img_path) && fs::file_size(img_path) > 0) {
         return;
     }
@@ -83,7 +82,7 @@ void Network::download_game_image(std::string_view appid) {
     auto url = std::format("https://cdn.cloudflare.steamstatic.com/steam/apps/{}/header.jpg", appid);
     // auto url = std::format("https://cdn.cloudflare.steamstatic.com/steam/apps/{}/library_600x900.jpg", appid);
     if (!Network::download_file(url, img_path.string())) {
-        get_logger().error("Could not download {}", img_path.string());
+        SPDLOG_ERROR("Could not download {}", img_path.string());
     }
 }
 
@@ -92,27 +91,27 @@ bool Network::is_update_available() {
     std::string upstream = download_to_string("https://api.github.com/repos/msh31/SaveManager/releases/latest");
 
     if(upstream.empty()) {
-        get_logger().error("Failed to get connect to GitHub API to fetch the latest version");
+        SPDLOG_ERROR("Failed to get connect to GitHub API to fetch the latest version");
         return false;
     }
 
     try {
         data = json::parse(upstream);
     } catch(json::exception& ex) {
-        get_logger().error("JSON parsing error: {}", ex.what());
+        SPDLOG_ERROR("JSON parsing error: {}", ex.what());
         return false;
     }
 
     std::string latest = data.value("tag_name", std::string(""));
-    // get_logger().info("Latest: " + latest + " Current: " + std::string(APP_VERSION));
+    // SPDLOG_INFO("Latest: " + latest + " Current: " + std::string(APP_VERSION));
 
     auto [maj, min, pat] = parse_version(APP_VERSION);
     auto [l_maj, l_min, l_pat] = parse_version(latest);
 
     if(maj > l_maj) return false;
     if(maj < l_maj) return true;
-    if(min > l_min) return false; 
-    if(min < l_min) return true; 
+    if(min > l_min) return false;
+    if(min < l_min) return true;
     if(pat > l_pat) return false;
     if(pat < l_pat) return true;
     if(maj == l_maj && min == l_min && pat == l_pat) return false;

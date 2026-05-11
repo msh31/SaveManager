@@ -1,6 +1,5 @@
 #include "features/remote_transfer/remote_transfer.hpp"
 #include "config/config.hpp"
-#include "logger/logger.hpp"
 
 //https://libssh2.org/examples/sftp_write.html
 RemoteTransfer::RemoteTransfer() {}
@@ -10,7 +9,7 @@ bool RemoteTransfer::connect(const std::string& dest_addr, const Config& config,
     WSADATA wsadata;
     WSAStartup(MAKEWORD(2, 2), &wsadata);
 #endif
-    
+
     auto fail = [this]() -> bool {
         disconnect();
         return false;
@@ -18,13 +17,13 @@ bool RemoteTransfer::connect(const std::string& dest_addr, const Config& config,
 
     int result = libssh2_init(0);
     if(result) {
-        get_logger().error("libssh2 initialization failed: {}", result);
+        SPDLOG_ERROR("libssh2 initialization failed: {}", result);
         return false;
     }
 
     sock = socket(AF_INET, SOCK_STREAM, 0);
     if(sock == LIBSSH2_INVALID_SOCKET) {
-        get_logger().error("failed to create socket!");
+        SPDLOG_ERROR("failed to create socket!");
         return false;
     }
 
@@ -32,25 +31,25 @@ bool RemoteTransfer::connect(const std::string& dest_addr, const Config& config,
     sin.sin_port = htons(22);
     int rc = inet_pton(AF_INET, dest_addr.c_str(), &sin.sin_addr);
     if(rc <= 0) {
-        get_logger().error("Invalid address: {}", dest_addr);
+        SPDLOG_ERROR("Invalid address: {}", dest_addr);
         return fail();
     }
 
     if(::connect(sock, SOCKADDR_CAST(&sin), sizeof(struct sockaddr_in))) {
-        get_logger().error("failed to connect to socket: {}", strerror(errno));
+        SPDLOG_ERROR("failed to connect to socket: {}", strerror(errno));
         return fail();
     }
 
     session = libssh2_session_init();
     if(!session) {
-        get_logger().error("Could not initialize SSH session.");
+        SPDLOG_ERROR("Could not initialize SSH session.");
         return fail();
     }
 
     libssh2_session_set_blocking(session, 1);
     result = libssh2_session_handshake(session, sock);
     if(result) {
-        get_logger().error("Failure establishing SSH session: {}", result);
+        SPDLOG_ERROR("Failure establishing SSH session: {}", result);
         return fail();
     }
 
@@ -58,19 +57,19 @@ bool RemoteTransfer::connect(const std::string& dest_addr, const Config& config,
 
     if(auth_pw) {
         if(libssh2_userauth_password(session, config.sftp.username.c_str(), config.sftp.password.c_str())) {
-            get_logger().error("Authentication by password failed.");
+            SPDLOG_ERROR("Authentication by password failed.");
             return fail();
         }
     } else {
         if(libssh2_userauth_publickey_fromfile(session, config.sftp.username.c_str(), config.sftp.pubkey.string().c_str(), config.sftp.privkey.string().c_str(), key_passphrase.empty() ? nullptr : key_passphrase.c_str())) {
-            get_logger().error("Authentication by public key failed.");
+            SPDLOG_ERROR("Authentication by public key failed.");
             return fail();
         }
     }
 
     sftp_session = libssh2_sftp_init(session);
     if(!sftp_session) {
-        get_logger().error("Unable to init SFTP session");
+        SPDLOG_ERROR("Unable to init SFTP session");
         return fail();
     }
 
@@ -125,7 +124,7 @@ void RemoteTransfer::upload_file(const fs::path& backup_path, const std::string&
                                     LIBSSH2_SFTP_S_IRGRP |
                                     LIBSSH2_SFTP_S_IROTH);
     if(!sftp_handle) {
-        get_logger().error("Unable to open path with SFTP {}", libssh2_sftp_last_error(sftp_session));
+        SPDLOG_ERROR("Unable to open path with SFTP {}", libssh2_sftp_last_error(sftp_session));
         return;
     }
 
@@ -133,7 +132,7 @@ void RemoteTransfer::upload_file(const fs::path& backup_path, const std::string&
     if(!file.is_open()) {
         libssh2_sftp_close_handle(sftp_handle);
         sftp_handle = nullptr;
-        get_logger().error("Could not open backup path with SFTP");
+        SPDLOG_ERROR("Could not open backup path with SFTP");
         return;
     }
 
@@ -158,7 +157,7 @@ void RemoteTransfer::upload_file(const fs::path& backup_path, const std::string&
         } while(nread);
     } while(file.gcount() > 0);
 
-    get_logger().success("File has been uploaded!");
+    SPDLOG_INFO("File has been uploaded!");
     libssh2_sftp_close_handle(sftp_handle);
     sftp_handle = nullptr;
 }
@@ -189,13 +188,13 @@ void RemoteTransfer::download_file(const fs::path& backup_path, const Config& co
     fs::path local_path = config.settings.backup_path / backup_path.filename();
     sftp_handle = libssh2_sftp_open(sftp_session, backup_path.string().c_str(), LIBSSH2_FXF_READ, 0);
     if(!sftp_handle) {
-        get_logger().error("Unable to open path with SFTP: {}", libssh2_sftp_last_error(sftp_session));
+        SPDLOG_ERROR("Unable to open path with SFTP: {}", libssh2_sftp_last_error(sftp_session));
         return;
     }
 
     std::ofstream file(local_path, std::ios::binary);
     if(!file.is_open()) {
-        get_logger().error("Could not open backup path with SFTP");
+        SPDLOG_ERROR("Could not open backup path with SFTP");
         libssh2_sftp_close(sftp_handle);
         sftp_handle = nullptr;
         return;
@@ -206,7 +205,7 @@ void RemoteTransfer::download_file(const fs::path& backup_path, const Config& co
         if(!file.write(mem, rc)) break;
         bytes_transferred += rc;
     }
-    get_logger().success("File has been downloaded!");
+    SPDLOG_INFO("File has been downloaded!");
     libssh2_sftp_close(sftp_handle);
     sftp_handle = nullptr;
 }

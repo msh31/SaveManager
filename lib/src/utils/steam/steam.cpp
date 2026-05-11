@@ -1,5 +1,4 @@
 #include "utils/steam/steam.hpp"
-#include "logger/logger.hpp"
 #include "utils/paths.hpp"
 
 std::vector<std::string> SteamHelper::get_platform_steam_paths() {
@@ -23,7 +22,7 @@ std::vector<std::string> SteamHelper::get_platform_steam_paths() {
         };
 #endif
     } catch (const std::exception& e) {
-        get_logger().error("Failed to get Steam paths: {}", std::string(e.what()));
+        SPDLOG_ERROR("Failed to get Steam paths: {}", std::string(e.what()));
         return {};
     }
 }
@@ -33,7 +32,7 @@ std::optional<fs::path> SteamHelper::get_steam_location() {
     //     if (fs::exists(config.settings.steam_path)) {
     //         return config.settings.steam_path;
     //     }
-    //     get_logger().warning("Configured Steam path does not exist, falling back to defaults");
+    //     SPDLOG_WARN("Configured Steam path does not exist, falling back to defaults");
     // }
 
     for (const auto& entry : get_platform_steam_paths()) {
@@ -49,7 +48,7 @@ std::vector<fs::path> SteamHelper::get_library_folders() {
     std::vector<fs::path> libraries;
 
     if(!vdf_file) {
-        get_logger().warning("Steam installation not found");
+        SPDLOG_WARN("Steam installation not found");
         return {};
     }
 
@@ -61,7 +60,7 @@ std::vector<fs::path> SteamHelper::get_library_folders() {
     std::string line;
 
     if(!file.is_open()) {
-        get_logger().error("Failed to open Steam library file");
+        SPDLOG_ERROR("Failed to open Steam library file");
         return {};
     }
 

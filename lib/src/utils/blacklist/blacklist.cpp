@@ -1,6 +1,5 @@
 #include "utils/blacklist/blacklist.hpp"
 #include "utils/paths.hpp"
-#include "logger/logger.hpp"
 #include <nlohmann/json.hpp>
 
 using json = nlohmann::json;
@@ -12,16 +11,16 @@ void Blacklist::init() {
     if (file.is_open()) {
         try {
             data = json::parse(file);
-            get_logger().info("Loaded blacklist JSON");
+            SPDLOG_INFO("Loaded blacklist JSON");
 
             for (const auto& entry : data) {
                 blacklisted_games.insert(entry.get<std::string>());
             }
         } catch(json::exception& ex) {
-            get_logger().error("blacklist parsing error: {}", ex.what());
+            SPDLOG_ERROR("blacklist parsing error: {}", ex.what());
         }
     } else {
-        get_logger().error("Failed to open blacklist to load it!");
+        SPDLOG_ERROR("Failed to open blacklist to load it!");
     }
 }
 

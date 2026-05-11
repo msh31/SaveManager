@@ -65,6 +65,8 @@ find_package(stb REQUIRED)
 
 find_package(sol2 REQUIRED)
 
+find_package(spdlog REQUIRED)
+
 # Target: savemanager-core
 set(savemanager-core_SOURCES
 	cmake.toml
@@ -107,6 +109,7 @@ target_link_libraries(savemanager-core PUBLIC
 	nlohmann_json::nlohmann_json
 	stb::stb
 	sol2::sol2
+	spdlog::spdlog
 )
 
 if(WIN32) # windows

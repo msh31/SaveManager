@@ -1,5 +1,4 @@
 #include "features/save_editor/save_editor.hpp"
-#include "logger/logger.hpp"
 
 std::uint32_t SanAndreas::calculate_checksum() {
     std::uint32_t sum = 0;
@@ -18,14 +17,14 @@ bool SanAndreas::validate_checksum() {
 
 std::string SanAndreas::get_version_string(size_t offset) {
     if (offset + 4 > data.size()) {
-        get_logger().error("Invalid offset for version string: {}", offset);
+        SPDLOG_ERROR("Invalid offset for version string: {}", offset);
         return {};
     }
 
     std::vector<uint8_t> v_bytes = {};
     for (size_t i = {}; i < 4; i++) {
         if (offset + i >= data.size()) {
-            get_logger().error("Version ID truncated");
+            SPDLOG_ERROR("Version ID truncated");
         }
         v_bytes.push_back(data[offset + i]);
     }
@@ -43,22 +42,22 @@ std::string SanAndreas::get_version_string(size_t offset) {
 
 bool SanAndreas::validate_file() {
     if(data.size() != SanAndreas::save_size) {
-        get_logger().error("Invalid file size, expected {} bytes but got {} bytes", SanAndreas::save_size, data.size());
+        SPDLOG_ERROR("Invalid file size, expected {} bytes but got {} bytes", SanAndreas::save_size, data.size());
         return false;
     }
 
     if(block_offsets.size() != SanAndreas::block_count) {
-        get_logger().error("Invalid block count, expected {} but got {}", SanAndreas::block_count, block_offsets.size());
+        SPDLOG_ERROR("Invalid block count, expected {} but got {}", SanAndreas::block_count, block_offsets.size());
         return false;
     }
 
     auto v_offset = block_offsets[0];
     if(get_version_string(v_offset) == "Unknown Version") {
-        get_logger().error("Unknown game version!");
+        SPDLOG_ERROR("Unknown game version!");
         return false;
     }
     if(!validate_checksum()) {
-        get_logger().error("Invalid checksum, save file may be corrupted!");
+        SPDLOG_ERROR("Invalid checksum, save file may be corrupted!");
         return false;
     }
     return true;
@@ -88,7 +87,7 @@ void SanAndreas::find_block_offsets(size_t start_offset) {
 bool SanAndreas::open(fs::path path) {
     std::ifstream in(path, std::ios::binary);
     if(!in) {
-        get_logger().error("Failed to open savegame!");
+        SPDLOG_ERROR("Failed to open savegame!");
         return false;
     }
 
@@ -96,12 +95,12 @@ bool SanAndreas::open(fs::path path) {
 
     find_block_offsets();
     if(validate_file()) {
-        get_logger().debug("file validated!");
+        SPDLOG_DEBUG("file validated!");
     } else {
-        get_logger().debug("file failed to validate!");
+        SPDLOG_DEBUG("file failed to validate!");
         return false;
     }
-    get_logger().info("parsing savefile: {}", path.filename().string());
+    SPDLOG_INFO("parsing savefile: {}", path.filename().string());
     parse_block_zero();
     parse_block_two();
     parse_block_five();
@@ -118,7 +117,7 @@ bool SanAndreas::save(fs::path path) {
 
     std::ofstream out(path, std::ios::binary);
     if(!out) {
-        get_logger().error("Failed to open savegame for writing!");
+        SPDLOG_ERROR("Failed to open savegame for writing!");
         return false;
     }
     out.write(reinterpret_cast<const char*>(data.data()), data.size());
@@ -128,7 +127,7 @@ bool SanAndreas::save(fs::path path) {
 void SanAndreas::parse_block_zero() {
     auto bz_offset = block_offsets[0];
     if(bz_offset + 0x138 > data.size()) {
-        get_logger().error("Expected data length for Block 0 data was not received");
+        SPDLOG_ERROR("Expected data length for Block 0 data was not received");
         return;
     }
 

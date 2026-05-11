@@ -32,12 +32,14 @@ required = true
 required = true
 [find-package.sol2]
 required = true
+[find-package.spdlog]
+required = true
 
 [target.savemanager-core]
 type = "static"
 sources = ["lib/src/**.cpp"]
 include-directories = ["lib/include"]
-link-libraries = ["CURL::libcurl", "libzip::zip", "Libssh2::libssh2", "OpenSSL::Crypto", "nlohmann_json::nlohmann_json", "stb::stb", "sol2::sol2"]
+link-libraries = ["CURL::libcurl", "libzip::zip", "Libssh2::libssh2", "OpenSSL::Crypto", "nlohmann_json::nlohmann_json", "stb::stb", "sol2::sol2", "spdlog::spdlog"]
 compile-features = ["cxx_std_23"]
 precompile-headers = ["lib/include/pch.hpp"]
 cmake-after = """

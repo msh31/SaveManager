@@ -1,6 +1,5 @@
 #include "features/backup/backup.hpp"
 #include "constants.hpp"
-#include "logger/logger.hpp"
 #include "config/config.hpp"
 #include "utils/utils.hpp"
 #include "utils/zip_archive/zip_archive.hpp"
@@ -10,7 +9,7 @@
 using json = nlohmann::json;
 
 void Features::backup_game(const Game& game, const fs::path& file, Config& config) {
-    get_logger().info("creating backup of: {}", game.game_name);
+    SPDLOG_INFO("creating backup of: {}", game.game_name);
     fs::path game_backup_dir = config.settings.backup_path / sanitize_filename(game.game_name);
 
     //check here
@@ -19,7 +18,7 @@ void Features::backup_game(const Game& game, const fs::path& file, Config& confi
     auto ext = file.extension().string();
     if(game.type != PlatformType::MINECRAFT) {
         if(!fs::is_regular_file(file) || std::find(extension_blocklist.begin(), extension_blocklist.end(), ext) != extension_blocklist.end()) {
-            // get_logger().warning("No valid saves found for: {}, skipping backup", game.game_name);
+            // SPDLOG_WARN("No valid saves found for: {}, skipping backup", game.game_name);
             return;
         }
     } else {
@@ -27,7 +26,7 @@ void Features::backup_game(const Game& game, const fs::path& file, Config& confi
     }
 
     // if(save_count <= 0) {
-    //     get_logger().warning("No valid saves found for: {}, skipping backup", game.game_name); //only applies to mass backup
+    //     SPDLOG_WARN("No valid saves found for: {}, skipping backup", game.game_name); //only applies to mass backup
     //     return;
     // }
 
@@ -41,21 +40,21 @@ void Features::backup_game(const Game& game, const fs::path& file, Config& confi
     {
         ZipArchive archive(MODE_CREATE_ARCHIVE, zip_name.u8string());
 
-        //saving the world name 
+        //saving the world name
         if(game.type == PlatformType::MINECRAFT) archive.set_comment(file.string());
 
         success = archive.add_to_archive(file);
-    } 
+    }
 
     if(!success) {
         fs::remove(zip_name);
-        get_logger().error("failed to create backup for: {}", game.game_name);
+        SPDLOG_ERROR("failed to create backup for: {}", game.game_name);
     } else {
         std::error_code ec;
         fs::rename(zip_name, final_path, ec);
-        if(ec) get_logger().error("rename failed: {}", ec.message());
+        if(ec) SPDLOG_ERROR("rename failed: {}", ec.message());
 
-        get_logger().info("backup created: {}", game.game_name);
+        SPDLOG_INFO("backup created: {}", game.game_name);
     }
 }
 
@@ -63,7 +62,7 @@ std::vector<fs::path> Features::get_backups(const std::string& game, Config& con
     fs::path game_backup_dir = config.settings.backup_path / sanitize_filename(game);
 
     if(!fs::exists(game_backup_dir)) {
-        // get_logger().error("No backups found for: {}", sanitize_filename(game.game_name));
+        // SPDLOG_ERROR("No backups found for: {}", sanitize_filename(game.game_name));
         return {};
     }
 
@@ -90,9 +89,9 @@ void Features::restore_backup(const fs::path& name, const fs::path& save_path) {
     }
 
     if(!archive.extract_archive(restore_path)) {
-        get_logger().error("failed to restore backup: {}", name.string());
+        SPDLOG_ERROR("failed to restore backup: {}", name.string());
     } else {
-        get_logger().info("backup restored: {}", name.string());
+        SPDLOG_INFO("backup restored: {}", name.string());
     }
 }
 
@@ -125,12 +124,12 @@ std::unordered_map<std::string, std::string> Features::load_labels(const std::st
                 backup_labels[entry.key()] = entry.value().get<std::string>();
             }
         } catch(json::exception& ex) {
-            get_logger().error("label parsing error: {}", ex.what());
+            SPDLOG_ERROR("label parsing error: {}", ex.what());
         }
 
         return backup_labels;
     } else {
-        get_logger().error("Failed to open labels to load it!");
+        SPDLOG_ERROR("Failed to open labels to load it!");
     }
 
     return {};

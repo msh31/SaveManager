@@ -1,136 +1,60 @@
 #pragma once
-#include "utils/paths.hpp"
+#include <utils/paths.hpp>
+#include <constants.hpp>
 
-enum class log_level {
-    INF = 1,
-    SUC,
-    WRN,
-    ERR,
-    FTL,
-    DBG,
-};
+#include <spdlog/spdlog.h>
+#include <spdlog/sinks/base_sink.h>
+#include <spdlog/sinks/daily_file_sink.h>
 
-
-class logger
-{
+template<typename Mutex>
+class ringbuffer_sink : public spdlog::sinks::base_sink<Mutex> {
 public:
-    logger() {
-        trim();
-    }
-    //~logger();
-
-    static constexpr int entry_cap = 200;
-
-    static logger& get_logger() {
-        static logger instance;
-        return instance;
-    }
-
-    void trim() {
-        std::lock_guard<std::mutex> lock(log_mutex);
-        std::ifstream in((paths::log_file()));
-        std::vector<std::string> lines;
-        std::string line;
-        while (std::getline(in, line)) {
-            lines.push_back(line);
-        }
-        in.close();
-
-        if (lines.size() > 100) {
-            lines = std::vector<std::string>(lines.end() - 100, lines.end());
-            std::ofstream out((paths::log_file()));
-            for (const auto& l : lines) {
-                out << l << '\n';
-            }
-        }
-    }
-
     void clear() {
-        std::lock_guard<std::mutex> lock(log_mutex);
-        log_entries.clear();
-        std::ofstream(paths::log_file(), std::ios::trunc);
+        std::lock_guard<Mutex> lock(spdlog::sinks::base_sink<Mutex>::mutex_);
+        messages.clear();
     }
 
-    std::deque<std::string> get_entries() const {
-        std::lock_guard<std::mutex> lock(log_mutex);
-        return log_entries;
+    std::deque<std::string> get_messages() {
+        std::lock_guard<Mutex> lock(spdlog::sinks::base_sink<Mutex>::mutex_);
+        return messages;
     }
-
-    template<typename... Args>
-    void info(std::format_string<Args...> fmt, Args&&... args) {
-        log(log_level::INF, fmt, std::forward<Args>(args)...);
-    }
-
-    template<typename... Args>
-    void warning(std::format_string<Args...> fmt, Args&&... args) {
-        log(log_level::WRN, fmt, std::forward<Args>(args)...);
-    }
-
-    template<typename... Args>
-    void error(std::format_string<Args...> fmt, Args&&... args) {
-        log(log_level::ERR, fmt, std::forward<Args>(args)...);
-    }
-
-    template<typename... Args>
-    void success(std::format_string<Args...> fmt, Args&&... args) {
-        log(log_level::SUC, fmt, std::forward<Args>(args)...);
-    }
-
-    template<typename... Args>
-    void debug(std::format_string<Args...> fmt, Args&&... args) {
-        log(log_level::DBG, fmt, std::forward<Args>(args)...);
-    }
-
-    template<typename... Args>
-    void fatal(std::format_string<Args...> fmt, Args&&... args) {
-        log(log_level::FTL, fmt, std::forward<Args>(args)...);
-    }
-
 private:
-    std::deque<std::string> log_entries;
-    std::ofstream log_file;
-    mutable std::mutex log_mutex;
+    std::deque<std::string> messages;
+protected:
+    void sink_it_(const spdlog::details::log_msg& msg) override {
+        spdlog::memory_buf_t formatted;
+        spdlog::sinks::base_sink<Mutex>::formatter_->format(msg, formatted);
 
-    std::string_view level_to_str(log_level level) {
-        switch (level) {
-            case log_level::INF:
-                return "INF";
-            case log_level::SUC:
-                return "SUC";
-            case log_level::WRN:
-                return "WRN";
-            case log_level::ERR:
-                return "ERR";
-            case log_level::DBG:
-                return "DBG";
-            case log_level::FTL:
-                return "FTL";
-            default:
-                return "";
-        }
+        if(messages.size() >= 500) messages.pop_front();
+        messages.emplace_back(formatted.data(), formatted.size());
     }
-
-    template<typename... Args>
-    void log(log_level level, std::format_string<Args...> fmt, Args&&... args) {
-        std::lock_guard<std::mutex> lock(log_mutex);
-        if (!log_file.is_open()) { //lazy init 
-            log_file.open(paths::log_file(), std::ios::app);
-
-            if (!log_file.is_open()) {
-                return;
-            }
-        }
-
-        auto line = std::format("[{}] {}", level_to_str(level), std::format(fmt, std::forward<Args>(args)...));
-        log_file << line << "\n";
-        log_file.flush();
-        log_entries.push_back(line);
-        if (log_entries.size() > entry_cap) {
-            log_entries.pop_front();
-        }
-    }
+    void flush_() override {}
 };
 
-inline logger& get_logger() {
-    return logger::get_logger();
+using ringbuffer_sink_mt = ringbuffer_sink<std::mutex>;
+
+inline std::shared_ptr<ringbuffer_sink_mt> g_ringbuffer_sink;
+
+inline void init_logger() {
+    auto config_dir = paths::config_dir();
+    if (!fs::exists(config_dir)) {
+        std::error_code ec;
+        fs::create_directories(config_dir, ec);
+    }
+
+    g_ringbuffer_sink = std::make_shared<ringbuffer_sink_mt>();
+
+    std::vector<spdlog::sink_ptr> sinks{g_ringbuffer_sink};
+    if (fs::exists(config_dir)) {
+        sinks.push_back(std::make_shared<spdlog::sinks::daily_file_sink_mt>(
+            (paths::log_dir() / "savemanager.log").string(), 0, 0));
+    }
+
+    auto app_logger = std::make_shared<spdlog::logger>(APP_NAME, sinks.begin(), sinks.end());
+    spdlog::set_default_logger(app_logger);
+    spdlog::set_pattern("[%l] %d-%m-%Y %H:%M:%S - %v");
+}
+
+inline ringbuffer_sink_mt* get_ringbuffer_sink() {
+    return g_ringbuffer_sink.get();
 }

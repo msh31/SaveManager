@@ -1,6 +1,6 @@
 #pragma once
 #include <zip.h>
-#include "logger/logger.hpp"
+#include <spdlog/spdlog.h>
 #include <types.hpp>
 
 class ZipArchive {
@@ -10,7 +10,7 @@ public:
         archive = zip_open(name.string().c_str(), mode, &zip_error);
 
         if(!archive) {
-            get_logger().error("Failed to open archive: {}", name.string());
+            SPDLOG_ERROR("Failed to open archive: {}", name.string());
         }
     }
 

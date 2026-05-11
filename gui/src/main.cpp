@@ -1,6 +1,7 @@
 #include <config/config.hpp>
 #include <app/app.hpp>
 #include <utils/paths.hpp>
+#include <logger/logger.hpp>
 #include <print>
 
 int main(int argc, char *argv[]) {
@@ -36,6 +37,8 @@ int main(int argc, char *argv[]) {
         redirect_file.close();
         redirected = true;
     }
+
+    init_logger();
 
     App app;
     app.init();

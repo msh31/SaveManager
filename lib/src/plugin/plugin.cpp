@@ -1,12 +1,11 @@
 #include "plugin/plugin.hpp"
-#include "logger/logger.hpp"
 #include "utils/paths.hpp"
 #include "utils/steam/steam.hpp"
 
 Plugin::Plugin(std::filesystem::path path) {
-    get_logger().info("Loaded plugin: {}", path.filename().string());
+    SPDLOG_INFO("Loaded plugin: {}", path.filename().string());
     lua.open_libraries(sol::lib::base, sol::lib::string, sol::lib::table); //allow print, type, tostring etc
-   
+
     lua.set_function("is_linux", []() {
                 #if defined(__linux__)
                     return true;
@@ -53,10 +52,10 @@ Plugin::Plugin(std::filesystem::path path) {
             sol::table table = lua.create_table();
             int index = 1; //lua
 
-            for (const auto& entry : fs::directory_iterator(path)) {  
-                table[index] = entry.path().string();  
-                index++;  
-            }  
+            for (const auto& entry : fs::directory_iterator(path)) {
+                table[index] = entry.path().string();
+                index++;
+            }
 
             return table;
             });
@@ -66,8 +65,8 @@ Plugin::Plugin(std::filesystem::path path) {
     if (lua["config"].valid()) {
         show_parent_path = lua["config"]["show_parent_path"].get_or(false);
     }
-    // get_logger().debug("config valid: {}", lua["config"].valid());
-    // get_logger().debug("show_parent_path valid: {}", lua["config"]["show_parent_path"].valid());
+    // SPDLOG_DEBUG("config valid: {}", lua["config"].valid());
+    // SPDLOG_DEBUG("show_parent_path valid: {}", lua["config"]["show_parent_path"].valid());
 }
 
 std::vector<Game> Plugin::find_saves() {
@@ -77,10 +76,10 @@ std::vector<Game> Plugin::find_saves() {
 
     if (!result.valid()) {
         sol::error err = result;
-        get_logger().error("Lua error: {}", err.what());
+        SPDLOG_ERROR("Lua error: {}", err.what());
         return {};
     }
-    
+
     sol::table table = result.get<sol::table>();
     for (auto& [key, val] : table) {
         sol::table entry = val.as<sol::table>();

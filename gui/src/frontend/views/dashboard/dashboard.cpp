@@ -72,7 +72,7 @@ void DashboardTab::on_result_changed(RenderContext& ctx) {
 
     }
     catch (fs::filesystem_error& er) {
-        get_logger().error("dashboard(on_result_changed): {}", er.what());
+        SPDLOG_ERROR("dashboard(on_result_changed): {}", er.what());
     }
 }
 
@@ -304,7 +304,7 @@ void DashboardTab::render_game_row(RenderContext& ctx, const std::vector<int>& g
             ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImColor(198, 97, 63).Value);
             if(ImGui::Button("Backup All")) {
                 backup_future = std::async(std::launch::async, [this, primary, ctx, files]() {
-                get_logger().info("creating backup of: {}", primary.game_name);
+                SPDLOG_INFO("creating backup of: {}", primary.game_name);
 
                 fs::path game_backup_dir = ctx.config.settings.backup_path / sanitize_filename(primary.game_name);
                 if(!fs::exists(game_backup_dir)) fs::create_directories(game_backup_dir);
