@@ -36,4 +36,6 @@ private:
 
     std::string build_manifest(std::vector<fs::path> paths);
     bool write_manifest_to_zip(zip_t* archive);
+
+    bool read_manifest_from_zip(zip_t* archive);
 };

@@ -1,5 +1,6 @@
-#include "utils/zip_archive/zip_archive.hpp"
-#include "logger/logger.hpp"
+#include <utils/zip_archive/zip_archive.hpp>
+#include <logger/logger.hpp>
+#include <string>
 #include <utils/utils.hpp>
 
 #include <nlohmann/json.hpp>
@@ -85,12 +86,24 @@ bool ZipArchive::extract_archive(const fs::path& save_path) {
 
     int file_count = zip_get_num_entries(archive, 0);
     std::vector<std::string> failed_files;
+    
+    if(!read_manifest_from_zip(archive)) {
+        get_logger().warning("Failed to read file manifest, proceed with caution!");
+    }
+
+    json manifest_json;
+    try {
+        manifest_json = json::parse(manifest);
+    } catch(json::exception& ex) {
+        get_logger().error("manifest parsing error: {}", ex.what());
+    }
 
     for (int i = 0; i < file_count; i++) {
         struct zip_stat fileInfo;
         zip_stat_init(&fileInfo); 
-
         if (zip_stat_index(archive, i, 0, &fileInfo) == 0) {
+            if(fileInfo.name && std::string(fileInfo.name) == "checksum.json") continue;
+
             get_logger().info("File Name: {}", fileInfo.name);
             const auto& output_path = save_path / fileInfo.name;
             get_logger().info("Saving to: {}", output_path.string());
@@ -102,8 +115,8 @@ bool ZipArchive::extract_archive(const fs::path& save_path) {
                 failed_files.push_back(fileInfo.name);
                 continue;
             }
-            char buffer[1024];
 
+            char buffer[1024];
             zip_int64_t bytes_read;
             fs::create_directories(output_path.parent_path());
             std::ofstream save_file(output_path, std::ios::binary);
@@ -126,6 +139,11 @@ bool ZipArchive::extract_archive(const fs::path& save_path) {
                 failed_files.push_back(fileInfo.name);
             }
             zip_fclose(file);
+            save_file.close();
+            if(!manifest_json.contains(fileInfo.name)) continue;
+            if((hash_file(output_path).compare(manifest_json[fileInfo.name].get<std::string>())) != 0) {
+                get_logger().warning("{}'s hash does not match {}'s hash, proceed with caution!", output_path.filename().string(), manifest_json[fileInfo.name].get<std::string>());
+            }
         }
     }
 
@@ -175,7 +193,10 @@ std::string ZipArchive::build_manifest(std::vector<fs::path> paths) {
 }
 
 bool ZipArchive::write_manifest_to_zip(zip_t* archive) {
-    if(archive == nullptr) return false;
+    if(archive == nullptr) {
+        get_logger().error("invalid archive");
+        return false;
+    }
 
     zip_source_t* source = zip_source_buffer(archive, manifest.data(), manifest.size(), 0);
     if(source == nullptr) {
@@ -189,5 +210,42 @@ bool ZipArchive::write_manifest_to_zip(zip_t* archive) {
         return false;
     }
 
+    return true;
+}
+
+bool ZipArchive::read_manifest_from_zip(zip_t* archive) {
+    if(archive == nullptr) {
+        get_logger().error("invalid archive");
+        return false;
+    }
+
+    auto entries = zip_get_num_entries(archive, ZIP_FL_UNCHANGED);
+    std::string checksum_file = "checksum.json";
+    bool found = false;
+    json data;
+
+    for (size_t i {}; i < entries; i++) {
+        std::string found_file = zip_get_name(archive, i, ZIP_FL_UNCHANGED);
+        if ((found_file.compare(checksum_file)) != 0) continue;
+
+        zip_file* file = zip_fopen_index(archive, i, 0);
+        if (file == nullptr) {
+            get_logger().warning("Failed to open manifest in archive");
+            continue;
+        }
+
+        struct zip_stat fileInfo;
+        zip_stat_init(&fileInfo); 
+        if (zip_stat_index(archive, i, 0, &fileInfo) == 0) {
+            std::string content(fileInfo.size, '\0');
+            zip_fread(file, content.data(), fileInfo.size);
+            zip_fclose(file);
+            data = json::parse(content);
+            found = true;
+        }
+    }
+
+    if (!found) get_logger().warning("checksum.json not found in archive");
+    manifest = data.dump();
     return true;
 }
