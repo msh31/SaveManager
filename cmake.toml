@@ -74,14 +74,16 @@ link-libraries = ["shell32"]
 
 [target.savemgr]
 type = "executable"
-sources = ["cli/main.cpp"]
+sources = ["cli/src/**.cpp"]
+include-directories = ["cli/src"]
 link-libraries = ["savemanager-core"]
 compile-features = ["cxx_std_23"]
 precompile-headers = ["lib/include/pch.hpp"]
 
 [target.savemanager-daemon]
 type = "executable"
-sources = ["daemon/main.cpp"]
+sources = ["daemon/src/**.cpp"]
+include-directories = ["daemon/src"]
 link-libraries = ["savemanager-core"]
 compile-features = ["cxx_std_23"]
 precompile-headers = ["lib/include/pch.hpp"]

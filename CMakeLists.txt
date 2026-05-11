@@ -192,7 +192,7 @@ target_sources(savemanager PRIVATE
 
 # Target: savemgr
 set(savemgr_SOURCES
-	"cli/main.cpp"
+	"cli/src/main.cpp"
 	cmake.toml
 )
 
@@ -203,6 +203,10 @@ source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${savemgr_SOURCES})
 
 target_compile_features(savemgr PRIVATE
 	cxx_std_23
+)
+
+target_include_directories(savemgr PRIVATE
+	"cli/src"
 )
 
 target_link_libraries(savemgr PRIVATE
@@ -221,7 +225,7 @@ endif()
 # Target: savemanager-daemon
 set(savemanager-daemon_SOURCES
 	cmake.toml
-	"daemon/main.cpp"
+	"daemon/src/main.cpp"
 )
 
 add_executable(savemanager-daemon)
@@ -231,6 +235,10 @@ source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${savemanager-daemon_SOURCES
 
 target_compile_features(savemanager-daemon PRIVATE
 	cxx_std_23
+)
+
+target_include_directories(savemanager-daemon PRIVATE
+	"daemon/src"
 )
 
 target_link_libraries(savemanager-daemon PRIVATE
