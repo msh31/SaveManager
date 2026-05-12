@@ -6,6 +6,7 @@
 - Headless CLI (for scripting & automation)
 - SaveWatcher daemon (part of pre-event hooks)
 - Atomic backup restore (Prevents corrupted backup restoration if there is a crash or power loss during the restore process)
+- Conflict-safe restores: existing files newer than the backup are preserved as `.savemgr-conflict-<timestamp>`
 - Undo last restore
 - Scheduled backups
     - Scheduled integrity scrubbing: periodically re-verify backups to detect corruption and bit rot
@@ -21,15 +22,14 @@
 
 
 ### Fixed
-- Backups not visible after uninstall a game
-- Backup all button not renaming backups
-- Fix plugin count
+- Backups not visible after uninstalling a game
+- Backup all button not renaming backups properly from the .tmp extension
+- Loaded plugin count
 
 
 ### Changed
-- Newer existing files are renamed to .savemgr-conflict-<timestamp> instead of being overwritten
 - Each backup ZIP includes SHA-256 checksums for every file to enable integrity verification and corruption detection
-- Hide plugin count from stdout
+- Lua: print gets redirected to the log file / tab
 
 
 ### Known Issues / Limitations
