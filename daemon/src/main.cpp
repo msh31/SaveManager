@@ -3,6 +3,7 @@
 #include <sys/inotify.h>
 #include <sys/signalfd.h>
 #include <signal.h>
+#include <poll.h>
 #include <utils/paths.hpp>
 
 #define EVENT_SIZE  (sizeof(struct inotify_event))
@@ -32,6 +33,12 @@ int main() {
         return EXIT_FAILURE;
     }
 
+    struct pollfd fds[2];
+    fds[0].fd = fd;   // inotify
+    fds[0].events = POLLIN;
+    fds[1].fd = sfd;  // signal
+    fds[1].events = POLLIN;
+
     std::string file_name = (paths::home_dir() / "test.savemgr").string();
     int wd = inotify_add_watch(fd, file_name.c_str(), IN_MODIFY);
     if (wd == -1) {
@@ -44,21 +51,31 @@ int main() {
     SPDLOG_DEBUG("Waiting for changes to '{}'..", file_name.c_str());
     char buffer[BUFFER_LEN];
     while (true) {
-        ssize_t bytes_read = read(fd, buffer, BUFFER_LEN);
-        if (bytes_read == -1) {
-            SPDLOG_ERROR("read failed");
-            return EXIT_FAILURE;
+        int ret = poll(fds, 2, -1);
+        if (ret == -1) {
+            SPDLOG_ERROR("poll failed");
+            break;
         }
 
-        for (char *ptr = buffer; ptr < buffer + bytes_read; ) {
-            struct inotify_event *event = reinterpret_cast<inotify_event*>(ptr);
+        if (fds[1].revents & POLLIN) {
+            read(sfd, &fdsi, sizeof(fdsi));
+            SPDLOG_INFO("Received signal {}, shutting down", fdsi.ssi_signo);
+            break;
+        }
 
-            if (event->mask & IN_MODIFY) {
-                SPDLOG_DEBUG("\nEvent detected on '{}'!", file_name.c_str());
-                SPDLOG_DEBUG("Watch descriptor: {}", event->wd);
-                SPDLOG_DEBUG("Event type: File content modified (IN_MODIFY)");
+        if (fds[0].revents & POLLIN) {
+            ssize_t bytes_read = read(fd, buffer, BUFFER_LEN);
+            if (bytes_read == -1) {
+                SPDLOG_ERROR("read failed");
+                break;
             }
-            ptr += EVENT_SIZE + event->len;
+            for (char *ptr = buffer; ptr < buffer + bytes_read; ) {
+                struct inotify_event *event = reinterpret_cast<inotify_event*>(ptr);
+                if (event->mask & IN_MODIFY) {
+                    SPDLOG_INFO("File modified!");
+                }
+                ptr += EVENT_SIZE + event->len;
+            }
         }
     }
 
