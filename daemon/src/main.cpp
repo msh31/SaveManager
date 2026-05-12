@@ -67,5 +67,12 @@ int main() {
     return 0;
 }
 
-
+// #elif defined(__APPLE__)
+//
+#else
+int main() {
+    std::println("this is not linux!");
+    return 0;
+} 
 #endif
+
