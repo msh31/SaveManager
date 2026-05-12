@@ -103,9 +103,9 @@ bool ZipArchive::extract_archive(const fs::path& save_path) {
         if (zip_stat_index(archive, i, 0, &fileInfo) == 0) {
             if(fileInfo.name && std::string(fileInfo.name) == "checksum.json") continue;
 
-            SPDLOG_INFO("File Name: {}", fileInfo.name);
+            // SPDLOG_INFO("File Name: {}", fileInfo.name);
             const auto& output_path = save_path / fileInfo.name;
-            SPDLOG_INFO("Saving to: {}", output_path.string());
+            // SPDLOG_INFO("Saving to: {}", output_path.string());
 
             zip_file* file = zip_fopen_index(archive, i, 0);
 

@@ -39,10 +39,11 @@ void Features::backup_game(const Game& game, const fs::path& file, Config& confi
     bool success = false;
     {
         ZipArchive archive(MODE_CREATE_ARCHIVE, zip_name.u8string());
-
-        //saving the world name
-        if(game.type == PlatformType::MINECRAFT) archive.set_comment(file.string());
-
+        if(game.type == PlatformType::MINECRAFT)  {
+            archive.set_comment(file.string());
+        } else {
+            archive.set_comment(file.parent_path().string());
+        }
         success = archive.add_to_archive(file);
     }
 
