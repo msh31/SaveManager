@@ -88,17 +88,16 @@ void Detection::find_saves(Config& config, DetectionResult& d_result) {
 //cool lua support
     int plugin_count = 0;
     for (const auto& plugin : fs::recursive_directory_iterator(paths::plugin_dir(), fs::directory_options::skip_permission_denied | fs::directory_options::follow_directory_symlink)) {
-        plugin_count++;
-        // SPDLOG_DEBUG("found: {}", plugin.path().string());
         if(plugin.path().extension() != ".lua") continue;
         if(!fs::is_regular_file(plugin)) continue;
+        plugin_count++;
 
         Plugin plugins(plugin);
         Detection::add_game(plugins.find_saves(), "Custom", d_result);
     }
     if(plugin_count > 0) SPDLOG_INFO("Loaded {} plugins!", plugin_count);
 
-//TODO: move this & make it platform agnostic
+//TODO: move this 
     Detection::add_game(detectors.minecraft_detect.find_saves(), "minecraft", d_result);
 
 #ifdef __linux__
