@@ -6,6 +6,10 @@ Plugin::Plugin(std::filesystem::path path) {
     SPDLOG_INFO("Loaded plugin: {}", path.filename().string());
     lua.open_libraries(sol::lib::base, sol::lib::string, sol::lib::table); //allow print, type, tostring etc
 
+    lua["print"] = [](std::string msg) {
+        SPDLOG_INFO("[lua] {}", msg);
+    };
+
     lua.set_function("is_linux", []() {
                 #if defined(__linux__)
                     return true;
