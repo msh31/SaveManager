@@ -20,6 +20,6 @@ constexpr std::array<std::string_view, 10> extension_blocklist{
 };
 
 
-constexpr std::array<std::string_view, 15> g_extension_blocklist{
+constexpr std::array<std::string_view, 5> g_extension_blocklist{
     ".png", ".jpg", ".jpeg", ".webp", ".bmp"
 };
