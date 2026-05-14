@@ -225,7 +225,7 @@ void TransferTab::render(const Fonts& fonts, Detection::DetectionResult& result,
                 bool is_selected = (state.selected_game_idx == static_cast<int>(gi));
                 if (ImGui::Selectable(name.c_str(), is_selected)) {
                     state.selected_game_idx = static_cast<int>(gi);
-                    state.backups = Features::get_backups(result.games[static_cast<int>(gi)].game_name, config);
+                    state.backups = Features::get_backups(result.games[groups[static_cast<int>(gi)][0]].game_name, config);
                     state.selected_backups.clear();
                     state.selected_backups.resize(state.backups.size(), false);
                 }
@@ -237,6 +237,7 @@ void TransferTab::render(const Fonts& fonts, Detection::DetectionResult& result,
         if (!state.backups.empty()) {
             if (ImGui::BeginListBox("##backups", ImVec2(-FLT_MIN, content_height))) {
                 enumerate(state.backups, [&](int gi, auto& name) { 
+                    if (name.filename() == "undo.zip") return;
                     std::string label = std::format("{}##{}", name.filename().string(), static_cast<int>(gi));
                     if (ImGui::Selectable(label.c_str(), state.selected_backups[static_cast<int>(gi)], ImGuiSelectableFlags_AllowDoubleClick)) {
                         state.selected_backups[static_cast<int>(gi)] = !state.selected_backups[static_cast<int>(gi)];
