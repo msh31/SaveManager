@@ -225,6 +225,7 @@ endif()
 set(savemanager-daemon_SOURCES
 	cmake.toml
 	"daemon/src/main.cpp"
+	"daemon/src/watcher.cpp"
 )
 
 add_executable(savemanager-daemon)
