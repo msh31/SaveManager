@@ -25,5 +25,5 @@ void LogTab::render(const Fonts& fonts) {
         }
     }
 
-    ImGui::TextUnformatted(log_buffer.c_str());
+    ImGui::TextWrapped("%s", log_buffer.c_str());
 }
