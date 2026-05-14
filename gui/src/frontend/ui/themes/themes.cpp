@@ -5,7 +5,7 @@ void ThemeManager::apply_style() {
     style.WindowPadding = {10.f, 10.f};
     style.PopupRounding = 4.f;
     style.FramePadding = {8.f, 4.f};
-    style.ItemSpacing = {10.f, 8.f};
+    style.ItemSpacing = {10.f, 4.f};
     style.ItemInnerSpacing = {6.f, 6.f};
     style.TouchExtraPadding = {0.f, 0.f};
     style.IndentSpacing = 21.f;
