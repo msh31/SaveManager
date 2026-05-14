@@ -147,6 +147,17 @@ bool ZipArchive::extract_archive(const fs::path& save_path) {
             }
             zip_fclose(file);
             save_file.close();
+
+            if(manifest_json.contains(fileInfo.name)) {
+                auto& entry = manifest_json[fileInfo.name];
+                if(entry.contains("mtime")) {
+                    auto mtime = fs::file_time_type::clock::from_sys(
+                            std::chrono::system_clock::from_time_t(entry["mtime"].get<time_t>())
+                            );
+                    fs::last_write_time(output_path, mtime);
+                }
+            }
+
             if(!manifest_json.contains(fileInfo.name)) continue;
             if((hash_file(output_path).compare(manifest_json[fileInfo.name].get<std::string>())) != 0) {
                 SPDLOG_WARN("{}'s hash does not match {}'s hash, proceed with caution!", output_path.filename().string(), manifest_json[fileInfo.name].get<std::string>());
