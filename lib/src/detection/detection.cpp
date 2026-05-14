@@ -109,43 +109,18 @@ void Detection::find_saves(Config& config, DetectionResult& d_result) {
 
         scan_prefix_dir(compatdata, d_result, config, detectors);
     }
+
     // lutris
-    fs::path resolved_lutris = paths::lutris_dir();
-    if (!config.settings.lutris_path.empty()) {
-        if (fs::exists(config.settings.lutris_path)) {
-            resolved_lutris = config.settings.lutris_path;
-        } else {
-            SPDLOG_WARN("Configured Lutris path does not exist, falling back to defaults");
-        }
+    if (fs::exists(paths::lutris_dir())) {
+        scan_prefix_dir(paths::lutris_dir(), d_result, config, detectors);
     }
 
-    if (fs::exists(resolved_lutris)) {
-        if (config.settings.lutris_path.empty()) {
-            config.settings.lutris_path = resolved_lutris.string();
-        }
-
-        scan_prefix_dir(resolved_lutris, d_result, config, detectors);
-    }
     //heroic
-    fs::path heroic_base = paths::heroic_dir();
-    if (!config.settings.heroic_path.empty()) {
-        if (fs::exists(config.settings.heroic_path)) {
-            heroic_base = config.settings.heroic_path;
-        } else {
-            SPDLOG_WARN("Configured Heroic path does not exist, falling back to defaults");
-        }
-    }
-    fs::path heroic_dir = heroic_base / "Prefixes/default";
+    fs::path heroic_dir = paths::heroic_dir() / "Prefixes/default";
 
     if (fs::exists(heroic_dir)) {
-        if (config.settings.heroic_path.empty()) {
-            config.settings.heroic_path = paths::heroic_dir().string();
-        }
-
         scan_prefix_dir(heroic_dir, d_result, config, detectors);
-    } else {
-        SPDLOG_WARN("Heroic path does not exist!");
-    }
+    } 
 #endif
 
 #ifdef _WIN32

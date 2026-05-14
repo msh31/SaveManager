@@ -22,9 +22,6 @@ public:
         bool unreal_enabled = true;
         bool dark_mode = true;
         bool animated_background = false;
-        std::string steam_path;
-        std::string lutris_path;
-        std::string heroic_path;
     };
 
     struct SFTPConfig {
