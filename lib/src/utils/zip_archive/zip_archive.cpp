@@ -119,8 +119,10 @@ bool ZipArchive::extract_archive(const fs::path& save_path) {
                 SPDLOG_WARN("{} already exists in your game directory!", output_path.filename().string());
 
                 auto ftime = std::chrono::file_clock::to_sys(fs::last_write_time(output_path));
-                auto t = std::chrono::system_clock::to_time_t(ftime);
-                if (t > fileInfo.mtime) {
+                auto ctime = std::chrono::time_point_cast<std::chrono::system_clock::duration>(ftime);
+                auto save_time = std::chrono::system_clock::to_time_t(ctime);
+
+                if (save_time > fileInfo.mtime) {
                     SPDLOG_WARN("{} is newer than {}!", output_path.filename().string(), fileInfo.name);
                     fs::rename(output_path, output_path.parent_path() / std::format("{}.savemgr-conflict-{}", output_path.filename().string(), t));
                 }
