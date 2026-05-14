@@ -156,11 +156,10 @@ bool ZipArchive::extract_archive(const fs::path& save_path) {
                             );
                     fs::last_write_time(output_path, mtime);
                 }
-            }
 
-            if(!manifest_json.contains(fileInfo.name)) continue;
-            if((hash_file(output_path).compare(manifest_json[fileInfo.name].get<std::string>())) != 0) {
-                SPDLOG_WARN("{}'s hash does not match {}'s hash, proceed with caution!", output_path.filename().string(), manifest_json[fileInfo.name].get<std::string>());
+                if((hash_file(output_path).compare(entry["hash"].get<std::string>())) != 0) {
+                    SPDLOG_WARN("{}'s hash does not match {}'s hash, proceed with caution!", output_path.filename().string(), entry["hash"].get<std::string>());
+                }
             }
         }
     }
