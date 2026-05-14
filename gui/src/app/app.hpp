@@ -42,7 +42,7 @@ private:
     bool setup_imgui();
 
     bool initialized = false;
-    bool last_dark_mode = true;
+    bool last_dark_mode = false;
 
     void render_ui();
     void render_loading_screen();

@@ -53,8 +53,7 @@ void App::init() {
         config.save();
     });
     curl_global_init(CURL_GLOBAL_DEFAULT);
-
-    glClearColor(0.145f, 0.145f, 0.141f, 1.0f);
+    ThemeManager::apply_style();
 }
 
 void App::render_ui() {
@@ -311,6 +310,9 @@ void App::render() {
     glfwGetFramebufferSize(window, &width, &height);
 
     glClear(GL_COLOR_BUFFER_BIT);
+    if(config.settings.dark_mode) {
+        glClearColor(0.145f, 0.145f, 0.141f, 1.0f);
+    } else glClearColor(0.980f, 0.976f, 0.961f, 1.00f);
     glViewport(0, 0, width, height);
 
     if(config.settings.animated_background && !is_bg_initialized) {
@@ -331,12 +333,19 @@ void App::render() {
     if(!initialized && are_we_ready.valid() && are_we_ready.wait_for(std::chrono::seconds(0)) == std::future_status::ready) {
         are_we_ready.get();
         initialized = true;
-        ThemeManager::apply_theme(config.settings.dark_mode ? ThemeType::Dark : ThemeType::Light);
+
+        ThemeManager::apply_colors(config.settings.dark_mode ? ThemeType::Dark : ThemeType::Light);
+        last_dark_mode = config.settings.dark_mode;
 
         detection_future = std::async(std::launch::async, [this]() {
             return Detection::find_saves(config, d_result);
         });
     }
+
+    // if(last_dark_mode != config.settings.dark_mode) {
+    //     ThemeManager::apply_colors(config.settings.dark_mode ? ThemeType::Dark : ThemeType::Light);
+    //     last_dark_mode = config.settings.dark_mode;
+    // }
 
     ImGui_ImplOpenGL3_NewFrame();
     ImGui_ImplGlfw_NewFrame();
@@ -359,10 +368,6 @@ void App::render() {
     ImGui::Begin("Main Window", nullptr, window_flags);
 
     if(initialized) {
-        if(last_dark_mode != config.settings.dark_mode) {
-            ThemeManager::apply_theme(config.settings.dark_mode ? ThemeType::Dark : ThemeType::Light);
-            last_dark_mode = config.settings.dark_mode;
-        }
         render_ui();
     } 
     ImGui::End();

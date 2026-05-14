@@ -7,11 +7,10 @@ enum class ThemeType {
     Default = Dark
 };
 
-class ThemeManager {
-    public:
-        static void apply_theme(ThemeType theme);
-        static ThemeType get_current_theme() { return currentTheme; }
-        
-    private:
-        static ThemeType currentTheme;
+namespace ThemeManager {
+    void apply_colors(ThemeType theme);
+    void apply_style();
+    inline ThemeType currentTheme;
+
+    inline ImGuiStyle style;
 };

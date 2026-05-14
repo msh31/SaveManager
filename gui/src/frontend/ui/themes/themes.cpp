@@ -1,9 +1,7 @@
 #include "themes.hpp"
 
-void ThemeManager::apply_theme(ThemeType theme) {
-    ThemeType selectedTheme = theme;
-
-    ImGuiStyle &style = ImGui::GetStyle();
+void ThemeManager::apply_style() {
+    style = ImGui::GetStyle();
     style.WindowPadding = {10.f, 10.f};
     style.PopupRounding = 4.f;
     style.FramePadding = {8.f, 4.f};
@@ -28,8 +26,13 @@ void ThemeManager::apply_theme(ThemeType theme) {
     style.ButtonTextAlign = {0.5f, 0.5f};
     style.DisplaySafeAreaPadding = {3.f, 3.f};
 
-    auto &colors = style.Colors;
+    ImGui::GetStyle() = style;
+}
 
+void ThemeManager::apply_colors(ThemeType theme) {
+    ThemeType selectedTheme = theme;
+    
+    auto &colors = ImGui::GetStyle().Colors;
     switch (selectedTheme) {
         case ThemeType::Dark:
             colors[ImGuiCol_Text] = ImVec4(1.00f, 1.00f, 1.00f, 1.00f);
