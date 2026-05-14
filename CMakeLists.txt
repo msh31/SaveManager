@@ -82,7 +82,6 @@ set(savemanager-core_SOURCES
 	"lib/src/network/network.cpp"
 	"lib/src/plugin/plugin.cpp"
 	"lib/src/utils/blacklist/blacklist.cpp"
-	"lib/src/utils/custom_games/custom_games.cpp"
 	"lib/src/utils/steam/steam.cpp"
 	"lib/src/utils/translations/translations.cpp"
 	"lib/src/utils/zip_archive/zip_archive.cpp"
