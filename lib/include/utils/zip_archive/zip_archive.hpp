@@ -34,7 +34,7 @@ private:
     zip_t* archive = nullptr;
     std::string manifest = {};
 
-    std::string build_manifest(std::vector<fs::path> paths);
+    std::string build_manifest(std::vector<std::pair<fs::path, fs::path>> paths);
     bool write_manifest_to_zip(zip_t* archive);
 
     bool read_manifest_from_zip(zip_t* archive);

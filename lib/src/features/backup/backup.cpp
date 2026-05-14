@@ -59,6 +59,32 @@ void Features::backup_game(const Game& game, const fs::path& file, Config& confi
     }
 }
 
+void Features::backup_to_path(fs::path source, fs::path dest) {
+    if(!fs::exists(dest.parent_path())) fs::create_directories(dest.parent_path());
+    std::println("{}", dest.string());
+
+    fs::path zip_name = fs::path(dest.string() + ".tmp");
+    bool success = false;
+    {
+        ZipArchive archive(MODE_CREATE_ARCHIVE, zip_name.u8string());
+        archive.set_comment(source.parent_path().string());
+        success = archive.add_to_archive(source);
+    }
+
+    if(!success) {
+        fs::remove(zip_name);
+        SPDLOG_ERROR("failed to create undo backup");
+    } else {
+        SPDLOG_INFO("zip_name: {}", zip_name.string());
+        SPDLOG_INFO("dest: {}", dest.string());
+        std::error_code ec;
+        fs::rename(zip_name, dest, ec);
+        if(ec) SPDLOG_ERROR("undo rename failed: {}", ec.message());
+
+        SPDLOG_INFO("undo backup created");
+    }
+}
+
 std::vector<fs::path> Features::get_backups(const std::string& game, Config& config) {
     fs::path game_backup_dir = config.settings.backup_path / sanitize_filename(game);
 
@@ -87,6 +113,10 @@ void Features::restore_backup(const fs::path& name, const fs::path& save_path) {
         fs::create_directories(restore_path);
     } else {
         restore_path = save_path;
+    }
+
+    if(fs::exists(restore_path) && !fs::is_empty(restore_path)) {
+        backup_to_path(restore_path, name.parent_path() / "undo.zip");
     }
 
     if(!archive.extract_archive(restore_path)) {

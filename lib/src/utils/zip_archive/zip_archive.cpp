@@ -10,7 +10,7 @@ using json = nlohmann::json;
 bool ZipArchive::add_to_archive(const fs::path& file) {
     int file_count = 0;
     std::vector<std::string> failed_files;
-    std::vector<fs::path> save_files;
+    std::vector<std::pair<fs::path, fs::path>> save_files;
 
     if (fs::is_regular_file(file)) {
         SPDLOG_INFO("Adding: {}, to the backup for: {}", file.string(), file.parent_path().string());
@@ -30,7 +30,7 @@ bool ZipArchive::add_to_archive(const fs::path& file) {
             zip_source_free(source);
         }
         file_count++;
-        save_files.push_back(file);
+        save_files.emplace_back(file, file.filename());
     }
 
     if(fs::is_directory(file)) {
@@ -54,7 +54,7 @@ bool ZipArchive::add_to_archive(const fs::path& file) {
                 zip_source_free(source);
             }
             file_count++;
-            save_files.push_back(file_path);
+            save_files.emplace_back(entry.path(), file_path);
         }
     }
 
@@ -179,17 +179,17 @@ const char* ZipArchive::get_comment() {
     return zip_get_archive_comment(archive, &len, 0);
 }
 
-std::string ZipArchive::build_manifest(std::vector<fs::path> paths) {
+std::string ZipArchive::build_manifest(std::vector<std::pair<fs::path, fs::path>> paths) {
     json data;
     std::vector<fs::path> failed_files;
 
     for(const auto& entry : paths) {
-        auto hash = hash_file(entry);
+        auto hash = hash_file(entry.first);
         if(hash.empty()) {
-            failed_files.emplace_back(entry.filename());
+            failed_files.emplace_back(entry.second);
             continue;
         }
-        data[entry.filename().string()] = hash;
+        data[entry.second.string()] = hash;
     }
 
     if(!failed_files.empty()) { //TODO: improve this

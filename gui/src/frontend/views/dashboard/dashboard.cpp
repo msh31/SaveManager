@@ -4,6 +4,7 @@
 #include "features/backup/backup.hpp"
 
 #include "frontend/ui/notifications/notification.hpp"
+#include <filesystem>
 #include <frontend/views/backups/backup_view.hpp>
 
 #ifdef __APPLE__
@@ -297,8 +298,12 @@ void DashboardTab::render_game_row(RenderContext& ctx, const std::vector<int>& g
             if(primary.type != PlatformType::MINECRAFT) ImGui::TextDisabled("SAVE FILES");
             else ImGui::TextDisabled("WORLDS");
 
-            static std::string test_str = "-------------";
-            ImGui::SameLine(ImGui::GetContentRegionMax().x - ImGui::CalcTextSize(test_str.c_str()).x);
+            fs::path undo_dir = ctx.config.settings.backup_path / sanitize_filename(primary.game_name) / "undo.zip";
+            bool yes = false;
+            if(fs::exists(undo_dir)){
+                ImGui::SameLine(ImGui::GetContentRegionMax().x - 290.f);
+                yes = true;
+            } else ImGui::SameLine(ImGui::GetContentRegionMax().x - 110.f);
 
             ImGui::PushStyleColor(ImGuiCol_Button, ImColor(198, 97, 63).Value);
             ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImColor(198, 97, 63).Value);
@@ -329,6 +334,13 @@ void DashboardTab::render_game_row(RenderContext& ctx, const std::vector<int>& g
                 });
             }
             ImGui::PopStyleColor(2);
+            ImGui::SameLine();
+            if(yes) {
+                if(ImGui::Button("Undo last restore")) {
+                    Features::restore_backup(undo_dir, primary.save_path);
+                    fs::remove(undo_dir);
+                }
+            }
 
             for (auto& save : files) {
                 ImGui::Separator();
@@ -355,7 +367,6 @@ void DashboardTab::render_game_row(RenderContext& ctx, const std::vector<int>& g
                 for (auto& backup : backups) {
                     ImGui::Separator();
                     render_backup_row(ctx, backup, primary, labels);
-                    ImGui::Separator();
                 }
             }
         }
@@ -433,6 +444,7 @@ void DashboardTab::render_save_row(RenderContext& ctx, const fs::path& save_file
 }
 
 void DashboardTab::render_backup_row(RenderContext& ctx, const fs::path& backup, const Game& game, const std::unordered_map<std::string, std::string>& labels) {
+    if(backup.filename() == "undo.zip") return;
     ImGui::PushID(backup.string().c_str());
     if(!fs::exists(backup)) { ImGui::PopID(); return; }
 
