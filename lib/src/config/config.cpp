@@ -127,9 +127,11 @@ void Config::load() {
         settings.dark_mode = data.value("dark_mode", true);
         settings.animated_background = data.value("animated_background", true);
 
-        settings.watch_paths = data["watch_paths"]
-            | std::views::transform([](const std::string& p) { return fs::path(p); })
-            | std::ranges::to<std::vector>();
+        if (data.contains("watch_paths")) {
+            settings.watch_paths = data["watch_paths"].value("watch_paths", json::array())
+                | std::views::transform([](const std::string& p) { return fs::path(p); })
+                | std::ranges::to<std::vector>();
+        }
 
         sftp.dest_addr = data.value("dest_addr", std::string(""));
         sftp.username = data.value("username", std::string(""));
