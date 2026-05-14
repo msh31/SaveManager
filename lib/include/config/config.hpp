@@ -19,8 +19,11 @@ public:
         bool ubi_enabled = true;
         bool rsg_enabled = true;
         bool unreal_enabled = true;
+
         bool dark_mode = true;
         bool animated_background = false;
+
+        std::vector<fs::path> watch_paths;
     };
 
     struct SFTPConfig {
