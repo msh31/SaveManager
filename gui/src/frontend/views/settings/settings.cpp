@@ -87,7 +87,7 @@ void SettingsTab::render(const Fonts& fonts, Config& config) {
         char spin_char = spinner[(spinner_frame / 10) % 4];
         ImGui::Text("%s", std::format("Updating translations {}", spin_char).c_str());
     }
-    ImGui::SameLine();
+    // ImGui::SameLine();
     if(ImGui::Button("Open config")) {
 #ifdef __linux__
         pid_t pid = fork();
