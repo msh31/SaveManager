@@ -10,7 +10,7 @@
 #define BUFFER_LEN  (1024 * (EVENT_SIZE + 16)) 
 #endif
 
-Watcher::Watcher(std::function<void(const fs::path&)> fun) {
+Watcher::Watcher(std::function<void(const fs::path&, uint32_t)> fun) {
     m_fun = fun;
 #if defined(__linux__)
     m_notify_fd = inotify_init();
@@ -56,7 +56,7 @@ void Watcher::shutdown() {
 
 bool Watcher::add_watch(const fs::path& path) {
 #if defined(__linux__)
-    int wd = inotify_add_watch(m_notify_fd, path.c_str(), IN_MODIFY);
+    int wd = inotify_add_watch(m_notify_fd, path.c_str(), IN_CREATE | IN_DELETE | IN_MOVED_FROM | IN_MOVED_TO | IN_CLOSE_WRITE);
     if (wd == -1) {
         SPDLOG_ERROR("inotify_add_watch failed: {}", EXIT_FAILURE);
         return false;
@@ -116,9 +116,9 @@ void Watcher::run() {
             for (char *ptr = buffer; ptr < buffer + bytes_read; ) {
                 struct inotify_event *event = reinterpret_cast<inotify_event*>(ptr);
 
-                if (event->mask & IN_MODIFY) {
+                if (!(event->mask & IN_ISDIR)) {
                     if (auto it = m_wd_to_path.find(event->wd); it != m_wd_to_path.end()) {
-                        m_fun(it->second);
+                        m_fun(it->second / event->name, event->mask);
                     }
                 }
                 ptr += EVENT_SIZE + event->len;

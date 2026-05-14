@@ -2,7 +2,7 @@
 
 class Watcher {
     public:
-        Watcher(std::function<void(const fs::path&)> fun);
+        Watcher(std::function<void(const fs::path&, uint32_t)> fun);
         ~Watcher() {
             shutdown();
         }
@@ -12,7 +12,7 @@ class Watcher {
 
         void run();
     private:
-        std::function<void(const fs::path&)> m_fun;
+        std::function<void(const fs::path&, uint32_t)> m_fun;
 
         int m_notify_fd = -1;
         int m_signal_fd = -1;
