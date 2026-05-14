@@ -13,8 +13,6 @@ bool ZipArchive::add_to_archive(const fs::path& file) {
     std::vector<std::pair<fs::path, fs::path>> save_files;
 
     if (fs::is_regular_file(file)) {
-        SPDLOG_INFO("Adding: {}, to the backup for: {}", file.string(), file.parent_path().string());
-
         if(archive == nullptr) return false;
 
         zip_source_t* source = zip_source_file(archive, file.string().c_str(), 0, 0);
@@ -34,7 +32,6 @@ bool ZipArchive::add_to_archive(const fs::path& file) {
     }
 
     if(fs::is_directory(file)) {
-        SPDLOG_INFO("Adding: {}, to the backup for: {}", file.string(), file.parent_path().string());
         if(archive == nullptr) return false;
 
         for(const auto& entry : fs::recursive_directory_iterator(file, fs::directory_options::skip_permission_denied)) {
@@ -75,7 +72,7 @@ bool ZipArchive::add_to_archive(const fs::path& file) {
             return false;
         }
 
-        SPDLOG_INFO("backup for: {} has been created!", file.parent_path().string());
+        SPDLOG_INFO("backup for: {} has been created!", file.parent_path().filename().string());
         return true;
     }
 }
@@ -120,7 +117,7 @@ bool ZipArchive::extract_archive(const fs::path& save_path) {
             fs::create_directories(output_path.parent_path());
 
             if(fs::exists(output_path)) {
-                SPDLOG_WARN("{} already exists in your game directory!", output_path.string());
+                SPDLOG_WARN("{} already exists in your game directory!", output_path.filename().string());
 
                 auto ftime = std::chrono::file_clock::to_sys(fs::last_write_time(output_path));
                 auto t = std::chrono::system_clock::to_time_t(ftime);
@@ -133,7 +130,7 @@ bool ZipArchive::extract_archive(const fs::path& save_path) {
             std::ofstream save_file(output_path, std::ios::binary);
 
             if (!save_file.is_open()) {
-                SPDLOG_ERROR("Failed to open save file for writing: {}", output_path.string());
+                SPDLOG_ERROR("Failed to open save file for writing: {}", output_path.filename().string());
                 failed_files.push_back(fileInfo.name);
                 zip_fclose(file);
                 continue;
@@ -165,7 +162,7 @@ bool ZipArchive::extract_archive(const fs::path& save_path) {
         }
         return false;
     } else {
-        SPDLOG_INFO("backup for: {} has been restored", save_path.string());
+        SPDLOG_INFO("backup for: {} has been restored", save_path.filename().string());
         return true;
     }
 }

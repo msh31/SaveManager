@@ -74,8 +74,8 @@ void Features::backup_to_path(fs::path source, fs::path dest) {
         fs::remove(zip_name);
         SPDLOG_ERROR("failed to create undo backup");
     } else {
-        SPDLOG_INFO("zip_name: {}", zip_name.string());
-        SPDLOG_INFO("dest: {}", dest.string());
+        // SPDLOG_INFO("zip_name: {}", zip_name.string());
+        // SPDLOG_INFO("dest: {}", dest.string());
         std::error_code ec;
         fs::rename(zip_name, dest, ec);
         if(ec) SPDLOG_ERROR("undo rename failed: {}", ec.message());
@@ -125,9 +125,9 @@ void Features::restore_backup(const fs::path& name, const fs::path& save_path) {
     }
 
     if(!archive.extract_archive(restore_path)) {
-        SPDLOG_ERROR("failed to restore backup: {}", name.string());
+        SPDLOG_ERROR("failed to restore backup: {}", name.filename().string());
     } else {
-        SPDLOG_INFO("backup restored: {}", name.string());
+        SPDLOG_INFO("backup restored: {}", name.filename().string());
     }
 }
 
