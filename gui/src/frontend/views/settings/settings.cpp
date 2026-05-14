@@ -137,55 +137,6 @@ void SettingsTab::render(const Fonts& fonts, Config& config) {
 
     ImGui::SameLine(0.0f, 10.0f);
 
-    ImGui::BeginChild("##paths", ImVec2(half - 10.0f, 275.0f), true,
-                      ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
-    ImGui::PushFont(fonts.medium);
-    ImGui::Text("Paths");
-    ImGui::PopFont();
-
-    if (!paths_initialized) {
-        backup_path = config.settings.backup_path.string();
-#ifndef _WIN32
-        steam_path = config.settings.steam_path;
-#endif // !_WIN32
-#ifdef __linux__
-        lutris_path = config.settings.lutris_path;
-#endif
-        heroic_path = config.settings.heroic_path;
-        paths_initialized = true;
-    }
-    ImGui::BeginDisabled(true);
-    ImGui::InputText("Backup path", &backup_path);
-    ImGui::EndDisabled();
-    ImGui::SetItemTooltip("Change the config path with the '--config-dir' to change this path!");
-
-#ifndef _WIN32
-    ImGui::BeginDisabled(true);
-    ImGui::InputText("Steam path", &steam_path);
-#endif
-#ifdef __linux__
-    ImGui::InputText("Lutris path", &lutris_path);
-#endif
-    ImGui::InputText("Heroic path", &heroic_path);
-    ImGui::EndDisabled();
-
-    ImGui::Separator();
-
-    if (ImGui::Button("Save")) {
-        config.settings.backup_path = fs::path(backup_path).string();
-
-#ifndef _WIN32
-        config.settings.steam_path = steam_path;
-#endif
-#ifdef __linux__
-        config.settings.lutris_path = lutris_path;
-#endif
-        config.settings.heroic_path = heroic_path;
-        config.save();
-        Notify::show_notification("Config Saved!", "Settings saved successfully!", 1500);
-    }
-    ImGui::EndChild();
-
     ImGui::BeginChild("##blacklisted_games", ImVec2(half, 310.0f), true,
                       ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
 
