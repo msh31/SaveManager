@@ -298,7 +298,7 @@ void DashboardTab::render_game_row(RenderContext& ctx, const std::vector<int>& g
             if(primary.type != PlatformType::MINECRAFT) ImGui::TextDisabled("SAVE FILES");
             else ImGui::TextDisabled("WORLDS");
 
-            fs::path undo_dir = ctx.config.settings.backup_path / sanitize_filename(primary.game_name) / "undo.zip";
+            fs::path undo_dir = paths::backup_dir() / sanitize_filename(primary.game_name) / "undo.zip";
             bool yes = false;
             if(fs::exists(undo_dir)){
                 ImGui::SameLine(ImGui::GetContentRegionMax().x - 290.f);
@@ -311,7 +311,7 @@ void DashboardTab::render_game_row(RenderContext& ctx, const std::vector<int>& g
                 backup_future = std::async(std::launch::async, [this, primary, ctx, files]() {
                 SPDLOG_INFO("creating backup of: {}", primary.game_name);
 
-                fs::path game_backup_dir = ctx.config.settings.backup_path / sanitize_filename(primary.game_name);
+                fs::path game_backup_dir = paths::backup_dir() / sanitize_filename(primary.game_name);
                 if(!fs::exists(game_backup_dir)) fs::create_directories(game_backup_dir);
 
                 fs::path final_path = game_backup_dir / Features::construct_backup_name(primary.game_name);

@@ -16,7 +16,6 @@ public:
     };
 
     struct AppConfig {
-        fs::path backup_path;
         bool ubi_enabled = true;
         bool rsg_enabled = true;
         bool unreal_enabled = true;

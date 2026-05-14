@@ -185,7 +185,7 @@ std::vector<RemoteEntry> RemoteTransfer::list_directory(const std::string& path)
 void RemoteTransfer::download_file(const fs::path& backup_path, const Config& config) {
     char mem[1024 * 100];
 
-    fs::path local_path = config.settings.backup_path / backup_path.filename();
+    fs::path local_path = paths::backup_dir() / backup_path.filename();
     sftp_handle = libssh2_sftp_open(sftp_session, backup_path.string().c_str(), LIBSSH2_FXF_READ, 0);
     if(!sftp_handle) {
         SPDLOG_ERROR("Unable to open path with SFTP: {}", libssh2_sftp_last_error(sftp_session));
