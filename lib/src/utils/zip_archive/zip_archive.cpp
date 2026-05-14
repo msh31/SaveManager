@@ -192,7 +192,8 @@ std::string ZipArchive::build_manifest(std::vector<std::pair<fs::path, fs::path>
     for(const auto& entry : paths) {
         auto hash = hash_file(entry.first);
         auto ftime = std::chrono::file_clock::to_sys(fs::last_write_time(entry.first));
-        auto save_time = std::chrono::system_clock::to_time_t(ftime);
+        auto ctime = std::chrono::time_point_cast<std::chrono::system_clock::duration>(ftime);
+        auto save_time = std::chrono::system_clock::to_time_t(ctime);
 
         if(hash.empty()) {
             failed_files.emplace_back(entry.second);
