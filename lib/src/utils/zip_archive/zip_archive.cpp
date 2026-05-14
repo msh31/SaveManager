@@ -67,7 +67,7 @@ bool ZipArchive::add_to_archive(const fs::path& file) {
             return false;
         }
         if(!write_manifest_to_zip(archive)) {
-            SPDLOG_ERROR("Failed to add checksum manifest to backup!");
+            SPDLOG_ERROR("Failed to add manifest to backup!");
             return false;
         }
 
@@ -97,7 +97,7 @@ bool ZipArchive::extract_archive(const fs::path& save_path) {
         struct zip_stat fileInfo;
         zip_stat_init(&fileInfo);
         if (zip_stat_index(archive, i, 0, &fileInfo) == 0) {
-            if(fileInfo.name && std::string(fileInfo.name) == "checksum.json") continue;
+            if(fileInfo.name && std::string(fileInfo.name) == "manifest.json") continue;
 
             // SPDLOG_INFO("File Name: {}", fileInfo.name);
             const auto& output_path = save_path / fileInfo.name;
@@ -214,7 +214,7 @@ bool ZipArchive::write_manifest_to_zip(zip_t* archive) {
         return false;
     }
 
-    if(zip_file_add(archive, "checksum.json", source, ZIP_FL_OVERWRITE) < 0) {
+    if(zip_file_add(archive, "manifest.json", source, ZIP_FL_OVERWRITE) < 0) {
         SPDLOG_ERROR("Failed to add manifest to zip");
         zip_source_free(source);
         return false;
@@ -230,13 +230,12 @@ bool ZipArchive::read_manifest_from_zip(zip_t* archive) {
     }
 
     auto entries = zip_get_num_entries(archive, ZIP_FL_UNCHANGED);
-    std::string checksum_file = "checksum.json";
     bool found = false;
     json data;
 
     for (size_t i {}; i < entries; i++) {
         std::string found_file = zip_get_name(archive, i, ZIP_FL_UNCHANGED);
-        if ((found_file.compare(checksum_file)) != 0) continue;
+        if ((found_file.compare("manifest.json")) != 0) continue;
 
         zip_file* file = zip_fopen_index(archive, i, 0);
         if (file == nullptr) {
@@ -255,7 +254,7 @@ bool ZipArchive::read_manifest_from_zip(zip_t* archive) {
         }
     }
 
-    if (!found) SPDLOG_WARN("checksum.json not found in archive");
+    if (!found) SPDLOG_WARN("manifest.json not found in archive");
     manifest = data.dump();
     return true;
 }
@@ -266,7 +265,7 @@ std::vector<std::string> ZipArchive::get_entry_names() {
     auto entries = zip_get_num_entries(archive, ZIP_FL_UNCHANGED);
     for (size_t i {}; i < entries; i++) {
         std::string name = zip_get_name(archive, i, ZIP_FL_UNCHANGED);
-        if((name.compare("checksum.json")) == 0) continue;
+        if((name.compare("manifest.json")) == 0) continue;
 
         entry_names.emplace_back(name);
     }
