@@ -260,3 +260,16 @@ bool ZipArchive::read_manifest_from_zip(zip_t* archive) {
     manifest = data.dump();
     return true;
 }
+
+std::vector<std::string> ZipArchive::get_entry_names() {
+    std::vector<std::string> entry_names;
+
+    auto entries = zip_get_num_entries(archive, ZIP_FL_UNCHANGED);
+    for (size_t i {}; i < entries; i++) {
+        std::string name = zip_get_name(archive, i, ZIP_FL_UNCHANGED);
+        if((name.compare("checksum.json")) == 0) continue;
+
+        entry_names.emplace_back(name);
+    }
+    return entry_names;
+}

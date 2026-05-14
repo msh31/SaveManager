@@ -26,6 +26,8 @@ public:
     void set_comment(const std::string&);
     const char* get_comment();
 
+    std::vector<std::string> get_entry_names();
+
     // disable copying (prevent accidental double-cleanup)
     ZipArchive(const ZipArchive&) = delete;
     ZipArchive& operator=(const ZipArchive&) = delete;

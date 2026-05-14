@@ -61,7 +61,6 @@ void Features::backup_game(const Game& game, const fs::path& file, Config& confi
 
 void Features::backup_to_path(fs::path source, fs::path dest) {
     if(!fs::exists(dest.parent_path())) fs::create_directories(dest.parent_path());
-    std::println("{}", dest.string());
 
     fs::path zip_name = fs::path(dest.string() + ".tmp");
     bool success = false;
@@ -115,8 +114,14 @@ void Features::restore_backup(const fs::path& name, const fs::path& save_path) {
         restore_path = save_path;
     }
 
-    if(fs::exists(restore_path) && !fs::is_empty(restore_path)) {
-        backup_to_path(restore_path, name.parent_path() / "undo.zip");
+    auto entries = archive.get_entry_names();
+    fs::path undo_source = (entries.size() == 1) ? restore_path / entries[0] : restore_path;
+
+    // std::println("{}", entries[0]);
+    // std::println("{}", undo_source.string());
+
+    if(fs::exists(undo_source) && !fs::is_empty(undo_source)) {
+        backup_to_path(undo_source, name.parent_path() / "undo.zip");
     }
 
     if(!archive.extract_archive(restore_path)) {
