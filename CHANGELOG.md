@@ -25,11 +25,18 @@
 - Backups not visible after uninstalling a game
 - Backup all button not renaming backups properly from the .tmp extension
 - Loaded plugin count
+- incorrect SFTP backup selection naming
+- Restored savegames now have their original save dates
+- Light mode
+- Log view not wrapping it's text
 
 
 ### Changed
 - Each backup ZIP includes SHA-256 checksums for every file to enable integrity verification and corruption detection
 - Lua: print gets redirected to the log file / tab
+- Removed paths section in settings
+- Cleaned up the logging around paths
+- Settings UI has been split in a more logical manner
 
 
 ### Known Issues / Limitations
