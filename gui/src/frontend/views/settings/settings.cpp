@@ -44,16 +44,17 @@ void SettingsTab::render(const Fonts& fonts, Config& config) {
     bool is_checking_t = update_t_future.valid() && update_t_future.wait_for(std::chrono::seconds(0)) != std::future_status::ready;
 
     float half = (ImGui::GetWindowSize().x - 20.0f) / 2.0f;
+    auto window_width = (ImGui::GetWindowSize(). x / 3.0f);
 
     ImGui::PushFont(fonts.header);
     ImGui::Text("Settings");
     ImGui::PopFont();
 
-    ImGui::BeginChild("##appearance_support", ImVec2(half, 275.0f), true,
+    ImGui::BeginChild("##appearance", ImVec2(window_width, 250.0f), true,
                       ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
 
     ImGui::PushFont(fonts.medium);
-    ImGui::Text("Appearance & Launchers");
+    ImGui::Text("Appearance");
     ImGui::PopFont();
 
     ImGui::Dummy(ImVec2(0.0f, 4.0f));
@@ -62,16 +63,6 @@ void SettingsTab::render(const Fonts& fonts, Config& config) {
     ImGui::Checkbox("Animated background", &config.settings.animated_background);
     ImGui::Separator();
    
-    ImGui::PushFont(fonts.medium);
-    ImGui::Text("Launcher Support");
-    ImGui::PopFont();
-    ImGui::Checkbox("Ubisoft Connect", &config.settings.ubi_enabled);
-    ImGui::SameLine();
-    ImGui::Checkbox("Rockstar Games Launcher", &config.settings.rsg_enabled);
-    ImGui::SameLine();
-    ImGui::Checkbox("Unreal Games (.sav saves)", &config.settings.unreal_enabled);
-
-    ImGui::Separator();
     if(!is_checking) {
         if(ImGui::Button("Check for updates")) {
             update_future = std::async(std::launch::async, []() {
@@ -134,10 +125,23 @@ void SettingsTab::render(const Fonts& fonts, Config& config) {
     // }
     // ImGui::SetItemTooltip("Deletes cached images and re-downloads them.");
     ImGui::EndChild();
+    ImGui::SameLine(0.0f, 10.0f);
+
+    ImGui::BeginChild("##support", ImVec2(window_width, 250.0f), true,
+            ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
+
+    ImGui::PushFont(fonts.medium);
+    ImGui::Text("Launcher Support");
+    ImGui::PopFont();
+
+    ImGui::Checkbox("Ubisoft Connect", &config.settings.ubi_enabled);
+    ImGui::Checkbox("Rockstar Games Launcher", &config.settings.rsg_enabled);
+    ImGui::Checkbox("Unreal Games (.sav saves)", &config.settings.unreal_enabled);
+    ImGui::EndChild();
 
     ImGui::SameLine(0.0f, 10.0f);
 
-    ImGui::BeginChild("##blacklisted_games", ImVec2(half, 310.0f), true,
+    ImGui::BeginChild("##blacklisted_games", ImVec2(0, 250.0f), true,
                       ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
 
     ImGui::PushFont(fonts.medium);
