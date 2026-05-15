@@ -12,7 +12,8 @@
 int main() {
     Config config;
     init_logger("[%n]: [%l] %d-%m-%Y %H:%M:%S - %v", "savemanager-daemon");
-    spdlog::set_level(spdlog::level::debug);
+    SPDLOG_INFO("daemon started!");
+
 #if defined(__linux__)
     Watcher watcher([](const fs::path& path, uint32_t mask) { 
             if(!fs::exists(path)) SPDLOG_WARN("{} does not exist", path.string());
