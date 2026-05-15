@@ -1,6 +1,13 @@
 #pragma once
 namespace fs = std::filesystem;
 
+#if defined(_WIN32)
+#include <shellapi.h>
+#include <wchar.h>
+#include <KnownFolders.h>
+#include <shlobj.h>
+#endif
+
 namespace paths {
 inline fs::path g_config_dir;
 inline void set_config_dir(const fs::path& p) { g_config_dir = p; }
