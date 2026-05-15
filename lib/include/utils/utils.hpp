@@ -142,3 +142,26 @@ inline std::string hash_file(const std::filesystem::path& path) {
     mdctx = nullptr;
     return ss.str();
 }
+
+inline void open_in_file_manager(const char* path) {
+#ifdef __linux__
+            pid_t pid = fork();
+            if (pid == 0) {
+                execl("/usr/bin/xdg-open", "xdg-open", path, nullptr);
+                _exit(1);
+            }
+#endif
+#ifdef _WIN32
+            ShellExecuteA(NULL, "open", path, NULL, NULL, SW_SHOWDEFAULT);
+#endif
+#ifdef __APPLE__
+            extern char **environ;
+            pid_t pid;
+
+            const char* argv[] = { "open", path, nullptr };
+            int status = posix_spawn(&pid, "/usr/bin/open", nullptr, nullptr, (char* const*)argv, environ);
+            if (status == 0) {
+                waitpid(pid, &status, 0);
+            }
+#endif
+}
