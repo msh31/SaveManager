@@ -2,51 +2,68 @@
 
 ## [1.7.0] - 2026-05-??
 
-### Added
-- Headless CLI (for scripting & automation)
-- SaveWatcher daemon (part of pre-event hooks)
-- Atomic backup restore (Prevents corrupted backup restoration if there is a crash or power loss during the restore process)
+### Core
+> Shared between GUI, daemon and CLI
+
+**Added**
+- Commandline Interface (useful for scripting & automation)
+- SaveWatcher daemon: inotify-based file watcher that triggers backups when save activity settles
+    - Watches all configured paths including subdirectories
+    - Watches newly created subdirectories at runtime
+    - Filters out non-save and image files from triggering backups
+    - Logs create / delete / modify events separately
+- Scheduled backups: configurable per-game backup interval (in hours)
 - Conflict-safe restores: existing files newer than the backup are preserved as `.savemgr-conflict-<timestamp>`
 - Undo last restore
-- Scheduled backups
-    - Scheduled integrity scrubbing: periodically re-verify backups to detect corruption and bit rot
+- Each backup ZIP now includes a manifest with SHA-256 checksums and original save timestamps for integrity verification
+- Scheduled integrity scrubbing: periodically re-verify backups to detect corruption and bit rot
 - Backup retention
-    - Smart backup retention with flexible rules (e.g. keep-last, keep-hourly, keep-daily, keep-weekly, keep-monthly, keep-yearly)
-    - Retention presets: Time Machine, Speedrunner, Archivist, Single-Slot Survivor
+    - Flexible rules (keep-last, keep-hourly, keep-daily, keep-weekly, keep-monthly, keep-yearly)
+    - Presets: Time Machine, Speedrunner, Archivist, Single-Slot Survivor
     - Pinned snapshots: starred backups are permanently excluded from automatic pruning
-- Zero-byte and shrunk-save quarantine: detect and quarantine suspicious saves instead of replacing the last known good backup blindly
+- Zero-byte and shrunk-save quarantine: suspicious saves are quarantined instead of overwriting the last known good backup
 - Automatic pre-event snapshots before potentially destructive changes:
-  - Proton/Wine version changes
-  - Mod manager launches (MO2, Vortex)
-  - Game uninstalls  
+    - Proton/Wine version changes
+    - Mod manager launches (MO2, Vortex)
+    - Game uninstalls
 
-
-### Fixed
+**Fixed**
 - Backups not visible after uninstalling a game
-- Backup all button not renaming backups properly from the .tmp extension
+- Backup all not renaming from `.tmp` extension on completion
 - Loaded plugin count
-- incorrect SFTP backup selection naming
-- Restored savegames now have their original save dates
+- Restored savegames now use their original save timestamps
+
+**Changed**
+- Lua `print` is now redirected to the log file / tab
+- Core logic moved into a [separate library](lib/) linked by the GUI, CLI and daemon
+
+---
+
+### GUI
+
+**Added**
+- Schedule backup context menu entry per game (with enable toggle and interval slider)
+
+**Fixed**
+- Incorrect SFTP backup selection naming
 - Light mode
-- Log view not wrapping it's text
+- Log view not wrapping text
+- Labels reloaded from disk every frame in backup tab (now cached on refresh)
+- Search query lowercased on every frame (now only on change)
+- Open config button being cut off in settings
 
+**Changed**
+- Settings split into Appearance, Launcher Support and Blacklisted Games panels
+- Paths section removed from settings
+- Dashboard item spacing tightened for a more compact layout
 
-### Changed
-- Each backup ZIP includes SHA-256 checksums for every file to enable integrity verification and corruption detection
-- Lua: print gets redirected to the log file / tab
-- Removed paths section in settings
-- Cleaned up the logging around paths
-- Settings UI has been split in a more logical manner
+---
 
+> **Known Issues / Limitations**
+> - Original Anno editions not supported due to install path limitations (you can make a plugin for this)
+> - Grouping issues with unknown / partially supported games (has improved since #2)
 
-### Known Issues / Limitations
-- Original Anno editions not supported due to install path limitations (You can make a plugin for this though, specific to your install)
-- Grouping issues with unknown / partially supported games (Similar to #2 but has since improved)
-
-
-### Development related
-- Moved core logic into a [separate library](lib/) which is linked to the gui/cli/daemon
-
+---
 
 ## [1.6.0] - 2026-05-08
 Plugins can be found [here](https://github.com/msh31/savemanager-plugins)
