@@ -59,6 +59,44 @@ void Features::backup_game(const Game& game, const fs::path& file, Config& confi
     }
 }
 
+void Features::backup_all_games(std::vector<Game> snapshot, Config& config) {
+    for (auto& entry : snapshot) {
+        if(fs::is_directory(entry.save_path)) {
+            for (const auto& file : fs::recursive_directory_iterator(entry.save_path, fs::directory_options::skip_permission_denied)) {
+                if (fs::is_regular_file(file)) {
+                    auto ext = file.path().extension().string();
+                    if(std::find(extension_blocklist.begin(), extension_blocklist.end(), ext) != extension_blocklist.end()) continue;
+                    backup_game(entry, file.path(), config);
+                }
+            }
+        }
+    }
+}
+
+bool Features::backup_game_files(const Game& game, std::vector<std::pair<fs::path, const Game*>> files) {
+    fs::path game_backup_dir = paths::backup_dir() / sanitize_filename(game.game_name);
+
+    if(!fs::exists(game_backup_dir)) fs::create_directories(game_backup_dir);
+
+    fs::path final_path = game_backup_dir / Features::construct_backup_name(game.game_name);
+    fs::path zip_name = final_path.parent_path() / (final_path.filename().string() + ".tmp");
+
+    ZipArchive za(MODE_CREATE_ARCHIVE, zip_name);
+    bool failed_to_add = false;
+    for(const auto& entry : files) { 
+        if(!za.add_to_archive(entry.first)) {
+            failed_to_add = true;
+        }
+    }
+    if(failed_to_add) {
+        fs::remove(zip_name);
+        return false;
+    } else { 
+        fs::rename(zip_name, final_path);
+        return true;
+    }
+}
+
 void Features::backup_to_path(fs::path source, fs::path dest) {
     if(!fs::exists(dest.parent_path())) fs::create_directories(dest.parent_path());
 
