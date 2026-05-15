@@ -35,12 +35,12 @@ void SaveScheduler::save() {
     for (const auto& entry : m_entries) {
         json obj;
         obj["enabled"] = entry.enabled;
-        obj["game_name"] = schedule.game_name;
-        obj["appid"] = schedule.appid;
-        obj["save_path"] = schedule.save_path;
+        obj["game_name"] = entry.game_name;
+        obj["appid"] = entry.appid;
+        obj["save_path"] = entry.save_path;
         obj["type"] = entry.type;
-        obj["interval_hours"] = schedule.interval_hours;
-        obj["last_backup_time"] = schedule.last_backup_time;
+        obj["interval_hours"] = entry.interval_hours;
+        obj["last_backup_time"] = entry.last_backup_time;
         arr.push_back(obj);
     }
     std::ofstream file(paths::schedule_file());
