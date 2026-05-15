@@ -56,6 +56,9 @@ void Watcher::shutdown() {
 
 bool Watcher::add_watch(const fs::path& path) {
 #if defined(__linux__)
+    for (auto& entry : fs::recursive_directory_iterator(path, fs::directory_options::skip_permission_denied)) {
+        if (entry.is_directory()) add_watch(entry.path());
+    }
     int wd = inotify_add_watch(m_notify_fd, path.c_str(), IN_CREATE | IN_DELETE | IN_MOVED_FROM | IN_MOVED_TO | IN_CLOSE_WRITE);
     if (wd == -1) {
         SPDLOG_ERROR("inotify_add_watch failed: {}", EXIT_FAILURE);
