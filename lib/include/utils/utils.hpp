@@ -96,18 +96,18 @@ inline std::string hash_file(const std::filesystem::path& path) {
 
     EVP_MD_CTX *mdctx = EVP_MD_CTX_new();
     if(mdctx == nullptr) {
-        EVP_MD_CTX_free(nullptr);
+        EVP_MD_CTX_free(mdctx);
         return {};
     }
 
     const EVP_MD *md = EVP_get_digestbyname("SHA-256");
     if(md == nullptr) {
-        EVP_MD_CTX_free(nullptr);
+        EVP_MD_CTX_free(mdctx);
         return {};
     }
 
     if(!EVP_DigestInit_ex(mdctx, md, NULL)) {
-        EVP_MD_CTX_free(nullptr);
+        EVP_MD_CTX_free(mdctx);
         return {};
     }
 
@@ -117,7 +117,7 @@ inline std::string hash_file(const std::filesystem::path& path) {
 
     std::ifstream file(path, std::ios::binary);
     if(!file.is_open()) {
-        EVP_MD_CTX_free(nullptr);
+        EVP_MD_CTX_free(mdctx);
         return {};
     }
 
@@ -130,14 +130,15 @@ inline std::string hash_file(const std::filesystem::path& path) {
     file.close();
 
     if(!EVP_DigestFinal_ex(mdctx, hash, &hash_len)) {
-        EVP_MD_CTX_free(nullptr);
+        EVP_MD_CTX_free(mdctx);
         return {};
     }
-    EVP_MD_CTX_free(nullptr);
+    EVP_MD_CTX_free(mdctx);
 
     std::stringstream ss;
     for(int i = 0; i < SHA256_DIGEST_LENGTH; i++){
         ss << std::hex << std::setw(2) << std::setfill('0') << static_cast<int>(hash[i]);
     }
+    mdctx = nullptr;
     return ss.str();
 }
