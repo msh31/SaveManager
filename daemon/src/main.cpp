@@ -4,9 +4,10 @@
 #include <sys/inotify.h>
 #endif
 
+#include <constants.hpp>
 #include <utils/paths.hpp>
 #include <config/config.hpp>
-#include <constants.hpp>
+#include <logger/logger.hpp>
 
 int main() {
     Config config;

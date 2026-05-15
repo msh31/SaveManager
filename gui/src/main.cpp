@@ -38,7 +38,7 @@ int main(int argc, char *argv[]) {
         redirected = true;
     }
 
-    init_logger();
+    init_logger("[%n]: [%l] %d-%m-%Y %H:%M:%S - %v");
 
     App app;
     app.init();
