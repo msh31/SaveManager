@@ -11,7 +11,7 @@ struct BackupTab {
         size_t size;
     };
 
-    void render(const Fonts&, Detection::DetectionResult&, Config&);
+    void render(const Fonts&, Detection::DetectionResult&, Config& config);
 
     std::mutex b_mutex;
     std::vector<BackupEntry> backups;
@@ -27,9 +27,10 @@ private:
     bool reload_backups = false;
 
     int spinner_frame = 0;
+    std::unordered_map<std::string, std::unordered_map<std::string, std::string>> labels_cache;
 
     void render_game_row(const Fonts& fonts, const BackupEntry& bentry, Config& cfg);
     void render_backup_row(fs::path path, const fs::path& save_path, const std::unordered_map<std::string, std::string>& labels, const std::string& game_name, Config& cfg);
     void render_modals(Config& cfg);
-    void add_new_entry(Detection::DetectionResult& d_result);
+    void add_new_entry(Detection::DetectionResult& d_result, Config& config);
 };

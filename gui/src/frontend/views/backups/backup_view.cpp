@@ -7,7 +7,7 @@ static constexpr float button_spacing = 4.0f;
 static constexpr float btn_width = 80.0f;
 static constexpr const char* spinner = "|/-\\";
 
-void BackupTab::add_new_entry(Detection::DetectionResult& d_result) {
+void BackupTab::add_new_entry(Detection::DetectionResult& d_result, Config& config) {
     std::lock_guard lock_em_up(b_mutex);
     std::shared_lock lock(d_result.d_mutex);
     std::unordered_map<std::string, fs::path> save_path_lookup;
@@ -18,8 +18,12 @@ void BackupTab::add_new_entry(Detection::DetectionResult& d_result) {
     backups.clear();
     for (const auto& entry : fs::directory_iterator(paths::backup_dir())) {
         if(!entry.is_directory()) continue;
+
         BackupEntry bentry;
         bentry.name = entry.path().filename().string();
+
+        labels_cache[bentry.name.string()] = Features::load_labels(bentry.name.string(), config);
+
         if(auto it = save_path_lookup.find(bentry.name.string()); it != save_path_lookup.end())
             bentry.save_path = it->second;
 
@@ -35,7 +39,6 @@ void BackupTab::add_new_entry(Detection::DetectionResult& d_result) {
 }
 
 void BackupTab::render(const Fonts& fonts, Detection::DetectionResult& d_result, Config& cfg) {
-
     ImGui::BeginChild("##backup_view", ImVec2(0, ImGui::GetContentRegionAvail().y), false, ImGuiWindowFlags_NoBackground);
 
     bool is_refreshing = refresh_future.valid() && refresh_future.wait_for(std::chrono::seconds(0)) != std::future_status::ready;
@@ -51,15 +54,15 @@ void BackupTab::render(const Fonts& fonts, Detection::DetectionResult& d_result,
 
     if(!is_refreshing) {
         if(ImGui::Button("Refresh")) {
-            refresh_future = std::async(std::launch::async, [this, &result = d_result]() { 
-                    add_new_entry(result); 
+            refresh_future = std::async(std::launch::async, [this, &result = d_result, &config = cfg]() { 
+                    add_new_entry(result, config); 
                     });
         }
         ImGui::SetItemTooltip("Re-runs the detection logic to find new backups");
 
         if(snapshot.empty() || reload_backups) {
-            refresh_future = std::async(std::launch::async, [this, &result = d_result]() { 
-                    add_new_entry(result); 
+            refresh_future = std::async(std::launch::async, [this, &result = d_result, &config = cfg]() { 
+                    add_new_entry(result, config); 
                     });
             reload_backups = false;
         }
@@ -83,7 +86,6 @@ void BackupTab::render_game_row(const Fonts& fonts, const BackupEntry& bentry, C
     const char* chevron = not_collapsed ? "▼" : "▶";
     const char* chevron_b = bk_collapsed ? "▶" : "▼";
 
-    auto labels = Features::load_labels(bentry.name.string(), cfg);
     auto selectable_id = std::format("##gamename_{}", bentry.name.string());
 
     ImGui::PushStyleColor(ImGuiCol_Border, ImVec4(198/255.f, 97/255.f, 63/255.f, 1.f));
@@ -109,6 +111,7 @@ void BackupTab::render_game_row(const Fonts& fonts, const BackupEntry& bentry, C
     ImGui::Text("%s", right_text.c_str());
 
     if (not_collapsed) {
+        const auto& labels = labels_cache[bentry.name.string()];
         for (const auto& entry : bentry.entries) {
             render_backup_row(entry, bentry.save_path, labels, bentry.name.string(), cfg);
         }
