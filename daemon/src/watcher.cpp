@@ -1,4 +1,7 @@
 #include "watcher.hpp"
+#include <chrono>
+#include <mutex>
+#include <thread>
 
 #if defined(__linux__)
 #include <sys/inotify.h>
@@ -10,7 +13,7 @@
 #define BUFFER_LEN  (1024 * (EVENT_SIZE + 16)) 
 #endif
 
-Watcher::Watcher(std::function<void(const fs::path&, uint32_t)> fun) {
+Watcher::Watcher(std::function<void(const fs::path&, uint32_t)> fun, const Config& config) {
     m_fun = fun;
 #if defined(__linux__)
     m_notify_fd = inotify_init();
@@ -39,6 +42,9 @@ Watcher::Watcher(std::function<void(const fs::path&, uint32_t)> fun) {
 
 void Watcher::shutdown() {
 #if defined(__linux__)
+    m_running = false;
+    m_debounce_thread.join();
+
     if(m_notify_fd != -1) {
         for (auto& descriptor : m_watch_descriptors) {
             inotify_rm_watch(m_notify_fd, descriptor.second);
@@ -66,6 +72,7 @@ bool Watcher::add_watch(const fs::path& path) {
     }
     m_watch_descriptors[path] = wd;
     m_wd_to_path.insert({wd, path});
+    SPDLOG_INFO("watch added for: {}", path.string());
     return true;
 #endif
     return false; //tmp
@@ -83,6 +90,32 @@ bool Watcher::remove_watch(const fs::path& path) {
     return false;
 }
 
+//ensures backups only trigger when no new file events happen on that save
+//so we dont backup a save thats being written to by the game
+void Watcher::debounce_loop() {
+    do {
+        // std::println("looping");
+        {
+            std::lock_guard<std::mutex> lock(debounce_mutex);
+            auto now = std::chrono::system_clock::now();
+
+            for (auto& entry : save_event_times) {
+                if(now - entry.second.first > interval ) {
+                    // std::println("now - entry time is greated than interval");
+                    m_fun(entry.first, entry.second.second);
+                }
+            }
+
+            std::erase_if(save_event_times, [&](const auto& entry) {
+                    return now - entry.second.first > interval;
+                    });
+        }
+
+        std::this_thread::sleep_for(interval);
+    }while (m_running);
+}
+
+
 void Watcher::run() {
 #if defined(__linux__)
     struct pollfd fds[2];
@@ -94,6 +127,9 @@ void Watcher::run() {
     struct signalfd_siginfo fdsi;
     char buffer[BUFFER_LEN];
 #endif
+
+    m_running = true;
+    m_debounce_thread = std::thread(&Watcher::debounce_loop, this);
 
     while (true) {
 #if defined(__linux__)
@@ -121,7 +157,11 @@ void Watcher::run() {
 
                 if (!(event->mask & IN_ISDIR)) {
                     if (auto it = m_wd_to_path.find(event->wd); it != m_wd_to_path.end()) {
-                        m_fun(it->second / event->name, event->mask);
+                        {
+                            std::lock_guard<std::mutex> lock(debounce_mutex);
+                            save_event_times[it->second / event->name] = {std::chrono::system_clock::now(), event->mask};
+                            // std::println("save_event_times updated: {}", std::format("{}", std::chrono::system_clock::now()));
+                        }
                     }
                 }
                 ptr += EVENT_SIZE + event->len;
