@@ -138,7 +138,10 @@ void DashboardTab::render_toolbar(RenderContext& ctx) {
         ImGui::SetKeyboardFocusHere();
         focus_search = false;
     }
-    ImGui::InputText("##search", &search_query);
+    if(ImGui::InputText("##search", &search_query)) {
+        std::transform(search_query.begin(), search_query.end(), search_query.begin(),
+                ::tolower);
+    }
     ImGui::SameLine();
 
     std::string sort_label = sort_mode == SortMode::Alphabetical
@@ -197,9 +200,6 @@ void DashboardTab::render_toolbar(RenderContext& ctx) {
 }
 
 void DashboardTab::render_game_list(RenderContext& ctx) {
-    std::transform(search_query.begin(), search_query.end(), search_query.begin(),
-                   ::tolower);
-
     auto sorted = grouped_games;
     switch (sort_mode) {
         case SortMode::Recent:
@@ -214,7 +214,6 @@ void DashboardTab::render_game_list(RenderContext& ctx) {
             });
         break;
     }
-
 
     enumerate(sorted, [&](int gi, auto& group) {
         if(platform_filter.has_value() && ctx.games[group[0]].type != *platform_filter) return;
