@@ -4,6 +4,7 @@
 #include <features/backup/backup.hpp>
 
 #include "frontend/ui/notifications/notification.hpp"
+#include "utils/utils.hpp"
 #include <frontend/views/backups/backup_view.hpp>
 
 #ifdef __APPLE__
@@ -371,40 +372,19 @@ void DashboardTab::render_game_row(RenderContext& ctx, const std::vector<int>& g
         }
     }
 
-    static int selected_entry_idx = -1;
     if (ImGui::BeginPopupContextWindow()) {
         if (ImGui::MenuItem("Open Path")) {
-#ifdef __linux__
-            pid_t pid = fork();
-            if (pid == 0) {
-                execl("/usr/bin/xdg-open", "xdg-open", primary.save_path.string().c_str(), nullptr);
-                _exit(1);
-            }
-#endif
-#ifdef _WIN32
-            ShellExecuteA(NULL, "open", primary.save_path.string().c_str(), NULL, NULL, SW_SHOWDEFAULT);
-#endif
-#ifdef __APPLE__
-            extern char **environ;
-            pid_t pid;
-            std::string path = primary.save_path.string();
-
-            const char* argv[] = { "open", path.c_str(), nullptr };
-            int status = posix_spawn(&pid, "/usr/bin/open", nullptr, nullptr, (char* const*)argv, environ);
-            if (status == 0) {
-                waitpid(pid, &status, 0);
-            }
-#endif
+            open_in_file_manager(primary.save_path.string().c_str());
         }
         if (ImGui::BeginMenu("Schedule backup")) {
             for (const auto& entry : group) {
-                if(ImGui::MenuItem("Add")) {
-                    selected_entry_idx = entry;
+                const Game& g = ctx.games[entry];
+                std::string label = std::format("{}##entry_{}", g.save_path.filename().string(), entry);
+                if(ImGui::MenuItem(label.c_str())) {
+                    pending_schedule_entry_idx = entry;
                     open_schedule_modal = true;
                     ImGui::OpenPopup("Add schedule");
                 }
-                // if(ImGui::Selectable(ctx.games[entry].save_path.filename().string().c_str())) {
-                // }
             }
             ImGui::EndMenu();
         }
@@ -521,7 +501,6 @@ void DashboardTab::render_modals(RenderContext& ctx) {
         ImGui::OpenPopup("Rename Backup");
     }
 
-    static int selected_entry_idx = -1;
     if (open_schedule_modal) {
         open_schedule_modal = false;
         ImGui::OpenPopup("Add schedule");
@@ -549,8 +528,8 @@ void DashboardTab::render_modals(RenderContext& ctx) {
         ImGui::SliderInt("Interval", &schedule_modal.interval_hours, 1, 100); 
 
         ScheduleEntry sentry;
-        if (selected_entry_idx >= 0) {
-            const Game& g = ctx.games[selected_entry_idx];
+        if (pending_schedule_entry_idx >= 0) {
+            const Game& g = ctx.games[pending_schedule_entry_idx];
             sentry.appid = g.appid;
             sentry.game_name = g.game_name;
             sentry.save_path = g.save_path;

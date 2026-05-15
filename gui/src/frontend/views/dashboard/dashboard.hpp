@@ -16,6 +16,7 @@ struct DashboardTab {
     Game pending_rename_game = {};
 
     bool open_schedule_modal = false;
+    int pending_schedule_entry_idx = -1;
 
     std::future<void> refresh_future;
     std::future<void> backup_future;
