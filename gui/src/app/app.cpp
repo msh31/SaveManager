@@ -23,7 +23,7 @@
 
 #include <curl/curl.h>
 
-App::App(fs::path config_dir) : config(config_dir) {}
+App::App(fs::path config_dir) : config(config_dir), scheduler(config) {}
 
 void App::init_background() {
     GLuint vert = compile_shader(default_vert, GL_VERTEX_SHADER);
@@ -61,7 +61,7 @@ void App::render_ui() {
 
     if (ImGui::BeginTabBar("MyTabBar", ImGuiTabBarFlags_Reorderable | ImGuiTabBarFlags_DrawSelectedOverline)) {
         if (ImGui::BeginTabItem("Dashboard"))  {
-            dahsboard_tab.render(fonts, d_result, config);
+            dahsboard_tab.render(fonts, d_result, config, scheduler);
             ImGui::EndTabItem();
         }
         if (ImGui::BeginTabItem("Save Editor"))  {

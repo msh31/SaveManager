@@ -61,4 +61,5 @@ private:
 
     Detection::DetectionResult d_result;
     std::future<void> detection_future;
+    SaveScheduler scheduler;
 };

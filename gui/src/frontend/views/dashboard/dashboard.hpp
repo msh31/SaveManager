@@ -2,6 +2,7 @@
 #include "detection/detection.hpp"
 #include <utils/utils.hpp>
 #include <utils/zip_archive/zip_archive.hpp>
+#include <features/scheduler/scheduler.hpp>
 
 namespace fs = std::filesystem;
 
@@ -14,6 +15,8 @@ struct DashboardTab {
     bool open_rename_modal = false;
     Game pending_rename_game = {};
 
+    bool open_schedule_modal = false;
+
     std::future<void> refresh_future;
     std::future<void> backup_future;
 
@@ -22,13 +25,14 @@ struct DashboardTab {
     size_t last_game_count = 0;
     int spinner_frame = 0;
 
-    void render(const Fonts&, Detection::DetectionResult&, Config&);
+    void render(const Fonts&, Detection::DetectionResult&, Config&, SaveScheduler& scheduler);
 private:
     struct RenderContext {
         Detection::DetectionResult& result;
         Config& config;
         const Fonts& fonts;
         const std::vector<Game>& games;
+        SaveScheduler& scheduler;
     };
 
     struct GameCache {

@@ -1,10 +1,9 @@
 #include "dashboard.hpp"
-#include "constants.hpp"
-#include "types.hpp"
-#include "features/backup/backup.hpp"
+#include <constants.hpp>
+#include <types.hpp>
+#include <features/backup/backup.hpp>
 
 #include "frontend/ui/notifications/notification.hpp"
-#include <filesystem>
 #include <frontend/views/backups/backup_view.hpp>
 
 #ifdef __APPLE__
@@ -77,7 +76,7 @@ void DashboardTab::on_result_changed(RenderContext& ctx) {
     }
 }
 
-void DashboardTab::render(const Fonts& fonts, Detection::DetectionResult& result, Config& config) { 
+void DashboardTab::render(const Fonts& fonts, Detection::DetectionResult& result, Config& config, SaveScheduler& scheduler) { 
     static BackupTab backup;
 
     if (ImGui::BeginTabBar("MyTabBar", ImGuiTabBarFlags_DrawSelectedOverline)) {
@@ -88,7 +87,7 @@ void DashboardTab::render(const Fonts& fonts, Detection::DetectionResult& result
                 snapshot = result.games;
             }
 
-            RenderContext ctx{result,config, fonts, snapshot};
+            RenderContext ctx{result,config, fonts, snapshot, scheduler};
             spinner_frame++;
 
             if (refresh_future.valid() && refresh_future.wait_for(std::chrono::seconds(0)) == std::future_status::ready) {
@@ -372,6 +371,7 @@ void DashboardTab::render_game_row(RenderContext& ctx, const std::vector<int>& g
         }
     }
 
+    static int selected_entry_idx = -1;
     if (ImGui::BeginPopupContextWindow()) {
         if (ImGui::MenuItem("Open Path")) {
 #ifdef __linux__
@@ -395,6 +395,18 @@ void DashboardTab::render_game_row(RenderContext& ctx, const std::vector<int>& g
                 waitpid(pid, &status, 0);
             }
 #endif
+        }
+        if (ImGui::BeginMenu("Schedule backup")) {
+            for (const auto& entry : group) {
+                if(ImGui::MenuItem("Add")) {
+                    selected_entry_idx = entry;
+                    open_schedule_modal = true;
+                    ImGui::OpenPopup("Add schedule");
+                }
+                // if(ImGui::Selectable(ctx.games[entry].save_path.filename().string().c_str())) {
+                // }
+            }
+            ImGui::EndMenu();
         }
         ImGui::EndPopup();
     }
@@ -509,6 +521,12 @@ void DashboardTab::render_modals(RenderContext& ctx) {
         ImGui::OpenPopup("Rename Backup");
     }
 
+    static int selected_entry_idx = -1;
+    if (open_schedule_modal) {
+        open_schedule_modal = false;
+        ImGui::OpenPopup("Add schedule");
+    }
+
     if (ImGui::BeginPopupModal("Rename Backup", nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
         ImGui::Text("%s", pending_rename_backup.filename().string().c_str());
         ImGui::InputText("Label", &rename_input);
@@ -516,6 +534,34 @@ void DashboardTab::render_modals(RenderContext& ctx) {
             Features::save_label(pending_rename_game.game_name, ctx.config,
                                  pending_rename_backup.filename().string(), rename_input);
             ImGui::CloseCurrentPopup();
+        }
+        ImGui::SameLine();
+        if (ImGui::Button("Cancel")) {
+            ImGui::CloseCurrentPopup();
+        }
+        ImGui::EndPopup();
+    }
+
+    if(ImGui::BeginPopupModal("Add schedule", nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
+        static struct { bool enabled = false; int interval_hours = 24; } schedule_modal;
+
+        ImGui::Checkbox("Enabled", &schedule_modal.enabled); 
+        ImGui::SliderInt("Interval", &schedule_modal.interval_hours, 1, 100); 
+
+        ScheduleEntry sentry;
+        if (selected_entry_idx >= 0) {
+            const Game& g = ctx.games[selected_entry_idx];
+            sentry.appid = g.appid;
+            sentry.game_name = g.game_name;
+            sentry.save_path = g.save_path;
+            sentry.enabled = schedule_modal.enabled;
+            sentry.interval_hours = schedule_modal.interval_hours;
+            sentry.last_backup_time = -1;
+        }
+
+        if (ImGui::Button("Add")) {
+            ctx.scheduler.add_entry(sentry);
+            ctx.scheduler.save();
         }
         ImGui::SameLine();
         if (ImGui::Button("Cancel")) {
