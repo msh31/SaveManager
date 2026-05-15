@@ -72,7 +72,7 @@ bool Watcher::add_watch(const fs::path& path) {
     }
     m_watch_descriptors[path] = wd;
     m_wd_to_path.insert({wd, path});
-    SPDLOG_INFO("watch added for: {}", path.string());
+    SPDLOG_DEBUG("watch added for: {}", path.string());
     return true;
 #endif
     return false; //tmp
@@ -141,7 +141,7 @@ void Watcher::run() {
 
         if (fds[1].revents & POLLIN) {
             read(m_signal_fd, &fdsi, sizeof(fdsi));
-            SPDLOG_WARN("Received signal {}, shutting down", fdsi.ssi_signo);
+            SPDLOG_DEBUG("Received signal {}, shutting down", fdsi.ssi_signo);
             break;
         }
 
@@ -162,6 +162,10 @@ void Watcher::run() {
                             save_event_times[it->second / event->name] = {std::chrono::system_clock::now(), event->mask};
                             // std::println("save_event_times updated: {}", std::format("{}", std::chrono::system_clock::now()));
                         }
+                    }
+                } else if ((event->mask & IN_ISDIR) && (event->mask & IN_CREATE)) {
+                    if (auto it = m_wd_to_path.find(event->wd); it != m_wd_to_path.end()) {
+                        add_watch(it->second / event->name);
                     }
                 }
                 ptr += EVENT_SIZE + event->len;
