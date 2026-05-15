@@ -69,6 +69,7 @@ static std::string_view get_platform_label(PlatformType t) {
         case PlatformType::PPSSPP:    return "PPSSPP";
         case PlatformType::MINECRAFT:    return "Minecraft"; //change to launcher?
         case PlatformType::CUSTOM:    return "CUSTOM";
+        case PlatformType::GENERIC:    return "??";
     }
     return "";
 }
