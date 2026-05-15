@@ -184,17 +184,7 @@ void DashboardTab::render_toolbar(RenderContext& ctx) {
                     std::shared_lock lock(result.d_mutex);
                     snapshot = result.games;
                 }
-                for (auto& entry : snapshot) {
-                    if(fs::is_directory(entry.save_path)) {
-                        for (const auto& file : fs::recursive_directory_iterator(entry.save_path, fs::directory_options::skip_permission_denied)) {
-                            if (fs::is_regular_file(file)) {
-                                auto ext = file.path().extension().string();
-                                if(std::find(extension_blocklist.begin(), extension_blocklist.end(), ext) != extension_blocklist.end()) continue;
-                                Features::backup_game(entry, file.path(), config);
-                            }
-                        }
-                    }
-                }
+                Features::backup_all_games(snapshot, config);
             });
         }
         ImGui::SetItemTooltip("Creates a backup of all games found!");
@@ -308,29 +298,13 @@ void DashboardTab::render_game_row(RenderContext& ctx, const std::vector<int>& g
             ImGui::PushStyleColor(ImGuiCol_Button, ImColor(198, 97, 63).Value);
             ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImColor(198, 97, 63).Value);
             if(ImGui::Button("Backup All")) {
-                backup_future = std::async(std::launch::async, [this, primary, ctx, files]() {
+                backup_future = std::async(std::launch::async, [this, primary, files]() {
                 SPDLOG_INFO("creating backup of: {}", primary.game_name);
-
-                fs::path game_backup_dir = paths::backup_dir() / sanitize_filename(primary.game_name);
-                if(!fs::exists(game_backup_dir)) fs::create_directories(game_backup_dir);
-
-                fs::path final_path = game_backup_dir / Features::construct_backup_name(primary.game_name);
-                fs::path zip_name = final_path.parent_path() / (final_path.filename().string() + ".tmp");
-
-                ZipArchive za(MODE_CREATE_ARCHIVE, zip_name);
-                bool failed_to_add = false;
-                for(const auto& entry : files) { 
-                    if(!za.add_to_archive(entry.first)) {
-                        failed_to_add = true;
+                    if(Features::backup_game_files(primary, files)) {
+                        Notify::show_notification("Backup Created", "A backup has been for all saves!", 1500);
+                    } else {
+                        Notify::show_notification("Backup Creation", "Failed to create backup! Please refer to the logfile!", 2000);
                     }
-                }
-                if(failed_to_add) {
-                    fs::remove(zip_name);
-                    Notify::show_notification("Backup Creation", "Failed to create backup! Please refer to the logfile!", 2000);
-                } else { 
-                    fs::rename(zip_name, final_path);
-                    Notify::show_notification("Backup Created", "A backup has been for all saves!", 1500);
-                }
                 });
             }
             ImGui::PopStyleColor(2);
