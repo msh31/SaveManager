@@ -43,7 +43,9 @@ Watcher::Watcher(std::function<void(const fs::path&, uint32_t)> fun, const Confi
 void Watcher::shutdown() {
 #if defined(__linux__)
     m_running = false;
-    m_debounce_thread.join();
+    if(m_debounce_thread.joinable()) {
+        m_debounce_thread.join();
+    }
 
     if(m_notify_fd != -1) {
         for (auto& descriptor : m_watch_descriptors) {
