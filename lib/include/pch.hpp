@@ -1,4 +1,10 @@
 #pragma once
+
+#ifdef _WIN32
+#define NOMINMAX        // prefer std::min/max over Windows macros
+#define WIN32_LEAN_AND_MEAN // skip unused headers windows.h would otherwise drag in
+#endif
+
 #ifdef __cplusplus
 #include <string>
 #include <string_view>
@@ -32,8 +38,6 @@
 #endif
 
 #ifdef _WIN32
-#define NOMINMAX //ignores the windows macros in favor of std::min/max
-#define WIN32_LEAN_AND_MEAN //skips unused headers windows.h would otherwise drag in
 #include <winsock2.h>
 #include <windows.h>
 #include <ws2tcpip.h>
