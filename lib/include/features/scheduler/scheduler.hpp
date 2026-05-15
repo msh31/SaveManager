@@ -5,6 +5,7 @@
 class SaveScheduler {
     public:
         SaveScheduler(const Config& config) {
+            m_config = config;
             load();
         }
         ~SaveScheduler() {
@@ -19,7 +20,7 @@ class SaveScheduler {
         void run();
         void save();
     private:
-        Config config;
+        Config m_config;
 
         void load();
         void stop() {
