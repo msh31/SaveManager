@@ -83,7 +83,9 @@ bool Features::backup_game_files(const Game& game, std::vector<std::pair<fs::pat
         fs::remove(zip_name);
         return false;
     } else { 
-        fs::rename(zip_name, final_path);
+        std::error_code ec;
+        fs::rename(zip_name, final_path, ec);
+        if(ec) SPDLOG_ERROR("rename failed: {}", ec.message());
         return true;
     }
 }

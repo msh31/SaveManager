@@ -124,7 +124,9 @@ bool ZipArchive::extract_archive(const fs::path& save_path) {
 
                 if (save_time > fileInfo.mtime) {
                     SPDLOG_WARN("{} is newer than {}!", output_path.filename().string(), fileInfo.name);
-                    fs::rename(output_path, output_path.parent_path() / std::format("{}.savemgr-conflict-{}", output_path.filename().string(), save_time));
+                    std::error_code ec;
+                    fs::rename(output_path, output_path.parent_path() / std::format("{}.savemgr-conflict-{}", output_path.filename().string(), save_time), ec);
+                    if(ec) SPDLOG_ERROR("rename failed: {}", ec.message());
                 }
             }
 
