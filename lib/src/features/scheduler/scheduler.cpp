@@ -6,14 +6,13 @@
 using json = nlohmann::json;
 
 void SaveScheduler::load() {
+    std::ifstream file(paths::schedule_file().c_str());
+    if(!file.is_open()) {
+        SPDLOG_ERROR("Failed to open schedule for loading!");
+        return;
+    }
     try {
-        json data = json::parse(paths::schedule_file());
-
-        std::ifstream file(paths::schedule_file().c_str());
-        if(!file.is_open()) {
-            SPDLOG_ERROR("Failed to open schedule for loading!");
-            return;
-        }
+        json data = json::parse(file);
 
         if (data.is_array()) {
             for (const auto& item : data) {
