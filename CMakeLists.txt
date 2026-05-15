@@ -79,6 +79,7 @@ set(savemanager-core_SOURCES
 	"lib/src/features/backup/backup.cpp"
 	"lib/src/features/remote_transfer/remote_transfer.cpp"
 	"lib/src/features/save_editor/save_editor.cpp"
+	"lib/src/features/scheduler/scheduler.cpp"
 	"lib/src/network/network.cpp"
 	"lib/src/plugin/plugin.cpp"
 	"lib/src/utils/blacklist/blacklist.cpp"

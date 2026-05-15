@@ -41,6 +41,10 @@ inline fs::path config_dir() {
     return default_config_dir();
 }
 
+inline fs::path schedule_file() {
+    return default_config_dir() / "schedule.json";
+}
+
 inline fs::path redirect_file() {
     return default_config_dir() / "cfg.redirect";
 }

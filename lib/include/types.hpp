@@ -18,7 +18,8 @@ enum class PlatformType {
     PSP,
     PPSSPP,
     MINECRAFT,
-    CUSTOM
+    CUSTOM,
+    GENERIC = 69
 };
 
 enum class LauncherType {
@@ -38,3 +39,14 @@ struct Game {
     LauncherType launcher; //minecraft only | display
     bool show_parent_path = false; //display
 };
+
+struct ScheduleEntry {
+    bool enabled;
+    std::string appid;
+    std::string game_name;
+    std::filesystem::path save_path;
+    int interval_hours;
+    int64_t last_backup_time;
+    PlatformType type = PlatformType::GENERIC;
+};
+

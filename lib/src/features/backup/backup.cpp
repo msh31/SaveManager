@@ -16,13 +16,13 @@ void Features::backup_game(const Game& game, const fs::path& file, Config& confi
     // int save_count = 0;
 
     auto ext = file.extension().string();
-    if(game.type != PlatformType::MINECRAFT) {
+    if(game.type == PlatformType::MINECRAFT || game.type == PlatformType::GENERIC) {
+        if(!fs::is_directory(file)) return;
+    } else {
         if(!fs::is_regular_file(file) || std::find(extension_blocklist.begin(), extension_blocklist.end(), ext) != extension_blocklist.end()) {
             // SPDLOG_WARN("No valid saves found for: {}, skipping backup", game.game_name);
             return;
         }
-    } else {
-        if(!fs::is_directory(file)) return;
     }
 
     // if(save_count <= 0) {
