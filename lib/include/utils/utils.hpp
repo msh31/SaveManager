@@ -1,10 +1,16 @@
 #pragma once
-#include "types.hpp"
+#include <types.hpp>
 #include <logger/logger.hpp>
 
 #include <zip.h>
 #include <openssl/sha.h>
 #include <openssl/evp.h>
+
+#ifdef __APPLE__
+#include <spawn.h>
+#include <sys/wait.h>
+#endif
+
 
 struct ImFont;
 
