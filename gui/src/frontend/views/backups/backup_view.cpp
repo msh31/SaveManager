@@ -95,6 +95,7 @@ void BackupTab::render_game_row(const Fonts& fonts, const BackupEntry& bentry, C
 }
 
 void BackupTab::render_backup_row(fs::path path, const fs::path& save_path, const std::unordered_map<std::string, std::string>& labels, const std::string& game_name, Config& cfg) {
+    if (path.filename() == "undo.zip") return;
     ImGui::PushID(path.string().c_str());
     if(!fs::exists(path)) { ImGui::PopID(); return; }
 
