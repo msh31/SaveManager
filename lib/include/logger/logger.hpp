@@ -5,6 +5,7 @@
 #include <spdlog/spdlog.h>
 #include <spdlog/sinks/base_sink.h>
 #include <spdlog/sinks/daily_file_sink.h>
+#include <spdlog/sinks/stdout_color_sinks.h>
 
 template<typename Mutex>
 class ringbuffer_sink : public spdlog::sinks::base_sink<Mutex> {
@@ -35,7 +36,7 @@ using ringbuffer_sink_mt = ringbuffer_sink<std::mutex>;
 
 inline std::shared_ptr<ringbuffer_sink_mt> g_ringbuffer_sink;
 
-inline void init_logger() {
+inline void init_logger(const std::string& pattern, const std::string& name = "savemanager") {
     auto config_dir = paths::config_dir();
     if (!fs::exists(config_dir)) {
         std::error_code ec;
@@ -48,11 +49,14 @@ inline void init_logger() {
     if (fs::exists(config_dir)) {
         sinks.push_back(std::make_shared<spdlog::sinks::daily_file_sink_mt>(
             (paths::log_dir() / "savemanager.log").string(), 0, 0));
+#ifndef NDEBUG
+        sinks.push_back(std::make_shared<spdlog::sinks::stdout_color_sink_mt>());
+#endif
     }
 
-    auto app_logger = std::make_shared<spdlog::logger>(APP_NAME, sinks.begin(), sinks.end());
+    auto app_logger = std::make_shared<spdlog::logger>(name, sinks.begin(), sinks.end());
     spdlog::set_default_logger(app_logger);
-    spdlog::set_pattern("[%l] %d-%m-%Y %H:%M:%S - %v");
+    spdlog::set_pattern(pattern);
 }
 
 inline ringbuffer_sink_mt* get_ringbuffer_sink() {
