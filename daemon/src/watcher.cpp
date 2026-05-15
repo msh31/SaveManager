@@ -64,20 +64,26 @@ void Watcher::shutdown() {
 
 bool Watcher::add_watch(const fs::path& path) {
 #if defined(__linux__)
-    for (auto& entry : fs::recursive_directory_iterator(path, fs::directory_options::skip_permission_denied)) {
-        if (entry.is_directory()) add_watch(entry.path());
+    auto add_single = [&](const fs::path& p) -> bool {
+        int wd = inotify_add_watch(m_notify_fd, p.c_str(), IN_CREATE | IN_DELETE | IN_MOVED_FROM | IN_MOVED_TO | IN_CLOSE_WRITE);
+        if (wd == -1) {
+            SPDLOG_ERROR("inotify_add_watch failed for {}: {}", p.string(), strerror(errno));
+            return false;
+        }
+        m_watch_descriptors[p] = wd;
+        m_wd_to_path.insert({wd, p});
+        SPDLOG_DEBUG("watch added for: {}", p.string());
+        return true;
+    };
+
+    if (!add_single(path)) return false;
+
+    for (const auto& entry : fs::recursive_directory_iterator(path, fs::directory_options::skip_permission_denied)) {
+        if (entry.is_directory()) add_single(entry.path());
     }
-    int wd = inotify_add_watch(m_notify_fd, path.c_str(), IN_CREATE | IN_DELETE | IN_MOVED_FROM | IN_MOVED_TO | IN_CLOSE_WRITE);
-    if (wd == -1) {
-        SPDLOG_ERROR("inotify_add_watch failed: {}", EXIT_FAILURE);
-        return false;
-    }
-    m_watch_descriptors[path] = wd;
-    m_wd_to_path.insert({wd, path});
-    SPDLOG_DEBUG("watch added for: {}", path.string());
     return true;
 #endif
-    return false; //tmp
+    return false;
 }
 
 bool Watcher::remove_watch(const fs::path& path) {
