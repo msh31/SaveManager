@@ -12,23 +12,14 @@ void Features::backup_game(const Game& game, const fs::path& file, Config& confi
     SPDLOG_INFO("creating backup of: {}", game.game_name);
     fs::path game_backup_dir = paths::backup_dir() / sanitize_filename(game.game_name);
 
-    //check here
-    // int save_count = 0;
-
     auto ext = file.extension().string();
     if(game.type == PlatformType::MINECRAFT || game.type == PlatformType::GENERIC) {
         if(!fs::is_directory(file)) return;
     } else {
         if(!fs::is_regular_file(file) || std::find(extension_blocklist.begin(), extension_blocklist.end(), ext) != extension_blocklist.end()) {
-            // SPDLOG_WARN("No valid saves found for: {}, skipping backup", game.game_name);
             return;
         }
     }
-
-    // if(save_count <= 0) {
-    //     SPDLOG_WARN("No valid saves found for: {}, skipping backup", game.game_name); //only applies to mass backup
-    //     return;
-    // }
 
     if(!fs::exists(game_backup_dir)) fs::create_directories(game_backup_dir);
 
@@ -112,8 +103,6 @@ void Features::backup_to_path(fs::path source, fs::path dest) {
         fs::remove(zip_name);
         SPDLOG_ERROR("failed to create undo backup");
     } else {
-        // SPDLOG_INFO("zip_name: {}", zip_name.string());
-        // SPDLOG_INFO("dest: {}", dest.string());
         std::error_code ec;
         fs::rename(zip_name, dest, ec);
         if(ec) SPDLOG_ERROR("undo rename failed: {}", ec.message());
@@ -126,7 +115,6 @@ std::vector<fs::path> Features::get_backups(const std::string& game, Config& con
     fs::path game_backup_dir = paths::backup_dir() / sanitize_filename(game);
 
     if(!fs::exists(game_backup_dir)) {
-        // SPDLOG_ERROR("No backups found for: {}", sanitize_filename(game.game_name));
         return {};
     }
 
@@ -154,9 +142,6 @@ void Features::restore_backup(const fs::path& name, const fs::path& save_path) {
 
     auto entries = archive.get_entry_names();
     fs::path undo_source = (entries.size() == 1) ? restore_path / entries[0] : restore_path;
-
-    // std::println("{}", entries[0]);
-    // std::println("{}", undo_source.string());
 
     if(fs::exists(undo_source) && !fs::is_empty(undo_source)) {
         backup_to_path(undo_source, name.parent_path() / "undo.zip");

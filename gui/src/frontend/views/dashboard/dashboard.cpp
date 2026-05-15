@@ -62,7 +62,6 @@ void DashboardTab::on_result_changed(RenderContext& ctx) {
         for (const auto& entry : ctx.games) {
             fs::file_time_type current_max;
             if (!fs::is_directory(entry.save_path)) continue;
-            // get_logger().info("checking path: {}", entry.save_path.string());
             for (const auto& file : fs::directory_iterator(entry.save_path, fs::directory_options::skip_permission_denied)) {
                 if(!fs::exists(file)) continue;
                 auto t = fs::last_write_time(file);
@@ -198,7 +197,6 @@ void DashboardTab::render_toolbar(RenderContext& ctx) {
 }
 
 void DashboardTab::render_game_list(RenderContext& ctx) {
-    // std::lock_guard<std::mutex> lock(ctx.result.d_mutex);
     std::transform(search_query.begin(), search_query.end(), search_query.begin(),
                    ::tolower);
 
@@ -224,7 +222,6 @@ void DashboardTab::render_game_list(RenderContext& ctx) {
         const Game& primary = ctx.games[group[0]];
         std::string game_name = primary.game_name;
 
-        // filter
         std::transform(game_name.begin(), game_name.end(), game_name.begin(),
                        ::tolower);
         if (!search_query.empty()) {
@@ -275,8 +272,7 @@ void DashboardTab::render_game_row(RenderContext& ctx, const std::vector<int>& g
     ImGui::SameLine();
 
     ImGui::PushFont(ctx.fonts.medium);
-    std::string left_text = std::format("{}", primary.game_name);
-    ImGui::Text("%s", left_text.c_str());
+    ImGui::Text("%s", primary.game_name.c_str());
     ImGui::PopFont();
     std::string right_text = std::format("{} | {} saves | {} backups", get_platform_label(primary.type),
                                          save_count, backup_count);

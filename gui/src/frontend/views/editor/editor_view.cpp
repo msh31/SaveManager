@@ -27,7 +27,6 @@ void EditorTab::render(const Fonts& fonts) {
             }
         }
         else if (result == NFD_CANCEL) {
-            // puts("User pressed cancel.");
         }
         else {
             Notify::show_notification("Save Editor", "Save failed to load!", 3000);

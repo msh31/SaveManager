@@ -102,8 +102,7 @@ void BackupTab::render_game_row(const Fonts& fonts, const BackupEntry& bentry, C
     ImGui::SameLine();
 
     ImGui::PushFont(fonts.medium);
-    std::string left_text = std::format("{}", bentry.name.string());
-    ImGui::Text("%s", left_text.c_str());
+    ImGui::Text("%s", bentry.name.string().c_str());
     ImGui::PopFont();
     std::string right_text = std::format("{} backups", bentry.entries.size());
     ImGui::SameLine(ImGui::GetContentRegionMax().x - ImGui::CalcTextSize(right_text.c_str()).x);

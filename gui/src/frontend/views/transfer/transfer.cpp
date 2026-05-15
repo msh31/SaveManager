@@ -37,7 +37,6 @@ void TransferTab::render(const Fonts& fonts, Detection::DetectionResult& result,
 
     was_transferring = transferring;
 
-    // connection status updates that need to run every frame
     if (connect_future.valid() && connect_future.wait_for(std::chrono::seconds(0)) == std::future_status::ready) {
         bool success = connect_future.get();
         if (success) {
@@ -101,8 +100,6 @@ void TransferTab::render(const Fonts& fonts, Detection::DetectionResult& result,
         ImGui::InputText("Key passphrase (Optional)", &key_passphrase, ImGuiInputTextFlags_Password);
         ImGui::SetItemTooltip("Your passphrase for the ssh key");
     }
-
-    // ImGui::Dummy(ImVec2(0.0f, 10.0f));
 
     float status_y = top_height - 45.0f;
     ImGui::SetCursorPosY(status_y);

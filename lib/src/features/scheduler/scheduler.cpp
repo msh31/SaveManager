@@ -62,7 +62,6 @@ void SaveScheduler::backup_loop() {
                     game.save_path = entry.save_path;
                     game.type = entry.type;
 
-                    SPDLOG_DEBUG("boutta back this shi up: {}\n{}\n{}\n", entry.game_name, entry.appid, entry.save_path);
                     Features::backup_game(game, entry.save_path, m_config);
                     entry.last_backup_time = now_ts;
                 }
