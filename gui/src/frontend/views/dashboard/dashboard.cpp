@@ -398,7 +398,11 @@ void DashboardTab::render_backup_row(RenderContext& ctx, const fs::path& backup,
 
     ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(3.0f, 3.0f));
     if(ImGui::Button("Restore", ImVec2(Widgets::btn_width, 0))) {
-        Features::restore_backup(backup, game.save_path);
+        if(game.save_path.empty()) {
+            Notify::show_notification("Restore", "Cannot restore: save location unknown.", 2000);
+        } else {
+            Features::restore_backup(backup, game.save_path);
+        }
     }
     ImGui::SetItemTooltip("Restore save from backup");
     ImGui::SameLine(0.0f, Widgets::button_spacing);
