@@ -2,10 +2,7 @@
 #include "features/backup/backup.hpp"
 #include "utils/paths.hpp"
 #include <frontend/ui/notifications/notification.hpp>
-
-static constexpr float button_spacing = 4.0f;
-static constexpr float btn_width = 80.0f;
-static constexpr const char* spinner = "|/-\\";
+#include <frontend/ui/widgets.hpp>
 
 void BackupTab::add_new_entry(Detection::DetectionResult& d_result, Config& config) {
     std::lock_guard lock_em_up(b_mutex);
@@ -68,7 +65,7 @@ void BackupTab::render(const Fonts& fonts, Detection::DetectionResult& d_result,
         }
     } else {
         int index = (spinner_frame / 10) % 4;
-        ImGui::Text("%c", spinner[index]);
+        ImGui::Text("%c", Widgets::spinner[index]);
     }
 
     for (const auto& entry : snapshot) {
@@ -82,33 +79,10 @@ void BackupTab::render(const Fonts& fonts, Detection::DetectionResult& d_result,
 
 void BackupTab::render_game_row(const Fonts& fonts, const BackupEntry& bentry, Config& cfg) {
     bool& not_collapsed = card_collapsed[bentry.name.string()];
-    bool& bk_collapsed = backups_collapsed[bentry.name.string()];
-    const char* chevron = not_collapsed ? "▼" : "▶";
-    const char* chevron_b = bk_collapsed ? "▶" : "▼";
 
     auto selectable_id = std::format("##gamename_{}", bentry.name.string());
-
-    ImGui::PushStyleColor(ImGuiCol_Border, ImVec4(198/255.f, 97/255.f, 63/255.f, 1.f));
-    ImGui::PushStyleVar(ImGuiStyleVar_ChildRounding, 4.0f);
-    ImGui::BeginChild(selectable_id.c_str(), ImVec2(0, 0), ImGuiChildFlags_Borders | ImGuiChildFlags_AutoResizeY);
-    ImGui::PopStyleColor();
-
-    if(ImGui::Selectable("##header", false, ImGuiSelectableFlags_None, ImVec2(0, 30))) {
-        not_collapsed = !not_collapsed;
-    }
-    ImGui::SameLine(8.0f);
-
-    ImGui::PushFont(fonts.bold);
-    ImGui::TextColored(ImColor(198, 97, 63).Value, "%s", chevron);
-    ImGui::PopFont();
-    ImGui::SameLine();
-
-    ImGui::PushFont(fonts.medium);
-    ImGui::Text("%s", bentry.name.string().c_str());
-    ImGui::PopFont();
     std::string right_text = std::format("{} backups", bentry.entries.size());
-    ImGui::SameLine(ImGui::GetContentRegionMax().x - ImGui::CalcTextSize(right_text.c_str()).x);
-    ImGui::Text("%s", right_text.c_str());
+    Widgets::begin_game_card(selectable_id.c_str(), fonts, not_collapsed, bentry.name.string().c_str(), right_text.c_str());
 
     if (not_collapsed) {
         const auto& labels = labels_cache[bentry.name.string()];
@@ -117,8 +91,7 @@ void BackupTab::render_game_row(const Fonts& fonts, const BackupEntry& bentry, C
         }
     }
 
-    ImGui::EndChild();
-    ImGui::PopStyleVar();
+    Widgets::end_game_card();
 }
 
 void BackupTab::render_backup_row(fs::path path, const fs::path& save_path, const std::unordered_map<std::string, std::string>& labels, const std::string& game_name, Config& cfg) {
@@ -135,18 +108,18 @@ void BackupTab::render_backup_row(fs::path path, const fs::path& save_path, cons
     std::string size_text = std::format("{}KB  ", b_size);
     float size_width = ImGui::CalcTextSize(size_text.c_str()).x;
 
-    float total_width = date_width + size_width + btn_width * 3 + button_spacing * 5;
+    float total_width = date_width + size_width + Widgets::btn_width * 3 + Widgets::button_spacing * 5;
 
     ImGui::Text("%s", display.c_str());
     ImGui::SameLine(ImGui::GetContentRegionMax().x - total_width);
 
     ImGui::TextDisabled("%s", date_text.c_str());
-    ImGui::SameLine(0.0f, button_spacing);
+    ImGui::SameLine(0.0f, Widgets::button_spacing);
     ImGui::TextDisabled("%s", size_text.c_str());
-    ImGui::SameLine(0.0f, button_spacing);
+    ImGui::SameLine(0.0f, Widgets::button_spacing);
 
     ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(3.0f, 3.0f));
-    if(ImGui::Button("Restore", ImVec2(btn_width, 0))) {
+    if(ImGui::Button("Restore", ImVec2(Widgets::btn_width, 0))) {
         if(save_path.empty()) {
             Notify::show_notification("Restore", "Cannot restore: save location unknown (no metadata).", 2000);
         } else {
@@ -154,20 +127,20 @@ void BackupTab::render_backup_row(fs::path path, const fs::path& save_path, cons
         }
     }
     ImGui::SetItemTooltip("Restore save from backup");
-    ImGui::SameLine(0.0f, button_spacing);
+    ImGui::SameLine(0.0f, Widgets::button_spacing);
 
-    if(ImGui::Button("Rename", ImVec2(btn_width, 0))) {
+    if(ImGui::Button("Rename", ImVec2(Widgets::btn_width, 0))) {
         pending_rename_game = game_name;
         pending_rename_backup = path;
         rename_input = (it != labels.end()) ? it->second : "";
         open_rename_modal = true;
     }
     ImGui::SetItemTooltip("Rename this backup");
-    ImGui::SameLine(0.0f, button_spacing);
+    ImGui::SameLine(0.0f, Widgets::button_spacing);
 
     ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.8f, 0.2f, 0.2f, 1.0f));
     ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.9f, 0.3f, 0.3f, 1.0f));
-    if(ImGui::Button("Delete", ImVec2(btn_width, 0))) {
+    if(ImGui::Button("Delete", ImVec2(Widgets::btn_width, 0))) {
         if(fs::remove(path)) {
             auto mutable_labels = labels;
             mutable_labels.erase(path.filename().string());

@@ -134,6 +134,7 @@ set(savemanager_SOURCES
 	"gui/src/app/app.cpp"
 	"gui/src/frontend/ui/notifications/notification.cpp"
 	"gui/src/frontend/ui/themes/themes.cpp"
+	"gui/src/frontend/ui/widgets.cpp"
 	"gui/src/frontend/views/about/about.cpp"
 	"gui/src/frontend/views/backups/backup_view.cpp"
 	"gui/src/frontend/views/dashboard/dashboard.cpp"
