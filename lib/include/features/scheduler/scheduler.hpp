@@ -34,7 +34,7 @@ class SaveScheduler {
         std::vector<ScheduleEntry> m_entries;
         std::mutex schedule_mutex;
         std::thread m_backup_thread;
-        std::atomic<bool> m_running;
+        std::atomic<bool> m_running{false};
 
         ScheduleEntry schedule;
 };

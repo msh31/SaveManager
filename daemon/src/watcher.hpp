@@ -25,7 +25,7 @@ class Watcher {
         std::map<fs::path, int> m_watch_descriptors;
         std::map<int, fs::path> m_wd_to_path;
 
-        std::atomic<bool> m_running;
+        std::atomic<bool> m_running{false};
         std::map<std::filesystem::path, std::pair<std::chrono::system_clock::time_point, uint32_t>> save_event_times;
         std::mutex debounce_mutex;
         std::thread m_debounce_thread;
