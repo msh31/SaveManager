@@ -87,12 +87,14 @@ void SaveScheduler::add_entry(ScheduleEntry entry) {
     {
         std::lock_guard<std::mutex> lock(schedule_mutex);
         m_entries.emplace_back(entry);
+        SPDLOG_INFO("added new schedule entry for: {}", entry.game_name);
     }
 }
 
 void SaveScheduler::remove_entry(std::string appid) {
     {
         std::lock_guard<std::mutex> lock(schedule_mutex);
+        SPDLOG_INFO("removed schedule entry for appid: {}", appid);
         std::erase_if(m_entries, [&](const auto& e) { return e.appid == appid; });
     }
 }
@@ -100,6 +102,7 @@ void SaveScheduler::remove_entry(std::string appid) {
 void SaveScheduler::update_entry(ScheduleEntry entry) {
     {
         std::lock_guard<std::mutex> lock(schedule_mutex);
+        SPDLOG_INFO("updating schedule entry for: {}", entry.game_name);
         auto it = std::ranges::find_if(m_entries, [&](const auto& e) { return e.appid == entry.appid; });
         if (it != m_entries.end()) *it = entry;
     }
