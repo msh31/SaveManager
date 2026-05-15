@@ -24,8 +24,6 @@ void TransferTab::render(const Fonts& fonts, Detection::DetectionResult& result,
     float overall_progress = 0.0f;
     bool transferring = is_transferring && remote;
 
-    static bool was_transferring = false;
-
     if (transferring) {
         if (remote->total_bytes > 0) {
             file_progress = (float)remote->bytes_transferred / (float)remote->total_bytes;

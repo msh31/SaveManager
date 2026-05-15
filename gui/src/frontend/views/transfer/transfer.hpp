@@ -28,6 +28,8 @@ struct TransferTab {
     std::atomic<int> current_file_index = 0;
     std::atomic<int> total_files = 0;
 
+    bool was_transferring;
+
     int spinner_frame = 0;
     const char* spinner = "|/-\\";
 private:
