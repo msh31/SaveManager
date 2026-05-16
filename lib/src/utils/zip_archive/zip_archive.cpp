@@ -89,7 +89,7 @@ bool ZipArchive::add_to_archive(const fs::path& file) {
     }
 }
 
-bool ZipArchive::extract_archive(const fs::path& save_path) {
+bool ZipArchive::extract_archive(const fs::path& save_path, std::vector<std::pair<fs::path, fs::path>>& conflicts) {
     if(archive == nullptr) return false;
 
     int file_count = zip_get_num_entries(archive, 0);

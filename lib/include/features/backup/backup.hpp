@@ -10,7 +10,7 @@ void backup_all_games(std::vector<Game> snapshot, Config& config);
 void backup_to_path(fs::path source, fs::path dest);
 bool backup_game_files(const Game& game, std::vector<std::pair<fs::path, const Game*>> files);
 
-void restore_backup(const fs::path& name, const fs::path& save_path);
+void restore_backup(const fs::path& name, const fs::path& save_path, std::vector<std::pair<fs::path, fs::path>>& conflicts);
 std::vector<fs::path> get_backups(const std::string& game, Config& config);
 
 std::string construct_backup_name(const std::string& game, const std::string& custom_name = "");

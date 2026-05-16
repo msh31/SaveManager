@@ -132,7 +132,7 @@ std::vector<fs::path> Features::get_backups(const std::string& game, Config& con
     return backups;
 }
 
-void Features::restore_backup(const fs::path& name, const fs::path& save_path) {
+void Features::restore_backup(const fs::path& name, const fs::path& save_path, std::vector<std::pair<fs::path, fs::path>>& conflicts) {
     ZipArchive archive(MODE_EXTRACT_ARCHIVE, name.u8string());
 
     fs::path restore_path;
@@ -151,7 +151,7 @@ void Features::restore_backup(const fs::path& name, const fs::path& save_path) {
         backup_to_path(undo_source, name.parent_path() / "undo.zip");
     }
 
-    if(!archive.extract_archive(restore_path)) {
+    if(!archive.extract_archive(restore_path, conflicts)) {
         SPDLOG_ERROR("failed to restore backup: {}", name.filename().string());
     } else {
         SPDLOG_INFO("backup restored: {}", name.filename().string());

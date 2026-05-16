@@ -21,7 +21,7 @@ public:
     }
 
     bool add_to_archive(const fs::path& file);
-    bool extract_archive(const fs::path& save_path);
+    bool extract_archive(const fs::path& save_path, std::vector<std::pair<fs::path, fs::path>>& conflicts);
 
     void set_comment(const std::string&);
     const char* get_comment();
