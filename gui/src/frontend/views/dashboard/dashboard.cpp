@@ -50,6 +50,19 @@ void DashboardTab::on_result_changed(RenderContext& ctx) {
             } else {
                 game_cache[cache_key(game)] = cache;
             }
+
+            try {
+                for(const auto& f : fs::directory_iterator(game.save_path)) {
+                    if(f.path().string().find(".savemgr-conflict-") != std::string::npos) {
+                        // SPDLOG_INFO("writing conflict cache for key: {}", key);
+                        // SPDLOG_INFO("path: {}", game.save_path.string());
+                        game_cache[key].has_conflicts = true;
+                        break;
+                    }
+                }
+            } catch(std::exception& ex) {
+                SPDLOG_ERROR("conflict iteration error: {}", ex.what());
+            }
         }
 
         for (const auto& entry : ctx.games) {
@@ -62,7 +75,6 @@ void DashboardTab::on_result_changed(RenderContext& ctx) {
             }
             game_last_modified.insert({ entry.game_name, current_max });
         }
-
     }
     catch (fs::filesystem_error& er) {
         SPDLOG_ERROR("dashboard(on_result_changed): {}", er.what());
@@ -238,6 +250,8 @@ void DashboardTab::render_game_row(RenderContext& ctx, const std::vector<int>& g
     int save_count = cache.save_files.size();
     int backup_count = cache.backup_count;
     auto labels = cache.labels;
+    // SPDLOG_INFO("reading conflict cache for key: {} has_conflicts: {}", cache_key(primary), cache.has_conflicts);
+    bool has_conflicts = cache.has_conflicts;
 
     for (const auto& path : cache.save_files) {
         files.emplace_back(path, &primary);
@@ -253,20 +267,6 @@ void DashboardTab::render_game_row(RenderContext& ctx, const std::vector<int>& g
             else ImGui::TextDisabled("WORLDS");
 
             //todo cache this
-            bool has_conflicts = false;
-            try {
-                for(const auto& f : fs::directory_iterator(primary.save_path)) {
-                    // SPDLOG_INFO("{}", primary.save_path.string());
-                    // SPDLOG_INFO("{}", f.path().string());
-                    if(f.path().string().find(".savemgr-conflict-") != std::string::npos) {
-                        has_conflicts = true;
-                        break;
-                    }
-                }
-            } catch(std::exception& ex) {
-                SPDLOG_ERROR("conflict iteration error: {}", ex.what());
-            }
-
             fs::path undo_dir = paths::backup_dir() / sanitize_filename(primary.game_name) / "undo.zip";
             bool has_undo = false;
             if(fs::exists(undo_dir)) has_undo = true;
@@ -279,8 +279,8 @@ void DashboardTab::render_game_row(RenderContext& ctx, const std::vector<int>& g
             ImGui::PushStyleColor(ImGuiCol_Button, ImColor(198, 97, 63).Value);
             ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImColor(198, 97, 63).Value);
             if(ImGui::Button("Backup All")) {
-                backup_future = std::async(std::launch::async, [this, primary, files]() {
                 SPDLOG_INFO("creating backup of: {}", primary.game_name);
+                backup_future = std::async(std::launch::async, [this, primary, files]() {
                     if(Features::backup_game_files(primary, files)) {
                         Notify::show_notification("Backup Created", "A backup has been for all saves!", 1500);
                     } else {

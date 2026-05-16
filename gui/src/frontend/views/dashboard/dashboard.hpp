@@ -40,6 +40,7 @@ private:
         std::vector<fs::path> save_files;
         int backup_count;
         std::unordered_map<std::string, std::string> labels;
+        bool has_conflicts = false;
     };
     std::unordered_map<std::string, GameCache> game_cache;
 
