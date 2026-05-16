@@ -12,7 +12,7 @@ std::expected<std::vector<Game>, DetectionError> MinecraftDetector::find_saves()
     append(scan_official());
     append(scan_modrinth());
     append(scan_prism());
-#if !defined(__APPLE__) || !defined(_WIN32)
+#if defined(__linux__)
     append(scan_multimc());
 #endif
     append(scan_curseforge());
@@ -25,7 +25,7 @@ std::vector<Game> MinecraftDetector::scan_official() const {
 #elif defined (__APPLE__)
     fs::path game_path = paths::home_dir() / "Library" / "Application Support" / "minecraft";
 #elif defined (_WIN32)
-    fs::path game_path = paths::home_dir() / "AppData" / "Roaming" ".minecraft";
+    fs::path game_path = paths::home_dir() / "AppData" / "Roaming" / ".minecraft";
 #endif
     std::vector<Game> games;
 
