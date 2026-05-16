@@ -311,6 +311,9 @@ void DashboardTab::render_game_row(RenderContext& ctx, const std::vector<int>& g
             }
 
             for (auto& save : files) {
+                if(!fs::exists(save.first)) continue; 
+                if(save.first.string().contains(".savemgr-conflict-")) continue; 
+
                 ImGui::Separator();
                 render_save_row(ctx, save.first, *save.second);
                 ImGui::Separator();
@@ -364,7 +367,6 @@ void DashboardTab::render_game_row(RenderContext& ctx, const std::vector<int>& g
 
 void DashboardTab::render_save_row(RenderContext& ctx, const fs::path& save_file, const Game& game) {
     ImGui::PushID(save_file.string().c_str());
-    if(!fs::exists(save_file)) { ImGui::PopID(); return; }
 
     std::string date_text = std::format("{:%d/%m/%y %H:%M} | ", fs::last_write_time(save_file));
     float date_width = ImGui::CalcTextSize(date_text.c_str()).x;
