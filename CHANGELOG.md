@@ -1,67 +1,67 @@
 # Changelog
 
 ## [1.7.0] - 2026-05-??
+*Core logic moved into a separate library linked by the GUI, daemon, and future CLI*
+ 
+### Daemon (new)
+The SaveManager daemon is a new background process that handles scheduled backups, retention, health scans and real-time file watching.
+
+> [!NOTE]  
+> This is an experimental feature and only works on linux for the time being
+> You can install this service from within the GUI's settings
+
+- File watcher that triggers backups when save activity settles (during play or idle)
+- Scheduled backups: configurable per-game interval (in hours), persistent across restarts
+- Backup retention to automatically delete untagged backups periodically with presets 
+- Logs create / delete / modify events separately
 
 ### Core
-> Shared between GUI, daemon and CLI
-
-**Added**
-- Commandline Interface (useful for scripting & automation)
-- SaveWatcher daemon: inotify-based file watcher that triggers backups when save activity settles
-    - Watches all configured paths including subdirectories
-    - Watches newly created subdirectories at runtime
-    - Filters out non-save and image files from triggering backups
-    - Logs create / delete / modify events separately
-- Scheduled backups: configurable per-game backup interval (in hours)
+#### Added
+- Save scheduler: per-game scheduled backups with persistent `schedule.json`
 - Conflict-safe restores: existing files newer than the backup are preserved as `.savemgr-conflict-<timestamp>`
 - Undo last restore
-- Each backup ZIP now includes a manifest with SHA-256 checksums and original save timestamps for integrity verification
-- Scheduled integrity scrubbing: periodically re-verify backups to detect corruption and bit rot
-- Backup retention
-    - Flexible rules (keep-last, keep-hourly, keep-daily, keep-weekly, keep-monthly, keep-yearly)
-    - Presets: Time Machine, Speedrunner, Archivist, Single-Slot Survivor
-    - Pinned snapshots: starred backups are permanently excluded from automatic pruning
-- Zero-byte and shrunk-save quarantine: suspicious saves are quarantined instead of overwriting the last known good backup
-- Automatic pre-event snapshots before potentially destructive changes:
-    - Proton/Wine version changes
-    - Mod manager launches (MO2, Vortex)
-    - Game uninstalls
+- Backup retention with flexible rules (`keep-last`, `keep-hourly`, `keep-daily`, `keep-weekly`, `keep-monthly`, `keep-yearly`)
+    - Retention presets 
+    - Pinned snapshots: starred backups excluded from automatic pruning
+- Zero-byte and shrunk-save quarantine
+- Each backup ZIP now includes a manifest with SHA-256 checksums and original timestamps
+- Extension blocklist expanded
 
-**Fixed**
-- Backups not visible after uninstalling a game
-- Backup all not renaming from `.tmp` extension on completion
+#### Fixed
 - Loaded plugin count
+- Backups not visible after uninstalling a game
 - Restored savegames now use their original save timestamps
+- Backup all not renaming from `.tmp` extension on completion
+- Prefix scan aborting on first filesystem error
+- Animated background defaulting to enabled; Y position not saved correctly
+- MultiMC scanner running on non-Linux platforms
+- Official Minecraft launcher using wrong path on Windows
 
-**Changed**
-- Lua `print` is now redirected to the log file / tab
-- Core logic moved into a [separate library](lib/) linked by the GUI, CLI and daemon
+#### Changed
+- Lua `print` redirected to the log file / log tab
 
----
 
 ### GUI
+#### Added
+- Schedule backup context menu entry per game (To schedule automatic backups done by the daemon)
 
-**Added**
-- Schedule backup context menu entry per game (with enable toggle and interval slider)
-
-**Fixed**
+#### Fixed
 - Incorrect SFTP backup selection naming
 - Light mode
-- Log view not wrapping text
-- Labels reloaded from disk every frame in backup tab (now cached on refresh)
-- Search query lowercased on every frame (now only on change)
-- Open config button being cut off in settings
 
-**Changed**
-- Settings split into Appearance, Launcher Support and Blacklisted Games panels
+#### Performance
+- Backup labels no longer reloaded from disk every frame, cached on refresh
+- Search query no longer lowercased every frame, only on input change
+
+#### Changed
+- Settings split into Appearance, Launcher Support, and Blacklisted Games panels
 - Paths section removed from settings
-- Dashboard item spacing tightened for a more compact layout
+- Dashboard item spacing tightened
 
----
-
-> **Known Issues / Limitations**
-> - Original Anno editions not supported due to install path limitations (you can make a plugin for this)
-> - Grouping issues with unknown / partially supported games (has improved since #2)
+### Known Issues / Limitations
+- Original Anno editions not supported due to install path limitations (a plugin can be written for this)
+- Grouping issues with unknown / partially supported games (improved since #2)
+- Daemon has no IPC, adding a schedule via GUI requires a daemon restart to take effect
 
 ---
 
