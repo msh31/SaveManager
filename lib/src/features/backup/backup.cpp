@@ -72,22 +72,24 @@ bool Features::backup_game_files(const Game& game, std::vector<std::pair<fs::pat
     fs::path final_path = game_backup_dir / Features::construct_backup_name(game.game_name);
     fs::path zip_name = final_path.parent_path() / (final_path.filename().string() + ".tmp");
 
-    ZipArchive za(MODE_CREATE_ARCHIVE, zip_name);
     bool failed_to_add = false;
-    for(const auto& entry : files) { 
-        if(!za.add_to_archive(entry.first)) {
-            failed_to_add = true;
+    {
+        ZipArchive za(MODE_CREATE_ARCHIVE, zip_name);
+        for(const auto& entry : files) {
+            if(!za.add_to_archive(entry.first))
+                failed_to_add = true;
         }
     }
+
     if(failed_to_add) {
         fs::remove(zip_name);
         return false;
-    } else { 
-        std::error_code ec;
-        fs::rename(zip_name, final_path, ec);
-        if(ec) SPDLOG_ERROR("rename failed: {}", ec.message());
-        return true;
     }
+
+    std::error_code ec;
+    fs::rename(zip_name, final_path, ec);
+    if(ec) SPDLOG_ERROR("rename failed: {}", ec.message());
+    return true;
 }
 
 void Features::backup_to_path(fs::path source, fs::path dest) {
