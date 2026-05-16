@@ -48,33 +48,45 @@ void SaveScheduler::save() {
 }
 
 void SaveScheduler::backup_loop() {
-    do {
+    while (m_running) {
+        std::vector<ScheduleEntry> to_backup;
         {
             std::lock_guard<std::mutex> lock(schedule_mutex);
-            auto now = std::chrono::system_clock::now();
-            int64_t now_ts = std::chrono::duration_cast<std::chrono::seconds>(now.time_since_epoch()).count();
+            auto now_ts = std::chrono::duration_cast<std::chrono::seconds>(
+                std::chrono::system_clock::now().time_since_epoch()).count();
 
-            for (auto& entry : m_entries) {
-                if(now_ts - entry.last_backup_time > entry.interval_hours * 3600) {
-                    Game game;
-                    game.game_name = entry.game_name;
-                    game.appid = entry.appid;
-                    game.save_path = entry.save_path;
-                    game.type = entry.type;
-
-                    Features::backup_game(game, entry.save_path, m_config);
-                    entry.last_backup_time = now_ts;
-                }
+            for (const auto& entry : m_entries) {
+                if (entry.enabled && now_ts - entry.last_backup_time > entry.interval_hours * 3600)
+                    to_backup.push_back(entry);
             }
+        }
+
+        for (const auto& entry : to_backup) {
+            Game game;
+            game.game_name = entry.game_name;
+            game.appid = entry.appid;
+            game.save_path = entry.save_path;
+            game.type = entry.type;
+            Features::backup_game(game, entry.save_path, m_config);
+        }
+
+        if (!to_backup.empty()) {
+            auto now_ts = std::chrono::duration_cast<std::chrono::seconds>(
+                std::chrono::system_clock::now().time_since_epoch()).count();
+            std::lock_guard<std::mutex> lock(schedule_mutex);
+            for (auto& e : m_entries)
+                for (const auto& b : to_backup)
+                    if (e.appid == b.appid) e.last_backup_time = now_ts;
             save();
         }
 
+        std::unique_lock<std::mutex> lock(m_stop_mutex);
 #ifndef NDEBUG
-        std::this_thread::sleep_for(std::chrono::seconds(10));
+        m_cv.wait_for(lock, std::chrono::seconds(10), [this] { return !m_running.load(); });
 #else
-        std::this_thread::sleep_for(std::chrono::minutes(10));
+        m_cv.wait_for(lock, std::chrono::minutes(10), [this] { return !m_running.load(); });
 #endif
-    } while(m_running);
+    }
 }
 
 void SaveScheduler::run() {

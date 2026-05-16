@@ -1,4 +1,4 @@
-#pragma once 
+#pragma once
 #include <types.hpp>
 #include <config/config.hpp>
 
@@ -16,7 +16,7 @@ class SaveScheduler {
         void add_entry(ScheduleEntry entry);
         void remove_entry(std::string appid);
         void update_entry(ScheduleEntry entry);
-        
+
         void run();
         void save();
     private:
@@ -25,7 +25,8 @@ class SaveScheduler {
         void load();
         void stop() {
             m_running = false;
-            if(m_backup_thread.joinable()) {
+            m_cv.notify_one();
+            if (m_backup_thread.joinable()) {
                 m_backup_thread.join();
             }
         }
@@ -36,5 +37,6 @@ class SaveScheduler {
         std::thread m_backup_thread;
         std::atomic<bool> m_running{false};
 
-        ScheduleEntry schedule;
+        std::condition_variable m_cv;
+        std::mutex m_stop_mutex;
 };
