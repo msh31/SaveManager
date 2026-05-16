@@ -124,7 +124,8 @@ void BackupTab::render_backup_row(fs::path path, const fs::path& save_path, cons
         if(save_path.empty()) {
             Notify::show_notification("Restore", "Cannot restore: save location unknown (no metadata).", 2000);
         } else {
-            Features::restore_backup(path, save_path);
+            std::vector<std::pair<fs::path, fs::path>> conflicts; //ignored here, handled in games section 
+            Features::restore_backup(path, save_path, conflicts);
         }
     }
     ImGui::SetItemTooltip("Restore save from backup");

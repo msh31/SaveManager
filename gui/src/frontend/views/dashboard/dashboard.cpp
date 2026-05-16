@@ -1,11 +1,12 @@
 #include "dashboard.hpp"
 #include <constants.hpp>
 #include <types.hpp>
+#include "utils/utils.hpp"
+
 #include <features/backup/backup.hpp>
 
 #include "frontend/ui/notifications/notification.hpp"
 #include "frontend/ui/widgets.hpp"
-#include "utils/utils.hpp"
 #include <frontend/views/backups/backup_view.hpp>
 
 static constexpr const char* ICON_SORT   = "\xef\x83\x9c";
@@ -251,12 +252,29 @@ void DashboardTab::render_game_row(RenderContext& ctx, const std::vector<int>& g
             if(primary.type != PlatformType::MINECRAFT) ImGui::TextDisabled("SAVE FILES");
             else ImGui::TextDisabled("WORLDS");
 
+            //todo cache this
+            bool has_conflicts = false;
+            try {
+                for(const auto& f : fs::directory_iterator(primary.save_path)) {
+                    // SPDLOG_INFO("{}", primary.save_path.string());
+                    // SPDLOG_INFO("{}", f.path().string());
+                    if(f.path().string().find(".savemgr-conflict-") != std::string::npos) {
+                        has_conflicts = true;
+                        break;
+                    }
+                }
+            } catch(std::exception& ex) {
+                SPDLOG_ERROR("conflict iteration error: {}", ex.what());
+            }
+
             fs::path undo_dir = paths::backup_dir() / sanitize_filename(primary.game_name) / "undo.zip";
-            bool yes = false;
-            if(fs::exists(undo_dir)){
-                ImGui::SameLine(ImGui::GetContentRegionMax().x - 290.f);
-                yes = true;
-            } else ImGui::SameLine(ImGui::GetContentRegionMax().x - 110.f);
+            bool has_undo = false;
+            if(fs::exists(undo_dir)) has_undo = true;
+
+            float total = 110.f; // Backup All
+            if(has_conflicts) total += ImGui::CalcTextSize("Resolve Conflict(s)__").x + 4.f;
+            if(has_undo) total += ImGui::CalcTextSize("Undo last restore___").x + 4.f;
+            ImGui::SameLine(ImGui::GetContentRegionMax().x - total);
 
             ImGui::PushStyleColor(ImGuiCol_Button, ImColor(198, 97, 63).Value);
             ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImColor(198, 97, 63).Value);
@@ -272,9 +290,22 @@ void DashboardTab::render_game_row(RenderContext& ctx, const std::vector<int>& g
             }
             ImGui::PopStyleColor(2);
             ImGui::SameLine();
-            if(yes) {
+            if(has_conflicts) {
+                if(ImGui::Button("Resolve Conflict(s)")) {
+                    pending_conflicts.clear();
+                    for(const auto& f : fs::directory_iterator(primary.save_path)) {
+                        auto full = f.path().string();
+                        auto pos = full.find(".savemgr-conflict-");
+                        fs::path original = full.substr(0, pos);
+                        pending_conflicts.push_back({original, f.path()});
+                    }
+                    open_conflict_modal = true;
+                }
+            }
+            ImGui::SameLine();
+            if(has_undo) {
                 if(ImGui::Button("Undo last restore")) {
-                    Features::restore_backup(undo_dir, primary.save_path);
+                    Features::restore_backup(undo_dir, primary.save_path, pending_conflicts);
                     fs::remove(undo_dir);
                 }
             }
@@ -401,7 +432,10 @@ void DashboardTab::render_backup_row(RenderContext& ctx, const fs::path& backup,
         if(game.save_path.empty()) {
             Notify::show_notification("Restore", "Cannot restore: save location unknown.", 2000);
         } else {
-            Features::restore_backup(backup, game.save_path);
+            Features::restore_backup(backup, game.save_path, pending_conflicts);
+            if(!pending_conflicts.empty()) {
+                open_conflict_modal = true;
+            } 
         }
     }
     ImGui::SetItemTooltip("Restore save from backup");
@@ -446,6 +480,11 @@ void DashboardTab::render_modals(RenderContext& ctx) {
         ImGui::OpenPopup("Add schedule");
     }
 
+    if(open_conflict_modal) {
+        open_conflict_modal = false;
+        ImGui::OpenPopup("Resolve conflict(s)");
+    }
+
     if (ImGui::BeginPopupModal("Rename Backup", nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
         ImGui::Text("%s", pending_rename_backup.filename().string().c_str());
         ImGui::InputText("Label", &rename_input);
@@ -483,6 +522,45 @@ void DashboardTab::render_modals(RenderContext& ctx) {
             ctx.scheduler.save();
         }
         ImGui::SameLine();
+        if (ImGui::Button("Done")) {
+            ImGui::CloseCurrentPopup();
+        }
+        ImGui::EndPopup();
+    }
+
+    ImGui::SetNextWindowSize(ImVec2(500, 0), ImGuiCond_Always);
+    if(ImGui::BeginPopupModal("Resolve conflict(s)", nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
+        std::vector<int> to_remove;
+
+        for(size_t i {}; i < pending_conflicts.size(); i++) {
+            ImGui::Text("%s", pending_conflicts[i].second.filename().string().c_str());
+
+            ImGui::PushID(i);
+            if (ImGui::Button("Keep")) {
+                fs::rename(pending_conflicts[i].second, pending_conflicts[i].first);
+                to_remove.push_back(i);
+            }
+            ImGui::PopID();
+            ImGui::SetItemTooltip("Overwrite the newer save with this restored from backup file");
+            ImGui::SameLine();
+            ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.8f, 0.2f, 0.2f, 1.0f));
+            ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.9f, 0.3f, 0.3f, 1.0f));
+            ImGui::PushID(i);
+            if (ImGui::Button("Delete")) {
+                fs::remove(pending_conflicts[i].second);
+                to_remove.push_back(i);
+            }
+            ImGui::PopID();
+            ImGui::PopStyleColor(2);
+        }
+
+        for(int i = to_remove.size() - 1; i >= 0; i--) {
+            pending_conflicts.erase(pending_conflicts.begin() + to_remove[i]);
+        }
+
+        if(pending_conflicts.empty()) {
+            ImGui::CloseCurrentPopup();
+        }
         if (ImGui::Button("Cancel")) {
             ImGui::CloseCurrentPopup();
         }

@@ -60,4 +60,7 @@ private:
     void render_modals(RenderContext&);
 
     bool focus_search = false;
+
+    std::vector<std::pair<fs::path, fs::path>> pending_conflicts;
+    bool open_conflict_modal = false;
 };
