@@ -85,13 +85,13 @@ void SanAndreas::find_block_offsets(size_t start_offset) {
 }
 
 bool SanAndreas::open(fs::path path) {
-    std::ifstream in(path, std::ios::binary);
-    if(!in) {
+    file.open(path, std::ios::binary);
+    if(!file.is_open()) {
         SPDLOG_ERROR("Failed to open savegame!");
         return false;
     }
 
-    data = std::vector<uint8_t>(std::istreambuf_iterator<char>(in), {});
+    data = std::vector<uint8_t>(std::istreambuf_iterator<char>(file), {});
 
     find_block_offsets();
     if(validate_file()) {
@@ -110,6 +110,13 @@ bool SanAndreas::open(fs::path path) {
 
     return true;
 }
+
+void SanAndreas::close() {
+    if(file.is_open()) {
+        file.close();
+    }
+}
+
 bool SanAndreas::save(fs::path path) {
     serialize();
     std::uint32_t checksum = calculate_checksum();

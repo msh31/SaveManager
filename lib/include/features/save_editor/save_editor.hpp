@@ -6,6 +6,7 @@ namespace fs = std::filesystem;
 struct SanAndreas {
     bool open(fs::path path);
     bool save(fs::path path);
+    void close();
     //block 0
     std::string save_name = {};
     std::string save_version = {};
@@ -35,6 +36,8 @@ struct SanAndreas {
     std::vector<bool> usj_found {};
     
 private:
+    std::ifstream file;
+
     std::uint32_t calculate_checksum();
     bool validate_checksum();
     bool validate_file();

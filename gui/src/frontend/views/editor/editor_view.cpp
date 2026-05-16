@@ -2,7 +2,6 @@
 #include "frontend/ui/notifications/notification.hpp"
 #include <nfd.h>
 
-
 void EditorTab::render(const Fonts& fonts) {
     ImGui::BeginChild("##sa_editor", ImVec2(0, ImGui::GetContentRegionAvail().y), false,
                       ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse| ImGuiWindowFlags_NoBackground);
@@ -34,12 +33,19 @@ void EditorTab::render(const Fonts& fonts) {
 
         NFD_Quit();
     }
-    ImGui::SameLine();
-    if(ImGui::Button("Save")) {
-        san_andreas.save(file_path);
-        Notify::show_notification("Save Editor", "Savegame changed saved succesfully!", 3000);
+    if(!file_path.empty()) {
+        ImGui::SameLine();
+        if(ImGui::Button("Save")) {
+            san_andreas.save(file_path);
+            Notify::show_notification("Save Editor", "Savegame changed saved succesfully!", 3000);
+        }
+        ImGui::SameLine();
+        if(ImGui::Button("Close")) {
+            san_andreas.close();
+            san_andreas = {};
+            file_path = {};
+        }
     }
-
 
     if(!file_path.empty()) {
         float window_width = ImGui::GetWindowSize().x;
