@@ -27,6 +27,10 @@ void AboutTab::render(const Fonts& fonts) {
     ImGui::PopFont();
 
     ImGui::Text("Version");    ImGui::SameLine(120.0f); ImGui::Text(APP_VERSION);
+    ImGui::Text("Build date");    ImGui::SameLine(120.0f); ImGui::Text("%s", BUILD_DATE);
+    ImGui::Text("Commit hash");    ImGui::SameLine(120.0f); 
+    ImGui::TextLinkOpenURL(std::format("{}", GIT_COMMIT).c_str(), std::format("https://github.com/msh31/SaveManager/commit/{}", GIT_COMMIT).c_str());
+
     ImGui::Text("Author");     ImGui::SameLine(120.0f); ImGui::Text(APP_AUTHOR);
     ImGui::Text("License");    ImGui::SameLine(120.0f); ImGui::Text("GPLv3");
     ImGui::Text("Source");     ImGui::SameLine(120.0f);

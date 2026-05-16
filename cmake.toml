@@ -55,9 +55,18 @@ sources = ["gui/src/**.cpp", "gui/vendor/imgui/imgui_stdlib.cpp"]
 include-directories = ["gui/src", "gui/vendor/imgui"]
 link-libraries = ["savemanager-core", "glfw", "imgui::imgui", "glad::glad", "nfd::nfd"]
 compile-features = ["cxx_std_23"]
+compile-definitions = ["GIT_COMMIT=\"${GIT_COMMIT}\"", "BUILD_DATE=\"${BUILD_DATE}\""]
 precompile-headers = ["gui/src/pch.hpp"]
 cmake-before = """
 add_subdirectory(gui/vendor/nativefiledialog-extended)
+
+execute_process(
+    COMMAND git rev-parse HEAD
+    OUTPUT_VARIABLE GIT_COMMIT
+    OUTPUT_STRIP_TRAILING_WHITESPACE
+    ERROR_QUIET
+)
+string(TIMESTAMP BUILD_DATE "%Y-%m-%d %H:%M UTC")
 """
 cmake-after = """
 find_path(IMGUI_INCLUDE_DIR imgui.h REQUIRED)

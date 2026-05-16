@@ -129,6 +129,14 @@ target_include_directories(savemanager-core PUBLIC lib/include)
 set(CMKR_TARGET savemanager)
 add_subdirectory(gui/vendor/nativefiledialog-extended)
 
+execute_process(
+    COMMAND git rev-parse HEAD
+    OUTPUT_VARIABLE GIT_COMMIT
+    OUTPUT_STRIP_TRAILING_WHITESPACE
+    ERROR_QUIET
+)
+string(TIMESTAMP BUILD_DATE "%Y-%m-%d %H:%M UTC")
+
 set(savemanager_SOURCES
 	cmake.toml
 	"gui/src/app/app.cpp"
@@ -150,6 +158,11 @@ add_executable(savemanager)
 
 target_sources(savemanager PRIVATE ${savemanager_SOURCES})
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${savemanager_SOURCES})
+
+target_compile_definitions(savemanager PRIVATE
+	"GIT_COMMIT=\"${GIT_COMMIT}\""
+	"BUILD_DATE=\"${BUILD_DATE}\""
+)
 
 target_compile_features(savemanager PRIVATE
 	cxx_std_23
