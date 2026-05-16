@@ -38,24 +38,17 @@ void Detection::add_game(std::expected<std::vector<Game>, DetectionError> result
     }
 }
 
-//try catch here is band-aid fix
-//an exception escapes somewhere and causes a crash
-//more investigation needed
 void scan_prefix_dir(const fs::path& compatdata, Detection::DetectionResult& result, const Config& config, const Detectors& detectors) {
-    try {
-        for (const auto& entry : fs::directory_iterator(compatdata)) {
+    for (const auto& entry : fs::directory_iterator(compatdata)) {
+        try {
             fs::path prefix = entry.path();
-            if(!fs::exists(prefix)) {
-                SPDLOG_WARN("Prefix not found!");
-                continue;
-            }
+            if(!fs::exists(prefix)) continue;
 
             fs::path drive_c = fs::exists(prefix / "pfx") ? prefix / "pfx/drive_c" : prefix / "drive_c";
             fs::path users_dir = drive_c / "users";
             if (config.settings.ubi_enabled) {
                 Detection::add_game(detectors.ubisoft_detect.find_saves(drive_c / "Program Files (x86)" / "Ubisoft" / "Ubisoft Game Launcher" / "savegames"), "ubi", result);
             }
-            // Detection::add_game(detectors.custom_detect.find_saves(drive_c), "custom", result); //might be too broad
 
             if (fs::exists(users_dir)) {
                 for (const auto& user : fs::directory_iterator(users_dir)) {
@@ -76,10 +69,10 @@ void scan_prefix_dir(const fs::path& compatdata, Detection::DetectionResult& res
                     }
                 }
             }
+        } catch(const fs::filesystem_error& fse) {
+            SPDLOG_WARN("scan_prefix_dir: skipping {}: {}", entry.path().string(), fse.what());
         }
-    } catch(const std::filesystem::filesystem_error& fse) {
-        SPDLOG_ERROR("scan_prefix_dir: {}", fse.what());
-    };
+    }
 }
 
 void Detection::find_saves(Config& config, DetectionResult& d_result) {
