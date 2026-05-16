@@ -44,6 +44,8 @@ The SaveManager daemon is a new background process that handles scheduled backup
 ### GUI
 #### Added
 - Schedule backup context menu entry per game (To schedule automatic backups done by the daemon)
+- Resolve Conflicts button to keep or delete conflicts (existing save is newer than save being restored)
+- Build date & commit hash to about tab
 
 #### Fixed
 - Incorrect SFTP backup selection naming
