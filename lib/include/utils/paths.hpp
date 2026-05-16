@@ -2,7 +2,7 @@
 namespace fs = std::filesystem;
 
 #if defined(_WIN32)
-#include <shellapi.h>
+#include <windows.h>
 #include <wchar.h>
 #include <KnownFolders.h>
 #include <shlobj.h>

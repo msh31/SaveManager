@@ -10,6 +10,9 @@
 #include <spawn.h>
 #include <sys/wait.h>
 #endif
+#ifdef _WIN32
+#include <shellapi.h>
+#endif
 
 
 struct ImFont;
