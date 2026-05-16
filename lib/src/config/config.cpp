@@ -97,7 +97,7 @@ void Config::save() {
     data["remote_path"] = sftp.remote_path;
 
     data["x"] = win_props.x;
-    data["y"] = win_props.x;
+    data["y"] = win_props.y;
     data["width"] = win_props.width;
     data["height"] = win_props.height;
 
@@ -125,7 +125,7 @@ void Config::load() {
         settings.unreal_enabled = data.value("unreal_enabled", true);
 
         settings.dark_mode = data.value("dark_mode", true);
-        settings.animated_background = data.value("animated_background", true);
+        settings.animated_background = data.value("animated_background", false);
 
         if (data.contains("watch_paths")) {
             settings.watch_paths = data["watch_paths"]
