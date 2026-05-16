@@ -6,6 +6,19 @@
 
 using json = nlohmann::json;
 
+// file_clock::to_sys / from_sys are not available on MSVC or Apple Clang
+static std::chrono::system_clock::time_point file_time_to_sys(fs::file_time_type ft) {
+    return std::chrono::system_clock::now() +
+           std::chrono::duration_cast<std::chrono::system_clock::duration>(
+               ft - fs::file_time_type::clock::now());
+}
+
+static fs::file_time_type sys_to_file_time(std::chrono::system_clock::time_point tp) {
+    return fs::file_time_type::clock::now() +
+           std::chrono::duration_cast<fs::file_time_type::clock::duration>(
+               tp - std::chrono::system_clock::now());
+}
+
 bool ZipArchive::add_to_archive(const fs::path& file) {
     int file_count = 0;
     std::vector<std::string> failed_files;
@@ -46,7 +59,7 @@ bool ZipArchive::add_to_archive(const fs::path& file) {
 
             if (zip_file_add(archive, file_path.string().c_str(), source, ZIP_FL_OVERWRITE) < 0) {
                 SPDLOG_ERROR("Failed to add file: {}", zip_strerror(archive));
-                failed_files.push_back(entry.path().filename());
+                failed_files.push_back(entry.path().filename().string());
                 zip_source_free(source);
             }
             file_count++;
@@ -118,9 +131,7 @@ bool ZipArchive::extract_archive(const fs::path& save_path) {
             if(fs::exists(output_path)) {
                 SPDLOG_WARN("{} already exists in your game directory!", output_path.filename().string());
 
-                auto ftime = std::chrono::file_clock::to_sys(fs::last_write_time(output_path));
-                auto ctime = std::chrono::time_point_cast<std::chrono::system_clock::duration>(ftime);
-                auto save_time = std::chrono::system_clock::to_time_t(ctime);
+                auto save_time = std::chrono::system_clock::to_time_t(file_time_to_sys(fs::last_write_time(output_path)));
 
                 if (save_time > fileInfo.mtime) {
                     SPDLOG_WARN("{} is newer than {}!", output_path.filename().string(), fileInfo.name);
@@ -155,9 +166,7 @@ bool ZipArchive::extract_archive(const fs::path& save_path) {
             if(manifest_json.contains(fileInfo.name)) {
                 auto& entry = manifest_json[fileInfo.name];
                 if(entry.contains("mtime")) {
-                    auto mtime = fs::file_time_type::clock::from_sys(
-                            std::chrono::system_clock::from_time_t(entry["mtime"].get<time_t>())
-                            );
+                    auto mtime = sys_to_file_time(std::chrono::system_clock::from_time_t(entry["mtime"].get<time_t>()));
                     fs::last_write_time(output_path, mtime);
                 }
 
@@ -195,9 +204,7 @@ std::string ZipArchive::build_manifest(std::vector<std::pair<fs::path, fs::path>
 
     for(const auto& entry : paths) {
         auto hash = hash_file(entry.first);
-        auto ftime = std::chrono::file_clock::to_sys(fs::last_write_time(entry.first));
-        auto ctime = std::chrono::time_point_cast<std::chrono::system_clock::duration>(ftime);
-        auto save_time = std::chrono::system_clock::to_time_t(ctime);
+        auto save_time = std::chrono::system_clock::to_time_t(file_time_to_sys(fs::last_write_time(entry.first)));
 
         if(hash.empty()) {
             failed_files.emplace_back(entry.second);
