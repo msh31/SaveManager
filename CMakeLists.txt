@@ -159,11 +159,6 @@ add_executable(savemanager)
 target_sources(savemanager PRIVATE ${savemanager_SOURCES})
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${savemanager_SOURCES})
 
-target_compile_definitions(savemanager PRIVATE
-	"GIT_COMMIT=\"${GIT_COMMIT}\""
-	"BUILD_DATE=\"${BUILD_DATE}\""
-)
-
 target_compile_features(savemanager PRIVATE
 	cxx_std_23
 )
@@ -203,6 +198,13 @@ target_sources(savemanager PRIVATE
     "${IMGUI_ROOT_DIR}/res/bindings/imgui_impl_glfw.cpp"
     "${IMGUI_ROOT_DIR}/res/bindings/imgui_impl_opengl3.cpp"
 )
+
+configure_file(
+    ${CMAKE_CURRENT_SOURCE_DIR}/gui/src/version.cpp.in
+    ${CMAKE_CURRENT_BINARY_DIR}/version.cpp
+    @ONLY
+)
+target_sources(savemanager PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/version.cpp)
 
 # Target: savemgr
 set(savemgr_SOURCES

@@ -1,0 +1,2 @@
+const char* build_date = "@BUILD_DATE@";
+const char* git_commit = "@GIT_COMMIT@";

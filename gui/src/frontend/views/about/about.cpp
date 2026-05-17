@@ -1,5 +1,6 @@
 #include "about.hpp"
 #include <constants.hpp>
+#include <version.hpp>
 
 void AboutTab::render(const Fonts& fonts) {
     ImGui::NewLine();
@@ -27,9 +28,9 @@ void AboutTab::render(const Fonts& fonts) {
     ImGui::PopFont();
 
     ImGui::Text("Version");    ImGui::SameLine(120.0f); ImGui::Text(APP_VERSION);
-    ImGui::Text("Build date");    ImGui::SameLine(120.0f); ImGui::Text("%s", BUILD_DATE);
+    ImGui::Text("Build date");    ImGui::SameLine(120.0f); ImGui::Text("%s", build_date);
     ImGui::Text("Commit hash");    ImGui::SameLine(120.0f); 
-    ImGui::TextLinkOpenURL(std::format("{}", GIT_COMMIT).c_str(), std::format("https://github.com/msh31/SaveManager/commit/{}", GIT_COMMIT).c_str());
+    ImGui::TextLinkOpenURL(git_commit, std::format("https://github.com/msh31/SaveManager/commit/{}", git_commit).c_str());
 
     ImGui::Text("Author");     ImGui::SameLine(120.0f); ImGui::Text(APP_AUTHOR);
     ImGui::Text("License");    ImGui::SameLine(120.0f); ImGui::Text("GPLv3");

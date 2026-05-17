@@ -55,7 +55,6 @@ sources = ["gui/src/**.cpp", "gui/vendor/imgui/imgui_stdlib.cpp"]
 include-directories = ["gui/src", "gui/vendor/imgui"]
 link-libraries = ["savemanager-core", "glfw", "imgui::imgui", "glad::glad", "nfd::nfd"]
 compile-features = ["cxx_std_23"]
-compile-definitions = ["GIT_COMMIT=\"${GIT_COMMIT}\"", "BUILD_DATE=\"${BUILD_DATE}\""]
 precompile-headers = ["gui/src/pch.hpp"]
 cmake-before = """
 add_subdirectory(gui/vendor/nativefiledialog-extended)
@@ -76,6 +75,13 @@ target_sources(savemanager PRIVATE
     "${IMGUI_ROOT_DIR}/res/bindings/imgui_impl_glfw.cpp"
     "${IMGUI_ROOT_DIR}/res/bindings/imgui_impl_opengl3.cpp"
 )
+
+configure_file(
+    ${CMAKE_CURRENT_SOURCE_DIR}/gui/src/version.cpp.in
+    ${CMAKE_CURRENT_BINARY_DIR}/version.cpp
+    @ONLY
+)
+target_sources(savemanager PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/version.cpp)
 """
 
 [target.savemanager.windows]
