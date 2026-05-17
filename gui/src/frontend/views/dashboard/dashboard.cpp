@@ -184,7 +184,7 @@ void DashboardTab::render_toolbar(RenderContext& ctx) {
     }
     ImGui::SetItemTooltip("Re-runs the detection logic to find new saves");
     ImGui::SameLine();
-    if(!is_backing_up) {
+    if(!is_backing_up && !is_refreshing) {
         if(ImGui::Button("Mass Backup")) {
             backup_future = std::async(std::launch::async, [&result = ctx.result, &config = ctx.config]() {
                 std::vector<Game> snapshot;
@@ -198,7 +198,7 @@ void DashboardTab::render_toolbar(RenderContext& ctx) {
         ImGui::SetItemTooltip("Creates a backup of all games found!");
     } else {
         char spin_char = Widgets::spinner[(spinner_frame / 10) % 4];
-        std::string loading_text = std::string("Creating backups...") + spin_char;
+        std::string loading_text = std::string("Loading..") + spin_char;
         ImGui::Text("%s", loading_text.c_str());
     }
 
