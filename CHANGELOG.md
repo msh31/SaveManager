@@ -29,6 +29,7 @@ The SaveManager daemon is a new background process that handles scheduled backup
 
 #### Fixed
 - Loaded plugin count
+- Mass backup waits until refreshes are complete
 - Backups not visible after uninstalling a game
 - Restored savegames now use their original save timestamps
 - Backup all not renaming from `.tmp` extension on completion
