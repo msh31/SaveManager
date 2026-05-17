@@ -273,6 +273,7 @@ void DashboardTab::render_game_row(RenderContext& ctx, const std::vector<int>& g
             if(fs::exists(undo_dir)) has_undo = true;
 
             float total = 110.f; // Backup All
+            total += ImGui::CalcTextSize("Create Schedule__").x + 4.f;
             if(has_conflicts) total += ImGui::CalcTextSize("Resolve Conflict(s)__").x + 4.f;
             if(has_undo) total += ImGui::CalcTextSize("Undo last restore___").x + 4.f;
             ImGui::SameLine(ImGui::GetContentRegionMax().x - total);
@@ -290,6 +291,10 @@ void DashboardTab::render_game_row(RenderContext& ctx, const std::vector<int>& g
                 });
             }
             ImGui::PopStyleColor(2);
+            ImGui::SameLine();
+            if(ImGui::Button("Create Schedule")) {
+                open_schedule_modal = true;
+            }
             ImGui::SameLine();
             if(has_conflicts) {
                 if(ImGui::Button("Resolve Conflict(s)")) {
