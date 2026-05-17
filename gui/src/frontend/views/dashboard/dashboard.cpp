@@ -24,6 +24,7 @@ void DashboardTab::on_result_changed(RenderContext& ctx) {
         for (const auto& game : ctx.games) {
             GameCache cache;
             if (!fs::is_directory(game.save_path)) continue;
+                if(game.save_path.string().contains(".savemgr-conflict-")) continue; 
 
             if(game.type != PlatformType::MINECRAFT) {
                 for (const auto& file : fs::recursive_directory_iterator(game.save_path, fs::directory_options::skip_permission_denied)) {
