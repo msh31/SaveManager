@@ -16,7 +16,6 @@ struct DashboardTab {
     Game pending_rename_game = {};
 
     bool open_schedule_modal = false;
-    int pending_schedule_entry_idx = -1;
 
     std::future<void> refresh_future;
     std::future<void> backup_future;
@@ -64,4 +63,10 @@ private:
 
     std::vector<std::pair<fs::path, fs::path>> pending_conflicts;
     bool open_conflict_modal = false;
+
+    Game pending_schedule_game;
+    std::vector<fs::path> scheduled_files;
+    std::unordered_set<fs::path> scheduled_files_selected;
+    bool schedule_enabled = false;
+    int schedule_interval_hours = 1;
 };

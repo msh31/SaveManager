@@ -294,7 +294,14 @@ void DashboardTab::render_game_row(RenderContext& ctx, const std::vector<int>& g
 #if defined(__linux__)
             ImGui::SameLine();
             if(ImGui::Button("Create Schedule")) {
+                scheduled_files.clear();
+                scheduled_files_selected.clear();
+
+                pending_schedule_game = primary;
                 open_schedule_modal = true;
+                for(const auto& entry : game_cache[cache_key(primary)].save_files) {
+                    scheduled_files.push_back(entry);
+                }
             }
 #endif
             ImGui::SameLine();
@@ -360,7 +367,7 @@ void DashboardTab::render_game_row(RenderContext& ctx, const std::vector<int>& g
                 const Game& g = ctx.games[entry];
                 std::string label = std::format("{}##entry_{}", g.save_path.filename().string(), entry);
                 if(ImGui::MenuItem(label.c_str())) {
-                    pending_schedule_entry_idx = entry;
+                    pending_schedule_game = g;
                     open_schedule_modal = true;
                     ImGui::OpenPopup("Add schedule");
                 }
@@ -511,24 +518,39 @@ void DashboardTab::render_modals(RenderContext& ctx) {
     }
 
     if(ImGui::BeginPopupModal("Add schedule", nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
-        static struct { bool enabled = false; int interval_hours = 24; } schedule_modal;
+        ImGui::Checkbox("Enabled", &schedule_enabled); 
+        ImGui::SliderInt("Interval (hours)", &schedule_interval_hours, 1, 100); 
 
-        ImGui::Checkbox("Enabled", &schedule_modal.enabled); 
-        ImGui::SliderInt("Interval (hours)", &schedule_modal.interval_hours, 1, 100); 
+        ImGui::Separator();
 
-        ScheduleEntry sentry;
-        if (pending_schedule_entry_idx >= 0) {
-            const Game& g = ctx.games[pending_schedule_entry_idx];
-            sentry.appid = g.appid;
-            sentry.game_name = g.game_name;
-            sentry.save_path = g.save_path;
-            sentry.enabled = schedule_modal.enabled;
-            sentry.interval_hours = schedule_modal.interval_hours;
-            sentry.last_backup_time = -1;
+        ImGui::Text("Found backups:");
+        for (const auto& file : scheduled_files) {
+            bool is_included = false;
+            if(scheduled_files_selected.contains(file)) {
+                is_included = true;
+            }
+            ImGui::Checkbox(("##" + file.string()).c_str(), &is_included);
+            ImGui::SameLine();
+            ImGui::Text("%s", file.filename().string().c_str());
+
+            if(is_included) scheduled_files_selected.insert(file);
+            else scheduled_files_selected.erase(file);
         }
 
+        ScheduleEntry sentry;
+        const Game& g = pending_schedule_game;
+
+        sentry.appid = g.appid;
+        sentry.game_name = g.game_name;
+        sentry.save_path = g.save_path;
+        sentry.enabled = schedule_enabled;
+        sentry.interval_hours = schedule_interval_hours;
+        sentry.last_backup_time = -1;
+
         if (ImGui::Button("Add")) {
+            sentry.included_saves = std::vector<fs::path>(scheduled_files_selected.begin(), scheduled_files_selected.end());
             ctx.scheduler.add_entry(sentry);
+            ImGui::CloseCurrentPopup();
         }
         ImGui::SameLine();
         if (ImGui::Button("Done")) {
