@@ -291,10 +291,12 @@ void DashboardTab::render_game_row(RenderContext& ctx, const std::vector<int>& g
                 });
             }
             ImGui::PopStyleColor(2);
+#if defined(__linux__)
             ImGui::SameLine();
             if(ImGui::Button("Create Schedule")) {
                 open_schedule_modal = true;
             }
+#endif
             ImGui::SameLine();
             if(has_conflicts) {
                 if(ImGui::Button("Resolve Conflict(s)")) {
@@ -512,7 +514,7 @@ void DashboardTab::render_modals(RenderContext& ctx) {
         static struct { bool enabled = false; int interval_hours = 24; } schedule_modal;
 
         ImGui::Checkbox("Enabled", &schedule_modal.enabled); 
-        ImGui::SliderInt("Interval", &schedule_modal.interval_hours, 1, 100); 
+        ImGui::SliderInt("Interval (hours)", &schedule_modal.interval_hours, 1, 100); 
 
         ScheduleEntry sentry;
         if (pending_schedule_entry_idx >= 0) {
