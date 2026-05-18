@@ -52,7 +52,7 @@ jobs:
           CXX: g++-14
         run: |
           cmake --preset conan-release
-          cmake --build --preset conan-release -j$(nproc)
+          cmake --build --preset conan-release --target savemanager -j$(nproc)
 
   build-windows:
     runs-on: windows-latest
@@ -82,7 +82,7 @@ jobs:
         run: |
           call "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvars64.bat"
           cmake --preset conan-release
-          cmake --build --preset conan-release
+          cmake --build --preset conan-release --target savemanager
 
   build-macos-arm64:
     runs-on: macos-26
@@ -113,4 +113,4 @@ jobs:
       - name: Build
         run: |
           cmake --preset conan-release
-          cmake --build --preset conan-release -j$(nproc)
+          cmake --build --preset conan-release --target savemanager -j$(nproc)
