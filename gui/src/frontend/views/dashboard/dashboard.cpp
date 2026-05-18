@@ -527,7 +527,6 @@ void DashboardTab::render_modals(RenderContext& ctx) {
 
         if (ImGui::Button("Add")) {
             ctx.scheduler.add_entry(sentry);
-            ctx.scheduler.save();
         }
         ImGui::SameLine();
         if (ImGui::Button("Done")) {

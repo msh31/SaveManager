@@ -99,6 +99,7 @@ void SaveScheduler::add_entry(ScheduleEntry entry) {
         std::lock_guard<std::mutex> lock(schedule_mutex);
         m_entries.emplace_back(entry);
         SPDLOG_INFO("added new schedule entry for: {}", entry.game_name);
+        save();
     }
 }
 
