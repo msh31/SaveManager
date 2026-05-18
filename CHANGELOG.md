@@ -1,29 +1,12 @@
 # Changelog
 
 ## [1.7.0] - 2026-05-??
-*Core logic moved into a separate library linked by the GUI, daemon, and future CLI*
+*Core logic moved into a separate library linked by the GUI*
  
-### Daemon (new)
-The SaveManager daemon is a new background process that handles scheduled backups, retention, health scans and real-time file watching.
-
-> [!NOTE]  
-> This is an experimental feature and only works on linux for the time being
-> You can install this service from within the GUI's settings
-
-- File watcher that triggers backups when save activity settles (during play or idle)
-- Scheduled backups: configurable per-game interval (in hours), persistent across restarts
-- Backup retention to automatically delete untagged backups periodically with presets 
-- Logs create / delete / modify events separately
-
 ### Core
 #### Added
-- Save scheduler: per-game scheduled backups with persistent `schedule.json`
-- Conflict-safe restores: existing files newer than the backup are preserved as `.savemgr-conflict-<timestamp>`
+- Conflict-safe restores: newer saves preserved and resolvable via the Resolve Conflicts dialog
 - Undo last restore
-- Backup retention with flexible rules (`keep-last`, `keep-hourly`, `keep-daily`, `keep-weekly`, `keep-monthly`, `keep-yearly`)
-    - Retention presets 
-    - Pinned snapshots: starred backups excluded from automatic pruning
-- Zero-byte and shrunk-save quarantine
 - Each backup ZIP now includes a manifest with SHA-256 checksums and original timestamps
 - Extension blocklist expanded
 
@@ -44,7 +27,6 @@ The SaveManager daemon is a new background process that handles scheduled backup
 
 ### GUI
 #### Added
-- Schedule backup context menu entry per game (To schedule automatic backups done by the daemon)
 - Resolve Conflicts button to keep or delete conflicts (existing save is newer than save being restored)
 - Build date & commit hash to about tab
 
@@ -64,7 +46,6 @@ The SaveManager daemon is a new background process that handles scheduled backup
 ### Known Issues / Limitations
 - Original Anno editions not supported due to install path limitations (a plugin can be written for this)
 - Grouping issues with unknown / partially supported games (improved since #2)
-- Daemon has no IPC, adding a schedule via GUI requires a daemon restart to take effect
 
 ---
 

@@ -20,8 +20,8 @@ A local and cross-platform save game manager with a built-in save-editor, sftp t
 - **Experimental Save Editor** (only supports GTA San Andreas (classic PC))
 - **Create and restore backups** of (individual) save files with display labels
 - **Automatic detection** that finds your savegames (Steam, Heroic, Lutris, native and Wine!)
-- **Scheduled backups**: Per-game schdedule to create a backup every X hours (Needs the optional daemon installed (linux only))
-- **Smart backup deletion**: configurable retention policy for old backups (Also needs the daemon)
+<!-- - **Scheduled backups**: Per-game schdedule to create a backup every X hours (Needs the optional daemon installed (linux only)) -->
+<!-- - **Smart backup deletion**: configurable retention policy for old backups (Also needs the daemon) -->
 
 ---
 
@@ -69,6 +69,8 @@ See [CHANGELOG.md](CHANGELOG.md) for a complete history of all changes.
 
 ### Planned Features
 
+- **Scheduled backups**: Per-game schdedule to create a backup every X hours (Needs the optional daemon installed (linux only))
+- **Smart backup deletion**: configurable retention policy for old backups (Also needs the daemon)
 - **Save Editor**: expanding to Rockstar titles (RDR2, GTAV etc..)
 - **PSP ↔ PPSSPP**: convert and transfer saves between physical PSP and emulator
 - **Broader store support**: Crossover on MacOS, EA, Epic, Xbox App / MS Store etc..
