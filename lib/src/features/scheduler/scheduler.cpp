@@ -21,6 +21,9 @@ void SaveScheduler::load() {
                 entry.game_name = item.value("game_name", "");
                 entry.appid = item.value("appid", "");
                 entry.save_path = item.value("save_path", "");
+                for (const auto& s : item.value("included_saves", std::vector<std::string>{})) {
+                    entry.included_saves.push_back(fs::path(s));
+                }
                 entry.type = item.value("type", PlatformType::GENERIC);
                 entry.interval_hours = item.value("interval_hours", 2);
                 entry.last_backup_time = item.value("last_backup_time", 0);
@@ -38,6 +41,11 @@ void SaveScheduler::save() {
         obj["game_name"] = entry.game_name;
         obj["appid"] = entry.appid;
         obj["save_path"] = entry.save_path;
+        json paths_arr = json::array();
+        for (const auto& p : entry.included_saves) {
+            paths_arr.push_back(p.string());
+        }
+        obj["included_saves"] = paths_arr;
         obj["type"] = entry.type;
         obj["interval_hours"] = entry.interval_hours;
         obj["last_backup_time"] = entry.last_backup_time;
@@ -65,9 +73,16 @@ void SaveScheduler::backup_loop() {
             Game game;
             game.game_name = entry.game_name;
             game.appid = entry.appid;
-            game.save_path = entry.save_path;
             game.type = entry.type;
-            Features::backup_game(game, entry.save_path, m_config);
+            if(entry.included_saves.empty()) {
+                game.save_path = entry.save_path;
+                Features::backup_game(game, entry.save_path, m_config);
+            } else {
+                for (const auto& save : entry.included_saves) {
+                    game.save_path = save.string();
+                    Features::backup_game(game, save, m_config);
+                }
+            }
         }
 
         if (!to_backup.empty()) {
