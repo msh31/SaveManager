@@ -42,11 +42,12 @@ struct Game {
 
 struct ScheduleEntry {
     bool enabled;
-    std::string appid;
-    std::string game_name;
-    std::filesystem::path save_path;
     int interval_hours;
     int64_t last_backup_time;
     PlatformType type = PlatformType::GENERIC;
+    std::string appid;
+    std::string game_name;
+    std::filesystem::path save_path;
+    std::vector<std::filesystem::path> included_saves;
 };
 
