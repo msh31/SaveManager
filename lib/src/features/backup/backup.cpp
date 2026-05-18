@@ -13,7 +13,7 @@ void Features::backup_game(const Game& game, const fs::path& file, Config& confi
     fs::path game_backup_dir = paths::backup_dir() / sanitize_filename(game.game_name);
 
     auto ext = file.extension().string();
-    if(game.type == PlatformType::MINECRAFT || game.type == PlatformType::GENERIC) {
+    if((game.type == PlatformType::MINECRAFT || game.type == PlatformType::GENERIC) && !fs::is_regular_file(file)) {
         if(!fs::is_directory(file)) return;
     } else {
         if(!fs::is_regular_file(file) || std::find(extension_blocklist.begin(), extension_blocklist.end(), ext) != extension_blocklist.end()) {
