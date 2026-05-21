@@ -217,6 +217,7 @@ void DashboardTab::render_toolbar( RenderContext &ctx ) {
                     snapshot = result.games;
                 }
                 Features::backup_all_games( snapshot, config );
+                Notify::show_notification("Mass Backup", "Succesfully backed up all gamesaves!", 1500);
             } );
         }
         ImGui::SetItemTooltip( "Creates a backup of all games found!" );
