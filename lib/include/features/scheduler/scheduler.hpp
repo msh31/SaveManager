@@ -1,42 +1,43 @@
 #pragma once
-#include <types.hpp>
 #include <config/config.hpp>
+#include <types.hpp>
 
 class SaveScheduler {
-    public:
-        SaveScheduler(const Config& config) {
-            m_config = config;
-            load();
+  public:
+    SaveScheduler( const Config &config ) {
+        m_config = config;
+        load( );
+    }
+    ~SaveScheduler( ) {
+        stop( );
+        save( );
+    }
+
+    void add_entry( ScheduleEntry entry );
+    void remove_entry( std::string appid );
+    void update_entry( ScheduleEntry entry );
+
+    void run( );
+    void save( );
+
+  private:
+    Config m_config;
+
+    void load( );
+    void stop( ) {
+        m_running = false;
+        m_cv.notify_one( );
+        if ( m_backup_thread.joinable( ) ) {
+            m_backup_thread.join( );
         }
-        ~SaveScheduler() {
-            stop();
-            save();
-        }
+    }
+    void backup_loop( );
 
-        void add_entry(ScheduleEntry entry);
-        void remove_entry(std::string appid);
-        void update_entry(ScheduleEntry entry);
+    std::vector<ScheduleEntry> m_entries;
+    std::mutex schedule_mutex;
+    std::thread m_backup_thread;
+    std::atomic<bool> m_running{ false };
 
-        void run();
-        void save();
-    private:
-        Config m_config;
-
-        void load();
-        void stop() {
-            m_running = false;
-            m_cv.notify_one();
-            if (m_backup_thread.joinable()) {
-                m_backup_thread.join();
-            }
-        }
-        void backup_loop();
-
-        std::vector<ScheduleEntry> m_entries;
-        std::mutex schedule_mutex;
-        std::thread m_backup_thread;
-        std::atomic<bool> m_running{false};
-
-        std::condition_variable m_cv;
-        std::mutex m_stop_mutex;
+    std::condition_variable m_cv;
+    std::mutex m_stop_mutex;
 };

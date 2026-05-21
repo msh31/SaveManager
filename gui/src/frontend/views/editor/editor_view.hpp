@@ -3,8 +3,8 @@
 #include "utils/utils.hpp"
 
 struct EditorTab {
-    void render(const Fonts& fonts);
-    std::string file_path; 
+    void render( const Fonts &fonts );
+    std::string file_path;
 
     SanAndreas san_andreas;
 };

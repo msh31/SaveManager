@@ -6,7 +6,7 @@
 class Config;
 
 struct TransferTab {
-    void render(const Fonts& fonts, Detection::DetectionResult& result, Config& config, TabState& state);
+    void render( const Fonts &fonts, Detection::DetectionResult &result, Config &config, TabState &state );
 
     bool initialized = false;
     bool connected = false;
@@ -31,6 +31,7 @@ struct TransferTab {
     bool was_transferring;
 
     int spinner_frame = 0;
-    const char* spinner = "|/-\\";
-private:
+    const char *spinner = "|/-\\";
+
+  private:
 };

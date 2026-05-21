@@ -1,8 +1,8 @@
 #pragma once
 #include "detection/detection.hpp"
+#include <features/scheduler/scheduler.hpp>
 #include <utils/utils.hpp>
 #include <utils/zip_archive/zip_archive.hpp>
-#include <features/scheduler/scheduler.hpp>
 
 namespace fs = std::filesystem;
 
@@ -13,7 +13,7 @@ struct DashboardTab {
     std::string search_query = "";
 
     bool open_rename_modal = false;
-    Game pending_rename_game = {};
+    Game pending_rename_game = { };
 
     bool open_schedule_modal = false;
 
@@ -25,14 +25,15 @@ struct DashboardTab {
     size_t last_game_count = 0;
     int spinner_frame = 0;
 
-    void render(const Fonts&, Detection::DetectionResult&, Config&, SaveScheduler& scheduler);
-private:
+    void render( const Fonts &, Detection::DetectionResult &, Config &, SaveScheduler &scheduler );
+
+  private:
     struct RenderContext {
-        Detection::DetectionResult& result;
-        Config& config;
-        const Fonts& fonts;
-        const std::vector<Game>& games;
-        SaveScheduler& scheduler;
+        Detection::DetectionResult &result;
+        Config &config;
+        const Fonts &fonts;
+        const std::vector<Game> &games;
+        SaveScheduler &scheduler;
     };
 
     struct GameCache {
@@ -43,21 +44,19 @@ private:
     };
     std::unordered_map<std::string, GameCache> game_cache;
 
-    enum class SortMode {
-        Recent,
-        Alphabetical
-    };
+    enum class SortMode { Recent, Alphabetical };
     SortMode sort_mode = SortMode::Alphabetical;
     std::optional<PlatformType> platform_filter = std::nullopt; // nullopt = all
     std::unordered_map<std::string, fs::file_time_type> game_last_modified;
 
-    void on_result_changed(RenderContext&);
-    void render_toolbar(RenderContext&);
-    void render_game_list(RenderContext&);
-    void render_game_row(RenderContext&, const std::vector<int>& group, int gi);
-    void render_save_row(RenderContext& ctx, const fs::path& save_file, const Game& game);
-    void render_backup_row(RenderContext& ctx, const fs::path& backup, const Game& game, const std::unordered_map<std::string, std::string>& labels);
-    void render_modals(RenderContext&);
+    void on_result_changed( RenderContext & );
+    void render_toolbar( RenderContext & );
+    void render_game_list( RenderContext & );
+    void render_game_row( RenderContext &, const std::vector<int> &group, int gi );
+    void render_save_row( RenderContext &ctx, const fs::path &save_file, const Game &game );
+    void render_backup_row( RenderContext &ctx, const fs::path &backup, const Game &game,
+                            const std::unordered_map<std::string, std::string> &labels );
+    void render_modals( RenderContext & );
 
     bool focus_search = false;
 

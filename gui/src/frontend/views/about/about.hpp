@@ -2,7 +2,7 @@
 #include <utils/utils.hpp>
 
 struct AboutTab {
-    void render(const Fonts& fonts);
+    void render( const Fonts &fonts );
 
-    const char* subtitle = "The swiss army knife of save management.";
+    const char *subtitle = "The swiss army knife of save management.";
 };

@@ -1,7 +1,7 @@
 #pragma once
-#include <utils/utils.hpp>
-#include <config/config.hpp>
 #include "detection/detection.hpp"
+#include <config/config.hpp>
+#include <utils/utils.hpp>
 
 struct BackupTab {
     struct BackupEntry {
@@ -11,11 +11,12 @@ struct BackupTab {
         size_t size;
     };
 
-    void render(const Fonts&, Detection::DetectionResult&, Config& config);
+    void render( const Fonts &, Detection::DetectionResult &, Config &config );
 
     std::mutex b_mutex;
     std::vector<BackupEntry> backups;
-private:
+
+  private:
     std::future<void> refresh_future;
     std::unordered_map<std::string, bool> card_collapsed;
     std::unordered_map<std::string, bool> backups_collapsed;
@@ -29,8 +30,10 @@ private:
     int spinner_frame = 0;
     std::unordered_map<std::string, std::unordered_map<std::string, std::string>> labels_cache;
 
-    void render_game_row(const Fonts& fonts, const BackupEntry& bentry, Config& cfg);
-    void render_backup_row(fs::path path, const fs::path& save_path, const std::unordered_map<std::string, std::string>& labels, const std::string& game_name, Config& cfg);
-    void render_modals(Config& cfg);
-    void add_new_entry(Detection::DetectionResult& d_result, Config& config);
+    void render_game_row( const Fonts &fonts, const BackupEntry &bentry, Config &cfg );
+    void render_backup_row( fs::path path, const fs::path &save_path,
+                            const std::unordered_map<std::string, std::string> &labels, const std::string &game_name,
+                            Config &cfg );
+    void render_modals( Config &cfg );
+    void add_new_entry( Detection::DetectionResult &d_result, Config &config );
 };

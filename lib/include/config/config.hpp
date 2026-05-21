@@ -2,11 +2,11 @@
 #include "utils/paths.hpp"
 
 class Config {
-public:
-    Config(fs::path config_dir = paths::config_dir());
-    ~Config();
-    bool init();
-    void save();
+  public:
+    Config( fs::path config_dir = paths::config_dir( ) );
+    ~Config( );
+    bool init( );
+    void save( );
 
     struct WindowProperties {
         int x = -1;
@@ -41,8 +41,8 @@ public:
     SFTPConfig sftp;
     WindowProperties win_props;
 
-private:
-    void load();
+  private:
+    void load( );
 
-    fs::path config_file = paths::config_dir() / "config.json";
+    fs::path config_file = paths::config_dir( ) / "config.json";
 };
