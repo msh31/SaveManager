@@ -1,6 +1,6 @@
 # Changelog
 
-## [1.7.0] - 2026-05-??
+## [1.7.0] - 2026-05-21
 *Core logic moved into a separate library linked by the GUI*
  
 ### Core
@@ -45,7 +45,8 @@
 
 ### Known Issues / Limitations
 - Original Anno editions not supported due to install path limitations (a plugin can be written for this)
-- Grouping issues with unknown / partially supported games (improved since #2)
+- Grouping issues with unknown / partially supported games (improved since [#2](https://github.com/msh31/SaveManager/issues/2)
+- Downloading a save from an SFTP server places the save in the ``path/to/savemanager/backups/`` instead of it's corresponding game
 
 ---
 
