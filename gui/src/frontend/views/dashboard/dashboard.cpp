@@ -88,8 +88,8 @@ void DashboardTab::on_result_changed( RenderContext &ctx ) {
     }
 }
 
-void DashboardTab::render( const Fonts &fonts, Detection::DetectionResult &result, Config &config,
-                           SaveScheduler &scheduler ) {
+void DashboardTab::render( const Fonts &fonts, Detection::DetectionResult &result, Config &config) { //,
+                           //SaveScheduler &scheduler ) {
     static BackupTab backup;
 
     if ( ImGui::BeginTabBar( "MyTabBar", ImGuiTabBarFlags_DrawSelectedOverline ) ) {
@@ -100,7 +100,7 @@ void DashboardTab::render( const Fonts &fonts, Detection::DetectionResult &resul
                 snapshot = result.games;
             }
 
-            RenderContext ctx{ result, config, fonts, snapshot, scheduler };
+            RenderContext ctx{ result, config, fonts, snapshot}; //, scheduler };
             spinner_frame++;
 
             if ( refresh_future.valid( ) &&
@@ -317,19 +317,19 @@ void DashboardTab::render_game_row( RenderContext &ctx, const std::vector<int> &
                 } );
             }
             ImGui::PopStyleColor( 2 );
-#ifndef NDEBUG
-            ImGui::SameLine( );
-            if ( ImGui::Button( "Create Schedule" ) ) {
-                scheduled_files.clear( );
-                scheduled_files_selected.clear( );
-
-                pending_schedule_game = primary;
-                open_schedule_modal = true;
-                for ( const auto &entry : game_cache[cache_key( primary )].save_files ) {
-                    scheduled_files.push_back( entry );
-                }
-            }
-#endif
+// #ifndef NDEBUG
+//             ImGui::SameLine( );
+//             if ( ImGui::Button( "Create Schedule" ) ) {
+//                 scheduled_files.clear( );
+//                 scheduled_files_selected.clear( );
+//
+//                 pending_schedule_game = primary;
+//                 open_schedule_modal = true;
+//                 for ( const auto &entry : game_cache[cache_key( primary )].save_files ) {
+//                     scheduled_files.push_back( entry );
+//                 }
+//             }
+// #endif
             ImGui::SameLine( );
             if ( has_conflicts ) {
                 if ( ImGui::Button( "Resolve Conflict(s)" ) ) {
@@ -389,18 +389,18 @@ void DashboardTab::render_game_row( RenderContext &ctx, const std::vector<int> &
         if ( ImGui::MenuItem( "Open Path" ) ) {
             open_in_file_manager( primary.save_path.string( ).c_str( ) );
         }
-        if ( ImGui::BeginMenu( "Schedule backup" ) ) {
-            for ( const auto &entry : group ) {
-                const Game &g = ctx.games[entry];
-                std::string label = std::format( "{}##entry_{}", g.save_path.filename( ).string( ), entry );
-                if ( ImGui::MenuItem( label.c_str( ) ) ) {
-                    pending_schedule_game = g;
-                    open_schedule_modal = true;
-                    ImGui::OpenPopup( "Add schedule" );
-                }
-            }
-            ImGui::EndMenu( );
-        }
+        // if ( ImGui::BeginMenu( "Schedule backup" ) ) {
+        //     for ( const auto &entry : group ) {
+        //         const Game &g = ctx.games[entry];
+        //         std::string label = std::format( "{}##entry_{}", g.save_path.filename( ).string( ), entry );
+        //         if ( ImGui::MenuItem( label.c_str( ) ) ) {
+        //             pending_schedule_game = g;
+        //             open_schedule_modal = true;
+        //             ImGui::OpenPopup( "Add schedule" );
+        //         }
+        //     }
+        //     ImGui::EndMenu( );
+        // }
         ImGui::EndPopup( );
     }
 
@@ -523,10 +523,10 @@ void DashboardTab::render_modals( RenderContext &ctx ) {
         ImGui::OpenPopup( "Rename Backup" );
     }
 
-    if ( open_schedule_modal ) {
-        open_schedule_modal = false;
-        ImGui::OpenPopup( "Add schedule" );
-    }
+    // if ( open_schedule_modal ) {
+    //     open_schedule_modal = false;
+    //     ImGui::OpenPopup( "Add schedule" );
+    // }
 
     if ( open_conflict_modal ) {
         open_conflict_modal = false;
@@ -548,49 +548,49 @@ void DashboardTab::render_modals( RenderContext &ctx ) {
         ImGui::EndPopup( );
     }
 
-    if ( ImGui::BeginPopupModal( "Add schedule", nullptr, ImGuiWindowFlags_AlwaysAutoResize ) ) {
-        ImGui::Checkbox( "Enabled", &schedule_enabled );
-        ImGui::SliderInt( "Interval (hours)", &schedule_interval_hours, 1, 100 );
-
-        ImGui::Separator( );
-
-        ImGui::Text( "Found backups:" );
-        for ( const auto &file : scheduled_files ) {
-            bool is_included = false;
-            if ( scheduled_files_selected.contains( file ) ) {
-                is_included = true;
-            }
-            ImGui::Checkbox( ( "##" + file.string( ) ).c_str( ), &is_included );
-            ImGui::SameLine( );
-            ImGui::Text( "%s", file.filename( ).string( ).c_str( ) );
-
-            if ( is_included ) scheduled_files_selected.insert( file );
-            else
-                scheduled_files_selected.erase( file );
-        }
-
-        ScheduleEntry sentry;
-        const Game &g = pending_schedule_game;
-
-        sentry.appid = g.appid;
-        sentry.game_name = g.game_name;
-        sentry.save_path = g.save_path;
-        sentry.enabled = schedule_enabled;
-        sentry.interval_hours = schedule_interval_hours;
-        sentry.last_backup_time = -1;
-
-        if ( ImGui::Button( "Add" ) ) {
-            sentry.included_saves =
-                std::vector<fs::path>( scheduled_files_selected.begin( ), scheduled_files_selected.end( ) );
-            ctx.scheduler.add_entry( sentry );
-            ImGui::CloseCurrentPopup( );
-        }
-        ImGui::SameLine( );
-        if ( ImGui::Button( "Done" ) ) {
-            ImGui::CloseCurrentPopup( );
-        }
-        ImGui::EndPopup( );
-    }
+    // if ( ImGui::BeginPopupModal( "Add schedule", nullptr, ImGuiWindowFlags_AlwaysAutoResize ) ) {
+    //     ImGui::Checkbox( "Enabled", &schedule_enabled );
+    //     ImGui::SliderInt( "Interval (hours)", &schedule_interval_hours, 1, 100 );
+    //
+    //     ImGui::Separator( );
+    //
+    //     ImGui::Text( "Found backups:" );
+    //     for ( const auto &file : scheduled_files ) {
+    //         bool is_included = false;
+    //         if ( scheduled_files_selected.contains( file ) ) {
+    //             is_included = true;
+    //         }
+    //         ImGui::Checkbox( ( "##" + file.string( ) ).c_str( ), &is_included );
+    //         ImGui::SameLine( );
+    //         ImGui::Text( "%s", file.filename( ).string( ).c_str( ) );
+    //
+    //         if ( is_included ) scheduled_files_selected.insert( file );
+    //         else
+    //             scheduled_files_selected.erase( file );
+    //     }
+    //
+    //     ScheduleEntry sentry;
+    //     const Game &g = pending_schedule_game;
+    //
+    //     sentry.appid = g.appid;
+    //     sentry.game_name = g.game_name;
+    //     sentry.save_path = g.save_path;
+    //     sentry.enabled = schedule_enabled;
+    //     sentry.interval_hours = schedule_interval_hours;
+    //     sentry.last_backup_time = -1;
+    //
+    //     if ( ImGui::Button( "Add" ) ) {
+    //         sentry.included_saves =
+    //             std::vector<fs::path>( scheduled_files_selected.begin( ), scheduled_files_selected.end( ) );
+    //         ctx.scheduler.add_entry( sentry );
+    //         ImGui::CloseCurrentPopup( );
+    //     }
+    //     ImGui::SameLine( );
+    //     if ( ImGui::Button( "Done" ) ) {
+    //         ImGui::CloseCurrentPopup( );
+    //     }
+    //     ImGui::EndPopup( );
+    // }
 
     ImGui::SetNextWindowSize( ImVec2( 500, 0 ), ImGuiCond_Always );
     if ( ImGui::BeginPopupModal( "Resolve conflict(s)", nullptr, ImGuiWindowFlags_AlwaysAutoResize ) ) {

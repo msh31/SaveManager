@@ -8,15 +8,15 @@ using json = nlohmann::json;
 
 Config::Config( fs::path config_dir ) : config_file( config_dir / "config.json" ) {
     try {
-        if ( !fs::exists( paths::log_dir( ) ) ) {
-            if ( !fs::create_directories( paths::log_dir( ) ) ) {
-                SPDLOG_ERROR( "Failed to create log directory" );
+        if ( !fs::exists( config_dir ) ) {
+            if ( !fs::create_directories( config_dir ) ) {
+                SPDLOG_ERROR( "Failed to create config directory" );
             }
         }
 
-        if ( !fs::exists( config_dir ) ) {
-            if ( !fs::create_directories( config_dir ) ) {
-                SPDLOG_ERROR( "Failed to create backup directory" );
+        if ( !fs::exists( paths::log_dir( ) ) ) {
+            if ( !fs::create_directories( paths::log_dir( ) ) ) {
+                SPDLOG_ERROR( "Failed to create log directory" );
             }
         }
 
@@ -86,8 +86,8 @@ void Config::save( ) {
     data["animated_background"] = settings.animated_background;
 
     data["watch_paths"] = settings.watch_paths |
-                          std::views::transform( []( const fs::path &p ) { return p.string( ); } ) |
-                          std::ranges::to<std::vector>( );
+        std::views::transform( []( const fs::path &p ) { return p.string( ); } ) |
+        std::ranges::to<std::vector>( );
 
     data["dest_addr"] = sftp.dest_addr;
     data["username"] = sftp.username;
@@ -129,8 +129,8 @@ void Config::load( ) {
 
         if ( data.contains( "watch_paths" ) ) {
             settings.watch_paths = data["watch_paths"] |
-                                   std::views::transform( []( const std::string &p ) { return fs::path( p ); } ) |
-                                   std::ranges::to<std::vector>( );
+                std::views::transform( []( const std::string &p ) { return fs::path( p ); } ) |
+                std::ranges::to<std::vector>( );
         }
 
         sftp.dest_addr = data.value( "dest_addr", std::string( "" ) );

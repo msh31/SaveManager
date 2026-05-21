@@ -25,7 +25,7 @@ struct DashboardTab {
     size_t last_game_count = 0;
     int spinner_frame = 0;
 
-    void render( const Fonts &, Detection::DetectionResult &, Config &, SaveScheduler &scheduler );
+    void render( const Fonts &, Detection::DetectionResult &, Config &); //, SaveScheduler &scheduler );
 
   private:
     struct RenderContext {
@@ -33,7 +33,7 @@ struct DashboardTab {
         Config &config;
         const Fonts &fonts;
         const std::vector<Game> &games;
-        SaveScheduler &scheduler;
+        // SaveScheduler &scheduler;
     };
 
     struct GameCache {
@@ -63,9 +63,9 @@ struct DashboardTab {
     std::vector<std::pair<fs::path, fs::path>> pending_conflicts;
     bool open_conflict_modal = false;
 
-    Game pending_schedule_game;
-    std::vector<fs::path> scheduled_files;
-    std::unordered_set<fs::path> scheduled_files_selected;
-    bool schedule_enabled = false;
-    int schedule_interval_hours = 1;
+    // Game pending_schedule_game;
+    // std::vector<fs::path> scheduled_files;
+    // std::unordered_set<fs::path> scheduled_files_selected;
+    // bool schedule_enabled = false;
+    // int schedule_interval_hours = 1;
 };

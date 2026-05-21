@@ -61,7 +61,7 @@ void App::render_ui( ) {
 
     if ( ImGui::BeginTabBar( "MyTabBar", ImGuiTabBarFlags_Reorderable | ImGuiTabBarFlags_DrawSelectedOverline ) ) {
         if ( ImGui::BeginTabItem( "Dashboard" ) ) {
-            dahsboard_tab.render( fonts, d_result, config, scheduler );
+            dahsboard_tab.render( fonts, d_result, config); //, scheduler );
             ImGui::EndTabItem( );
         }
         if ( ImGui::BeginTabItem( "Save Editor" ) ) {
