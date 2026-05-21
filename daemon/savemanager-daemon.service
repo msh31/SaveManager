@@ -1,0 +1,11 @@
+[Unit]
+Description=SaveManager Daemon
+After=network.target
+
+[Service]
+ExecStart=%h/.local/bin/savemanager-daemon
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=default.target

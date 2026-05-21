@@ -1,4 +1,3 @@
-# Reference: https://cmkr.build/cmake-toml
 [cmake]
 version = "3.31"
 cmkr-include = "cmkr.cmake"
@@ -6,58 +5,67 @@ cmkr-include = "cmkr.cmake"
 [project]
 name = "SaveManager"
 description = "The swiss army knife of save management."
-version = "1.6.0"
+version = "1.7.0"
 languages = ["C", "CXX"]
 msvc-runtime = "dynamic"
-
-[find-package.CURL]
-required = true
-
-[find-package.glad]
-required = true
-
-[find-package.glfw3]
-required = true
-
-[find-package.libzip]
-required = true
-
-[find-package.OpenSSL]
-required = true
-
-[find-package.Libssh2]
-required = true
-
-[find-package.imgui]
-required = true
-
-[find-package.nlohmann_json]
-required = true
-
-[find-package.stb]
-required = true
-
-[find-package.sol2]
-required = true
 
 [variables]
 CMAKE_EXPORT_COMPILE_COMMANDS = true
 
+[find-package.CURL]
+required = true
+[find-package.glad]
+required = true
+[find-package.glfw3]
+required = true
+[find-package.libzip]
+required = true
+[find-package.OpenSSL]
+required = true
+[find-package.Libssh2]
+required = true
+[find-package.imgui]
+required = true
+[find-package.nlohmann_json]
+required = true
+[find-package.stb]
+required = true
+[find-package.sol2]
+required = true
+[find-package.spdlog]
+required = true
+
+[target.savemanager-core]
+type = "static"
+sources = ["lib/src/**.cpp"]
+include-directories = ["lib/include"]
+link-libraries = ["CURL::libcurl", "libzip::zip", "Libssh2::libssh2", "OpenSSL::Crypto", "nlohmann_json::nlohmann_json", "stb::stb", "sol2::sol2", "spdlog::spdlog"]
+compile-features = ["cxx_std_23"]
+precompile-headers = ["lib/include/pch.hpp"]
+cmake-after = """
+target_include_directories(savemanager-core PUBLIC lib/include)
+"""
+
+[target.savemanager-core.windows]
+link-libraries = ["ws2_32"]
+
 [target.savemanager]
 type = "executable"
-sources = [
-    "src/**.cpp",
-    "vendor/imgui/imgui_stdlib.cpp",
-]
-include-directories = [
-    "src",
-    "vendor/imgui",
-]
-precompile-headers = ["src/pch.hpp"]
-link-libraries = ["CURL::libcurl", "glfw", "libzip::zip", "Libssh2::libssh2", "OpenSSL::Crypto", "imgui::imgui", "glad::glad", "nlohmann_json::nlohmann_json", "stb::stb", "nfd::nfd", "sol2::sol2"]
+sources = ["gui/src/**.cpp", "gui/vendor/imgui/imgui_stdlib.cpp"]
+include-directories = ["gui/src", "gui/vendor/imgui"]
+link-libraries = ["savemanager-core", "glfw", "imgui::imgui", "glad::glad", "nfd::nfd"]
 compile-features = ["cxx_std_23"]
+precompile-headers = ["gui/src/pch.hpp"]
 cmake-before = """
-add_subdirectory(vendor/nativefiledialog-extended)
+add_subdirectory(gui/vendor/nativefiledialog-extended)
+
+execute_process(
+    COMMAND git rev-parse HEAD
+    OUTPUT_VARIABLE GIT_COMMIT
+    OUTPUT_STRIP_TRAILING_WHITESPACE
+    ERROR_QUIET
+)
+string(TIMESTAMP BUILD_DATE "%Y-%m-%d %H:%M UTC")
 """
 cmake-after = """
 find_path(IMGUI_INCLUDE_DIR imgui.h REQUIRED)
@@ -67,7 +75,30 @@ target_sources(savemanager PRIVATE
     "${IMGUI_ROOT_DIR}/res/bindings/imgui_impl_glfw.cpp"
     "${IMGUI_ROOT_DIR}/res/bindings/imgui_impl_opengl3.cpp"
 )
+
+configure_file(
+    ${CMAKE_CURRENT_SOURCE_DIR}/gui/src/version.cpp.in
+    ${CMAKE_CURRENT_BINARY_DIR}/version.cpp
+    @ONLY
+)
+target_sources(savemanager PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/version.cpp)
 """
 
 [target.savemanager.windows]
-link-libraries = ["ws2_32", "shell32"]
+link-libraries = ["shell32"]
+
+[target.savemgr]
+type = "executable"
+sources = ["cli/src/**.cpp"]
+include-directories = ["cli/src"]
+link-libraries = ["savemanager-core"]
+compile-features = ["cxx_std_23"]
+precompile-headers = ["lib/include/pch.hpp"]
+
+[target.savemanager-daemon]
+type = "executable"
+sources = ["daemon/src/**.cpp"]
+include-directories = ["daemon/src"]
+link-libraries = ["savemanager-core"]
+compile-features = ["cxx_std_23"]
+precompile-headers = ["lib/include/pch.hpp"]

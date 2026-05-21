@@ -1,17 +1,16 @@
-#include "detection.hpp"
-#include "backend/plugin/plugin.hpp"
-#include "backend/config/config.hpp"
-#include "backend/utils/blacklist/blacklist.hpp"
-#include "backend/utils/paths.hpp"
-#include "backend/logger/logger.hpp"
-#include "backend/utils/utils.hpp"
+#include "detection/detection.hpp"
+#include "plugin/plugin.hpp"
+#include "config/config.hpp"
+#include "utils/blacklist/blacklist.hpp"
+#include "utils/paths.hpp"
+#include "utils/utils.hpp"
 
-#include <backend/utils/steam/steam.hpp>
+#include <utils/steam/steam.hpp>
 
-#include "backend/detection/rsg/rsg.hpp"
-#include "backend/detection/ubi/ubi.hpp"
-#include "backend/detection/unreal/unreal.hpp"
-#include "backend/detection/minecraft/minecraft.hpp"
+#include "detection/rsg/rsg.hpp"
+#include "detection/ubi/ubi.hpp"
+#include "detection/unreal/unreal.hpp"
+#include "detection/minecraft/minecraft.hpp"
 
 struct Detectors {
    RockstarDetector rockstar_detect; 

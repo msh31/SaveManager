@@ -1,5 +1,55 @@
 # Changelog
 
+## [1.7.0] - 2026-05-21
+*Core logic moved into a separate library linked by the GUI*
+ 
+### Core
+#### Added
+- Conflict-safe restores: newer saves preserved and resolvable via the Resolve Conflicts dialog
+- Undo last restore
+- Each backup ZIP now includes a manifest with SHA-256 checksums and original timestamps
+- Extension blocklist expanded
+
+#### Fixed
+- Loaded plugin count
+- Mass backup waits until refreshes are complete
+- Backups not visible after uninstalling a game
+- Restored savegames now use their original save timestamps
+- Backup all not renaming from `.tmp` extension on completion
+- Prefix scan aborting on first filesystem error
+- Animated background defaulting to enabled; Y position not saved correctly
+- MultiMC scanner running on non-Linux platforms
+- Official Minecraft launcher using wrong path on Windows
+
+#### Changed
+- Lua `print` redirected to the log file / log tab
+
+
+### GUI
+#### Added
+- Resolve Conflicts button to keep or delete conflicts (existing save is newer than save being restored)
+- Build date & commit hash to about tab
+
+#### Fixed
+- Incorrect SFTP backup selection naming
+- Light mode
+
+#### Performance
+- Backup labels no longer reloaded from disk every frame, cached on refresh
+- Search query no longer lowercased every frame, only on input change
+
+#### Changed
+- Settings split into Appearance, Launcher Support, and Blacklisted Games panels
+- Paths section removed from settings
+- Dashboard item spacing tightened
+
+### Known Issues / Limitations
+- Original Anno editions not supported due to install path limitations (a plugin can be written for this)
+- Grouping issues with unknown / partially supported games (improved since [#2](https://github.com/msh31/SaveManager/issues/2)
+- Downloading a save from an SFTP server places the save in the ``path/to/savemanager/backups/`` instead of it's corresponding game
+
+---
+
 ## [1.6.0] - 2026-05-08
 Plugins can be found [here](https://github.com/msh31/savemanager-plugins)
 

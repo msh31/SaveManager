@@ -1,0 +1,43 @@
+#pragma once
+
+struct RemoteEntry {
+    std::string name;
+    bool is_directory;
+};
+
+enum class DetectionError {
+    PathNotFound,
+    PermissionDenied,
+    NoSavesFound,
+};
+
+enum class PlatformType { UBISOFT = 1, ROCKSTAR, UNREAL, PSP, PPSSPP, MINECRAFT, CUSTOM, GENERIC = 69 };
+
+enum class LauncherType {
+    OFFICIAL = 1,
+    MODRINTH,
+    CURSEFORGE,
+    PRISM,
+    MULTIMC,
+};
+
+struct Game {
+    PlatformType type; // display
+    std::string appid;
+    std::optional<std::string> game_id;
+    std::string game_name;
+    std::filesystem::path save_path;
+    LauncherType launcher;         // minecraft only | display
+    bool show_parent_path = false; // display
+};
+
+struct ScheduleEntry {
+    bool enabled;
+    int interval_hours;
+    int64_t last_backup_time;
+    PlatformType type = PlatformType::GENERIC;
+    std::string appid;
+    std::string game_name;
+    std::filesystem::path save_path;
+    std::vector<std::filesystem::path> included_saves;
+};

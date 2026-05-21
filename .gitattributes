@@ -17,3 +17,7 @@ src/**.c linguist-vendored
 
 assets/** linguist-vendored
 vendor/** linguist-vendored
+gui/vendor/** linguist-vendored
+
+gui/src/frontend/ui/fonts/*.h linguist-generated
+*.h linguist-language=C++
