@@ -101,11 +101,12 @@ void CDashboardView::render_toolbar( ) {
     }
     ImGui::SameLine( );
 
-    if ( ( ImGui::Button( "Refresh" ) || ( ImGui::GetIO( ).KeyCtrl && ImGui::IsKeyPressed( ImGuiKey_R ) ) ) ) {
+    if ( !m_cache.is_refreshing( ) &&
+         ( ImGui::Button( "Refresh" ) || ( ImGui::GetIO( ).KeyCtrl && ImGui::IsKeyPressed( ImGuiKey_R ) ) ) ) {
         {
+            m_result.games.clear( );
+            m_grouped_games.clear( );
             m_cache.refresh( [this] {
-                m_result.games.clear( );
-                m_grouped_games.clear( );
                 Detection::find_saves( m_config, m_result );
                 std::shared_lock lock( m_result.d_mutex );
                 return m_result.games;
