@@ -26,16 +26,15 @@ void CDashboardView::on_enter( ) {
 };
 
 void CDashboardView::render( ) {
-    bool needs_update = false;
     {
         std::shared_lock lock( m_result.d_mutex );
-        size_t           current_count = m_result.games.size( );
-        if ( current_count != m_last_game_count ) {
-            m_last_game_count = current_count;
-            needs_update      = true;
-        }
+        m_games_snapshot = m_result.games;
     }
-    if ( needs_update ) on_result_changed( );
+
+    if ( m_games_snapshot.size( ) != m_last_game_count ) {
+        m_last_game_count = m_games_snapshot.size( );
+        on_result_changed( );
+    }
 
     render_toolbar( );
     render_game_list( );
@@ -146,21 +145,21 @@ void CDashboardView::render_game_list( ) {
     switch ( m_sort_mode ) {
     case SortMode::Recent:
         std::sort( sorted.begin( ), sorted.end( ), [&]( const std::vector<int>& a, const std::vector<int>& b ) {
-            return m_game_last_modified[m_result.games[a[0]].game_name] >
-                   m_game_last_modified[m_result.games[b[0]].game_name];
+            return m_game_last_modified[m_games_snapshot[a[0]].game_name] >
+                   m_game_last_modified[m_games_snapshot[b[0]].game_name];
         } );
         break;
     case SortMode::Alphabetical:
         std::sort( sorted.begin( ), sorted.end( ), [&]( const std::vector<int>& a, const std::vector<int>& b ) {
-            return m_result.games[a[0]].game_name < m_result.games[b[0]].game_name;
+            return m_games_snapshot[a[0]].game_name < m_games_snapshot[b[0]].game_name;
         } );
         break;
     }
 
     enumerate( sorted, [&]( int gi, auto& group ) {
-        if ( m_platform_filter.has_value( ) && m_result.games[group[0]].type != *m_platform_filter ) return;
+        if ( m_platform_filter.has_value( ) && m_games_snapshot[group[0]].type != *m_platform_filter ) return;
 
-        const Game& primary   = m_result.games[group[0]];
+        const Game& primary   = m_games_snapshot[group[0]];
         std::string game_name = primary.game_name;
 
         std::transform( game_name.begin( ), game_name.end( ), game_name.begin( ), ::tolower );
@@ -175,7 +174,7 @@ void CDashboardView::render_game_list( ) {
 }
 
 void CDashboardView::render_game_row( const std::vector<int>& group, int gi ) {
-    const Game& primary = m_result.games[group[0]];
+    const Game& primary = m_games_snapshot[group[0]];
 
     bool&       not_collapsed = m_card_collapsed[cache_key( primary )];
     bool&       bk_collapsed  = m_backups_collapsed[cache_key( primary )];
@@ -570,14 +569,15 @@ void CDashboardView::render_modals( ) {
 }
 
 void CDashboardView::on_result_changed( ) {
-    std::shared_lock<std::shared_mutex> lock( m_result.d_mutex );
-    m_grouped_games = { };
+    {
+        Detection::DetectionResult tmp;
+        tmp.games       = m_games_snapshot;
+        m_grouped_games = tmp.get_grouped( );
+    }
     m_game_cache.clear( );
 
-    m_grouped_games = m_result.get_grouped( );
-
     try {
-        for ( const auto& game : m_result.games ) {
+        for ( const auto& game : m_games_snapshot ) {
             GameCache cache;
             if ( !fs::is_directory( game.save_path ) ) continue;
             if ( game.save_path.string( ).contains( ".savemgr-conflict-" ) ) continue;
@@ -627,7 +627,7 @@ void CDashboardView::on_result_changed( ) {
             }
         }
 
-        for ( const auto& entry : m_result.games ) {
+        for ( const auto& entry : m_games_snapshot ) {
             fs::file_time_type current_max;
             if ( !fs::is_directory( entry.save_path ) ) continue;
             for ( const auto& file :

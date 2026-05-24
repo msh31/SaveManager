@@ -32,6 +32,7 @@ class CDashboardView : public CBaseView {
         };
 
         Detection::DetectionResult                          m_result;
+        std::vector<Game>                                   m_games_snapshot;
         std::vector<std::vector<int>>                       m_grouped_games;
         std::unordered_map<std::string, GameCache>          m_game_cache;
         std::unordered_map<std::string, fs::file_time_type> m_game_last_modified;
