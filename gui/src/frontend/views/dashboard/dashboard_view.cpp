@@ -36,8 +36,25 @@ void CDashboardView::render( ) {
         on_result_changed( );
     }
 
-    render_toolbar( );
-    render_game_list( );
+    if ( ImGui::BeginTabBar( "##dashboard_tabs" ) ) {
+        if ( ImGui::BeginTabItem( "Games" ) ) {
+            render_toolbar( );
+            render_game_list( );
+            ImGui::EndTabItem( );
+        }
+
+        bool backups_open = ImGui::BeginTabItem( "Backups" );
+        if ( !m_backups_tab_was_active && backups_open )
+            m_backups_view.on_enter( );
+        m_backups_tab_was_active = backups_open;
+        if ( backups_open ) {
+            m_backups_view.render( );
+            ImGui::EndTabItem( );
+        }
+
+        ImGui::EndTabBar( );
+    }
+
     render_modals( );
 }
 

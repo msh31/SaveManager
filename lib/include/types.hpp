@@ -1,8 +1,8 @@
 #pragma once
 
 struct RemoteEntry {
-    std::string name;
-    bool is_directory;
+        std::string name;
+        bool        is_directory;
 };
 
 enum class DetectionError {
@@ -22,22 +22,29 @@ enum class LauncherType {
 };
 
 struct Game {
-    PlatformType type; // display
-    std::string appid;
-    std::optional<std::string> game_id;
-    std::string game_name;
-    std::filesystem::path save_path;
-    LauncherType launcher;         // minecraft only | display
-    bool show_parent_path = false; // display
+        PlatformType               type; // display
+        std::string                appid;
+        std::optional<std::string> game_id;
+        std::string                game_name;
+        std::filesystem::path      save_path;
+        LauncherType               launcher;                 // minecraft only | display
+        bool                       show_parent_path = false; // display
 };
 
 struct ScheduleEntry {
-    bool enabled;
-    int interval_hours;
-    int64_t last_backup_time;
-    PlatformType type = PlatformType::GENERIC;
-    std::string appid;
-    std::string game_name;
-    std::filesystem::path save_path;
-    std::vector<std::filesystem::path> included_saves;
+        bool                               enabled;
+        int                                interval_hours;
+        int64_t                            last_backup_time;
+        PlatformType                       type = PlatformType::GENERIC;
+        std::string                        appid;
+        std::string                        game_name;
+        std::filesystem::path              save_path;
+        std::vector<std::filesystem::path> included_saves;
+};
+
+struct BackupEntry {
+        fs::path              name;
+        fs::path              save_path;
+        std::vector<fs::path> entries;
+        size_t                size;
 };

@@ -1,11 +1,12 @@
 #pragma once
 #include <config/config.hpp>
 #include <detection/detection.hpp>
+#include <frontend/views/backups/backup_view.hpp>
 #include <frontend/views/base_view.hpp>
 
 class CDashboardView : public CBaseView {
     public:
-        CDashboardView( CConfig& config ) : m_config( config ) {};
+        CDashboardView( CConfig& config ) : m_config( config ), m_backups_view( config, m_result ) {};
         ~CDashboardView( ) override;
         void render( ) override;
         void on_enter( ) override;
@@ -21,7 +22,9 @@ class CDashboardView : public CBaseView {
             const fs::path& backup, const Game& game, const std::unordered_map<std::string, std::string>& labels );
         void render_modals( );
 
-        CConfig& m_config;
+        CConfig&      m_config;
+        CBackupsView  m_backups_view;
+        bool          m_backups_tab_was_active = false;
 
         // Detection / cache
         struct GameCache {
