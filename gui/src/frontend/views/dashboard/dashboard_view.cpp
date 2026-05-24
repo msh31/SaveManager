@@ -1,14 +1,10 @@
-#include "home_view.hpp"
+#include "dashboard_view.hpp"
 #include <backend/utils.hpp>
 #include <frontend/notification/notification.hpp>
 
-void CHomeView::on_enter( ) {
-    Notify::show_notification( "Introduction", std::format( "Hello: {}", get_username( ).c_str( ) ), 1500 );
-}
+void CDashboardView::on_enter( ) {};
 
-void CHomeView::render( ) {
-    ImGui::Text( "This is a the home view, you can add new views yourself by exploring the code. It's quite simple." );
-
+void CDashboardView::render( ) {
     ImGuiTreeNodeFlags tree_flag = ImGuiTreeNodeFlags_DefaultOpen;
     if ( ImGui::TreeNodeEx( "Inputs", tree_flag ) ) {
         ImGui::PushItemWidth( 150.0f );
@@ -69,8 +65,5 @@ void CHomeView::render( ) {
     }
 }
 
-void CHomeView::on_exit( ) {
-    Notify::show_notification( "Departure", std::format( "Goodbye: {}", get_username( ).c_str( ) ), 1500 );
-}
-
-CHomeView::~CHomeView( ) {}
+void CDashboardView::on_exit( ) {}
+CDashboardView::~CDashboardView( ) {}
