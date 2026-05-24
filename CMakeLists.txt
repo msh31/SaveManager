@@ -39,7 +39,7 @@ project(SaveManager
 		C
 		CXX
 	VERSION
-		1.7.0
+		1.8.0
 	DESCRIPTION
 		"The swiss army knife of save management."
 )
@@ -154,6 +154,7 @@ set(savemanager_SOURCES
 	"gui/src/frontend/views/backups/backup_view.cpp"
 	"gui/src/frontend/views/dashboard/dashboard_view.cpp"
 	"gui/src/frontend/views/debug/debug_view.cpp"
+	"gui/src/frontend/views/log/log_view.cpp"
 	"gui/src/frontend/views/pipeline/pipeline_demo.cpp"
 	"gui/src/frontend/views/settings/settings_view.cpp"
 	"gui/src/main.cpp"

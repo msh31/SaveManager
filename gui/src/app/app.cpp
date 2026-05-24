@@ -7,7 +7,7 @@
 #include <frontend/theme/theme.hpp>
 
 #include <frontend/views/dashboard/dashboard_view.hpp>
-#include <frontend/views/debug/debug_view.hpp>
+#include <frontend/views/log/log_view.hpp>
 #include <frontend/views/pipeline/pipeline_demo.hpp>
 #include <frontend/views/settings/settings_view.hpp>
 
@@ -20,7 +20,7 @@ void CApp::init( ) {
 
     m_ui_manager.add_view( { std::make_unique<CDashboardView>( m_config ), "\xef\x80\x95", "Dashboard" } );
     m_ui_manager.add_view( { std::make_unique<CPipelineView>( ), "\xef\x83\xa8", "Pipeline Demo" } );
-    m_ui_manager.add_view( { std::make_unique<CDebugView>( ), "\xef\x86\x88", "Debug" } );
+    m_ui_manager.add_view( { std::make_unique<CLogView>( ), "\xef\x81\x9b", "Log" } );
     m_ui_manager.set_settings_view( { std::make_unique<CSettingsView>( m_config ), "\xef\x80\x93", "Settings" } );
 }
 

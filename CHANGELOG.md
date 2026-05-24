@@ -7,6 +7,10 @@
 #### Added
 
 
+### GUI
+#### Added
+- Auto scroll in the log tab
+
 
 ## [1.7.0] - 2026-05-21
 *Core logic moved into a separate library linked by the GUI*
