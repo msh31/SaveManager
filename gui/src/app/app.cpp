@@ -1,5 +1,6 @@
 #include "app.hpp"
 #include <constants.hpp>
+#include <utils/translations/translations.hpp>
 
 #include <frontend/fonts/font_awesome.hpp>
 #include <frontend/fonts/jbm_reg.h>
@@ -14,6 +15,7 @@
 #include <frontend/notification/notification.hpp>
 
 void CApp::init( ) {
+    translations::init( );
     ThemeManager::apply_style( );
 
     m_ui_manager.add_view( { std::make_unique<CDashboardView>( m_config ), "\xef\x80\x95", "Dashboard" } );
