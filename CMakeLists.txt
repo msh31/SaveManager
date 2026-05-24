@@ -146,7 +146,6 @@ set(savemanager_SOURCES
 	"gui/src/backend/ui_manager/ui_manager.cpp"
 	"gui/src/backend/window/window_manager.cpp"
 	"gui/src/frontend/components/menubar/menubar.cpp"
-	"gui/src/frontend/components/sidebar/sidebar.cpp"
 	"gui/src/frontend/components/statusbar/statusbar.cpp"
 	"gui/src/frontend/dialogs/confirm/confirm_dialog.cpp"
 	"gui/src/frontend/layout/tabbar/tabbar.cpp"
