@@ -121,7 +121,7 @@ void CDashboardView::render_toolbar( ) {
     }
     ImGui::SetItemTooltip( "Re-runs the detection logic to find new saves" );
     ImGui::SameLine( );
-    if ( !is_backing_up ) {
+    if ( !is_backing_up && !is_refreshing ) {
         if ( ImGui::Button( "Mass Backup" ) ) {
             m_backup_future = std::async( std::launch::async, [&result = m_result, &config = m_config]( ) {
                 std::vector<Game> snapshot;
