@@ -18,14 +18,21 @@ void CFontManager::load_from_memory( FontData fd, void* data, int data_len ) {
     if ( font == nullptr ) throw std::runtime_error( "Tried to load invalid font!" );
     if ( fd.is_default ) io.FontDefault = font;
     m_fonts.insert( { fd.name.data( ), font } );
+    m_font_data.push_back( fd );
 }
 
-std::optional<ImFont*> CFontManager::get( std::string_view font_name ) {
+std::optional<ImFont*> CFontManager::get_font( std::string_view font_name ) {
     if ( m_fonts.empty( ) ) return std::nullopt;
-    if ( m_font_data.empty( ) ) return std::nullopt;
 
     if ( auto it = m_fonts.find( std::string( font_name ) ); it != m_fonts.end( ) ) {
         return it->second;
     }
     return std::nullopt;
 }
+
+CFontManager& CFontManager::get( ) {
+    static CFontManager instance;
+    return instance;
+}
+
+CFontManager::CFontManager( ) {}

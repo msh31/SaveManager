@@ -12,9 +12,17 @@ class CFontManager {
         void load_from_memory( FontData fd, void* data, int data_len );
         // void load_from_disk(std::string font_name, float font_size, fs::path path);
 
-        std::optional<ImFont*> get( std::string_view font_name );
+        std::optional<ImFont*> get_font( std::string_view font_name );
+        static CFontManager&   get( );
+
+        // delete copy & move constructors since there must only be 1 instance
+        CFontManager( const CFontManager& )            = delete;
+        CFontManager& operator=( const CFontManager& ) = delete;
+        CFontManager( CFontManager&& )                 = delete;
+        CFontManager& operator=( CFontManager&& )      = delete;
 
     private:
+        CFontManager( );
         std::unordered_map<std::string, ImFont*> m_fonts;
         std::vector<FontData>                    m_font_data;
 };

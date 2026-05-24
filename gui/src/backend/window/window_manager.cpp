@@ -1,6 +1,8 @@
 #include "window_manager.hpp"
 #include <constants.hpp>
 
+#include <backend/font_manager/font_manager.hpp>
+
 #include <frontend/fonts/font_awesome.hpp>
 #include <frontend/fonts/jbm_reg.h>
 
@@ -65,8 +67,9 @@ void CWindowManager::setup_imgui( ) {
     io.IniFilename = nullptr; // no imgui.ini
     io.LogFilename = nullptr; // no imgui log pls
 
-    m_font_mgr.load_from_memory( { "jbm_reg", 16.0f, false, true }, (void*)jbm_reg, jbm_reg_len );
-    m_font_mgr.load_from_memory( { "font_awesome", 16.0f, true, false }, (void*)font_awesome, font_awesome_len );
+    CFontManager::get( ).load_from_memory( { "jbm_reg", 16.0f, false, true }, (void*)jbm_reg, jbm_reg_len );
+    CFontManager::get( ).load_from_memory(
+        { "font_awesome", 16.0f, true, false }, (void*)font_awesome, font_awesome_len );
 
     if ( !ImGui_ImplGlfw_InitForOpenGL( m_window, true ) ) {
         throw std::runtime_error( "Failed to initialize ImGui for OpenGL" );
