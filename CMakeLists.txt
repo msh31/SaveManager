@@ -150,8 +150,6 @@ set(savemanager_SOURCES
 	"gui/src/frontend/components/sidebar/sidebar.cpp"
 	"gui/src/frontend/components/statusbar/statusbar.cpp"
 	"gui/src/frontend/dialogs/confirm/confirm_dialog.cpp"
-	"gui/src/frontend/layout/ribbon/ribbon.cpp"
-	"gui/src/frontend/layout/sidebar/sidebar.cpp"
 	"gui/src/frontend/layout/tabbar/tabbar.cpp"
 	"gui/src/frontend/notification/notification.cpp"
 	"gui/src/frontend/theme/theme.cpp"
