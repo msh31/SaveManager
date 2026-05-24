@@ -4,6 +4,8 @@
 #include <backend/font_manager/font_manager.hpp>
 
 #include <frontend/fonts/font_awesome.hpp>
+#include <frontend/fonts/jbm_bold.h>
+#include <frontend/fonts/jbm_med.h>
 #include <frontend/fonts/jbm_reg.h>
 
 void CWindowManager::run( std::function<void( )> fun ) {
@@ -67,9 +69,18 @@ void CWindowManager::setup_imgui( ) {
     io.IniFilename = nullptr; // no imgui.ini
     io.LogFilename = nullptr; // no imgui log pls
 
-    CFontManager::get( ).load_from_memory( { "jbm_reg", 16.0f, false, true }, (void*)jbm_reg, jbm_reg_len );
+    // Regular fonts + merged icon font
+    CFontManager::get( ).load_from_memory( { "jbm_reg", 20.0f, false, true }, (void*)jbm_reg, jbm_reg_len );
     CFontManager::get( ).load_from_memory(
-        { "font_awesome", 16.0f, true, false }, (void*)font_awesome, font_awesome_len );
+        { "font_awesome", 18.0f, true, false }, (void*)font_awesome, font_awesome_len );
+
+    CFontManager::get( ).load_from_memory( { "jbm_bold", 20.0f, false, false }, (void*)jbm_bold, jbm_bold_len );
+    CFontManager::get( ).load_from_memory( { "jbm_med", 20.0f, false, false }, (void*)jbm_med, jbm_med_len );
+
+    // Font variants - not sure if this is ideal since all thats different is the fontSize
+    CFontManager::get( ).load_from_memory( { "jbm_header", 28.0f, false, false }, (void*)jbm_reg, jbm_reg_len );
+    CFontManager::get( ).load_from_memory( { "jbm_title", 34.0f, false, false }, (void*)jbm_reg, jbm_reg_len );
+    CFontManager::get( ).load_from_memory( { "jbm_small", 18.0f, false, false }, (void*)jbm_reg, jbm_reg_len );
 
     if ( !ImGui_ImplGlfw_InitForOpenGL( m_window, true ) ) {
         throw std::runtime_error( "Failed to initialize ImGui for OpenGL" );

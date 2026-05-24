@@ -2,6 +2,7 @@
 #include <backend/utils.hpp>
 #include <utils/utils.hpp>
 
+#include <backend/font_manager/font_manager.hpp>
 #include <frontend/components/spinner.hpp>
 #include <frontend/notification/notification.hpp>
 
@@ -41,10 +42,6 @@ CDashboardView::~CDashboardView( ) {}
 
 // private
 void CDashboardView::render_toolbar( ) {
-    // ImGui::PushFont( ctx.fonts.header );
-    ImGui::Text( "Dashboard" );
-    // ImGui::PopFont( );
-
     bool is_backing_up =
         m_backup_future.valid( ) && m_backup_future.wait_for( std::chrono::seconds( 0 ) ) != std::future_status::ready;
 
@@ -203,14 +200,14 @@ void CDashboardView::render_game_row( const std::vector<int>& group, int gi ) {
         not_collapsed = !not_collapsed;
     ImGui::SameLine( 8.0f );
 
-    // ImGui::PushFont( fonts.bold );
+    ImGui::PushFont( CFontManager::get( ).get_font( "jbm_bold" ).value_or( nullptr ) );
     ImGui::TextColored( ImColor( 198, 97, 63 ).Value, "%s", chevron );
-    // ImGui::PopFont( );
+    ImGui::PopFont( );
     ImGui::SameLine( );
 
-    // ImGui::PushFont( fonts.medium );
+    ImGui::PushFont( CFontManager::get( ).get_font( "jbm_med" ).value_or( nullptr ) );
     ImGui::Text( "%s", primary.game_name.c_str( ) );
-    // ImGui::PopFont( );
+    ImGui::PopFont( );
 
     ImGui::SameLine( ImGui::GetContentRegionMax( ).x - ImGui::CalcTextSize( right_text.c_str( ) ).x );
     ImGui::Text( "%s", right_text.c_str( ) );
@@ -296,13 +293,13 @@ void CDashboardView::render_game_row( const std::vector<int>& group, int gi ) {
             }
             ImGui::SameLine( 8.0f );
 
-            // ImGui::PushFont( ctx.fonts.bold );
+            ImGui::PushFont( CFontManager::get( ).get_font( "jbm_bold" ).value_or( nullptr ) );
             ImGui::TextColored( ImColor( 198, 97, 63 ).Value, "%s", chevron );
-            // ImGui::PopFont( );
+            ImGui::PopFont( );
             ImGui::SameLine( );
-            // ImGui::PushFont( ctx.fonts.medium );
+            ImGui::PushFont( CFontManager::get( ).get_font( "jbm_med" ).value_or( nullptr ) );
             ImGui::Text( "BACKUPS" );
-            // ImGui::PopFont( );
+            ImGui::PopFont( );
 
             if ( !bk_collapsed ) {
                 auto backups = Features::get_backups( primary.game_name, m_config );
