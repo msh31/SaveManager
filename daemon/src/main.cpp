@@ -14,14 +14,14 @@
 int main( ) {
     CConfig config;
 
-    SaveScheduler scheduler( config );
+    CSaveScheduler scheduler( config );
 
     spdlog::set_level( spdlog::level::debug );
     init_logger( "[%n]: [%l] %d-%m-%Y %H:%M:%S - %v", "savemanager-daemon" );
     SPDLOG_INFO( "daemon started!" );
 
 #if defined( __linux__ )
-    Watcher watcher(
+    CWatcher watcher(
         []( const fs::path &path, uint32_t mask ) {
             if ( !fs::exists( path ) ) SPDLOG_WARN( "{} does not exist", path.string( ) );
             auto ext = path.extension( ).string( );

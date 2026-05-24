@@ -13,10 +13,10 @@
 #include "detection/unreal/unreal.hpp"
 
 struct Detectors {
-    RockstarDetector rockstar_detect;
-    UbisoftDetector ubisoft_detect;
-    UnrealDetector unreal_detect;
-    MinecraftDetector minecraft_detect;
+    CRockstarDetector rockstar_detect;
+    CUbisoftDetector ubisoft_detect;
+    CUnrealDetector unreal_detect;
+    CMinecraftDetector minecraft_detect;
 };
 
 void Detection::add_game( std::expected<std::vector<Game>, DetectionError> result, const std::string &platform,
@@ -100,7 +100,7 @@ void Detection::find_saves( CConfig &config, DetectionResult &d_result ) {
         if ( !fs::is_regular_file( plugin ) ) continue;
         plugin_count++;
 
-        Plugin plugins( plugin );
+        CPlugin plugins( plugin );
         Detection::add_game( plugins.find_saves( ), "Custom", d_result );
     }
     if ( plugin_count > 0 ) SPDLOG_INFO( "Loaded {} plugins!", plugin_count );
@@ -165,7 +165,7 @@ void Detection::find_saves( CConfig &config, DetectionResult &d_result ) {
     }
     if ( config.settings.unreal_enabled ) {
         Detection::add_game( detectors.unreal_detect.find_saves( paths::home_dir( ) / "Library" / "Application Support",
-                                                                 UnrealDetector::ScanMode::Native ),
+                                                                 CUnrealDetector::ScanMode::Native ),
                              "unreal", d_result );
         Detection::add_game( detectors.unreal_detect.find_saves( paths::heroic_dir( ) / "Prefixes" ), "unreal",
                              d_result );

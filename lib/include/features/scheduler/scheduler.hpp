@@ -2,13 +2,13 @@
 #include <config/config.hpp>
 #include <types.hpp>
 
-class SaveScheduler {
+class CSaveScheduler {
   public:
-    SaveScheduler( const CConfig &config ) {
+    CSaveScheduler( const CConfig &config ) {
         m_config = config;
         load( );
     }
-    ~SaveScheduler( ) {
+    ~CSaveScheduler( ) {
         stop( );
         save( );
     }
@@ -34,7 +34,7 @@ class SaveScheduler {
     void backup_loop( );
 
     std::vector<ScheduleEntry> m_entries;
-    std::mutex schedule_mutex;
+    std::mutex m_schedule_mutex;
     std::thread m_backup_thread;
     std::atomic<bool> m_running{ false };
 

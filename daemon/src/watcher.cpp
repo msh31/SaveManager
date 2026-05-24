@@ -13,7 +13,7 @@
 #define BUFFER_LEN ( 1024 * ( EVENT_SIZE + 16 ) )
 #endif
 
-Watcher::Watcher( std::function<void( const fs::path &, uint32_t )> fun, const CConfig &config ) {
+CWatcher::CWatcher( std::function<void( const fs::path &, uint32_t )> fun, const CConfig &config ) {
     m_fun = fun;
 #if defined( __linux__ )
     m_notify_fd = inotify_init( );
@@ -40,7 +40,7 @@ Watcher::Watcher( std::function<void( const fs::path &, uint32_t )> fun, const C
 #endif
 }
 
-void Watcher::shutdown( ) {
+void CWatcher::shutdown( ) {
 #if defined( __linux__ )
     m_running = false;
     if ( m_debounce_thread.joinable( ) ) {
@@ -62,7 +62,7 @@ void Watcher::shutdown( ) {
 #endif
 }
 
-bool Watcher::add_watch( const fs::path &path ) {
+bool CWatcher::add_watch( const fs::path &path ) {
 #if defined( __linux__ )
     auto add_single = [&]( const fs::path &p ) -> bool {
         int wd = inotify_add_watch( m_notify_fd, p.c_str( ),
@@ -88,7 +88,7 @@ bool Watcher::add_watch( const fs::path &path ) {
     return false;
 }
 
-bool Watcher::remove_watch( const fs::path &path ) {
+bool CWatcher::remove_watch( const fs::path &path ) {
 #if defined( __linux__ )
     if ( auto it = m_watch_descriptors.find( path ); it != m_watch_descriptors.end( ) ) {
         inotify_rm_watch( m_notify_fd, it->second );
@@ -102,28 +102,28 @@ bool Watcher::remove_watch( const fs::path &path ) {
 
 // ensures backups only trigger when no new file events happen on that save
 // so we dont backup a save thats being written to by the game
-void Watcher::debounce_loop( ) {
+void CWatcher::debounce_loop( ) {
     do {
         // std::println("looping");
         {
-            std::lock_guard<std::mutex> lock( debounce_mutex );
+            std::lock_guard<std::mutex> lock( m_debounce_mutex );
             auto now = std::chrono::system_clock::now( );
 
-            for ( auto &entry : save_event_times ) {
-                if ( now - entry.second.first > interval ) {
-                    // std::println("now - entry time is greated than interval");
+            for ( auto &entry : m_save_event_times ) {
+                if ( now - entry.second.first > m_interval ) {
+                    // std::println("now - entry time is greated than m_interval");
                     m_fun( entry.first, entry.second.second );
                 }
             }
 
-            std::erase_if( save_event_times, [&]( const auto &entry ) { return now - entry.second.first > interval; } );
+            std::erase_if( m_save_event_times, [&]( const auto &entry ) { return now - entry.second.first > m_interval; } );
         }
 
-        std::this_thread::sleep_for( interval );
+        std::this_thread::sleep_for( m_interval );
     } while ( m_running );
 }
 
-void Watcher::run( ) {
+void CWatcher::run( ) {
 #if defined( __linux__ )
     struct pollfd fds[2];
     fds[0].fd = m_notify_fd;
@@ -136,7 +136,7 @@ void Watcher::run( ) {
 #endif
 
     m_running = true;
-    m_debounce_thread = std::thread( &Watcher::debounce_loop, this );
+    m_debounce_thread = std::thread( &CWatcher::debounce_loop, this );
 
     while ( true ) {
 #if defined( __linux__ )
@@ -165,10 +165,10 @@ void Watcher::run( ) {
                 if ( !( event->mask & IN_ISDIR ) ) {
                     if ( auto it = m_wd_to_path.find( event->wd ); it != m_wd_to_path.end( ) ) {
                         {
-                            std::lock_guard<std::mutex> lock( debounce_mutex );
-                            save_event_times[it->second / event->name] = { std::chrono::system_clock::now( ),
+                            std::lock_guard<std::mutex> lock( m_debounce_mutex );
+                            m_save_event_times[it->second / event->name] = { std::chrono::system_clock::now( ),
                                                                            event->mask };
-                            // std::println("save_event_times updated: {}", std::format("{}",
+                            // std::println("m_save_event_times updated: {}", std::format("{}",
                             // std::chrono::system_clock::now()));
                         }
                     }

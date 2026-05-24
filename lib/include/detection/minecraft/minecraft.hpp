@@ -1,7 +1,7 @@
 #pragma once
 #include <types.hpp>
 
-class MinecraftDetector {
+class CMinecraftDetector {
   public:
     std::expected<std::vector<Game>, DetectionError> find_saves( ) const;
 

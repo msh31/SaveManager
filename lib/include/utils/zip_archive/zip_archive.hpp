@@ -3,20 +3,20 @@
 #include <types.hpp>
 #include <zip.h>
 
-class ZipArchive {
+class CZipArchive {
   public:
-    ZipArchive( int mode, fs::path name ) {
+    CZipArchive( int mode, fs::path name ) {
         int zip_error;
-        archive = zip_open( name.string( ).c_str( ), mode, &zip_error );
+        m_archive = zip_open( name.string( ).c_str( ), mode, &zip_error );
 
-        if ( !archive ) {
+        if ( !m_archive ) {
             SPDLOG_ERROR( "Failed to open archive: {}", name.string( ) );
         }
     }
 
-    ~ZipArchive( ) {
-        if ( archive != nullptr ) {
-            zip_close( archive );
+    ~CZipArchive( ) {
+        if ( m_archive != nullptr ) {
+            zip_close( m_archive );
         }
     }
 
@@ -29,15 +29,15 @@ class ZipArchive {
     std::vector<std::string> get_entry_names( );
 
     // disable copying (prevent accidental double-cleanup)
-    ZipArchive( const ZipArchive & ) = delete;
-    ZipArchive &operator=( const ZipArchive & ) = delete;
+    CZipArchive( const CZipArchive & ) = delete;
+    CZipArchive &operator=( const CZipArchive & ) = delete;
 
   private:
-    zip_t *archive = nullptr;
-    std::string manifest = { };
+    zip_t *m_archive = nullptr;
+    std::string m_manifest = { };
 
     std::string build_manifest( std::vector<std::pair<fs::path, fs::path>> paths );
-    bool write_manifest_to_zip( zip_t *archive );
+    bool write_manifest_to_zip( zip_t *zip_handle );
 
-    bool read_manifest_from_zip( zip_t *archive );
+    bool read_manifest_from_zip( zip_t *zip_handle );
 };

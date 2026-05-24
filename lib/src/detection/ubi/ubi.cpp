@@ -2,7 +2,7 @@
 #include "utils/translations/translations.hpp"
 // #include "logger/logger.hpp"
 
-std::expected<std::vector<Game>, DetectionError> UbisoftDetector::find_saves( const fs::path &prefix ) const {
+std::expected<std::vector<Game>, DetectionError> CUbisoftDetector::find_saves( const fs::path &prefix ) const {
     if ( !fs::exists( prefix ) ) {
         return std::unexpected{ DetectionError::PathNotFound };
     }
@@ -41,7 +41,7 @@ std::expected<std::vector<Game>, DetectionError> UbisoftDetector::find_saves( co
     return games;
 }
 
-std::expected<std::vector<Game>, DetectionError> UbisoftDetector::find_anno_saves( const fs::path &prefix ) const {
+std::expected<std::vector<Game>, DetectionError> CUbisoftDetector::find_anno_saves( const fs::path &prefix ) const {
     if ( !fs::exists( prefix ) ) {
         return std::unexpected{ DetectionError::PathNotFound };
     }
@@ -52,7 +52,7 @@ std::expected<std::vector<Game>, DetectionError> UbisoftDetector::find_anno_save
           fs::directory_iterator( prefix, std::filesystem::directory_options::skip_permission_denied ) ) {
         std::string folder_name = game.path( ).filename( ).string( );
 
-        if ( auto it = anno_paths.find( folder_name ); it != anno_paths.end( ) ) {
+        if ( auto it = m_anno_paths.find( folder_name ); it != m_anno_paths.end( ) ) {
             // get_logger().info("Anno match: " + folder_name + " at " + game.path().string());
             auto &[key, anno_data] = *it;
 

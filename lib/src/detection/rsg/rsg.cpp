@@ -2,7 +2,7 @@
 #include "detection/detection.hpp"
 #include "utils/translations/translations.hpp"
 
-std::expected<std::vector<Game>, DetectionError> RockstarDetector::find_saves( const fs::path &prefix ) const {
+std::expected<std::vector<Game>, DetectionError> CRockstarDetector::find_saves( const fs::path &prefix ) const {
     if ( !fs::exists( prefix ) ) {
         return std::unexpected{ DetectionError::PathNotFound };
     }
@@ -37,7 +37,7 @@ std::expected<std::vector<Game>, DetectionError> RockstarDetector::find_saves( c
     return games;
 }
 
-std::expected<std::vector<Game>, DetectionError> RockstarDetector::find_legacy_saves( const fs::path &prefix ) const {
+std::expected<std::vector<Game>, DetectionError> CRockstarDetector::find_legacy_saves( const fs::path &prefix ) const {
     if ( !fs::exists( prefix ) ) {
         return std::unexpected{ DetectionError::PathNotFound };
     }
@@ -47,7 +47,7 @@ std::expected<std::vector<Game>, DetectionError> RockstarDetector::find_legacy_s
           fs::directory_iterator( prefix, std::filesystem::directory_options::skip_permission_denied ) ) {
         std::string folder_name = game.path( ).filename( ).string( );
 
-        if ( auto it = legacy_games.find( folder_name ); it != legacy_games.end( ) ) {
+        if ( auto it = m_legacy_games.find( folder_name ); it != m_legacy_games.end( ) ) {
             auto &[key, game_name] = *it;
             Game l_game;
             l_game.type = PlatformType::ROCKSTAR;

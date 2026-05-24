@@ -31,7 +31,7 @@ void Features::backup_game( const Game &game, const fs::path &file, CConfig &con
     // writing happens on the destructor so we scope it to do it immediatly, needs a refactor
     bool success = false;
     {
-        ZipArchive archive( MODE_CREATE_ARCHIVE, zip_name.u8string( ) );
+        CZipArchive archive( MODE_CREATE_ARCHIVE, zip_name.u8string( ) );
         if ( game.type == PlatformType::MINECRAFT ) {
             archive.set_comment( file.string( ) );
         } else {
@@ -79,7 +79,7 @@ bool Features::backup_game_files( const Game &game, std::vector<std::pair<fs::pa
 
     bool failed_to_add = false;
     {
-        ZipArchive za( MODE_CREATE_ARCHIVE, zip_name );
+        CZipArchive za( MODE_CREATE_ARCHIVE, zip_name );
         for ( const auto &entry : files ) {
             if ( !za.add_to_archive( entry.first ) ) failed_to_add = true;
         }
@@ -102,7 +102,7 @@ void Features::backup_to_path( fs::path source, fs::path dest ) {
     fs::path zip_name = fs::path( dest.string( ) + ".tmp" );
     bool success = false;
     {
-        ZipArchive archive( MODE_CREATE_ARCHIVE, zip_name.u8string( ) );
+        CZipArchive archive( MODE_CREATE_ARCHIVE, zip_name.u8string( ) );
         archive.set_comment( source.parent_path( ).string( ) );
         success = archive.add_to_archive( source );
     }
@@ -136,7 +136,7 @@ std::vector<fs::path> Features::get_backups( const std::string &game, CConfig &c
 
 void Features::restore_backup( const fs::path &name, const fs::path &save_path,
                                std::vector<std::pair<fs::path, fs::path>> &conflicts ) {
-    ZipArchive archive( MODE_EXTRACT_ARCHIVE, name.u8string( ) );
+    CZipArchive archive( MODE_EXTRACT_ARCHIVE, name.u8string( ) );
 
     fs::path restore_path;
     std::string comment = archive.get_comment( );

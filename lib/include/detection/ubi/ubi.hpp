@@ -2,7 +2,7 @@
 #include <types.hpp>
 namespace fs = std::filesystem;
 
-class UbisoftDetector {
+class CUbisoftDetector {
   public:
     std::expected<std::vector<Game>, DetectionError> find_saves( const fs::path &prefix ) const;
     std::expected<std::vector<Game>, DetectionError> find_anno_saves( const fs::path &prefix ) const;
@@ -13,7 +13,7 @@ class UbisoftDetector {
         std::string save_subpath;
     };
 
-    const std::unordered_map<std::string_view, AnnoEntry> anno_paths = {
+    const std::unordered_map<std::string_view, AnnoEntry> m_anno_paths = {
         { "Anno 117 - Pax Romana", { "Anno 117: Pax Romana", "accounts" } },
         { "Anno 1800", { "Anno 1800", "accounts" } },
         { "Anno 1404", { "Anno 1404", "Savegames" } },

@@ -5,7 +5,7 @@
 #include <nlohmann/json.hpp>
 using json = nlohmann::json;
 
-void SaveScheduler::load( ) {
+void CSaveScheduler::load( ) {
     std::ifstream file( paths::schedule_file( ).c_str( ) );
     if ( !file.is_open( ) ) {
         SPDLOG_ERROR( "Failed to open schedule for loading!" );
@@ -35,7 +35,7 @@ void SaveScheduler::load( ) {
     }
 }
 
-void SaveScheduler::save( ) {
+void CSaveScheduler::save( ) {
     json arr = json::array( );
     for ( const auto &entry : m_entries ) {
         json obj;
@@ -57,11 +57,11 @@ void SaveScheduler::save( ) {
     file << arr.dump( 4 );
 }
 
-void SaveScheduler::backup_loop( ) {
+void CSaveScheduler::backup_loop( ) {
     while ( m_running ) {
         std::vector<ScheduleEntry> to_backup;
         {
-            std::lock_guard<std::mutex> lock( schedule_mutex );
+            std::lock_guard<std::mutex> lock( m_schedule_mutex );
             auto now_ts = std::chrono::duration_cast<std::chrono::seconds>(
                               std::chrono::system_clock::now( ).time_since_epoch( ) )
                               .count( );
@@ -92,7 +92,7 @@ void SaveScheduler::backup_loop( ) {
             auto now_ts = std::chrono::duration_cast<std::chrono::seconds>(
                               std::chrono::system_clock::now( ).time_since_epoch( ) )
                               .count( );
-            std::lock_guard<std::mutex> lock( schedule_mutex );
+            std::lock_guard<std::mutex> lock( m_schedule_mutex );
             for ( auto &e : m_entries )
                 for ( const auto &b : to_backup )
                     if ( e.appid == b.appid ) e.last_backup_time = now_ts;
@@ -108,31 +108,31 @@ void SaveScheduler::backup_loop( ) {
     }
 }
 
-void SaveScheduler::run( ) {
+void CSaveScheduler::run( ) {
     m_running = true;
-    m_backup_thread = std::thread( &SaveScheduler::backup_loop, this );
+    m_backup_thread = std::thread( &CSaveScheduler::backup_loop, this );
 }
 
-void SaveScheduler::add_entry( ScheduleEntry entry ) {
+void CSaveScheduler::add_entry( ScheduleEntry entry ) {
     {
-        std::lock_guard<std::mutex> lock( schedule_mutex );
+        std::lock_guard<std::mutex> lock( m_schedule_mutex );
         m_entries.emplace_back( entry );
         SPDLOG_INFO( "added new schedule entry for: {}", entry.game_name );
         save( );
     }
 }
 
-void SaveScheduler::remove_entry( std::string appid ) {
+void CSaveScheduler::remove_entry( std::string appid ) {
     {
-        std::lock_guard<std::mutex> lock( schedule_mutex );
+        std::lock_guard<std::mutex> lock( m_schedule_mutex );
         SPDLOG_INFO( "removed schedule entry for appid: {}", appid );
         std::erase_if( m_entries, [&]( const auto &e ) { return e.appid == appid; } );
     }
 }
 
-void SaveScheduler::update_entry( ScheduleEntry entry ) {
+void CSaveScheduler::update_entry( ScheduleEntry entry ) {
     {
-        std::lock_guard<std::mutex> lock( schedule_mutex );
+        std::lock_guard<std::mutex> lock( m_schedule_mutex );
         SPDLOG_INFO( "updating schedule entry for: {}", entry.game_name );
         auto it = std::ranges::find_if( m_entries, [&]( const auto &e ) { return e.appid == entry.appid; } );
         if ( it != m_entries.end( ) ) *it = entry;
