@@ -13,28 +13,34 @@ static constexpr const char* ICON_SORT   = "\xef\x83\x9c";
 static constexpr const char* ICON_FILTER = "\xef\x82\xb0";
 
 void CDashboardView::on_enter( ) {
-    m_cache.refresh( [this] {
+    {
+        std::unique_lock lock( m_result.d_mutex );
+        m_result.games.clear( );
+    }
+    m_last_game_count = 0;
+    m_grouped_games.clear( );
+    m_game_cache.clear( );
+    m_refresh_future = std::async( std::launch::async, [this] {
         Detection::find_saves( m_config, m_result );
-        std::shared_lock lock( m_result.d_mutex );
-        return m_result.games;
     } );
 };
 
 void CDashboardView::render( ) {
-    auto cache = m_cache.get( );
-
-    if ( m_was_refreshing && !m_cache.is_refreshing( ) ) {
+    bool needs_update = false;
+    {
+        std::shared_lock lock( m_result.d_mutex );
+        size_t           current_count = m_result.games.size( );
+        if ( current_count != m_last_game_count ) {
+            m_last_game_count = current_count;
+            needs_update      = true;
+        }
+    }
+    if ( needs_update )
         on_result_changed( );
-    }
 
-    if ( m_cache.is_refreshing( ) ) {
-        Spinner::render( );
-    } else {
-        render_toolbar( );
-        render_game_list( );
-    }
-
-    m_was_refreshing = m_cache.is_refreshing( );
+    render_toolbar( );
+    render_game_list( );
+    render_modals( );
 }
 
 void CDashboardView::on_exit( ) {}
@@ -42,6 +48,8 @@ CDashboardView::~CDashboardView( ) {}
 
 // private
 void CDashboardView::render_toolbar( ) {
+    bool is_refreshing =
+        m_refresh_future.valid( ) && m_refresh_future.wait_for( std::chrono::seconds( 0 ) ) != std::future_status::ready;
     bool is_backing_up =
         m_backup_future.valid( ) && m_backup_future.wait_for( std::chrono::seconds( 0 ) ) != std::future_status::ready;
 
@@ -101,17 +109,18 @@ void CDashboardView::render_toolbar( ) {
     }
     ImGui::SameLine( );
 
-    if ( !m_cache.is_refreshing( ) &&
+    if ( !is_refreshing &&
          ( ImGui::Button( "Refresh" ) || ( ImGui::GetIO( ).KeyCtrl && ImGui::IsKeyPressed( ImGuiKey_R ) ) ) ) {
         {
+            std::unique_lock lock( m_result.d_mutex );
             m_result.games.clear( );
-            m_grouped_games.clear( );
-            m_cache.refresh( [this] {
-                Detection::find_saves( m_config, m_result );
-                std::shared_lock lock( m_result.d_mutex );
-                return m_result.games;
-            } );
         }
+        m_last_game_count = 0;
+        m_grouped_games.clear( );
+        m_game_cache.clear( );
+        m_refresh_future = std::async( std::launch::async, [this] {
+            Detection::find_saves( m_config, m_result );
+        } );
     }
     ImGui::SetItemTooltip( "Re-runs the detection logic to find new saves" );
     ImGui::SameLine( );

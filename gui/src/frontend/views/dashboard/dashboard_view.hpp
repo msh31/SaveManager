@@ -1,5 +1,4 @@
 #pragma once
-#include <backend/cache.hpp>
 #include <config/config.hpp>
 #include <detection/detection.hpp>
 #include <frontend/views/base_view.hpp>
@@ -32,12 +31,11 @@ class CDashboardView : public CBaseView {
                 bool                                         has_conflicts = false;
         };
 
-        CCache<std::vector<Game>>                           m_cache{ };
         Detection::DetectionResult                          m_result;
         std::vector<std::vector<int>>                       m_grouped_games;
         std::unordered_map<std::string, GameCache>          m_game_cache;
         std::unordered_map<std::string, fs::file_time_type> m_game_last_modified;
-        std::atomic<bool>                                   m_was_refreshing;
+        size_t                                              m_last_game_count = 0;
 
         // UI state
         enum class SortMode { Recent, Alphabetical };
@@ -59,6 +57,7 @@ class CDashboardView : public CBaseView {
         std::vector<std::pair<fs::path, fs::path>> m_pending_conflicts;
 
         // Futures
+        std::future<void> m_refresh_future;
         std::future<void> m_backup_future;
 
         // TODO: implement schedule usage from the lib
