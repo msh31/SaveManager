@@ -39,7 +39,7 @@ void Detection::add_game( std::expected<std::vector<Game>, DetectionError> resul
     }
 }
 
-void scan_prefix_dir( const fs::path &compatdata, Detection::DetectionResult &result, const Config &config,
+void scan_prefix_dir( const fs::path &compatdata, Detection::DetectionResult &result, const CConfig &config,
                       const Detectors &detectors ) {
     for ( const auto &entry : fs::directory_iterator( compatdata ) ) {
         try {
@@ -88,7 +88,7 @@ void scan_prefix_dir( const fs::path &compatdata, Detection::DetectionResult &re
     }
 }
 
-void Detection::find_saves( Config &config, DetectionResult &d_result ) {
+void Detection::find_saves( CConfig &config, DetectionResult &d_result ) {
     Detectors detectors;
 
     // cool lua support

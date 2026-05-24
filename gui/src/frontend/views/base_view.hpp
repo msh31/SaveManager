@@ -1,5 +1,4 @@
 #pragma once
-#include <backend/config/config.hpp>
 
 class CBaseView {
     public:

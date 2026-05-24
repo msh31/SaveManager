@@ -12,7 +12,7 @@
 #include <features/scheduler/scheduler.hpp>
 
 int main( ) {
-    Config config;
+    CConfig config;
 
     SaveScheduler scheduler( config );
 

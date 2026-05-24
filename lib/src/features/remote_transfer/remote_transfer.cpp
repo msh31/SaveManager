@@ -4,7 +4,7 @@
 // https://libssh2.org/examples/sftp_write.html
 RemoteTransfer::RemoteTransfer( ) {}
 
-bool RemoteTransfer::connect( const std::string &dest_addr, const Config &config, bool auth_pw,
+bool RemoteTransfer::connect( const std::string &dest_addr, const CConfig &config, bool auth_pw,
                               const std::string &key_passphrase ) {
 #ifdef _WIN32
     WSADATA wsadata;
@@ -112,7 +112,7 @@ bool RemoteTransfer::disconnect( ) {
     return false;
 }
 
-void RemoteTransfer::upload_file( const fs::path &backup_path, const std::string &remote_path, const Config &config ) {
+void RemoteTransfer::upload_file( const fs::path &backup_path, const std::string &remote_path, const CConfig &config ) {
     char mem[1024 * 100];
     size_t nread;
     ssize_t nwritten;
@@ -182,7 +182,7 @@ std::vector<RemoteEntry> RemoteTransfer::list_directory( const std::string &path
     return entry;
 }
 
-void RemoteTransfer::download_file( const fs::path &backup_path, const Config &config ) {
+void RemoteTransfer::download_file( const fs::path &backup_path, const CConfig &config ) {
     char mem[1024 * 100];
 
     fs::path local_path = paths::backup_dir( ) / backup_path.filename( );

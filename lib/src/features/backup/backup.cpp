@@ -8,7 +8,7 @@
 #include <nlohmann/json.hpp>
 using json = nlohmann::json;
 
-void Features::backup_game( const Game &game, const fs::path &file, Config &config ) {
+void Features::backup_game( const Game &game, const fs::path &file, CConfig &config ) {
     SPDLOG_INFO( "creating backup of: {}", game.game_name );
     fs::path game_backup_dir = paths::backup_dir( ) / sanitize_filename( game.game_name );
 
@@ -52,7 +52,7 @@ void Features::backup_game( const Game &game, const fs::path &file, Config &conf
     }
 }
 
-void Features::backup_all_games( std::vector<Game> snapshot, Config &config ) {
+void Features::backup_all_games( std::vector<Game> snapshot, CConfig &config ) {
     for ( auto &entry : snapshot ) {
         if ( fs::is_directory( entry.save_path ) ) {
             for ( const auto &file :
@@ -119,7 +119,7 @@ void Features::backup_to_path( fs::path source, fs::path dest ) {
     }
 }
 
-std::vector<fs::path> Features::get_backups( const std::string &game, Config &config ) {
+std::vector<fs::path> Features::get_backups( const std::string &game, CConfig &config ) {
     fs::path game_backup_dir = paths::backup_dir( ) / sanitize_filename( game );
 
     if ( !fs::exists( game_backup_dir ) ) {
@@ -175,7 +175,7 @@ std::string Features::construct_backup_name( const std::string &game, const std:
     return std::format( "backup_{}_{}.zip", filename, timestamp );
 }
 
-std::unordered_map<std::string, std::string> Features::load_labels( const std::string &game, Config &config ) {
+std::unordered_map<std::string, std::string> Features::load_labels( const std::string &game, CConfig &config ) {
     json data;
     std::unordered_map<std::string, std::string> backup_labels;
     std::string file_name = ( paths::backup_dir( ) / sanitize_filename( game ) / "labels.json" ).string( );
@@ -201,7 +201,7 @@ std::unordered_map<std::string, std::string> Features::load_labels( const std::s
     return { };
 }
 
-void Features::save_label( const std::string &game, Config &config, const std::string &filename,
+void Features::save_label( const std::string &game, CConfig &config, const std::string &filename,
                            const std::string &label ) {
     std::string file_name = ( paths::backup_dir( ) / sanitize_filename( game ) / "labels.json" ).string( );
     auto labels = load_labels( game, config );
@@ -217,7 +217,7 @@ void Features::save_label( const std::string &game, Config &config, const std::s
     out << data.dump( 4 );
 }
 
-void Features::save_labels( const std::string &game, Config &config,
+void Features::save_labels( const std::string &game, CConfig &config,
                             const std::unordered_map<std::string, std::string> &labels ) {
     std::string file_name = ( paths::backup_dir( ) / sanitize_filename( game ) / "labels.json" ).string( );
 

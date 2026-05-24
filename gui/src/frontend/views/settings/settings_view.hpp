@@ -1,4 +1,5 @@
 #pragma once
+#include <config/config.hpp>
 #include <frontend/views/base_view.hpp>
 
 class CSettingsView : public CBaseView {

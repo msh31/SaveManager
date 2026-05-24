@@ -4,7 +4,7 @@
 
 class SaveScheduler {
   public:
-    SaveScheduler( const Config &config ) {
+    SaveScheduler( const CConfig &config ) {
         m_config = config;
         load( );
     }
@@ -21,7 +21,7 @@ class SaveScheduler {
     void save( );
 
   private:
-    Config m_config;
+    CConfig m_config;
 
     void load( );
     void stop( ) {

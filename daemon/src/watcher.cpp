@@ -13,7 +13,7 @@
 #define BUFFER_LEN ( 1024 * ( EVENT_SIZE + 16 ) )
 #endif
 
-Watcher::Watcher( std::function<void( const fs::path &, uint32_t )> fun, const Config &config ) {
+Watcher::Watcher( std::function<void( const fs::path &, uint32_t )> fun, const CConfig &config ) {
     m_fun = fun;
 #if defined( __linux__ )
     m_notify_fd = inotify_init( );

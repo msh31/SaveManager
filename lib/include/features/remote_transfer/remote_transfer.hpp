@@ -6,7 +6,7 @@
 
 namespace fs = std::filesystem;
 
-class Config;
+class CConfig;
 
 // copied from
 // https://git.marco007.dev/marco/http-server/src/commit/db41ab8f0126ed57b257face7c396c08d0999da9/socket_wrapper.hpp
@@ -37,10 +37,10 @@ class RemoteTransfer {
     RemoteTransfer( );
     ~RemoteTransfer( ) { disconnect( ); }
 
-    bool connect( const std::string &dest_addr, const Config &config, bool auth_pw, const std::string &key_passphrase );
+    bool connect( const std::string &dest_addr, const CConfig &config, bool auth_pw, const std::string &key_passphrase );
     bool disconnect( );
-    void upload_file( const fs::path &backup_path, const std::string &remote_path, const Config &config );
-    void download_file( const fs::path &backup_path, const Config &config );
+    void upload_file( const fs::path &backup_path, const std::string &remote_path, const CConfig &config );
+    void download_file( const fs::path &backup_path, const CConfig &config );
     std::vector<RemoteEntry> list_directory( const std::string &path );
 
     // disable copying (prevent accidental double-cleanup)

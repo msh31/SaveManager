@@ -6,7 +6,7 @@
 
 class Watcher {
     public:
-    Watcher( std::function<void( const fs::path &, uint32_t )> fun, const Config &config );
+    Watcher( std::function<void( const fs::path &, uint32_t )> fun, const CConfig &config );
     ~Watcher( ) { shutdown( ); }
 
     bool add_watch( const fs::path &path );
@@ -15,7 +15,7 @@ class Watcher {
     void run( );
 
     private:
-    Config config;
+    CConfig config;
     std::function<void( const fs::path &, uint32_t )> m_fun;
 
     int m_notify_fd = -1;
