@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.8.0] - 2026-06-03
+*Rewrote the GUI using a custom ImGui framework, improving code quality and maintainability.*
+
+### Core
+#### Added
+
+
+
 ## [1.7.0] - 2026-05-21
 *Core logic moved into a separate library linked by the GUI*
  
