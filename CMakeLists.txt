@@ -140,7 +140,6 @@ string(TIMESTAMP BUILD_DATE "%Y-%m-%d %H:%M UTC")
 set(savemanager_SOURCES
 	cmake.toml
 	"gui/src/app/app.cpp"
-	"gui/src/backend/config/config.cpp"
 	"gui/src/backend/font_manager/font_manager.cpp"
 	"gui/src/backend/task_runner/task_runner.cpp"
 	"gui/src/backend/text_pipeline/text_pipeline.cpp"
