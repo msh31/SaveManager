@@ -12,4 +12,12 @@ class CSettingsView : public CBaseView {
 
     private:
         CConfig& m_config;
+
+        std::string m_blacklist_input;
+        std::string m_new_game_name;
+        std::string m_new_game_path;
+        std::string m_new_game_appid;
+
+        std::future<bool>                  m_update_future;
+        std::future<std::pair<bool, bool>> m_update_t_future;
 };
