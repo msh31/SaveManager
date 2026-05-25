@@ -4,8 +4,7 @@
 #include <backend/font_manager/font_manager.hpp>
 #include <backend/utils.hpp>
 
-#include <frontend/components/collapsible_header.hpp>
-// #include <frontend/components/game_card.hpp>
+#include <frontend/components/card.hpp>
 #include <frontend/components/spinner.hpp>
 #include <frontend/notification/notification.hpp>
 
@@ -218,14 +217,7 @@ void CDashboardView::render_game_row( const std::vector<int>& group, int gi ) {
 
     std::string right_text =
         std::format( "{} | {} saves | {} backups", get_platform_label( primary.type ), save_count, backup_count );
-
-    ImGui::PushStyleColor( ImGuiCol_Border, ImVec4( 198 / 255.f, 97 / 255.f, 63 / 255.f, 1.f ) );
-    ImGui::PushStyleVar( ImGuiStyleVar_ChildRounding, 4.0f );
-    ImGui::BeginChild( selectable_id.c_str( ), ImVec2( 0, 0 ), ImGuiChildFlags_Borders | ImGuiChildFlags_AutoResizeY );
-    ImGui::PopStyleColor( );
-    CollapsibleHeader::draw( selectable_id, primary.game_name, not_collapsed, right_text );
-
-    if ( not_collapsed ) {
+    Card::draw( selectable_id, primary.game_name, not_collapsed, right_text, [&]( ) {
         if ( save_count > 0 ) {
             if ( primary.type != PlatformType::MINECRAFT ) ImGui::TextDisabled( "SAVE FILES" );
             else
@@ -301,40 +293,41 @@ void CDashboardView::render_game_row( const std::vector<int>& group, int gi ) {
         } else
             ImGui::TextDisabled( "Game detected but no saves were found!" );
         if ( backup_count > 0 ) {
-            CollapsibleHeader::draw( "backups", "BACKUPS", bk_collapsed, std::nullopt );
-
-            if ( bk_collapsed ) {
+            Card::draw( selectable_id, "BACKUPS", bk_collapsed, std::nullopt, [&]( ) {
                 auto backups = Features::get_backups( primary.game_name, m_config );
                 for ( auto& backup : backups ) {
                     ImGui::Separator( );
                     render_backup_row( backup, primary, labels );
                 }
-            }
+            } );
         }
-    }
-
-    if ( ImGui::BeginPopupContextWindow( ) ) {
-        if ( ImGui::MenuItem( "Open Path" ) ) {
-            open_in_file_manager( primary.save_path.string( ).c_str( ) );
-        }
-        // if ( ImGui::BeginMenu( "Schedule backup" ) ) {
-        //     for ( const auto &entry : group ) {
-        //         const Game &g = ctx.games[entry];
-        //         std::string label = std::format( "{}##entry_{}", g.save_path.filename( ).string( ), entry );
-        //         if ( ImGui::MenuItem( label.c_str( ) ) ) {
-        //             pending_schedule_game = g;
-        //             open_schedule_modal = true;
-        //             ImGui::OpenPopup( "Add schedule" );
-        //         }
-        //     }
-        //     ImGui::EndMenu( );
         // }
-        ImGui::EndPopup( );
-    }
+
+        if ( ImGui::BeginPopupContextWindow( ) ) {
+            if ( ImGui::MenuItem( "Open Path" ) ) {
+                open_in_file_manager( primary.save_path.string( ).c_str( ) );
+            }
+            // if ( ImGui::BeginMenu( "Schedule backup" ) ) {
+            //     for ( const auto &entry : group ) {
+            //         const Game &g = ctx.games[entry];
+            //         std::string label = std::format( "{}##entry_{}", g.save_path.filename( ).string( ), entry );
+            //         if ( ImGui::MenuItem( label.c_str( ) ) ) {
+            //             pending_schedule_game = g;
+            //             open_schedule_modal = true;
+            //             ImGui::OpenPopup( "Add schedule" );
+            //         }
+            //     }
+            //     ImGui::EndMenu( );
+            // }
+            ImGui::EndPopup( );
+        }
+    } );
+
+    // if ( not_collapsed )
 
     // Widgets::end_game_card( );
-    ImGui::EndChild( );
-    ImGui::PopStyleVar( );
+    // ImGui::EndChild( );
+    // ImGui::PopStyleVar( );
 }
 
 void CDashboardView::render_save_row( const fs::path& save_file, const Game& game ) {
