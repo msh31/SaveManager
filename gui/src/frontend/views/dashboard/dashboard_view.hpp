@@ -16,6 +16,9 @@ class CDashboardView : public CBaseView {
         void on_result_changed( );
         void render_toolbar( );
         void render_game_list( );
+        void render_game_content(
+            std::pair<int, int> sb_count, const Game& game, bool has_conflicts,
+            std::vector<std::pair<fs::path, const Game*>> files );
         void render_game_row( const std::vector<int>& group, int gi );
         void render_save_row( const fs::path& save_file, const Game& game );
         void render_backup_row(

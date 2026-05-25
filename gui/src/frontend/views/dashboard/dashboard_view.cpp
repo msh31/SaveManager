@@ -191,6 +191,86 @@ void CDashboardView::render_game_list( ) {
     } );
 }
 
+void CDashboardView::render_game_content(
+    std::pair<int, int> sb_count, const Game& game, bool has_conflicts,
+    std::vector<std::pair<fs::path, const Game*>> files ) {
+    // saves
+    if ( sb_count.first <= 0 ) ImGui::TextDisabled( "Game detected but no saves were found!" );
+
+    if ( game.type != PlatformType::MINECRAFT ) ImGui::TextDisabled( "SAVE FILES" );
+    else
+        ImGui::TextDisabled( "WORLDS" );
+
+    // TODO: cache this
+    fs::path undo_dir = paths::backup_dir( ) / sanitize_filename( game.game_name ) / "undo.zip";
+    bool     has_undo = false;
+    if ( fs::exists( undo_dir ) ) has_undo = true;
+
+    // TODO: refactor this, just disable dont hide
+    float total = 110.f; // Backup All
+    // total += ImGui::CalcTextSize("Create Schedule__").x + 4.f;
+    if ( has_conflicts ) total += ImGui::CalcTextSize( "Resolve Conflict(s)__" ).x + 4.f;
+    if ( has_undo ) total += ImGui::CalcTextSize( "Undo last restore___" ).x + 4.f;
+    ImGui::SameLine( ImGui::GetContentRegionMax( ).x - total );
+
+    ImGui::PushStyleColor( ImGuiCol_Button, ImColor( 198, 97, 63 ).Value );
+    ImGui::PushStyleColor( ImGuiCol_ButtonHovered, ImColor( 198, 97, 63 ).Value );
+    if ( ImGui::Button( "Backup All" ) ) {
+        SPDLOG_INFO( "creating backup of: {}", game.game_name );
+        m_backup_future = std::async( std::launch::async, [this, game, files]( ) {
+            if ( Features::backup_game_files( game, files ) ) {
+                Notify::show_notification( "Backup Created", "A backup has been for all saves!", 1500 );
+            } else {
+                Notify::show_notification(
+                    "Backup Creation", "Failed to create backup! Please refer to the logfile!", 2000 );
+            }
+        } );
+    }
+    ImGui::PopStyleColor( 2 );
+    // #ifndef NDEBUG
+    //             ImGui::SameLine( );
+    //             if ( ImGui::Button( "Create Schedule" ) ) {
+    //                 scheduled_files.clear( );
+    //                 scheduled_files_selected.clear( );
+    //
+    //                 pending_schedule_game = primary;
+    //                 open_schedule_modal = true;
+    //                 for ( const auto &entry : game_cache[cache_key( primary )].save_files ) {
+    //                     scheduled_files.push_back( entry );
+    //                 }
+    //             }
+    // #endif
+    ImGui::SameLine( );
+    if ( has_conflicts ) {
+        if ( ImGui::Button( "Resolve Conflict(s)" ) ) {
+            m_pending_conflicts.clear( );
+            for ( const auto& f : fs::directory_iterator( game.save_path ) ) {
+                auto     full     = f.path( ).string( );
+                auto     pos      = full.find( ".savemgr-conflict-" );
+                fs::path original = full.substr( 0, pos );
+                m_pending_conflicts.push_back( { original, f.path( ) } );
+            }
+            m_open_conflict_modal = true;
+        }
+    }
+    ImGui::SameLine( );
+    if ( has_undo ) {
+        if ( ImGui::Button( "Undo last restore" ) ) {
+            Features::restore_backup( undo_dir, game.save_path, m_pending_conflicts );
+            fs::remove( undo_dir );
+        }
+    }
+
+    for ( auto& save : files ) {
+        if ( !fs::exists( save.first ) ) continue;
+        if ( save.first.string( ).contains( ".savemgr-conflict-" ) ) continue;
+
+        ImGui::Separator( );
+        render_save_row( save.first, *save.second );
+        ImGui::Separator( );
+    }
+}
+
 void CDashboardView::render_game_row( const std::vector<int>& group, int gi ) {
     const Game& primary = m_games_snapshot[group[0]];
     if ( !m_backups_expanded.contains( cache_key( primary ) ) ) {
@@ -218,80 +298,8 @@ void CDashboardView::render_game_row( const std::vector<int>& group, int gi ) {
     std::string right_text =
         std::format( "{} | {} saves | {} backups", get_platform_label( primary.type ), save_count, backup_count );
     Card::draw( selectable_id, primary.game_name, not_collapsed, right_text, [&]( ) {
-        if ( save_count > 0 ) {
-            if ( primary.type != PlatformType::MINECRAFT ) ImGui::TextDisabled( "SAVE FILES" );
-            else
-                ImGui::TextDisabled( "WORLDS" );
+        render_game_content( { save_count, backup_count }, primary, has_conflicts, files );
 
-            // todo cache this
-            fs::path undo_dir = paths::backup_dir( ) / sanitize_filename( primary.game_name ) / "undo.zip";
-            bool     has_undo = false;
-            if ( fs::exists( undo_dir ) ) has_undo = true;
-
-            float total = 110.f; // Backup All
-            // total += ImGui::CalcTextSize("Create Schedule__").x + 4.f;
-            if ( has_conflicts ) total += ImGui::CalcTextSize( "Resolve Conflict(s)__" ).x + 4.f;
-            if ( has_undo ) total += ImGui::CalcTextSize( "Undo last restore___" ).x + 4.f;
-            ImGui::SameLine( ImGui::GetContentRegionMax( ).x - total );
-
-            ImGui::PushStyleColor( ImGuiCol_Button, ImColor( 198, 97, 63 ).Value );
-            ImGui::PushStyleColor( ImGuiCol_ButtonHovered, ImColor( 198, 97, 63 ).Value );
-            if ( ImGui::Button( "Backup All" ) ) {
-                SPDLOG_INFO( "creating backup of: {}", primary.game_name );
-                m_backup_future = std::async( std::launch::async, [this, primary, files]( ) {
-                    if ( Features::backup_game_files( primary, files ) ) {
-                        Notify::show_notification( "Backup Created", "A backup has been for all saves!", 1500 );
-                    } else {
-                        Notify::show_notification(
-                            "Backup Creation", "Failed to create backup! Please refer to the logfile!", 2000 );
-                    }
-                } );
-            }
-            ImGui::PopStyleColor( 2 );
-            // #ifndef NDEBUG
-            //             ImGui::SameLine( );
-            //             if ( ImGui::Button( "Create Schedule" ) ) {
-            //                 scheduled_files.clear( );
-            //                 scheduled_files_selected.clear( );
-            //
-            //                 pending_schedule_game = primary;
-            //                 open_schedule_modal = true;
-            //                 for ( const auto &entry : game_cache[cache_key( primary )].save_files ) {
-            //                     scheduled_files.push_back( entry );
-            //                 }
-            //             }
-            // #endif
-            ImGui::SameLine( );
-            if ( has_conflicts ) {
-                if ( ImGui::Button( "Resolve Conflict(s)" ) ) {
-                    m_pending_conflicts.clear( );
-                    for ( const auto& f : fs::directory_iterator( primary.save_path ) ) {
-                        auto     full     = f.path( ).string( );
-                        auto     pos      = full.find( ".savemgr-conflict-" );
-                        fs::path original = full.substr( 0, pos );
-                        m_pending_conflicts.push_back( { original, f.path( ) } );
-                    }
-                    m_open_conflict_modal = true;
-                }
-            }
-            ImGui::SameLine( );
-            if ( has_undo ) {
-                if ( ImGui::Button( "Undo last restore" ) ) {
-                    Features::restore_backup( undo_dir, primary.save_path, m_pending_conflicts );
-                    fs::remove( undo_dir );
-                }
-            }
-
-            for ( auto& save : files ) {
-                if ( !fs::exists( save.first ) ) continue;
-                if ( save.first.string( ).contains( ".savemgr-conflict-" ) ) continue;
-
-                ImGui::Separator( );
-                render_save_row( save.first, *save.second );
-                ImGui::Separator( );
-            }
-        } else
-            ImGui::TextDisabled( "Game detected but no saves were found!" );
         if ( backup_count > 0 ) {
             Card::draw( selectable_id, "BACKUPS", bk_collapsed, std::nullopt, [&]( ) {
                 auto backups = Features::get_backups( primary.game_name, m_config );
