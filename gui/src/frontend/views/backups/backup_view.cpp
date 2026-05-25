@@ -32,7 +32,7 @@ void CBackupsView::add_new_entry( ) {
         BackupEntry bentry;
         bentry.name = entry.path( ).filename( ).string( );
 
-        m_labels_cache[bentry.name.string( )] = Features::load_labels( bentry.name.string( ), m_config );
+        m_labels_cache[bentry.name.string( )] = Features::load_labels( bentry.name.string( ) );
 
         if ( auto it = save_path_lookup.find( bentry.name.string( ) ); it != save_path_lookup.end( ) )
             bentry.save_path = it->second;
@@ -55,8 +55,7 @@ void CBackupsView::render( ) {
     bool is_refreshing = m_refresh_future.valid( ) &&
                          m_refresh_future.wait_for( std::chrono::seconds( 0 ) ) != std::future_status::ready;
 
-    if ( m_refresh_future.valid( ) && !is_refreshing )
-        m_refresh_future.get( );
+    if ( m_refresh_future.valid( ) && !is_refreshing ) m_refresh_future.get( );
 
     if ( !is_refreshing && m_reload_backups ) {
         m_reload_backups = false;
@@ -96,8 +95,7 @@ void CBackupsView::render_game_row( const BackupEntry& bentry ) {
 
     ImGui::PushStyleColor( ImGuiCol_Border, ImVec4( 198 / 255.f, 97 / 255.f, 63 / 255.f, 1.f ) );
     ImGui::PushStyleVar( ImGuiStyleVar_ChildRounding, 4.0f );
-    ImGui::BeginChild(
-        selectable_id.c_str( ), ImVec2( 0, 0 ), ImGuiChildFlags_Borders | ImGuiChildFlags_AutoResizeY );
+    ImGui::BeginChild( selectable_id.c_str( ), ImVec2( 0, 0 ), ImGuiChildFlags_Borders | ImGuiChildFlags_AutoResizeY );
     ImGui::PopStyleColor( );
 
     if ( ImGui::Selectable( "##header", false, ImGuiSelectableFlags_None, ImVec2( 0, 30 ) ) )
@@ -127,8 +125,8 @@ void CBackupsView::render_game_row( const BackupEntry& bentry ) {
 }
 
 void CBackupsView::render_backup_row(
-    fs::path path, const fs::path& save_path,
-    const std::unordered_map<std::string, std::string>& labels, const std::string& game_name ) {
+    fs::path path, const fs::path& save_path, const std::unordered_map<std::string, std::string>& labels,
+    const std::string& game_name ) {
     if ( path.filename( ) == "undo.zip" ) return;
     ImGui::PushID( path.string( ).c_str( ) );
     if ( !fs::exists( path ) ) {
@@ -139,12 +137,12 @@ void CBackupsView::render_backup_row(
     auto        it      = labels.find( path.filename( ).string( ) );
     std::string display = ( it != labels.end( ) ) ? it->second : path.filename( ).string( );
 
-    std::string date_text  = std::format( "{:%d/%m/%y %H:%M} | ", fs::last_write_time( path ) );
-    float       date_width = ImGui::CalcTextSize( date_text.c_str( ) ).x;
-    auto        b_size     = fs::file_size( path ) / 1024;
-    std::string size_text  = std::format( "{}KB  ", b_size );
-    float       size_width = ImGui::CalcTextSize( size_text.c_str( ) ).x;
-    float       spacing    = ImGui::GetStyle( ).ItemSpacing.x;
+    std::string date_text   = std::format( "{:%d/%m/%y %H:%M} | ", fs::last_write_time( path ) );
+    float       date_width  = ImGui::CalcTextSize( date_text.c_str( ) ).x;
+    auto        b_size      = fs::file_size( path ) / 1024;
+    std::string size_text   = std::format( "{}KB  ", b_size );
+    float       size_width  = ImGui::CalcTextSize( size_text.c_str( ) ).x;
+    float       spacing     = ImGui::GetStyle( ).ItemSpacing.x;
     float       total_width = date_width + size_width + 80.0f * 3 + spacing * 5;
 
     ImGui::Text( "%s", display.c_str( ) );
@@ -183,7 +181,7 @@ void CBackupsView::render_backup_row(
         if ( fs::remove( path ) ) {
             auto mutable_labels = labels;
             mutable_labels.erase( path.filename( ).string( ) );
-            Features::save_labels( game_name, m_config, mutable_labels );
+            Features::save_labels( game_name, mutable_labels );
             m_reload_backups = true;
             Notify::show_notification( "Backup Deletion", "Backup deleted!", 1500 );
         } else {
@@ -208,13 +206,12 @@ void CBackupsView::render_modals( ) {
         ImGui::InputText( "Label", &m_rename_input );
         if ( ImGui::Button( "Save" ) ) {
             Features::save_label(
-                m_pending_rename_game, m_config, m_pending_rename_backup.filename( ).string( ), m_rename_input );
+                m_pending_rename_game, m_pending_rename_backup.filename( ).string( ), m_rename_input );
             m_labels_cache[m_pending_rename_game][m_pending_rename_backup.filename( ).string( )] = m_rename_input;
             ImGui::CloseCurrentPopup( );
         }
         ImGui::SameLine( );
-        if ( ImGui::Button( "Cancel" ) )
-            ImGui::CloseCurrentPopup( );
+        if ( ImGui::Button( "Cancel" ) ) ImGui::CloseCurrentPopup( );
         ImGui::EndPopup( );
     }
 }

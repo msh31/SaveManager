@@ -293,7 +293,7 @@ void CDashboardView::render_game_row( const std::vector<int>& group, int gi ) {
 
         if ( backup_count > 0 ) {
             Card::draw( selectable_id, "BACKUPS", bk_collapsed, std::nullopt, [&]( ) {
-                auto backups = Features::get_backups( primary.game_name, m_config );
+                auto backups = Features::get_backups( primary.game_name );
                 for ( auto& backup : backups ) {
                     ImGui::Separator( );
                     render_backup_row( backup, primary, labels );
@@ -427,7 +427,7 @@ void CDashboardView::render_backup_row(
         if ( fs::remove( backup ) ) {
             auto mutable_labels = labels;
             mutable_labels.erase( backup.filename( ).string( ) );
-            Features::save_labels( game.game_name, m_config, mutable_labels );
+            Features::save_labels( game.game_name, mutable_labels );
             Notify::show_notification( "Backup Deletion", "Backup deleted!", 1500 );
         } else {
             Notify::show_notification( "Backup Deletion", "Backup could not be deleted!", 1500 );
@@ -461,8 +461,7 @@ void CDashboardView::render_modals( ) {
         ImGui::InputText( "Label", &m_rename_input );
         if ( ImGui::Button( "Save" ) ) {
             Features::save_label(
-                m_pending_rename_game.game_name, m_config, m_pending_rename_backup.filename( ).string( ),
-                m_rename_input );
+                m_pending_rename_game.game_name, m_pending_rename_backup.filename( ).string( ), m_rename_input );
             ImGui::CloseCurrentPopup( );
         }
         ImGui::SameLine( );
@@ -636,10 +635,4 @@ void CDashboardView::on_result_changed( ) {
             m_game_cache         = std::move( *temp );
             m_game_last_modified = std::move( *temp_modified );
         } );
-
-    // try {
-    //
-    // } catch ( fs::filesystem_error& er ) {
-    //     SPDLOG_ERROR( "dashboard(on_result_changed): {}", er.what( ) );
-    // }
 }
