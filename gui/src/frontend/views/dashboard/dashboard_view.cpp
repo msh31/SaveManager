@@ -6,13 +6,10 @@
 
 #include <frontend/components/card.hpp>
 #include <frontend/components/spinner.hpp>
+#include <frontend/icons.hpp>
 #include <frontend/notification/notification.hpp>
 
 #include <features/backup/backup.hpp>
-
-// TODO: move this to a dedicated icon header
-static constexpr const char* ICON_SORT   = "\xef\x83\x9c";
-static constexpr const char* ICON_FILTER = "\xef\x82\xb0";
 
 void CDashboardView::on_enter( ) {
     if ( m_result.games.empty( ) ) {
