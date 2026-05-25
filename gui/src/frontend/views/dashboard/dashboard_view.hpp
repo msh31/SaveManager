@@ -1,4 +1,5 @@
 #pragma once
+#include <backend/task_runner/task_runner.hpp>
 #include <config/config.hpp>
 #include <detection/detection.hpp>
 #include <frontend/views/backups/backup_view.hpp>
@@ -28,6 +29,8 @@ class CDashboardView : public CBaseView {
         CConfig&     m_config;
         CBackupsView m_backups_view;
         bool         m_backups_tab_was_active = false;
+
+        CTaskRunner m_task_runner;
 
         // Detection / cache
         struct GameCache {

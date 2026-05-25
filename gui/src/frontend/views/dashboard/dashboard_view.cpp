@@ -28,6 +28,8 @@ void CDashboardView::on_enter( ) {
 };
 
 void CDashboardView::render( ) {
+    m_task_runner.update( );
+
     {
         std::shared_lock lock( m_result.d_mutex );
         m_games_snapshot = m_result.games;
@@ -562,70 +564,82 @@ void CDashboardView::on_result_changed( ) {
     }
     m_game_cache.clear( );
 
-    try {
-        for ( const auto& game : m_games_snapshot ) {
-            GameCache cache;
-            if ( !fs::is_directory( game.save_path ) ) continue;
-            if ( game.save_path.string( ).contains( ".savemgr-conflict-" ) ) continue;
+    auto temp          = std::make_shared<std::unordered_map<std::string, GameCache>>( );
+    auto temp_modified = std::make_shared<std::unordered_map<std::string, fs::file_time_type>>( );
 
-            if ( game.type != PlatformType::MINECRAFT ) {
-                for ( const auto& file : fs::recursive_directory_iterator(
-                          game.save_path, fs::directory_options::skip_permission_denied ) ) {
-                    if ( !fs::is_regular_file( file ) ) continue;
-                    auto ext = file.path( ).extension( ).string( );
-                    if ( game.type != PlatformType::CUSTOM ) {
-                        if ( std::find( extension_blocklist.begin( ), extension_blocklist.end( ), ext ) !=
-                             extension_blocklist.end( ) )
+    m_task_runner.run(
+        [games = m_games_snapshot, temp, temp_modified]( ) {
+            for ( const auto& game : games ) {
+                GameCache cache;
+                if ( !fs::is_directory( game.save_path ) ) continue;
+                if ( game.save_path.string( ).contains( ".savemgr-conflict-" ) ) continue;
+
+                if ( game.type != PlatformType::MINECRAFT ) {
+                    for ( const auto& file : fs::recursive_directory_iterator(
+                              game.save_path, fs::directory_options::skip_permission_denied ) ) {
+                        if ( !fs::is_regular_file( file ) ) continue;
+                        auto ext = file.path( ).extension( ).string( );
+                        if ( game.type != PlatformType::CUSTOM ) {
+                            if ( std::find( extension_blocklist.begin( ), extension_blocklist.end( ), ext ) !=
+                                 extension_blocklist.end( ) )
+                                continue;
+                        }
+                        if ( std::find( g_extension_blocklist.begin( ), g_extension_blocklist.end( ), ext ) !=
+                             g_extension_blocklist.end( ) )
                             continue;
+                        cache.save_files.push_back( file.path( ) );
                     }
-                    if ( std::find( g_extension_blocklist.begin( ), g_extension_blocklist.end( ), ext ) !=
-                         g_extension_blocklist.end( ) )
-                        continue;
-                    cache.save_files.push_back( file.path( ) );
-                }
-            } else {
-                cache.save_files.push_back( game.save_path );
-            }
-            cache.backup_count = Features::get_backups( game.game_name, m_config ).size( );
-            cache.labels       = Features::load_labels( game.game_name, m_config );
-            auto key           = cache_key( game );
-            if ( game.type == PlatformType::MINECRAFT ) {
-                if ( m_game_cache.contains( key ) ) {
-                    m_game_cache[key].save_files.push_back( game.save_path );
                 } else {
-                    m_game_cache[cache_key( game )] = cache;
+                    cache.save_files.push_back( game.save_path );
                 }
-            } else {
-                m_game_cache[cache_key( game )] = cache;
-            }
-
-            try {
-                for ( const auto& f : fs::directory_iterator( game.save_path ) ) {
-                    if ( f.path( ).string( ).find( ".savemgr-conflict-" ) != std::string::npos ) {
-                        // SPDLOG_INFO("writing conflict cache for key: {}", key);
-                        // SPDLOG_INFO("path: {}", game.save_path.string());
-                        m_game_cache[key].has_conflicts = true;
-                        break;
+                cache.backup_count = Features::get_backups( game.game_name ).size( );
+                cache.labels       = Features::load_labels( game.game_name );
+                auto key           = cache_key( game );
+                if ( game.type == PlatformType::MINECRAFT ) {
+                    if ( ( *temp ).contains( key ) ) {
+                        ( *temp )[key].save_files.push_back( game.save_path );
+                    } else {
+                        ( *temp )[cache_key( game )] = cache;
                     }
+                } else {
+                    ( *temp )[cache_key( game )] = cache;
                 }
-            } catch ( std::exception& ex ) {
-                SPDLOG_ERROR( "conflict iteration error: {}", ex.what( ) );
-            }
-        }
 
-        for ( const auto& entry : m_games_snapshot ) {
-            fs::file_time_type current_max;
-            if ( !fs::is_directory( entry.save_path ) ) continue;
-            for ( const auto& file :
-                  fs::directory_iterator( entry.save_path, fs::directory_options::skip_permission_denied ) ) {
-                if ( !fs::exists( file ) ) continue;
-                auto t = fs::last_write_time( file );
-                if ( fs::is_regular_file( file ) )
-                    if ( t > current_max ) current_max = t;
+                try {
+                    for ( const auto& f : fs::directory_iterator( game.save_path ) ) {
+                        if ( f.path( ).string( ).find( ".savemgr-conflict-" ) != std::string::npos ) {
+                            // SPDLOG_INFO("writing conflict cache for key: {}", key);
+                            // SPDLOG_INFO("path: {}", game.save_path.string());
+                            ( *temp )[key].has_conflicts = true;
+                            break;
+                        }
+                    }
+                } catch ( std::exception& ex ) {
+                    SPDLOG_ERROR( "conflict iteration error: {}", ex.what( ) );
+                }
             }
-            m_game_last_modified.insert( { entry.game_name, current_max } );
-        }
-    } catch ( fs::filesystem_error& er ) {
-        SPDLOG_ERROR( "dashboard(on_result_changed): {}", er.what( ) );
-    }
+
+            for ( const auto& entry : games ) {
+                fs::file_time_type current_max;
+                if ( !fs::is_directory( entry.save_path ) ) continue;
+                for ( const auto& file :
+                      fs::directory_iterator( entry.save_path, fs::directory_options::skip_permission_denied ) ) {
+                    if ( !fs::exists( file ) ) continue;
+                    auto t = fs::last_write_time( file );
+                    if ( fs::is_regular_file( file ) )
+                        if ( t > current_max ) current_max = t;
+                }
+                ( *temp_modified ).insert( { entry.game_name, current_max } );
+            }
+        },
+        [this, temp, temp_modified]( ) {
+            m_game_cache         = std::move( *temp );
+            m_game_last_modified = std::move( *temp_modified );
+        } );
+
+    // try {
+    //
+    // } catch ( fs::filesystem_error& er ) {
+    //     SPDLOG_ERROR( "dashboard(on_result_changed): {}", er.what( ) );
+    // }
 }
