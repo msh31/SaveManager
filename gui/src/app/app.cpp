@@ -1,5 +1,7 @@
 #include "app.hpp"
 #include <constants.hpp>
+
+#include <utils/blacklist/blacklist.hpp>
 #include <utils/translations/translations.hpp>
 
 #include <frontend/fonts/font_awesome.hpp>
@@ -16,6 +18,7 @@
 
 void CApp::init( ) {
     translations::init( );
+    Blacklist::init( );
     ThemeManager::apply_style( );
 
     m_ui_manager.add_view( { std::make_unique<CDashboardView>( m_config ), "\xef\x80\x95", "Dashboard" } );
