@@ -12,6 +12,7 @@
 - Auto scroll in the log tab
 - Minecraft filter in dashboard 
 - Total games found in dashboard
+- Total detection time in dashboard
 
 #### Changed
 - Refresh and mass backup buttons are now disabled during active operations instead of hidden

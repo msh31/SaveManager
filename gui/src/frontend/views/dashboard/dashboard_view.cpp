@@ -20,6 +20,7 @@ void CDashboardView::on_enter( ) {
         m_last_game_count = 0;
         m_grouped_games.clear( );
         m_game_cache.clear( );
+        m_detection_start_time = std::chrono::steady_clock::now( );
         m_refresh_future = std::async( std::launch::async, [this] { Detection::find_saves( m_config, m_result ); } );
     }
 };
@@ -74,7 +75,9 @@ void CDashboardView::render_toolbar( ) {
     float backup_width  = ImGui::CalcTextSize( "Mass Backup" ).x + ImGui::GetStyle( ).FramePadding.x * 2;
     float spacing       = ImGui::GetStyle( ).ItemSpacing.x * 3;
 
-    ImGui::TextDisabled( "%zu games found", m_filtered_game_count );
+    ImGui::TextDisabled(
+        "found %zu games in %s seconds", m_filtered_game_count,
+        std::format( "{:.2f}s", m_detection_duration ).c_str( ) );
 
     ImGui::SetNextItemWidth(
         ImGui::GetContentRegionAvail( ).x - sort_width - refresh_width - backup_width - filter_width - spacing );
@@ -125,6 +128,7 @@ void CDashboardView::render_toolbar( ) {
         m_last_game_count = 0;
         m_grouped_games.clear( );
         m_game_cache.clear( );
+        m_detection_start_time = std::chrono::steady_clock::now( );
         m_refresh_future = std::async( std::launch::async, [this] { Detection::find_saves( m_config, m_result ); } );
     }
     if ( is_refreshing ) ImGui::EndDisabled( );
@@ -568,7 +572,6 @@ void CDashboardView::on_result_changed( ) {
 
     auto temp          = std::make_shared<std::unordered_map<std::string, GameCache>>( );
     auto temp_modified = std::make_shared<std::unordered_map<std::string, fs::file_time_type>>( );
-
     m_task_runner.run(
         [games = m_games_snapshot, temp, temp_modified]( ) {
             for ( const auto& game : games ) {
@@ -637,5 +640,7 @@ void CDashboardView::on_result_changed( ) {
         [this, temp, temp_modified]( ) {
             m_game_cache         = std::move( *temp );
             m_game_last_modified = std::move( *temp_modified );
+            m_detection_duration =
+                std::chrono::duration<double>( std::chrono::steady_clock::now( ) - m_detection_start_time ).count( );
         } );
 }

@@ -62,6 +62,10 @@ class CDashboardView : public CBaseView {
             PlatformType::UBISOFT, PlatformType::ROCKSTAR, PlatformType::UNREAL, PlatformType::MINECRAFT,
             PlatformType::CUSTOM };
 
+        float m_detection_duration;
+
+        std::chrono::time_point<std::chrono::steady_clock> m_detection_start_time;
+
         // Model state
         bool                                       m_open_conflict_modal = false;
         bool                                       m_open_rename_modal   = false;
