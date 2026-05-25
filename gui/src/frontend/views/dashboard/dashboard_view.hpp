@@ -22,9 +22,9 @@ class CDashboardView : public CBaseView {
             const fs::path& backup, const Game& game, const std::unordered_map<std::string, std::string>& labels );
         void render_modals( );
 
-        CConfig&      m_config;
-        CBackupsView  m_backups_view;
-        bool          m_backups_tab_was_active = false;
+        CConfig&     m_config;
+        CBackupsView m_backups_view;
+        bool         m_backups_tab_was_active = false;
 
         // Detection / cache
         struct GameCache {
@@ -49,7 +49,7 @@ class CDashboardView : public CBaseView {
         SortMode                              m_sort_mode    = SortMode::Alphabetical;
         bool                                  m_focus_search = false;
         std::unordered_map<std::string, bool> m_card_collapsed;
-        std::unordered_map<std::string, bool> m_backups_collapsed;
+        std::unordered_map<std::string, bool> m_backups_expanded;
 
         // Model state
         bool                                       m_open_conflict_modal = false;

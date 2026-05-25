@@ -1,8 +1,11 @@
 #include "dashboard_view.hpp"
-#include <backend/utils.hpp>
 #include <utils/utils.hpp>
 
 #include <backend/font_manager/font_manager.hpp>
+#include <backend/utils.hpp>
+
+#include <frontend/components/collapsible_header.hpp>
+// #include <frontend/components/game_card.hpp>
 #include <frontend/components/spinner.hpp>
 #include <frontend/notification/notification.hpp>
 
@@ -191,9 +194,12 @@ void CDashboardView::render_game_list( ) {
 
 void CDashboardView::render_game_row( const std::vector<int>& group, int gi ) {
     const Game& primary = m_games_snapshot[group[0]];
+    if ( !m_backups_expanded.contains( cache_key( primary ) ) ) {
+        m_backups_expanded[cache_key( primary )] = true;
+    }
 
     bool&       not_collapsed = m_card_collapsed[cache_key( primary )];
-    bool&       bk_collapsed  = m_backups_collapsed[cache_key( primary )];
+    bool&       bk_collapsed  = m_backups_expanded[cache_key( primary )];
     const char* chevron       = bk_collapsed ? "▶" : "▼";
 
     std::vector<std::pair<fs::path, const Game*>> files = { };
@@ -208,7 +214,7 @@ void CDashboardView::render_game_row( const std::vector<int>& group, int gi ) {
         files.emplace_back( path, &primary );
     }
 
-    auto selectable_id = std::format( "##gamename_{}", gi );
+    auto selectable_id = std::format( "gamename_{}", gi );
 
     std::string right_text =
         std::format( "{} | {} saves | {} backups", get_platform_label( primary.type ), save_count, backup_count );
@@ -217,22 +223,7 @@ void CDashboardView::render_game_row( const std::vector<int>& group, int gi ) {
     ImGui::PushStyleVar( ImGuiStyleVar_ChildRounding, 4.0f );
     ImGui::BeginChild( selectable_id.c_str( ), ImVec2( 0, 0 ), ImGuiChildFlags_Borders | ImGuiChildFlags_AutoResizeY );
     ImGui::PopStyleColor( );
-
-    if ( ImGui::Selectable( "##header", false, ImGuiSelectableFlags_None, ImVec2( 0, 30 ) ) )
-        not_collapsed = !not_collapsed;
-    ImGui::SameLine( 8.0f );
-
-    ImGui::PushFont( CFontManager::get( ).get_font( "jbm_bold" ).value_or( nullptr ) );
-    ImGui::TextColored( ImColor( 198, 97, 63 ).Value, "%s", chevron );
-    ImGui::PopFont( );
-    ImGui::SameLine( );
-
-    ImGui::PushFont( CFontManager::get( ).get_font( "jbm_med" ).value_or( nullptr ) );
-    ImGui::Text( "%s", primary.game_name.c_str( ) );
-    ImGui::PopFont( );
-
-    ImGui::SameLine( ImGui::GetContentRegionMax( ).x - ImGui::CalcTextSize( right_text.c_str( ) ).x );
-    ImGui::Text( "%s", right_text.c_str( ) );
+    CollapsibleHeader::draw( selectable_id, primary.game_name, not_collapsed, right_text );
 
     if ( not_collapsed ) {
         if ( save_count > 0 ) {
@@ -310,20 +301,9 @@ void CDashboardView::render_game_row( const std::vector<int>& group, int gi ) {
         } else
             ImGui::TextDisabled( "Game detected but no saves were found!" );
         if ( backup_count > 0 ) {
-            if ( ImGui::Selectable( "##backups", false, ImGuiSelectableFlags_None, ImVec2( 0, 30 ) ) ) {
-                bk_collapsed = !bk_collapsed;
-            }
-            ImGui::SameLine( 8.0f );
+            CollapsibleHeader::draw( "backups", "BACKUPS", bk_collapsed, std::nullopt );
 
-            ImGui::PushFont( CFontManager::get( ).get_font( "jbm_bold" ).value_or( nullptr ) );
-            ImGui::TextColored( ImColor( 198, 97, 63 ).Value, "%s", chevron );
-            ImGui::PopFont( );
-            ImGui::SameLine( );
-            ImGui::PushFont( CFontManager::get( ).get_font( "jbm_med" ).value_or( nullptr ) );
-            ImGui::Text( "BACKUPS" );
-            ImGui::PopFont( );
-
-            if ( !bk_collapsed ) {
+            if ( bk_collapsed ) {
                 auto backups = Features::get_backups( primary.game_name, m_config );
                 for ( auto& backup : backups ) {
                     ImGui::Separator( );
