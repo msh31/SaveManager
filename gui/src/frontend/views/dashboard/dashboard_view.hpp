@@ -52,8 +52,9 @@ class CDashboardView : public CBaseView {
 
         std::string                 m_search_query;
         std::optional<PlatformType> m_platform_filter;
-        SortMode                    m_sort_mode    = SortMode::Alphabetical;
-        bool                        m_focus_search = false;
+        SortMode                    m_sort_mode           = SortMode::Alphabetical;
+        bool                        m_focus_search        = false;
+        size_t                      m_filtered_game_count = 0;
 
         std::unordered_map<std::string, bool> m_card_collapsed;
         std::unordered_map<std::string, bool> m_backups_expanded;

@@ -10,6 +10,16 @@
 ### GUI
 #### Added
 - Auto scroll in the log tab
+- Minecraft filter in dashboard 
+- Total games found in dashboard
+
+#### Changed
+- Refresh and mass backup buttons are now disabled during active operations instead of hidden
+- Improved log view with color-coded levels and copy to clipboard
+
+
+#### Performance
+- Cache rebuilds after detection now run asynchronously, eliminating frame stalls on large game libraries
 
 
 ## [1.7.0] - 2026-05-21

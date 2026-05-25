@@ -77,6 +77,8 @@ void CDashboardView::render_toolbar( ) {
     float backup_width  = ImGui::CalcTextSize( "Mass Backup" ).x + ImGui::GetStyle( ).FramePadding.x * 2;
     float spacing       = ImGui::GetStyle( ).ItemSpacing.x * 3;
 
+    ImGui::TextDisabled( "%zu games found", m_filtered_game_count );
+
     ImGui::SetNextItemWidth(
         ImGui::GetContentRegionAvail( ).x - sort_width - refresh_width - backup_width - filter_width - spacing );
 
@@ -150,7 +152,9 @@ void CDashboardView::render_toolbar( ) {
 }
 
 void CDashboardView::render_game_list( ) {
-    auto sorted = m_grouped_games;
+    m_filtered_game_count = 0;
+    auto sorted           = m_grouped_games;
+
     switch ( m_sort_mode ) {
     case SortMode::Recent:
         std::sort( sorted.begin( ), sorted.end( ), [&]( const std::vector<int>& a, const std::vector<int>& b ) {
@@ -166,6 +170,8 @@ void CDashboardView::render_game_list( ) {
     }
 
     enumerate( sorted, [&]( int gi, auto& group ) {
+        m_filtered_game_count++;
+
         if ( m_platform_filter.has_value( ) && m_games_snapshot[group[0]].type != *m_platform_filter ) return;
 
         const Game& primary   = m_games_snapshot[group[0]];
