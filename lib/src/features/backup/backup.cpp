@@ -8,7 +8,7 @@
 #include <nlohmann/json.hpp>
 using json = nlohmann::json;
 
-void Features::backup_game( const Game &game, const fs::path &file, CConfig &config ) {
+void Features::backup_game( const Game& game, const fs::path& file, CConfig& config ) {
     SPDLOG_INFO( "creating backup of: {}", game.game_name );
     fs::path game_backup_dir = paths::backup_dir( ) / sanitize_filename( game.game_name );
 
@@ -17,8 +17,9 @@ void Features::backup_game( const Game &game, const fs::path &file, CConfig &con
          !fs::is_regular_file( file ) ) {
         if ( !fs::is_directory( file ) ) return;
     } else {
-        if ( !fs::is_regular_file( file ) || std::find( extension_blocklist.begin( ), extension_blocklist.end( ),
-                                                        ext ) != extension_blocklist.end( ) ) {
+        if ( !fs::is_regular_file( file ) ||
+             std::find( extension_blocklist.begin( ), extension_blocklist.end( ), ext ) !=
+                 extension_blocklist.end( ) ) {
             return;
         }
     }
@@ -26,7 +27,7 @@ void Features::backup_game( const Game &game, const fs::path &file, CConfig &con
     if ( !fs::exists( game_backup_dir ) ) fs::create_directories( game_backup_dir );
 
     fs::path final_path = game_backup_dir / construct_backup_name( game.game_name );
-    fs::path zip_name = final_path.parent_path( ) / ( final_path.filename( ).string( ) + ".tmp" );
+    fs::path zip_name   = final_path.parent_path( ) / ( final_path.filename( ).string( ) + ".tmp" );
 
     // writing happens on the destructor so we scope it to do it immediatly, needs a refactor
     bool success = false;
@@ -52,10 +53,10 @@ void Features::backup_game( const Game &game, const fs::path &file, CConfig &con
     }
 }
 
-void Features::backup_all_games( std::vector<Game> snapshot, CConfig &config ) {
-    for ( auto &entry : snapshot ) {
+void Features::backup_all_games( std::vector<Game> snapshot, CConfig& config ) {
+    for ( auto& entry : snapshot ) {
         if ( fs::is_directory( entry.save_path ) ) {
-            for ( const auto &file :
+            for ( const auto& file :
                   fs::recursive_directory_iterator( entry.save_path, fs::directory_options::skip_permission_denied ) ) {
                 if ( fs::is_regular_file( file ) ) {
                     auto ext = file.path( ).extension( ).string( );
@@ -69,18 +70,18 @@ void Features::backup_all_games( std::vector<Game> snapshot, CConfig &config ) {
     }
 }
 
-bool Features::backup_game_files( const Game &game, std::vector<std::pair<fs::path, const Game *>> files ) {
+bool Features::backup_game_files( const Game& game, std::vector<std::pair<fs::path, const Game*>> files ) {
     fs::path game_backup_dir = paths::backup_dir( ) / sanitize_filename( game.game_name );
 
     if ( !fs::exists( game_backup_dir ) ) fs::create_directories( game_backup_dir );
 
     fs::path final_path = game_backup_dir / Features::construct_backup_name( game.game_name );
-    fs::path zip_name = final_path.parent_path( ) / ( final_path.filename( ).string( ) + ".tmp" );
+    fs::path zip_name   = final_path.parent_path( ) / ( final_path.filename( ).string( ) + ".tmp" );
 
     bool failed_to_add = false;
     {
         CZipArchive za( MODE_CREATE_ARCHIVE, zip_name );
-        for ( const auto &entry : files ) {
+        for ( const auto& entry : files ) {
             if ( !za.add_to_archive( entry.first ) ) failed_to_add = true;
         }
     }
@@ -100,7 +101,7 @@ void Features::backup_to_path( fs::path source, fs::path dest ) {
     if ( !fs::exists( dest.parent_path( ) ) ) fs::create_directories( dest.parent_path( ) );
 
     fs::path zip_name = fs::path( dest.string( ) + ".tmp" );
-    bool success = false;
+    bool     success  = false;
     {
         CZipArchive archive( MODE_CREATE_ARCHIVE, zip_name.u8string( ) );
         archive.set_comment( source.parent_path( ).string( ) );
@@ -119,7 +120,7 @@ void Features::backup_to_path( fs::path source, fs::path dest ) {
     }
 }
 
-std::vector<fs::path> Features::get_backups( const std::string &game, CConfig &config ) {
+std::vector<fs::path> Features::get_backups( const std::string& game ) {
     fs::path game_backup_dir = paths::backup_dir( ) / sanitize_filename( game );
 
     if ( !fs::exists( game_backup_dir ) ) {
@@ -128,17 +129,17 @@ std::vector<fs::path> Features::get_backups( const std::string &game, CConfig &c
 
     auto backups =
         fs::recursive_directory_iterator( game_backup_dir ) |
-        std::views::filter( []( const auto &e ) { return e.is_regular_file( ) && e.path( ).extension( ) == ".zip"; } ) |
+        std::views::filter( []( const auto& e ) { return e.is_regular_file( ) && e.path( ).extension( ) == ".zip"; } ) |
         std::views::transform( &fs::directory_entry::path ) | std::ranges::to<std::vector>( );
 
     return backups;
 }
 
-void Features::restore_backup( const fs::path &name, const fs::path &save_path,
-                               std::vector<std::pair<fs::path, fs::path>> &conflicts ) {
+void Features::restore_backup(
+    const fs::path& name, const fs::path& save_path, std::vector<std::pair<fs::path, fs::path>>& conflicts ) {
     CZipArchive archive( MODE_EXTRACT_ARCHIVE, name.u8string( ) );
 
-    fs::path restore_path;
+    fs::path    restore_path;
     std::string comment = archive.get_comment( );
     if ( !comment.empty( ) ) {
         restore_path = comment;
@@ -147,7 +148,7 @@ void Features::restore_backup( const fs::path &name, const fs::path &save_path,
         restore_path = save_path;
     }
 
-    auto entries = archive.get_entry_names( );
+    auto     entries     = archive.get_entry_names( );
     fs::path undo_source = ( entries.size( ) == 1 ) ? restore_path / entries[0] : restore_path;
 
     if ( fs::exists( undo_source ) && !fs::is_empty( undo_source ) ) {
@@ -161,13 +162,13 @@ void Features::restore_backup( const fs::path &name, const fs::path &save_path,
     }
 }
 
-std::string Features::construct_backup_name( const std::string &game, const std::string &custom_name ) {
-    auto now = std::chrono::system_clock::now( );
+std::string Features::construct_backup_name( const std::string& game, const std::string& custom_name ) {
+    auto now       = std::chrono::system_clock::now( );
     auto timestamp = std::format( "{:%Y%m%d_%H%M%S}", now );
 
-    std::string game_name = sanitize_filename( game );
+    std::string game_name           = sanitize_filename( game );
     std::string game_name_sanitized = space2underscore( game_name );
-    std::string filename = custom_name;
+    std::string filename            = custom_name;
 
     if ( filename.empty( ) ) {
         filename = game_name_sanitized;
@@ -175,10 +176,11 @@ std::string Features::construct_backup_name( const std::string &game, const std:
     return std::format( "backup_{}_{}.zip", filename, timestamp );
 }
 
-std::unordered_map<std::string, std::string> Features::load_labels( const std::string &game, CConfig &config ) {
+std::unordered_map<std::string, std::string> Features::load_labels( const std::string& game ) {
     json data;
+
     std::unordered_map<std::string, std::string> backup_labels;
-    std::string file_name = ( paths::backup_dir( ) / sanitize_filename( game ) / "labels.json" ).string( );
+    std::string   file_name = ( paths::backup_dir( ) / sanitize_filename( game ) / "labels.json" ).string( );
     std::ifstream file( file_name.c_str( ) );
 
     if ( !fs::exists( file_name ) ) return { };
@@ -186,10 +188,10 @@ std::unordered_map<std::string, std::string> Features::load_labels( const std::s
     if ( file.is_open( ) ) {
         try {
             data = json::parse( file );
-            for ( const auto &entry : data.items( ) ) {
+            for ( const auto& entry : data.items( ) ) {
                 backup_labels[entry.key( )] = entry.value( ).get<std::string>( );
             }
-        } catch ( json::exception &ex ) {
+        } catch ( json::exception& ex ) {
             SPDLOG_ERROR( "label parsing error: {}", ex.what( ) );
         }
 
@@ -201,15 +203,14 @@ std::unordered_map<std::string, std::string> Features::load_labels( const std::s
     return { };
 }
 
-void Features::save_label( const std::string &game, CConfig &config, const std::string &filename,
-                           const std::string &label ) {
+void Features::save_label( const std::string& game, const std::string& filename, const std::string& label ) {
     std::string file_name = ( paths::backup_dir( ) / sanitize_filename( game ) / "labels.json" ).string( );
-    auto labels = load_labels( game, config );
+    auto        labels    = load_labels( game );
 
     labels[filename] = label;
 
     json data;
-    for ( const auto &[key, value] : labels ) {
+    for ( const auto& [key, value] : labels ) {
         data[key] = value;
     }
 
@@ -217,12 +218,11 @@ void Features::save_label( const std::string &game, CConfig &config, const std::
     out << data.dump( 4 );
 }
 
-void Features::save_labels( const std::string &game, CConfig &config,
-                            const std::unordered_map<std::string, std::string> &labels ) {
+void Features::save_labels( const std::string& game, const std::unordered_map<std::string, std::string>& labels ) {
     std::string file_name = ( paths::backup_dir( ) / sanitize_filename( game ) / "labels.json" ).string( );
 
     json data;
-    for ( const auto &[key, value] : labels ) {
+    for ( const auto& [key, value] : labels ) {
         data[key] = value;
     }
 
