@@ -10,9 +10,11 @@
 
 #include <frontend/views/about/about_view.hpp>
 #include <frontend/views/dashboard/dashboard_view.hpp>
+#include <frontend/views/editor/editor_view.hpp>
 #include <frontend/views/log/log_view.hpp>
 #include <frontend/views/pipeline/pipeline_demo.hpp>
 #include <frontend/views/settings/settings_view.hpp>
+#include <frontend/views/transfer/transfer_view.hpp>
 
 #include <frontend/dialogs/confirm/confirm_dialog.hpp>
 #include <frontend/notification/notification.hpp>
@@ -23,8 +25,8 @@ void CApp::init( ) {
     ThemeManager::apply_style( );
 
     m_ui_manager.add_view( { std::make_unique<CDashboardView>( m_config ), "\xef\x80\x95", "Dashboard" } );
-    // m_ui_manager.add_view( { std::make_unique<CSaveEditorView>( ), "\xef\x80\x95", "Save Editor" } );
-    // m_ui_manager.add_view( { std::make_unique<CTransferView>( ), "\xef\x80\x95", "Transfer" } );
+    m_ui_manager.add_view( { std::make_unique<CEditorView>( ), "\xef\x80\x95", "Save Editor" } );
+    m_ui_manager.add_view( { std::make_unique<CTransferView>( ), "\xef\x80\x95", "Transfer" } );
     m_ui_manager.add_view( { std::make_unique<CAboutView>( ), "\xef\x80\x95", "About" } );
     // m_ui_manager.add_view( { std::make_unique<CAboutView>( ), "\xef\x80\x95", "About" } );
     // m_ui_manager.add_view( { std::make_unique<CPipelineView>( ), "\xef\x83\xa8", "Pipeline Demo" } );
