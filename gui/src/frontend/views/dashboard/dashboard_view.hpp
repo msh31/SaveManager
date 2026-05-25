@@ -47,12 +47,15 @@ class CDashboardView : public CBaseView {
         // UI state
         enum class SortMode { Recent, Alphabetical };
 
-        std::string                           m_search_query;
-        std::optional<PlatformType>           m_platform_filter;
-        SortMode                              m_sort_mode    = SortMode::Alphabetical;
-        bool                                  m_focus_search = false;
+        std::string                 m_search_query;
+        std::optional<PlatformType> m_platform_filter;
+        SortMode                    m_sort_mode    = SortMode::Alphabetical;
+        bool                        m_focus_search = false;
+
         std::unordered_map<std::string, bool> m_card_collapsed;
         std::unordered_map<std::string, bool> m_backups_expanded;
+        static constexpr PlatformType         filter_cycle[] = {
+            PlatformType::UBISOFT, PlatformType::ROCKSTAR, PlatformType::UNREAL, PlatformType::CUSTOM };
 
         // Model state
         bool                                       m_open_conflict_modal = false;

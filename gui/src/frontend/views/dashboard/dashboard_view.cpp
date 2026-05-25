@@ -104,22 +104,11 @@ void CDashboardView::render_toolbar( ) {
         if ( !m_platform_filter.has_value( ) ) {
             m_platform_filter = PlatformType::UBISOFT;
         } else {
-            switch ( *m_platform_filter ) {
-            case PlatformType::UBISOFT:
-                m_platform_filter = PlatformType::ROCKSTAR;
-                break;
-            case PlatformType::ROCKSTAR:
-                m_platform_filter = PlatformType::UNREAL;
-                break;
-            case PlatformType::UNREAL:
-                m_platform_filter = PlatformType::CUSTOM;
-                break;
-            case PlatformType::CUSTOM:
+            auto it = std::find( std::begin( filter_cycle ), std::end( filter_cycle ), *m_platform_filter );
+            if ( it + 1 == std::end( filter_cycle ) ) {
                 m_platform_filter = std::nullopt;
-                break;
-            default:
-                m_platform_filter = std::nullopt;
-                break;
+            } else {
+                m_platform_filter = *( it + 1 );
             }
         }
     }
