@@ -44,8 +44,7 @@ void CDashboardView::render( ) {
         }
 
         bool backups_open = ImGui::BeginTabItem( "Backups" );
-        if ( !m_backups_tab_was_active && backups_open )
-            m_backups_view.on_enter( );
+        if ( !m_backups_tab_was_active && backups_open ) m_backups_view.on_enter( );
         m_backups_tab_was_active = backups_open;
         if ( backups_open ) {
             m_backups_view.render( );
@@ -124,8 +123,9 @@ void CDashboardView::render_toolbar( ) {
     }
     ImGui::SameLine( );
 
-    if ( !is_refreshing &&
-         ( ImGui::Button( "Refresh" ) || ( ImGui::GetIO( ).KeyCtrl && ImGui::IsKeyPressed( ImGuiKey_R ) ) ) ) {
+    if ( is_refreshing ) ImGui::BeginDisabled( true );
+    if ( ( ImGui::Button( "Refresh" ) || ( ImGui::GetIO( ).KeyCtrl && ImGui::IsKeyPressed( ImGuiKey_R ) ) ) &&
+         !is_refreshing ) {
         {
             std::unique_lock lock( m_result.d_mutex );
             m_result.games.clear( );
@@ -135,24 +135,23 @@ void CDashboardView::render_toolbar( ) {
         m_game_cache.clear( );
         m_refresh_future = std::async( std::launch::async, [this] { Detection::find_saves( m_config, m_result ); } );
     }
+    if ( is_refreshing ) ImGui::EndDisabled( );
     ImGui::SetItemTooltip( "Re-runs the detection logic to find new saves" );
     ImGui::SameLine( );
-    if ( !is_backing_up && !is_refreshing ) {
-        if ( ImGui::Button( "Mass Backup" ) ) {
-            m_backup_future = std::async( std::launch::async, [&result = m_result, &config = m_config]( ) {
-                std::vector<Game> snapshot;
-                {
-                    std::shared_lock lock( result.d_mutex );
-                    snapshot = result.games;
-                }
-                Features::backup_all_games( snapshot, config );
-                Notify::show_notification( "Mass Backup", "Succesfully backed up all gamesaves!", 1500 );
-            } );
-        }
-        ImGui::SetItemTooltip( "Creates a backup of all games found!" );
-    } else {
-        Spinner::render( );
+    if ( is_refreshing || is_backing_up ) ImGui::BeginDisabled( true );
+    if ( ImGui::Button( "Mass Backup" ) ) {
+        m_backup_future = std::async( std::launch::async, [&result = m_result, &config = m_config]( ) {
+            std::vector<Game> snapshot;
+            {
+                std::shared_lock lock( result.d_mutex );
+                snapshot = result.games;
+            }
+            Features::backup_all_games( snapshot, config );
+            Notify::show_notification( "Mass Backup", "Succesfully backed up all gamesaves!", 1500 );
+        } );
     }
+    if ( is_refreshing || is_backing_up ) ImGui::EndDisabled( );
+    ImGui::SetItemTooltip( "Creates a backup of all games found!" );
 
     ImGui::Dummy( ImVec2( 0.0f, 5.0f ) );
 }
