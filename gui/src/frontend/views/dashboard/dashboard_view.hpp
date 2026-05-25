@@ -55,7 +55,8 @@ class CDashboardView : public CBaseView {
         std::unordered_map<std::string, bool> m_card_collapsed;
         std::unordered_map<std::string, bool> m_backups_expanded;
         static constexpr PlatformType         filter_cycle[] = {
-            PlatformType::UBISOFT, PlatformType::ROCKSTAR, PlatformType::UNREAL, PlatformType::CUSTOM };
+            PlatformType::UBISOFT, PlatformType::ROCKSTAR, PlatformType::UNREAL, PlatformType::MINECRAFT,
+            PlatformType::CUSTOM };
 
         // Model state
         bool                                       m_open_conflict_modal = false;
