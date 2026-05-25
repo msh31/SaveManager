@@ -27,7 +27,7 @@ void CApp::init( ) {
 
     m_ui_manager.add_view( { std::make_unique<CDashboardView>( m_config ), ICON_HOME, "Dashboard" } );
     m_ui_manager.add_view( { std::make_unique<CEditorView>( ), ICON_EDIT, "Save Editor" } );
-    m_ui_manager.add_view( { std::make_unique<CTransferView>( ), ICON_TRANSFER, "Transfer" } );
+    m_ui_manager.add_view( { std::make_unique<CTransferView>( m_config ), ICON_TRANSFER, "Transfer" } );
     m_ui_manager.add_view( { std::make_unique<CAboutView>( ), ICON_INFO, "About" } );
     // m_ui_manager.add_view( { std::make_unique<CPipelineView>( ), "\xef\x83\xa8", "Pipeline Demo" } );
     m_ui_manager.add_view( { std::make_unique<CLogView>( ), ICON_SCROLL, "Log" } );
