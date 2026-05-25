@@ -151,6 +151,7 @@ set(savemanager_SOURCES
 	"gui/src/frontend/layout/tabbar/tabbar.cpp"
 	"gui/src/frontend/notification/notification.cpp"
 	"gui/src/frontend/theme/theme.cpp"
+	"gui/src/frontend/views/about/about_view.cpp"
 	"gui/src/frontend/views/backups/backup_view.cpp"
 	"gui/src/frontend/views/dashboard/dashboard_view.cpp"
 	"gui/src/frontend/views/debug/debug_view.cpp"
