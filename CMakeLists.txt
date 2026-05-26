@@ -141,6 +141,7 @@ set(savemanager_SOURCES
 	cmake.toml
 	"gui/src/app/app.cpp"
 	"gui/src/backend/font_manager/font_manager.cpp"
+	"gui/src/backend/shader/shader.cpp"
 	"gui/src/backend/task_runner/task_runner.cpp"
 	"gui/src/backend/text_pipeline/text_pipeline.cpp"
 	"gui/src/backend/ui_manager/ui_manager.cpp"

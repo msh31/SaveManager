@@ -11,9 +11,13 @@
 void CWindowManager::run( std::function<void( )> fun ) {
     do {
         glClear( GL_COLOR_BUFFER_BIT );
+        int width  = 0;
+        int height = 0;
+        glfwGetFramebufferSize( m_window, &width, &height );
 
         ImGui_ImplOpenGL3_NewFrame( );
         ImGui_ImplGlfw_NewFrame( );
+        m_shader->render( width, height );
         ImGui::NewFrame( );
 
         ImGuiViewport* viewport = ImGui::GetMainViewport( );
@@ -59,6 +63,8 @@ void CWindowManager::setup_opengl( ) {
     if ( !gladLoadGL( glfwGetProcAddress ) ) {
         throw std::runtime_error( "Failed to initialize GLAD" );
     }
+
+    m_shader.emplace( ); // defer initialization to here, cool!
 }
 
 void CWindowManager::setup_imgui( ) {
