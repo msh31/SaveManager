@@ -1,16 +1,14 @@
 #pragma once
 #include <config/config.hpp>
 #include <detection/detection.hpp>
-#include <frontend/views/base_view.hpp>
 #include <utils/utils.hpp>
 
-class CBackupsView : public CBaseView {
+class CBackupsView {
     public:
-        CBackupsView( CConfig& config, Detection::DetectionResult& result )
-            : m_config( config ), m_result( result ) {};
-        void render( ) override;
-        void on_enter( ) override;
-        void on_exit( ) override;
+        CBackupsView( CConfig& config, Detection::DetectionResult& result ) : m_config( config ), m_result( result ) {};
+        void render( );
+        void on_enter( );
+        void on_exit( );
 
     private:
         CConfig&                    m_config;
@@ -24,8 +22,8 @@ class CBackupsView : public CBaseView {
         std::future<void> m_refresh_future;
 
         // other
-        bool                     m_reload_backups = false;
-        std::vector<BackupEntry> m_backups;
+        bool                                                                          m_reload_backups = false;
+        std::vector<BackupEntry>                                                      m_backups;
         std::unordered_map<std::string, std::unordered_map<std::string, std::string>> m_labels_cache;
 
         // Modal state
@@ -36,8 +34,8 @@ class CBackupsView : public CBaseView {
 
         void render_game_row( const BackupEntry& bentry );
         void render_backup_row(
-            fs::path path, const fs::path& save_path,
-            const std::unordered_map<std::string, std::string>& labels, const std::string& game_name );
+            fs::path path, const fs::path& save_path, const std::unordered_map<std::string, std::string>& labels,
+            const std::string& game_name );
         void render_modals( );
         void add_new_entry( );
 };
