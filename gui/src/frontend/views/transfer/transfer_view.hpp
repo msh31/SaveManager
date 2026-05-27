@@ -32,6 +32,8 @@ class CTransferView : public CBaseView {
 
         std::vector<RemoteEntry> m_remote_entries;
 
+        // std::optional<CRemoteTransfer> m_remote; //TODO: use an optional and construct in-place use reset to detroy,
+        // no default construction
         std::unique_ptr<CRemoteTransfer> m_remote;
 
         std::future<void> m_future;

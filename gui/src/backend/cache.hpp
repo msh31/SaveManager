@@ -1,6 +1,7 @@
 #pragma once
 #include <backend/task_runner/task_runner.hpp>
 
+// TODO: audit thread safety before use
 template <typename T> class CCache {
     public:
         void refresh( std::function<T( )> fun ) {
