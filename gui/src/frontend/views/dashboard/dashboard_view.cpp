@@ -566,7 +566,7 @@ void CDashboardView::on_result_changed( ) {
     {
         Detection::DetectionResult tmp;
         tmp.games       = m_games_snapshot;
-        m_grouped_games = tmp.get_grouped( );
+        m_grouped_games = get_grouped( tmp.games );
     }
     m_game_cache.clear( );
 

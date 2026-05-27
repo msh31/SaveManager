@@ -8,8 +8,7 @@
 
 void CTransferView::on_enter( ) {
     if ( m_result.games.empty( ) )
-        m_detection_future =
-            std::async( std::launch::async, [this] { Detection::find_saves( m_config, m_result ); } );
+        m_detection_future = std::async( std::launch::async, [this] { Detection::find_saves( m_config, m_result ); } );
 }
 
 void CTransferView::render( ) {
@@ -27,8 +26,8 @@ void CTransferView::render( ) {
 
     bool is_transferring =
         m_future.valid( ) && m_future.wait_for( std::chrono::seconds( 0 ) ) != std::future_status::ready;
-    bool is_connecting =
-        m_connect_future.valid( ) && m_connect_future.wait_for( std::chrono::seconds( 0 ) ) != std::future_status::ready;
+    bool is_connecting = m_connect_future.valid( ) &&
+                         m_connect_future.wait_for( std::chrono::seconds( 0 ) ) != std::future_status::ready;
 
     float file_progress    = 0.0f;
     float overall_progress = 0.0f;
@@ -50,7 +49,7 @@ void CTransferView::render( ) {
         bool success = m_connect_future.get( );
         if ( success ) {
             m_connected           = true;
-            m_current_remote_path = "/home/" + m_config.sftp.username;
+            m_current_remote_path = "/home/" + m_config.sftp.username; // TODO: allow custom start location..
             m_remote_entries      = m_remote->list_directory( m_current_remote_path );
             Notify::show_notification( "SFTP Connection", "Connected!", 2000 );
         } else {
@@ -213,9 +212,9 @@ void CTransferView::render( ) {
     float content_height = ImGui::GetContentRegionAvail( ).y - 10.0f;
 
     {
-        std::shared_lock             lock( m_result.d_mutex );
-        auto                         groups = m_result.get_grouped( );
-        std::vector<std::string>     game_names;
+        std::shared_lock         lock( m_result.d_mutex );
+        auto                     groups = get_grouped( m_result.games );
+        std::vector<std::string> game_names;
         for ( const auto& group : groups )
             game_names.push_back( m_result.games[group[0]].game_name );
 
@@ -228,8 +227,8 @@ void CTransferView::render( ) {
                     bool is_selected = ( m_selected_game_idx == static_cast<int>( gi ) );
                     if ( ImGui::Selectable( name.c_str( ), is_selected ) ) {
                         m_selected_game_idx = static_cast<int>( gi );
-                        m_backups = Features::get_backups(
-                            m_result.games[groups[static_cast<int>( gi )][0]].game_name );
+                        m_backups =
+                            Features::get_backups( m_result.games[groups[static_cast<int>( gi )][0]].game_name );
                         m_selected_backups.assign( m_backups.size( ), false );
                     }
                     if ( is_selected ) ImGui::SetItemDefaultFocus( );
@@ -241,13 +240,11 @@ void CTransferView::render( ) {
                 if ( ImGui::BeginListBox( "##backups", ImVec2( -FLT_MIN, content_height ) ) ) {
                     enumerate( m_backups, [&]( int gi, auto& path ) {
                         if ( path.filename( ) == "undo.zip" ) return;
-                        std::string label =
-                            std::format( "{}##{}", path.filename( ).string( ), static_cast<int>( gi ) );
+                        std::string label = std::format( "{}##{}", path.filename( ).string( ), static_cast<int>( gi ) );
                         if ( ImGui::Selectable(
                                  label.c_str( ), m_selected_backups[static_cast<int>( gi )],
                                  ImGuiSelectableFlags_AllowDoubleClick ) ) {
-                            m_selected_backups[static_cast<int>( gi )] =
-                                !m_selected_backups[static_cast<int>( gi )];
+                            m_selected_backups[static_cast<int>( gi )] = !m_selected_backups[static_cast<int>( gi )];
                         }
                     } );
                     ImGui::EndListBox( );
@@ -271,9 +268,8 @@ void CTransferView::render( ) {
     if ( !m_connected ) {
         ImGui::TextDisabled( "Connect to browse remote server" );
     } else {
-        bool has_remote_selection =
-            m_selected_remote_idx >= 0 && m_selected_remote_idx < (int)m_remote_entries.size( );
-        bool is_file_selected = has_remote_selection && !m_remote_entries[m_selected_remote_idx].is_directory;
+        bool has_remote_selection = m_selected_remote_idx >= 0 && m_selected_remote_idx < (int)m_remote_entries.size( );
+        bool is_file_selected     = has_remote_selection && !m_remote_entries[m_selected_remote_idx].is_directory;
 
         ImGui::BeginDisabled( !is_file_selected || is_transferring );
         if ( ImGui::Button( "Download" ) ) {
@@ -285,8 +281,7 @@ void CTransferView::render( ) {
         ImGui::EndDisabled( );
 
         ImGui::SameLine( );
-        if ( has_remote_selection )
-            ImGui::Text( "%s", m_remote_entries[m_selected_remote_idx].name.c_str( ) );
+        if ( has_remote_selection ) ImGui::Text( "%s", m_remote_entries[m_selected_remote_idx].name.c_str( ) );
         else
             ImGui::TextDisabled( "(no selection)" );
 
@@ -317,8 +312,8 @@ void CTransferView::render( ) {
                          label.c_str( ), m_selected_remote_idx == static_cast<int>( gi ),
                          ImGuiSelectableFlags_AllowDoubleClick ) ) {
                     if ( ImGui::IsMouseDoubleClicked( 0 ) && entry.is_directory ) {
-                        m_current_remote_path = m_current_remote_path +
-                                                ( m_current_remote_path.back( ) == '/' ? "" : "/" ) + entry.name;
+                        m_current_remote_path =
+                            m_current_remote_path + ( m_current_remote_path.back( ) == '/' ? "" : "/" ) + entry.name;
                         m_remote_entries      = m_remote->list_directory( m_current_remote_path );
                         m_selected_remote_idx = -1;
                     } else {
