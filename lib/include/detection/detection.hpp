@@ -5,9 +5,8 @@ class CConfig;
 
 namespace Detection {
     struct DetectionResult {
-            std::vector<Game>             games;
-            std::vector<std::vector<int>> get_grouped( ) const;
-            std::shared_mutex             d_mutex;
+            std::vector<Game> games;
+            std::shared_mutex d_mutex;
     };
 
     void add_game(

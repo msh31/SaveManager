@@ -15,7 +15,6 @@
 #endif
 
 struct ImFont;
-
 struct Fonts {
         ImFont* regular;
         ImFont* medium;
@@ -182,4 +181,23 @@ inline void open_in_file_manager( const char* path ) {
         waitpid( pid, &status, 0 );
     }
 #endif
+}
+
+inline std::vector<std::vector<int>> get_grouped( const std::vector<Game>& games ) {
+    std::unordered_map<std::string, size_t> key_to_group;
+    std::vector<std::vector<int>>           groups;
+
+    enumerate( games, [&]( int i, auto& game ) {
+        std::string key = ( game.appid != "N/A" ) ? game.appid : cache_key( game );
+
+        auto it = key_to_group.find( key );
+        if ( it != key_to_group.end( ) ) {
+            groups[it->second].push_back( i );
+        } else {
+            key_to_group[key] = groups.size( );
+            groups.push_back( { static_cast<int>( i ) } );
+        }
+    } );
+
+    return groups;
 }
