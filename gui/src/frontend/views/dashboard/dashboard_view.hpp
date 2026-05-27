@@ -26,9 +26,10 @@ class CDashboardView : public CBaseView {
             const fs::path& backup, const Game& game, const std::unordered_map<std::string, std::string>& labels );
         void render_modals( );
 
-        CConfig&     m_config;
-        CBackupsView m_backups_view;
-        bool         m_backups_tab_was_active = false;
+        CConfig&                   m_config;
+        Detection::DetectionResult m_result;
+        CBackupsView               m_backups_view;
+        bool                       m_backups_tab_was_active = false;
 
         CTaskRunner m_task_runner;
 
@@ -40,7 +41,6 @@ class CDashboardView : public CBaseView {
                 bool                                         has_conflicts = false;
         };
 
-        Detection::DetectionResult                          m_result;
         std::vector<Game>                                   m_games_snapshot;
         std::vector<std::vector<int>>                       m_grouped_games;
         std::unordered_map<std::string, GameCache>          m_game_cache;
