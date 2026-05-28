@@ -9,6 +9,8 @@
 #ifdef __APPLE__
     #include <spawn.h>
     #include <sys/wait.h>
+#elif __linux__
+    #include <sys/wait.h>
 #endif
 #ifdef _WIN32
     #include <shellapi.h>
@@ -156,16 +158,32 @@ inline std::string hash_file( const std::filesystem::path& path ) {
     for ( int i = 0; i < SHA256_DIGEST_LENGTH; i++ ) {
         ss << std::hex << std::setw( 2 ) << std::setfill( '0' ) << static_cast<int>( hash[i] );
     }
-    mdctx = nullptr;
     return ss.str( );
 }
 
 inline void open_in_file_manager( const char* path ) {
 #ifdef __linux__
     pid_t pid = fork( );
+    pid_t w   = 0;
+    int   status;
+
+    if ( pid > 0 ) {
+        w = waitpid( pid, &status, 0 );
+        if ( w == -1 ) {
+            SPDLOG_ERROR( "waitpid failed: {}", EXIT_FAILURE );
+            exit( EXIT_FAILURE );
+        }
+    }
+
     if ( pid == 0 ) {
-        execl( "/usr/bin/xdg-open", "xdg-open", path, nullptr );
-        _exit( 1 );
+        pid_t g_pid = fork( );
+
+        if ( g_pid == 0 ) {
+            execl( "/usr/bin/xdg-open", "xdg-open", path, nullptr );
+            _exit( 1 );
+        }
+
+        if ( g_pid > 0 ) _exit( 0 );
     }
 #endif
 #ifdef _WIN32
