@@ -47,6 +47,7 @@ bool ZipArchive::add_to_archive( const fs::path &file ) {
         for ( const auto &entry :
               fs::recursive_directory_iterator( file, fs::directory_options::skip_permission_denied ) ) {
             if ( !fs::is_regular_file( entry ) ) continue;
+
             zip_source_t *source = zip_source_file( archive, entry.path( ).string( ).c_str( ), 0, 0 );
             if ( source == nullptr ) {
                 SPDLOG_ERROR( "Failed to create source for: {}", entry.path( ).filename( ).string( ).c_str( ) );
@@ -116,7 +117,6 @@ bool ZipArchive::extract_archive( const fs::path &save_path, std::vector<std::pa
             // SPDLOG_INFO("Saving to: {}", output_path.string());
 
             zip_file *file = zip_fopen_index( archive, i, 0 );
-
             if ( file == nullptr ) {
                 SPDLOG_WARN( "Failed to open file in archive: {}", fileInfo.name );
                 failed_files.push_back( fileInfo.name );
@@ -176,8 +176,9 @@ bool ZipArchive::extract_archive( const fs::path &save_path, std::vector<std::pa
                 }
 
                 if ( ( hash_file( output_path ).compare( entry["hash"].get<std::string>( ) ) ) != 0 ) {
-                    SPDLOG_WARN( "{}'s hash does not match {}'s hash, proceed with caution!",
+                    SPDLOG_WARN( "{}'s hash does not match {}'s hash, aborting restore operation!",
                                  output_path.filename( ).string( ), entry["hash"].get<std::string>( ) );
+                    return false;
                 }
             }
         }

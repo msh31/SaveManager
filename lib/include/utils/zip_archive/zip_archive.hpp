@@ -4,7 +4,7 @@
 #include <zip.h>
 
 class ZipArchive {
-  public:
+    public:
     ZipArchive( int mode, fs::path name ) {
         int zip_error;
         archive = zip_open( name.string( ).c_str( ), mode, &zip_error );
@@ -32,7 +32,7 @@ class ZipArchive {
     ZipArchive( const ZipArchive & ) = delete;
     ZipArchive &operator=( const ZipArchive & ) = delete;
 
-  private:
+    private:
     zip_t *archive = nullptr;
     std::string manifest = { };
 
