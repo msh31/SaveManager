@@ -1,5 +1,38 @@
 # Changelog
 
+## [1.8.0] - 2026-06-03
+*Rewrote the GUI using a custom ImGui framework, improving code quality and maintainability.*
+
+### Core
+#### Added
+
+#### Fixed
+- Backup extraction now aborts if a restored file's SHA-256 hash doesn't match the manifest (was silently ignored)
+- `list_dir` plugin API no longer crashes on permission-denied paths
+- Config `win_props` keys falling back to defaults instead of aborting the full parse on missing keys
+- Zombie processes no longer created when opening a path in the file manager on Linux
+
+#### Changed
+- `hash_file` moved into `CZipArchive`; no longer compiled into every translation unit
+- Daemon debounce loop releases the mutex before invoking the backup callback, preventing dropped inotify events during long backups
+- Plugin loading errors are now caught per-plugin; remaining plugins continue loading
+- Plugins returning entries with missing `game_name` or `save_path` are now skipped with a warning
+
+### GUI
+#### Added
+- Auto scroll in the log tab
+- Minecraft filter in dashboard
+- Total games found in dashboard
+- Total detection time in dashboard
+
+#### Changed
+- Refresh and mass backup buttons are now disabled during active operations instead of hidden
+- Improved log view with color-coded levels and copy to clipboard
+
+#### Performance
+- Cache rebuilds after detection now run asynchronously, eliminating frame stalls on large game libraries
+
+
 ## [1.7.0] - 2026-05-21
 *Core logic moved into a separate library linked by the GUI*
  

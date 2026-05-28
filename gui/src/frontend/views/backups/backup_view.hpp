@@ -1,39 +1,41 @@
 #pragma once
-#include "detection/detection.hpp"
 #include <config/config.hpp>
+#include <detection/detection.hpp>
 #include <utils/utils.hpp>
 
-struct BackupTab {
-    struct BackupEntry {
-        fs::path name;
-        fs::path save_path;
-        std::vector<fs::path> entries;
-        size_t size;
-    };
+class CBackupsView {
+    public:
+        CBackupsView( CConfig& config, Detection::DetectionResult& result ) : m_config( config ), m_result( result ) {};
+        void render( );
+        void on_enter( );
+        void on_exit( );
 
-    void render( const Fonts &, Detection::DetectionResult &, Config &config );
+    private:
+        CConfig&                    m_config;
+        Detection::DetectionResult& m_result;
 
-    std::mutex b_mutex;
-    std::vector<BackupEntry> backups;
+        // UI state
+        std::unordered_map<std::string, bool> m_card_collapsed;
+        std::mutex                            m_mutex;
 
-  private:
-    std::future<void> refresh_future;
-    std::unordered_map<std::string, bool> card_collapsed;
-    std::unordered_map<std::string, bool> backups_collapsed;
+        // Futures
+        std::future<void> m_refresh_future;
 
-    std::string pending_rename_game;
-    fs::path pending_rename_backup;
-    std::string rename_input;
-    bool open_rename_modal = false;
-    bool reload_backups = false;
+        // other
+        bool                                                                          m_reload_backups = false;
+        std::vector<BackupEntry>                                                      m_backups;
+        std::unordered_map<std::string, std::unordered_map<std::string, std::string>> m_labels_cache;
 
-    int spinner_frame = 0;
-    std::unordered_map<std::string, std::unordered_map<std::string, std::string>> labels_cache;
+        // Modal state
+        std::string m_rename_input;
+        bool        m_open_rename_modal = false;
+        std::string m_pending_rename_game;
+        fs::path    m_pending_rename_backup;
 
-    void render_game_row( const Fonts &fonts, const BackupEntry &bentry, Config &cfg );
-    void render_backup_row( fs::path path, const fs::path &save_path,
-                            const std::unordered_map<std::string, std::string> &labels, const std::string &game_name,
-                            Config &cfg );
-    void render_modals( Config &cfg );
-    void add_new_entry( Detection::DetectionResult &d_result, Config &config );
+        void render_game_row( const BackupEntry& bentry );
+        void render_backup_row(
+            fs::path path, const fs::path& save_path, const std::unordered_map<std::string, std::string>& labels,
+            const std::string& game_name );
+        void render_modals( );
+        void add_new_entry( );
 };

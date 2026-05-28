@@ -2,7 +2,7 @@
 #include "types.hpp"
 #include "utils/paths.hpp"
 
-std::expected<std::vector<Game>, DetectionError> MinecraftDetector::find_saves( ) const {
+std::expected<std::vector<Game>, DetectionError> CMinecraftDetector::find_saves( ) const {
     std::vector<Game> games;
 
     auto append = [&]( std::vector<Game> result ) { games.insert( games.end( ), result.begin( ), result.end( ) ); };
@@ -17,7 +17,7 @@ std::expected<std::vector<Game>, DetectionError> MinecraftDetector::find_saves( 
     return games;
 }
 
-std::vector<Game> MinecraftDetector::scan_official( ) const {
+std::vector<Game> CMinecraftDetector::scan_official( ) const {
 #if defined( __linux__ )
     fs::path game_path = paths::home_dir( ) / ".minecraft";
 #elif defined( __APPLE__ )
@@ -51,7 +51,7 @@ std::vector<Game> MinecraftDetector::scan_official( ) const {
     return games;
 }
 
-std::vector<Game> MinecraftDetector::scan_modrinth( ) const {
+std::vector<Game> CMinecraftDetector::scan_modrinth( ) const {
 #if defined( __linux__ )
     fs::path modrinth_path = paths::home_dir( ) / ".local" / "share" / "ModrinthApp" / "profiles";
 #elif defined( __APPLE__ )
@@ -90,7 +90,7 @@ std::vector<Game> MinecraftDetector::scan_modrinth( ) const {
     return games;
 }
 
-std::vector<Game> MinecraftDetector::scan_curseforge( ) const {
+std::vector<Game> CMinecraftDetector::scan_curseforge( ) const {
 #if defined( __linux__ ) || defined( __APPLE__ )
     fs::path curse_path = paths::home_dir( ) / "Documents" / "curseforge" / "minecraft" / "Instances";
 #elif defined( _WIN32 )
@@ -128,7 +128,7 @@ std::vector<Game> MinecraftDetector::scan_curseforge( ) const {
     return games;
 }
 
-std::vector<Game> MinecraftDetector::scan_prism( ) const {
+std::vector<Game> CMinecraftDetector::scan_prism( ) const {
 #if defined( __linux__ )
     fs::path prism_path = paths::home_dir( ) / ".var" / "app" / "org.prismlauncher.PrismLauncher" / "data" /
                           "PrismLauncher" / "instances";
@@ -175,7 +175,7 @@ std::vector<Game> MinecraftDetector::scan_prism( ) const {
     return games;
 }
 
-std::vector<Game> MinecraftDetector::scan_multimc( ) const {
+std::vector<Game> CMinecraftDetector::scan_multimc( ) const {
     fs::path multimc_path = paths::home_dir( ) / ".local" / "share" / "multimc" / "instances";
     std::vector<Game> games;
 
@@ -208,6 +208,6 @@ std::vector<Game> MinecraftDetector::scan_multimc( ) const {
     return games;
 }
 //
-// std::vector<Game> MinecraftDetector::scan_atllauncher() const {
+// std::vector<Game> CMinecraftDetector::scan_atllauncher() const {
 //
 // }

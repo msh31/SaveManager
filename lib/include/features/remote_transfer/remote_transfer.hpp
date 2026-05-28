@@ -6,7 +6,7 @@
 
 namespace fs = std::filesystem;
 
-class Config;
+class CConfig;
 
 // copied from
 // https://git.marco007.dev/marco/http-server/src/commit/db41ab8f0126ed57b257face7c396c08d0999da9/socket_wrapper.hpp
@@ -32,30 +32,30 @@ class Config;
 #define SOCKLEN_T socklen_t
 #endif
 
-class RemoteTransfer {
+class CRemoteTransfer {
   public:
-    RemoteTransfer( );
-    ~RemoteTransfer( ) { disconnect( ); }
+    CRemoteTransfer( );
+    ~CRemoteTransfer( ) { disconnect( ); }
 
-    bool connect( const std::string &dest_addr, const Config &config, bool auth_pw, const std::string &key_passphrase );
+    bool connect( const std::string &dest_addr, const CConfig &config, bool auth_pw, const std::string &key_passphrase );
     bool disconnect( );
-    void upload_file( const fs::path &backup_path, const std::string &remote_path, const Config &config );
-    void download_file( const fs::path &backup_path, const Config &config );
+    void upload_file( const fs::path &backup_path, const std::string &remote_path, const CConfig &config );
+    void download_file( const fs::path &backup_path, const CConfig &config );
     std::vector<RemoteEntry> list_directory( const std::string &path );
 
     // disable copying (prevent accidental double-cleanup)
-    RemoteTransfer( const RemoteTransfer & ) = delete;
-    RemoteTransfer &operator=( const RemoteTransfer & ) = delete;
+    CRemoteTransfer( const CRemoteTransfer & ) = delete;
+    CRemoteTransfer &operator=( const CRemoteTransfer & ) = delete;
 
-    std::atomic<size_t> bytes_transferred = 0;
-    std::atomic<size_t> total_bytes = 0;
+    std::atomic<size_t> m_bytes_transferred = 0;
+    std::atomic<size_t> m_total_bytes = 0;
 
   private:
-    uint32_t hostaddr;
-    libssh2_socket_t sock = LIBSSH2_INVALID_SOCKET;
-    struct sockaddr_in sin;
-    const char *fingerprint;
-    LIBSSH2_SESSION *session = nullptr;
-    LIBSSH2_SFTP_HANDLE *sftp_handle = nullptr;
-    LIBSSH2_SFTP *sftp_session = nullptr;
+    uint32_t m_hostaddr;
+    libssh2_socket_t m_sock = LIBSSH2_INVALID_SOCKET;
+    struct sockaddr_in m_sin;
+    const char *m_fingerprint;
+    LIBSSH2_SESSION *m_session = nullptr;
+    LIBSSH2_SFTP_HANDLE *m_sftp_handle = nullptr;
+    LIBSSH2_SFTP *m_sftp_session = nullptr;
 };

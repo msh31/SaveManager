@@ -7,38 +7,39 @@
 #include <zip.h>
 
 #ifdef __APPLE__
-#include <spawn.h>
-#include <sys/wait.h>
+    #include <spawn.h>
+    #include <sys/wait.h>
+#elif __linux__
+    #include <sys/wait.h>
 #endif
 #ifdef _WIN32
-#include <shellapi.h>
+    #include <shellapi.h>
 #endif
 
 struct ImFont;
-
 struct Fonts {
-    ImFont *regular;
-    ImFont *medium;
-    ImFont *small_font;
-    ImFont *bold;
+        ImFont* regular;
+        ImFont* medium;
+        ImFont* small_font;
+        ImFont* bold;
 
-    ImFont *title;
-    ImFont *header;
+        ImFont* title;
+        ImFont* header;
 };
 
 // TODO: refactor transfer tab so this isnt needed
 struct TabState {
-    std::vector<std::filesystem::path> backups;
-    std::vector<bool> selected_backups;
-    int selected_game_idx = 0;
-    int selected_backup_idx = 0;
+        std::vector<std::filesystem::path> backups;
+        std::vector<bool>                  selected_backups;
+        int                                selected_game_idx   = 0;
+        int                                selected_backup_idx = 0;
 };
 
 // apple clang doesnt support c++23 views as of apr 2026
-template <typename Range, typename Fn> void enumerate( Range &range, Fn fn ) {
+template <typename Range, typename Fn> void enumerate( Range& range, Fn fn ) {
 #ifdef __APPLE__
     int i = 0;
-    for ( auto &r : range ) {
+    for ( auto& r : range ) {
         fn( i, r );
         ++i;
     }
@@ -102,84 +103,68 @@ static std::string_view get_launcher_label( LauncherType t ) {
     return "";
 }
 
-inline std::string cache_key( const Game &game ) {
+inline std::string cache_key( const Game& game ) {
     if ( game.type == PlatformType::MINECRAFT ) {
         return "Minecraft";
     }
     return game.game_name;
 }
 
-inline std::string hash_file( const std::filesystem::path &path ) {
-    if ( !std::filesystem::is_regular_file( path ) ) return { };
-
-    EVP_MD_CTX *mdctx = EVP_MD_CTX_new( );
-    if ( mdctx == nullptr ) {
-        EVP_MD_CTX_free( mdctx );
-        return { };
-    }
-
-    const EVP_MD *md = EVP_get_digestbyname( "SHA-256" );
-    if ( md == nullptr ) {
-        EVP_MD_CTX_free( mdctx );
-        return { };
-    }
-
-    if ( !EVP_DigestInit_ex( mdctx, md, NULL ) ) {
-        EVP_MD_CTX_free( mdctx );
-        return { };
-    }
-
-    unsigned char hash[SHA256_DIGEST_LENGTH];
-    unsigned int hash_len = 0;
-    char buffer[8192];
-
-    std::ifstream file( path, std::ios::binary );
-    if ( !file.is_open( ) ) {
-        EVP_MD_CTX_free( mdctx );
-        return { };
-    }
-
-    while ( file.read( buffer, sizeof( buffer ) ) ) {
-        EVP_DigestUpdate( mdctx, buffer, file.gcount( ) );
-    }
-    if ( file.gcount( ) > 0 ) {
-        EVP_DigestUpdate( mdctx, buffer, file.gcount( ) );
-    }
-    file.close( );
-
-    if ( !EVP_DigestFinal_ex( mdctx, hash, &hash_len ) ) {
-        EVP_MD_CTX_free( mdctx );
-        return { };
-    }
-    EVP_MD_CTX_free( mdctx );
-
-    std::stringstream ss;
-    for ( int i = 0; i < SHA256_DIGEST_LENGTH; i++ ) {
-        ss << std::hex << std::setw( 2 ) << std::setfill( '0' ) << static_cast<int>( hash[i] );
-    }
-    mdctx = nullptr;
-    return ss.str( );
-}
-
-inline void open_in_file_manager( const char *path ) {
+inline void open_in_file_manager( const char* path ) {
 #ifdef __linux__
     pid_t pid = fork( );
+    pid_t w   = 0;
+    int   status;
+
+    if ( pid > 0 ) {
+        w = waitpid( pid, &status, 0 );
+        if ( w == -1 ) {
+            SPDLOG_ERROR( "waitpid failed: {}", EXIT_FAILURE );
+            exit( EXIT_FAILURE );
+        }
+    }
+
     if ( pid == 0 ) {
-        execl( "/usr/bin/xdg-open", "xdg-open", path, nullptr );
-        _exit( 1 );
+        pid_t g_pid = fork( );
+
+        if ( g_pid == 0 ) {
+            execl( "/usr/bin/xdg-open", "xdg-open", path, nullptr );
+            _exit( 1 );
+        }
+
+        if ( g_pid > 0 ) _exit( 0 );
     }
 #endif
 #ifdef _WIN32
     ShellExecuteA( NULL, "open", path, NULL, NULL, SW_SHOWDEFAULT );
 #endif
 #ifdef __APPLE__
-    extern char **environ;
-    pid_t pid;
+    extern char** environ;
+    pid_t         pid;
 
-    const char *argv[] = { "open", path, nullptr };
-    int status = posix_spawn( &pid, "/usr/bin/open", nullptr, nullptr, (char *const *)argv, environ );
+    const char* argv[] = { "open", path, nullptr };
+    int         status = posix_spawn( &pid, "/usr/bin/open", nullptr, nullptr, (char* const*)argv, environ );
     if ( status == 0 ) {
         waitpid( pid, &status, 0 );
     }
 #endif
+}
+
+inline std::vector<std::vector<int>> get_grouped( const std::vector<Game>& games ) {
+    std::unordered_map<std::string, size_t> key_to_group;
+    std::vector<std::vector<int>>           groups;
+
+    enumerate( games, [&]( int i, auto& game ) {
+        std::string key = ( game.appid != "N/A" ) ? game.appid : cache_key( game );
+
+        auto it = key_to_group.find( key );
+        if ( it != key_to_group.end( ) ) {
+            groups[it->second].push_back( i );
+        } else {
+            key_to_group[key] = groups.size( );
+            groups.push_back( { static_cast<int>( i ) } );
+        }
+    } );
+
+    return groups;
 }

@@ -2,7 +2,7 @@
 #include "utils/translations/translations.hpp"
 #include <logger/logger.hpp>
 
-void UnrealDetector::scan_for_saves( const fs::path &path, std::set<fs::path> &directories ) const {
+void CUnrealDetector::scan_for_saves( const fs::path &path, std::set<fs::path> &directories ) const {
     try {
         for ( const auto &entry :
               fs::recursive_directory_iterator( path, fs::directory_options::skip_permission_denied ) ) {
@@ -21,7 +21,7 @@ void UnrealDetector::scan_for_saves( const fs::path &path, std::set<fs::path> &d
                 continue;
             }
 
-            if ( !std::ranges::equal( buffer, header ) ) {
+            if ( !std::ranges::equal( buffer, m_header ) ) {
                 continue;
             }
 
@@ -41,7 +41,7 @@ void UnrealDetector::scan_for_saves( const fs::path &path, std::set<fs::path> &d
 }
 
 std::expected<std::vector<Game>, DetectionError>
-UnrealDetector::find_saves( const fs::path &prefix, UnrealDetector::ScanMode scan_mode ) const {
+CUnrealDetector::find_saves( const fs::path &prefix, CUnrealDetector::ScanMode scan_mode ) const {
     std::set<fs::path> directories;
     std::vector<Game> games;
 
@@ -50,10 +50,10 @@ UnrealDetector::find_saves( const fs::path &prefix, UnrealDetector::ScanMode sca
     }
 
     switch ( scan_mode ) {
-    case UnrealDetector::ScanMode::Recursive:
+    case CUnrealDetector::ScanMode::Recursive:
         scan_for_saves( prefix, directories );
         break;
-    case UnrealDetector::ScanMode::Native:
+    case CUnrealDetector::ScanMode::Native:
         for ( const auto &folder :
               fs::directory_iterator( prefix, std::filesystem::directory_options::skip_permission_denied ) ) {
             if ( !fs::is_directory( folder ) ) {
@@ -122,7 +122,7 @@ UnrealDetector::find_saves( const fs::path &prefix, UnrealDetector::ScanMode sca
             --comp_it;
             bool is_numeric = std::ranges::all_of( *comp_it, ::isdigit );
 
-            if ( auto the_name = translations.find( *comp_it ); the_name != translations.end( ) ) {
+            if ( auto the_name = m_translations.find( *comp_it ); the_name != m_translations.end( ) ) {
                 if ( *comp_it != "Saved" && *comp_it != "Steam" && *comp_it != "Epic" && !is_numeric ) {
                     game.game_name =
                         translations::get_steam_name( the_name->second ).value_or( the_name->first.data( ) );

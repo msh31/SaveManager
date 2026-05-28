@@ -39,7 +39,7 @@ project(SaveManager
 		C
 		CXX
 	VERSION
-		1.7.0
+		1.8.0
 	DESCRIPTION
 		"The swiss army knife of save management."
 )
@@ -140,16 +140,27 @@ string(TIMESTAMP BUILD_DATE "%Y-%m-%d %H:%M UTC")
 set(savemanager_SOURCES
 	cmake.toml
 	"gui/src/app/app.cpp"
-	"gui/src/frontend/ui/notifications/notification.cpp"
-	"gui/src/frontend/ui/themes/themes.cpp"
-	"gui/src/frontend/ui/widgets.cpp"
-	"gui/src/frontend/views/about/about.cpp"
+	"gui/src/backend/font_manager/font_manager.cpp"
+	"gui/src/backend/shader/shader.cpp"
+	"gui/src/backend/task_runner/task_runner.cpp"
+	"gui/src/backend/text_pipeline/text_pipeline.cpp"
+	"gui/src/backend/ui_manager/ui_manager.cpp"
+	"gui/src/backend/window/window_manager.cpp"
+	"gui/src/frontend/components/menubar/menubar.cpp"
+	"gui/src/frontend/components/statusbar/statusbar.cpp"
+	"gui/src/frontend/dialogs/confirm/confirm_dialog.cpp"
+	"gui/src/frontend/layout/tabbar/tabbar.cpp"
+	"gui/src/frontend/notification/notification.cpp"
+	"gui/src/frontend/theme/theme.cpp"
+	"gui/src/frontend/views/about/about_view.cpp"
 	"gui/src/frontend/views/backups/backup_view.cpp"
-	"gui/src/frontend/views/dashboard/dashboard.cpp"
+	"gui/src/frontend/views/dashboard/dashboard_view.cpp"
+	"gui/src/frontend/views/debug/debug_view.cpp"
 	"gui/src/frontend/views/editor/editor_view.cpp"
-	"gui/src/frontend/views/log/log.cpp"
-	"gui/src/frontend/views/settings/settings.cpp"
-	"gui/src/frontend/views/transfer/transfer.cpp"
+	"gui/src/frontend/views/log/log_view.cpp"
+	"gui/src/frontend/views/pipeline/pipeline_demo.cpp"
+	"gui/src/frontend/views/settings/settings_view.cpp"
+	"gui/src/frontend/views/transfer/transfer_view.cpp"
 	"gui/src/main.cpp"
 	"gui/vendor/imgui/imgui_stdlib.cpp"
 )
