@@ -1,4 +1,5 @@
 #include "watcher/watcher.hpp"
+#include <server/server.hpp>
 
 #if defined( __linux__ )
     #include <sys/inotify.h>
@@ -13,6 +14,7 @@
 
 int main( ) {
     CConfig config;
+    CServer m_server;
 
     // CSaveScheduler scheduler( config );
 
@@ -43,8 +45,17 @@ int main( ) {
         }
     }
     // scheduler.run( );
-    watcher.run( );
-#else
-    return 0;
+    // watcher.run( );
+    std::thread watcher_thread( &CWatcher::run, &watcher );
+    watcher_thread.detach( );
 #endif
+
+    std::thread server_thread( &CServer::run, &m_server );
+    server_thread.detach( );
+
+    while ( true ) {
+        std::this_thread::sleep_for( std::chrono::milliseconds( 50 ) );
+    }
+
+    return 0;
 }

@@ -252,8 +252,10 @@ endif()
 # Target: savemanager-daemon
 set(savemanager-daemon_SOURCES
 	cmake.toml
+	"daemon/src/client/client.cpp"
 	"daemon/src/main.cpp"
-	"daemon/src/watcher.cpp"
+	"daemon/src/server/server.cpp"
+	"daemon/src/watcher/watcher.cpp"
 )
 
 add_executable(savemanager-daemon)
