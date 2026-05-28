@@ -8,16 +8,17 @@
 #include <frontend/fonts/jbm_med.h>
 #include <frontend/fonts/jbm_reg.h>
 
-void CWindowManager::run( std::function<void( )> fun ) {
-    do {
-        glClear( GL_COLOR_BUFFER_BIT );
-        int width  = 0;
-        int height = 0;
-        glfwGetFramebufferSize( m_window, &width, &height );
+std::pair<int, int> CWindowManager::get_size( ) {
+    int width, height = 0;
+    glfwGetFramebufferSize( m_window, &width, &height );
+    return { width, height };
+}
 
+void CWindowManager::run( std::function<void( )> pre, std::function<void( )> ui ) {
+    do {
+        pre( );
         ImGui_ImplOpenGL3_NewFrame( );
         ImGui_ImplGlfw_NewFrame( );
-        m_shader->render( width, height );
         ImGui::NewFrame( );
 
         ImGuiViewport* viewport = ImGui::GetMainViewport( );
@@ -28,10 +29,11 @@ void CWindowManager::run( std::function<void( )> fun ) {
         ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize |
                                         ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoCollapse |
                                         ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus |
-                                        ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse;
+                                        ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse |
+                                        ImGuiWindowFlags_NoBackground;
 
         ImGui::Begin( "Main Window", nullptr, window_flags );
-        fun( );
+        ui( );
         ImGui::End( );
         ImGui::Render( );
 
@@ -63,8 +65,6 @@ void CWindowManager::setup_opengl( ) {
     if ( !gladLoadGL( glfwGetProcAddress ) ) {
         throw std::runtime_error( "Failed to initialize GLAD" );
     }
-
-    m_shader.emplace( ); // defer initialization to here, cool!
 }
 
 void CWindowManager::setup_imgui( ) {

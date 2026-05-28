@@ -38,7 +38,7 @@ void CUIManager::render( ) {
     float sb_h = m_statusbar ? CStatusBar::height( ) : 0.f;
     ImGui::BeginChild(
         "##shell_area", { 0.f, -sb_h }, ImGuiChildFlags_None,
-        ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse );
+        ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse | ImGuiWindowFlags_NoBackground );
     if ( auto* clicked = m_shell->render( m_active_view ) ) set_active_view( clicked );
     ImGui::EndChild( );
 

@@ -16,7 +16,7 @@ CBaseView* CTabbarShell::render( CBaseView* active ) {
         ImGui::EndTabBar( );
     }
 
-    ImGui::BeginChild( "##content", { 0, 0 }, ImGuiChildFlags_Borders );
+    ImGui::BeginChild( "##content", { 0, 0 }, ImGuiChildFlags_Borders, ImGuiWindowFlags_NoBackground );
     if ( active ) active->render( );
     ImGui::EndChild( );
 

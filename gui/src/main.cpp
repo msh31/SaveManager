@@ -14,7 +14,8 @@ int main( ) {
 
         app.init( );
         SPDLOG_INFO( "Initialized succesfully!" );
-        window.run( [&app] { app.render( ); } );
+
+        window.run( [&] { app.render_shader( window.get_size( ) ); }, [&app] { app.render( ); } );
     } catch ( const std::exception& e ) {
         SPDLOG_CRITICAL( "Fatal: {}", e.what( ) );
         return 1;

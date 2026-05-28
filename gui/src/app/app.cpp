@@ -24,6 +24,7 @@ void CApp::init( ) {
     translations::init( );
     Blacklist::init( );
     ThemeManager::apply_style( );
+    m_shader.emplace( );
 
     m_ui_manager.add_view( { std::make_unique<CDashboardView>( m_config ), ICON_HOME, "Dashboard" } );
     m_ui_manager.add_view( { std::make_unique<CEditorView>( ), ICON_EDIT, "Save Editor" } );
@@ -39,4 +40,17 @@ void CApp::render( ) {
     m_ui_manager.render( );
     Notify::render_notifications( );
     ConfirmDialog::render( );
+}
+
+void CApp::render_shader( std::pair<int, int> window_size ) {
+    if ( m_config.settings.dark_mode ) {
+        glClearColor( 0.145f, 0.145f, 0.141f, 1.0f );
+    } else
+        glClearColor( 0.980f, 0.976f, 0.961f, 1.00f );
+    glClear( GL_COLOR_BUFFER_BIT ); // for the themes
+    glViewport( 0, 0, window_size.first, window_size.second );
+
+    if ( m_config.settings.animated_background ) {
+        m_shader->render( window_size.first, window_size.second );
+    }
 }
