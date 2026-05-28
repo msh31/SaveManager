@@ -206,6 +206,57 @@ const char* CZipArchive::get_comment( ) {
     return zip_get_archive_comment( m_archive, &len, 0 );
 }
 
+std::string CZipArchive::hash_file( const std::filesystem::path& path ) {
+    if ( !std::filesystem::is_regular_file( path ) ) return { };
+
+    EVP_MD_CTX* mdctx = EVP_MD_CTX_new( );
+    if ( mdctx == nullptr ) {
+        EVP_MD_CTX_free( mdctx );
+        return { };
+    }
+
+    const EVP_MD* md = EVP_get_digestbyname( "SHA-256" );
+    if ( md == nullptr ) {
+        EVP_MD_CTX_free( mdctx );
+        return { };
+    }
+
+    if ( !EVP_DigestInit_ex( mdctx, md, NULL ) ) {
+        EVP_MD_CTX_free( mdctx );
+        return { };
+    }
+
+    unsigned char hash[SHA256_DIGEST_LENGTH];
+    unsigned int  hash_len = 0;
+    char          buffer[8192];
+
+    std::ifstream file( path, std::ios::binary );
+    if ( !file.is_open( ) ) {
+        EVP_MD_CTX_free( mdctx );
+        return { };
+    }
+
+    while ( file.read( buffer, sizeof( buffer ) ) ) {
+        EVP_DigestUpdate( mdctx, buffer, file.gcount( ) );
+    }
+    if ( file.gcount( ) > 0 ) {
+        EVP_DigestUpdate( mdctx, buffer, file.gcount( ) );
+    }
+    file.close( );
+
+    if ( !EVP_DigestFinal_ex( mdctx, hash, &hash_len ) ) {
+        EVP_MD_CTX_free( mdctx );
+        return { };
+    }
+    EVP_MD_CTX_free( mdctx );
+
+    std::stringstream ss;
+    for ( int i = 0; i < SHA256_DIGEST_LENGTH; i++ ) {
+        ss << std::hex << std::setw( 2 ) << std::setfill( '0' ) << static_cast<int>( hash[i] );
+    }
+    return ss.str( );
+}
+
 std::string CZipArchive::build_manifest( std::vector<std::pair<fs::path, fs::path>> paths ) {
     json                  data;
     std::vector<fs::path> failed_files;
