@@ -133,6 +133,7 @@ void CConfig::load( ) {
                                    std::ranges::to<std::vector>( );
         }
 
+        // TODO: improve this by using a keychain on the OS
         sftp.dest_addr   = data.value( "dest_addr", std::string( "" ) );
         sftp.username    = data.value( "username", std::string( "" ) );
         sftp.password    = data.value( "password", std::string( "" ) );
@@ -140,10 +141,10 @@ void CConfig::load( ) {
         sftp.pubkey      = data.value( "pubkey", fs::path( "" ) );
         sftp.privkey     = data.value( "privkey", fs::path( "" ) );
 
-        win_props.x      = data["x"];
-        win_props.y      = data["y"];
-        win_props.width  = data["width"];
-        win_props.height = data["height"];
+        win_props.x      = data.value( "x", -1 );
+        win_props.y      = data.value( "y", -1 );
+        win_props.width  = data.value( "width", -1 );
+        win_props.height = data.value( "height", -1 );
     } catch ( json::exception& ex ) {
         SPDLOG_ERROR( "config parsing error: {}", ex.what( ) );
     }
