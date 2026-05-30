@@ -67,6 +67,8 @@ find_package(sol2 REQUIRED)
 
 find_package(spdlog REQUIRED)
 
+find_package(yaml-cpp REQUIRED)
+
 # Target: savemanager-core
 set(savemanager-core_SOURCES
 	cmake.toml
@@ -83,6 +85,7 @@ set(savemanager-core_SOURCES
 	"lib/src/network/network.cpp"
 	"lib/src/plugin/plugin.cpp"
 	"lib/src/utils/blacklist/blacklist.cpp"
+	"lib/src/utils/ludusavi_parser/ludusavi_parser.cpp"
 	"lib/src/utils/steam/steam.cpp"
 	"lib/src/utils/translations/translations.cpp"
 	"lib/src/utils/zip_archive/zip_archive.cpp"
@@ -110,6 +113,7 @@ target_link_libraries(savemanager-core PUBLIC
 	stb::stb
 	sol2::sol2
 	spdlog::spdlog
+	yaml-cpp::yaml-cpp
 )
 
 if(WIN32) # windows

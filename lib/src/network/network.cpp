@@ -5,18 +5,18 @@
 #include <nlohmann/json.hpp>
 using json = nlohmann::json;
 
-size_t Network::write_callback( void *ptr, size_t size, size_t nmemb, FILE *stream ) {
+size_t Network::write_callback( void* ptr, size_t size, size_t nmemb, FILE* stream ) {
     return fwrite( ptr, size, nmemb, stream ) * size;
 }
 
-size_t Network::stream_callback( void *ptr, size_t size, size_t nmemb, FILE *stream ) {
-    ( (std::string *)stream )->append( (char *)ptr, size * nmemb );
+size_t Network::stream_callback( void* ptr, size_t size, size_t nmemb, FILE* stream ) {
+    ( (std::string*)stream )->append( (char*)ptr, size * nmemb );
 
     return size * nmemb;
 }
 
 std::string Network::download_to_string( std::string_view url ) {
-    CURL *curl = curl_easy_init( );
+    CURL* curl = curl_easy_init( );
     if ( !curl ) {
         SPDLOG_ERROR( "Failed to initialize CURL" );
         return { };
@@ -40,14 +40,14 @@ std::string Network::download_to_string( std::string_view url ) {
     return data;
 }
 
-bool Network::download_file( std::string_view url, const std::string &output_path ) {
-    CURL *curl = curl_easy_init( );
+bool Network::download_file( std::string_view url, const std::string& output_path ) {
+    CURL* curl = curl_easy_init( );
     if ( !curl ) {
         SPDLOG_ERROR( "Failed to initialize CURL" );
         return false;
     }
 
-    FILE *fp = fopen( output_path.c_str( ), "wb" );
+    FILE* fp = fopen( output_path.c_str( ), "wb" );
     if ( !fp ) {
         SPDLOG_ERROR( "Failed to open file for writing: {}", output_path );
         curl_easy_cleanup( curl );
@@ -87,7 +87,7 @@ void Network::download_game_image( std::string_view appid ) {
 }
 
 bool Network::is_update_available( ) {
-    json data;
+    json        data;
     std::string upstream = download_to_string( "https://api.github.com/repos/msh31/SaveManager/releases/latest" );
 
     if ( upstream.empty( ) ) {
@@ -97,7 +97,7 @@ bool Network::is_update_available( ) {
 
     try {
         data = json::parse( upstream );
-    } catch ( json::exception &ex ) {
+    } catch ( json::exception& ex ) {
         SPDLOG_ERROR( "JSON parsing error: {}", ex.what( ) );
         return false;
     }
@@ -105,7 +105,7 @@ bool Network::is_update_available( ) {
     std::string latest = data.value( "tag_name", std::string( "" ) );
     // SPDLOG_INFO("Latest: " + latest + " Current: " + std::string(APP_VERSION));
 
-    auto [maj, min, pat] = parse_version( APP_VERSION );
+    auto [maj, min, pat]       = parse_version( APP_VERSION );
     auto [l_maj, l_min, l_pat] = parse_version( latest );
 
     if ( maj > l_maj ) return false;
@@ -121,9 +121,9 @@ bool Network::is_update_available( ) {
 
 std::tuple<int, int, int> Network::parse_version( std::string_view v ) {
     std::istringstream ss( ( std::string( v ) ) );
-    std::string segment;
-    int major = 0, minor = 0, patch = 0;
-    int i = 0;
+    std::string        segment;
+    int                major = 0, minor = 0, patch = 0;
+    int                i = 0;
     while ( std::getline( ss, segment, '.' ) && i < 3 ) {
         if ( i == 0 ) segment.erase( 0, 1 ); // strip 'v'
         if ( i == 0 ) major = std::stoi( segment );

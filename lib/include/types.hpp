@@ -32,12 +32,14 @@ struct Game {
 };
 
 struct ScheduleEntry {
-        bool                               enabled;
-        int                                interval_hours;
-        int64_t                            last_backup_time;
-        PlatformType                       type = PlatformType::GENERIC;
-        std::string                        appid;
-        std::string                        game_name;
+        bool    enabled;
+        int     interval_hours;
+        int64_t last_backup_time;
+
+        PlatformType type = PlatformType::GENERIC;
+        std::string  appid;
+        std::string  game_name;
+
         std::filesystem::path              save_path;
         std::vector<std::filesystem::path> included_saves;
 };
@@ -47,4 +49,16 @@ struct BackupEntry {
         fs::path              save_path;
         std::vector<fs::path> entries;
         size_t                size;
+};
+
+struct ManifestSavePath {
+        bool is_mac;
+        bool is_windows;
+        bool is_linux;
+        bool fully_resolved;
+
+        fs::path unresolved_path;
+        fs::path resolved_path;
+
+        std::vector<std::string> tags;
 };

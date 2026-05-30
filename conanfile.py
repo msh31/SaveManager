@@ -23,6 +23,7 @@ class SaveManager(ConanFile):
         self.requires("stb/cci.20230920")
         self.requires("sol2/3.5.0")
         self.requires("spdlog/1.17.0")
+        self.requires("yaml-cpp/0.9.0")
 
     def configure(self):
         if self.settings.os == "Windows":

@@ -11,6 +11,7 @@
 
 #include <frontend/views/about/about_view.hpp>
 #include <frontend/views/dashboard/dashboard_view.hpp>
+#include <frontend/views/debug/debug_view.hpp>
 #include <frontend/views/editor/editor_view.hpp>
 #include <frontend/views/log/log_view.hpp>
 #include <frontend/views/pipeline/pipeline_demo.hpp>
@@ -23,6 +24,7 @@
 void CApp::init( ) {
     translations::init( );
     Blacklist::init( );
+
     ThemeManager::apply_style( );
     m_shader.emplace( );
 
@@ -32,6 +34,7 @@ void CApp::init( ) {
     m_ui_manager.add_view( { std::make_unique<CAboutView>( ), ICON_INFO, "About" } );
     // m_ui_manager.add_view( { std::make_unique<CPipelineView>( ), "\xef\x83\xa8", "Pipeline Demo" } );
     m_ui_manager.add_view( { std::make_unique<CLogView>( ), ICON_SCROLL, "Log" } );
+    m_ui_manager.add_view( { std::make_unique<CDebugView>( ), ICON_BUG, "Debug" } );
     m_ui_manager.set_settings_view( { std::make_unique<CSettingsView>( m_config ), ICON_GEAR, "Settings" } );
 }
 
