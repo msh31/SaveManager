@@ -5,18 +5,18 @@
 
 ### Core
 #### Added
+- Support for EA Games
+- Ludusavi manifest integration
 
 #### Fixed
 - Backup extraction now aborts if a restored file's SHA-256 hash doesn't match the manifest (was silently ignored)
 - `list_dir` plugin API no longer crashes on permission-denied paths
-- Config `win_props` keys falling back to defaults instead of aborting the full parse on missing keys
-- Zombie processes no longer created when opening a path in the file manager on Linux
+- Opening a path in the file manager does not cause zombie processes to be created anymore (linux)
 
 #### Changed
-- `hash_file` moved into `CZipArchive`; no longer compiled into every translation unit
-- Daemon debounce loop releases the mutex before invoking the backup callback, preventing dropped inotify events during long backups
 - Plugin loading errors are now caught per-plugin; remaining plugins continue loading
 - Plugins returning entries with missing `game_name` or `save_path` are now skipped with a warning
+
 
 ### GUI
 #### Added
@@ -25,6 +25,10 @@
 - Total games found in dashboard
 - Total detection time in dashboard
 
+### Fixed
+- Config `win_props` keys falling back to defaults instead of aborting the full parse on missing keys
+- MacOS version does no longer show a seperate terminal window
+
 #### Changed
 - Refresh and mass backup buttons are now disabled during active operations instead of hidden
 - Improved log view with color-coded levels and copy to clipboard
@@ -32,6 +36,12 @@
 #### Performance
 - Cache rebuilds after detection now run asynchronously, eliminating frame stalls on large game libraries
 
+
+### Development
+- GUI has been re-written using a custom ImGui framework I have been cooking up
+- `hash_file` moved into `CZipArchive`; no longer compiled into every translation unit
+
+---
 
 ## [1.7.0] - 2026-05-21
 *Core logic moved into a separate library linked by the GUI*

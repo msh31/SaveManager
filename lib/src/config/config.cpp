@@ -32,11 +32,11 @@ CConfig::CConfig( fs::path config_dir ) : config_file( config_dir / "config.json
             }
         }
 
-        // if(!fs::exists(paths::cache_dir())) {
-        //     if(!fs::create_directories(paths::cache_dir())) {
-        //         SPDLOG_ERROR("Failed to create cache directory");
-        //     }
-        // }
+        if ( !fs::exists( paths::cache_dir( ) ) ) {
+            if ( !fs::create_directories( paths::cache_dir( ) ) ) {
+                SPDLOG_ERROR( "Failed to create cache directory" );
+            }
+        }
 
         load( );
     } catch ( const std::exception& err ) {
