@@ -4,6 +4,8 @@
 
 #include <utils/ludisavi_parser/ludusavi_parser.hpp>
 
+#include <utils/steam/steam.hpp>
+
 void CDebugView::render( ) {
     m_task_runner.update( ); // needs a refactor but fine for now
 
@@ -30,6 +32,7 @@ void CDebugView::render( ) {
             [] { std::this_thread::sleep_for( std::chrono::seconds( 2 ) ); },
             [] { Notify::show_notification( "Async", "Task complete!", 2000 ); } );
     }
+
     if ( ImGui::Button( "Test manifest" ) ) {
         m_task_runner.run(
             [] {
@@ -42,6 +45,10 @@ void CDebugView::render( ) {
                 }
             },
             [] { Notify::show_notification( "Async", "Manifest test complete!", 2000 ); } );
+    }
+    ImGui::SameLine( );
+    if ( ImGui::Button( "Steam UserID test" ) ) {
+        SPDLOG_INFO( SteamHelper::parse_steam_userid( ).value_or( "no user id found" ) );
     }
 }
 
