@@ -27,13 +27,6 @@ std::vector<std::string> SteamHelper::get_platform_steam_paths( ) {
 }
 
 std::optional<fs::path> SteamHelper::get_steam_location( ) {
-    // if (!config.settings.steam_path.empty()) {
-    //     if (fs::exists(config.settings.steam_path)) {
-    //         return config.settings.steam_path;
-    //     }
-    //     SPDLOG_WARN("Configured Steam path does not exist, falling back to defaults");
-    // }
-
     for ( const auto& entry : get_platform_steam_paths( ) ) {
         if ( fs::exists( entry ) ) {
             return entry;
@@ -50,10 +43,6 @@ std::vector<fs::path> SteamHelper::get_library_folders( ) {
         SPDLOG_WARN( "Steam installation not found" );
         return { };
     }
-
-    // if (config.settings.steam_path.empty()) {
-    //     config.settings.steam_path = vdf_file.value().string();
-    // }
 
     std::ifstream file( vdf_file.value( ).string( ) );
     std::string   line;
@@ -83,9 +72,10 @@ std::vector<fs::path> SteamHelper::get_library_folders( ) {
     return libraries;
 }
 
-std::unordered_map<uint32_t, std::string> SteamHelper::parse_app_manifest( const fs::path& acf_path ) {
+std::optional<SteamManifest> SteamHelper::parse_app_manifest( const fs::path& acf_path ) {
     uint32_t    appid = 0;
     std::string name;
+    std::string install_dir;
 
     std::ifstream f( acf_path.string( ) );
     if ( !f.is_open( ) ) {
@@ -111,8 +101,16 @@ std::unordered_map<uint32_t, std::string> SteamHelper::parse_app_manifest( const
 
             name = value;
         }
+        if ( str.find( "\"installdir\"" ) != std::string::npos ) {
+            auto last_close = str.rfind( '"' );
+            auto last_open  = str.rfind( '"', last_close - 1 );
+
+            std::string value = str.substr( last_open + 1, last_close - last_open - 1 );
+
+            install_dir = value;
+        }
     }
 
-    if ( appid == 0 || name.empty( ) ) return { };
-    return { { appid, name } };
+    if ( appid == 0 || name.empty( ) || install_dir.empty( ) ) return std::nullopt;
+    return SteamManifest{ appid, name, install_dir };
 }
