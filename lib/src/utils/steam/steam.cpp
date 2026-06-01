@@ -32,6 +32,48 @@ std::optional<fs::path> SteamHelper::get_steam_location( ) {
             return entry;
         }
     }
+    SPDLOG_ERROR( "Failed to find steam location!" );
+    return std::nullopt;
+}
+
+std::optional<std::string> SteamHelper::parse_steam_userid( ) {
+    auto base = get_steam_location( );
+    if ( base == std::nullopt ) return std::nullopt;
+
+    auto steam_root     = base->parent_path( ).parent_path( );
+    auto loginusers_vdf = steam_root / "config" / "loginusers.vdf";
+
+    std::ifstream file( loginusers_vdf.string( ) );
+    std::string   line;
+
+    if ( !file.is_open( ) ) {
+        SPDLOG_ERROR( "Failed to open loginusers.vdf for parsing!" );
+        return { };
+    }
+
+    std::string current_id = { };
+    while ( std::getline( file, line ) ) {
+        if ( line.find( "\"7656119" ) != std::string::npos ) {
+            auto last_close = line.rfind( '"' );
+            auto last_open  = line.rfind( '"', last_close - 1 );
+
+            std::string value = line.substr( last_open + 1, last_close - last_open - 1 );
+
+            current_id = value;
+            continue;
+        }
+        if ( line.find( "\"MostRecent\"" ) != std::string::npos ) {
+            auto last_close = line.rfind( '"' );
+            auto last_open  = line.rfind( '"', last_close - 1 );
+
+            std::string value = line.substr( last_open + 1, last_close - last_open - 1 );
+            if ( value == "1" ) return current_id;
+            else
+                continue;
+        }
+    }
+
+    file.close( );
     return std::nullopt;
 }
 
