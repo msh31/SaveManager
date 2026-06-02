@@ -14,7 +14,7 @@ class CLudusaviParser {
         fs::path m_path = paths::cache_dir( ) / "manifest.yaml";
 
         bool m_is_outdated     = false;
-        bool m_manifest_exists = fs::exists( m_path );
+        bool m_manifest_exists = fs::exists( m_path.string( ) );
 
         YAML::Node  m_manifest;
         std::string m_manifest_str = { };

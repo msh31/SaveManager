@@ -9,13 +9,13 @@ CLudusaviParser::CLudusaviParser( ) {
         }
     }
     if ( !m_manifest_exists || m_is_outdated ) {
-        if ( !Network::download_file( m_manifest_link, m_path ) ) {
+        if ( !Network::download_file( m_manifest_link, m_path.string( ) ) ) {
             SPDLOG_ERROR( "Failed to download manifest!" );
             return;
         }
     }
 
-    m_manifest = YAML::LoadFile( m_path );
+    m_manifest = YAML::LoadFile( m_path.string( ) );
 
     for ( auto it = m_manifest.begin( ); it != m_manifest.end( ); ++it ) {
         std::string game_name = it->first.as<std::string>( );
