@@ -169,8 +169,8 @@ jobs:
 
       - name: Package
         run: |
-          BINARY=$(find build -name "savemanager" -type f | head -1)
-          zip SaveManager-macOS-arm64.zip "$BINARY"
+          cd build
+          zip -r ../SaveManager-macOS-arm64.zip SaveManager.app
 
       - uses: actions/upload-artifact@v4
         with:

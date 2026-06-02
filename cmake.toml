@@ -82,6 +82,21 @@ configure_file(
     @ONLY
 )
 target_sources(savemanager PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/version.cpp)
+
+if(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
+    configure_file(
+        ${CMAKE_CURRENT_SOURCE_DIR}/Info.plist.in
+        ${CMAKE_CURRENT_BINARY_DIR}/SaveManager.app/Contents/Info.plist
+    )
+
+    # Create .app bundle and copy binary
+    add_custom_command(TARGET savemanager POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_CURRENT_BINARY_DIR}/SaveManager.app/Contents/MacOS
+        COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_CURRENT_BINARY_DIR}/SaveManager.app/Contents/Resources
+        COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:savemanager> ${CMAKE_CURRENT_BINARY_DIR}/SaveManager.app/Contents/MacOS/SaveManager
+        COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_BINARY_DIR}/SaveManager.app/Contents/Info.plist ${CMAKE_CURRENT_BINARY_DIR}/SaveManager.app/Contents/Info.plist
+    )
+endif()
 """
 
 [target.savemanager.windows]
