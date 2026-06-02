@@ -12,6 +12,7 @@
 - Backup extraction now aborts if a restored file's SHA-256 hash doesn't match the manifest (was silently ignored)
 - `list_dir` plugin API no longer crashes on permission-denied paths
 - Opening a path in the file manager does not cause zombie processes to be created anymore (linux)
+- Downloading a save from an SFTP server places the save in the ``path/to/savemanager/backups/`` instead of it's corresponding game folder
 
 #### Changed
 - Plugin loading errors are now caught per-plugin; remaining plugins continue loading
@@ -31,7 +32,7 @@
 
 #### Changed
 - Refresh and mass backup buttons are now disabled during active operations instead of hidden
-- Improved log view with color-coded levels and copy to clipboard
+- Improved log view with color-coded levels
 
 #### Performance
 - Cache rebuilds after detection now run asynchronously, eliminating frame stalls on large game libraries
@@ -40,6 +41,11 @@
 ### Development
 - GUI has been re-written using a custom ImGui framework I have been cooking up
 - `hash_file` moved into `CZipArchive`; no longer compiled into every translation unit
+
+
+### Known Issues / Limitations
+- Original Anno editions not supported due to install path limitations (a plugin can be written for this)
+- Grouping issues with unknown / partially supported games (improved since [#2](https://github.com/msh31/SaveManager/issues/2)
 
 ---
 
