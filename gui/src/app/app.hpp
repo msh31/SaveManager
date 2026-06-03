@@ -11,6 +11,7 @@
 
 class CApp {
     public:
+        ~CApp( ) { SPDLOG_INFO( "Exiting SaveManager.." ); }
         void init( );
         void render( );
         void render_shader( std::pair<int, int> window_size );
