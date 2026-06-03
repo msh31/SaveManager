@@ -11,6 +11,7 @@
 #include "detection/rsg/rsg.hpp"
 #include "detection/ubi/ubi.hpp"
 #include "detection/unreal/unreal.hpp"
+#include <utils/ludisavi_parser/ludusavi_parser.hpp>
 
 struct Detectors {
         CRockstarDetector  rockstar_detect;
@@ -91,8 +92,46 @@ void scan_prefix_dir(
     }
 }
 
-void Detection::find_saves( CConfig& config, DetectionResult& d_result ) {
+void Detection::find_saves( CConfig& config, DetectionResult& d_result, std::optional<CLudusaviParser>& parser ) {
     Detectors detectors;
+    auto      libraries = SteamHelper::get_library_folders( );
+
+    if ( parser.has_value( ) ) {
+        for ( const auto& library : libraries ) {
+            for ( const auto& entry :
+                  fs::directory_iterator( library / "steamapps", fs::directory_options::skip_permission_denied ) ) {
+                if ( entry.is_directory( ) ) continue;
+                if ( entry.path( ).extension( ) != ".acf" ) continue;
+
+                auto manifest = SteamHelper::parse_app_manifest( entry.path( ) );
+                if ( !manifest ) continue;
+
+                auto parser_paths = parser->get_save_paths( manifest->appid );
+                if ( parser_paths.empty( ) ) continue;
+
+                for ( auto& path : parser_paths ) {
+                    auto str = path.unresolved_path.string( );
+
+                    auto pos = str.find( "<root>" );
+                    if ( pos != std::string::npos ) {
+                        str.replace( pos, std::string( "<root>" ).length( ), ( library / "steamapps" ).string( ) );
+                    }
+
+                    if ( !fs::exists( str ) ) continue;
+
+                    Game game;
+                    game.appid            = manifest->appid;
+                    game.game_name        = manifest->name;
+                    game.save_path        = str;
+                    game.type             = PlatformType::GENERIC;
+                    game.show_parent_path = true; // verify
+
+                    std::scoped_lock lock( d_result.d_mutex );
+                    d_result.games.emplace_back( game );
+                }
+            }
+        }
+    }
 
     // cool lua support
     int plugin_count = 0;
@@ -113,7 +152,6 @@ void Detection::find_saves( CConfig& config, DetectionResult& d_result ) {
 
 #ifdef __linux__
     // steam
-    auto libraries = SteamHelper::get_library_folders( );
     for ( const auto& library : libraries ) {
         fs::path compatdata = library / "steamapps/compatdata";
         if ( !fs::exists( compatdata ) ) continue;

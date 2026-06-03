@@ -2,6 +2,7 @@
 #include <types.hpp>
 
 class CConfig;
+class CLudusaviParser;
 
 namespace Detection {
     struct DetectionResult {
@@ -12,5 +13,5 @@ namespace Detection {
     void add_game(
         std::expected<std::vector<Game>, DetectionError> result, const std::string& platform,
         DetectionResult& d_result );
-    void find_saves( CConfig& config, DetectionResult& d_result );
+    void find_saves( CConfig& config, DetectionResult& d_result, std::optional<CLudusaviParser>& parser );
 }; // namespace Detection
