@@ -193,7 +193,9 @@ void CDashboardView::render_game_content(
     std::pair<int, int> sb_count, const Game& game, bool has_conflicts,
     std::vector<std::pair<fs::path, const Game*>> files ) {
     // saves
-    if ( sb_count.first <= 0 ) ImGui::TextDisabled( "Game detected but no saves were found!" );
+    if ( sb_count.first <= 0 ) {
+        ImGui::TextDisabled( "Game detected but no saves were found!" );
+    }
 
     if ( game.type != PlatformType::MINECRAFT ) ImGui::TextDisabled( "SAVE FILES" );
     else
@@ -378,13 +380,10 @@ void CDashboardView::render_save_row( const fs::path& save_file, const Game& gam
 void CDashboardView::render_backup_row(
     const fs::path& backup, const Game& game, const std::unordered_map<std::string, std::string>& labels ) {
 
+    if ( !fs::exists( backup ) ) return;
     if ( backup.filename( ) == "undo.zip" ) return;
-    ImGui::PushID( backup.string( ).c_str( ) );
-    if ( !fs::exists( backup ) ) {
-        ImGui::PopID( );
-        return;
-    }
 
+    ImGui::PushID( backup.string( ).c_str( ) );
     auto        it      = labels.find( backup.filename( ).string( ) );
     std::string display = ( it != labels.end( ) ) ? it->second : backup.filename( ).string( );
 
