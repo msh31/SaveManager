@@ -1,14 +1,21 @@
 #include "transfer_view.hpp"
-#include <backend/font_manager/font_manager.hpp>
+#include <utils/ludisavi_parser/ludusavi_parser.hpp>
+#include <utils/utils.hpp>
+
 #include <detection/detection.hpp>
 #include <features/backup/backup.hpp>
+
+#include <backend/font_manager/font_manager.hpp>
+
 #include <frontend/components/spinner.hpp>
 #include <frontend/notification/notification.hpp>
-#include <utils/utils.hpp>
+
+std::optional<CLudusaviParser> no_parser; // nullopt by default - TODO: hookup
 
 void CTransferView::on_enter( ) {
     if ( m_result.games.empty( ) )
-        m_detection_future = std::async( std::launch::async, [this] { Detection::find_saves( m_config, m_result ); } );
+        m_detection_future =
+            std::async( std::launch::async, [this] { Detection::find_saves( m_config, m_result, no_parser ); } );
 }
 
 void CTransferView::render( ) {
