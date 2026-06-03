@@ -105,11 +105,15 @@ void Detection::find_saves( CConfig& config, DetectionResult& d_result, std::opt
 
                 auto manifest = SteamHelper::parse_app_manifest( entry.path( ) );
                 if ( !manifest ) continue;
+                SPDLOG_INFO( "name: {}", manifest->name );
+                SPDLOG_INFO( "appid: {}", manifest->appid );
 
                 auto parser_paths = parser->get_save_paths( manifest->appid );
                 if ( parser_paths.empty( ) ) continue;
 
                 for ( auto& path : parser_paths ) {
+                    SPDLOG_INFO( " found: {}", path.unresolved_path.string( ) );
+
                     auto str = path.unresolved_path.string( );
 
                     auto pos = str.find( "<root>" );
@@ -125,13 +129,15 @@ void Detection::find_saves( CConfig& config, DetectionResult& d_result, std::opt
                     game.save_path        = str;
                     game.type             = PlatformType::GENERIC;
                     game.show_parent_path = true; // verify
+                    SPDLOG_INFO( " set: {}", str );
 
                     std::scoped_lock lock( d_result.d_mutex );
                     d_result.games.emplace_back( game );
                 }
             }
         }
-    }
+    } else
+        SPDLOG_ERROR( "parser has no value" );
 
     // cool lua support
     int plugin_count = 0;
