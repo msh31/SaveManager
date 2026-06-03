@@ -21,7 +21,8 @@ void CDashboardView::on_enter( ) {
         m_grouped_games.clear( );
         m_game_cache.clear( );
         m_detection_start_time = std::chrono::steady_clock::now( );
-        m_refresh_future = std::async( std::launch::async, [this] { Detection::find_saves( m_config, m_result ); } );
+        m_refresh_future =
+            std::async( std::launch::async, [this] { Detection::find_saves( m_config, m_result, m_parser ); } );
     }
 };
 
@@ -129,7 +130,8 @@ void CDashboardView::render_toolbar( ) {
         m_grouped_games.clear( );
         m_game_cache.clear( );
         m_detection_start_time = std::chrono::steady_clock::now( );
-        m_refresh_future = std::async( std::launch::async, [this] { Detection::find_saves( m_config, m_result ); } );
+        m_refresh_future =
+            std::async( std::launch::async, [this] { Detection::find_saves( m_config, m_result, m_parser ); } );
     }
     if ( is_refreshing ) ImGui::EndDisabled( );
     ImGui::SetItemTooltip( "Re-runs the detection logic to find new saves" );

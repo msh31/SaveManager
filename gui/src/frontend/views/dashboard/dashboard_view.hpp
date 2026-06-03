@@ -1,13 +1,17 @@
 #pragma once
-#include <backend/task_runner/task_runner.hpp>
 #include <config/config.hpp>
 #include <detection/detection.hpp>
+#include <utils/ludisavi_parser/ludusavi_parser.hpp>
+
 #include <frontend/views/backups/backup_view.hpp>
 #include <frontend/views/base_view.hpp>
 
+#include <backend/task_runner/task_runner.hpp>
+
 class CDashboardView : public CBaseView {
     public:
-        CDashboardView( CConfig& config ) : m_config( config ), m_backups_view( config, m_result ) {};
+        CDashboardView( CConfig& config, std::optional<CLudusaviParser>& parser )
+            : m_config( config ), m_parser( parser ), m_backups_view( config, m_result ) {};
         ~CDashboardView( ) override;
         void render( ) override;
         void on_enter( ) override;
@@ -26,10 +30,11 @@ class CDashboardView : public CBaseView {
             const fs::path& backup, const Game& game, const std::unordered_map<std::string, std::string>& labels );
         void render_modals( );
 
-        CConfig&                   m_config;
-        Detection::DetectionResult m_result;
-        CBackupsView               m_backups_view;
-        bool                       m_backups_tab_was_active = false;
+        CConfig&                        m_config;
+        std::optional<CLudusaviParser>& m_parser;
+        Detection::DetectionResult      m_result;
+        CBackupsView                    m_backups_view;
+        bool                            m_backups_tab_was_active = false;
 
         CTaskRunner m_task_runner;
 

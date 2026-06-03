@@ -31,7 +31,7 @@ void CApp::init( ) {
     auto staging = std::make_shared<std::optional<CLudusaviParser>>( );
     m_task_runner.run( [staging] { staging->emplace( ); }, [this, staging] { m_parser = std::move( *staging ); } );
 
-    m_ui_manager.add_view( { std::make_unique<CDashboardView>( m_config ), ICON_HOME, "Dashboard" } );
+    m_ui_manager.add_view( { std::make_unique<CDashboardView>( m_config, m_parser ), ICON_HOME, "Dashboard" } );
     m_ui_manager.add_view( { std::make_unique<CEditorView>( ), ICON_EDIT, "Save Editor" } );
     m_ui_manager.add_view( { std::make_unique<CTransferView>( m_config ), ICON_TRANSFER, "Transfer" } );
     m_ui_manager.add_view( { std::make_unique<CAboutView>( ), ICON_INFO, "About" } );
