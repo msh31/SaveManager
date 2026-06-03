@@ -57,7 +57,7 @@ void CApp::render_shader( std::pair<int, int> window_size ) {
     glClear( GL_COLOR_BUFFER_BIT ); // for the themes
     glViewport( 0, 0, window_size.first, window_size.second );
 
-    if ( m_config.settings.animated_background ) {
+    if ( m_config.settings.animated_background && m_shader.has_value( ) ) {
         m_shader->render( window_size.first, window_size.second );
     }
 }
