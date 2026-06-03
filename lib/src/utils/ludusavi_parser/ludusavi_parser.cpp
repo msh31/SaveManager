@@ -1,5 +1,6 @@
 #include <network/network.hpp>
 #include <utils/ludisavi_parser/ludusavi_parser.hpp>
+#include <utils/steam/steam.hpp>
 
 CLudusaviParser::CLudusaviParser( ) {
     if ( m_manifest_exists ) {
@@ -8,6 +9,8 @@ CLudusaviParser::CLudusaviParser( ) {
             m_is_outdated = true;
         }
     }
+
+    // perhaps make this optional
     if ( !m_manifest_exists || m_is_outdated ) {
         if ( !Network::download_file( m_manifest_link, m_path.string( ) ) ) {
             SPDLOG_ERROR( "Failed to download manifest!" );
@@ -31,7 +34,10 @@ CLudusaviParser::CLudusaviParser( ) {
     }
 }
 
-CLudusaviParser::~CLudusaviParser( ) {}
+CLudusaviParser::~CLudusaviParser( ) {
+    m_manifest_str.clear( );
+    m_index.clear( );
+}
 
 std::vector<ManifestSavePath> CLudusaviParser::get_save_paths( uint32_t appid ) {
     std::vector<ManifestSavePath> save_paths;
@@ -71,19 +77,16 @@ std::vector<ManifestSavePath> CLudusaviParser::get_save_paths( uint32_t appid ) 
     return save_paths;
 }
 
-// wip
 fs::path CLudusaviParser::resolve_path( std::string_view raw ) {
-    std::string home     = paths::home_dir( ).string( );
-    const char* xdg_dh   = std::getenv( "XDG_DATA_HOME" );
-    const char* xdg_ch   = std::getenv( "XDG_CONFIG_HOME" );
-    std::string xdg_data = xdg_dh ? xdg_dh : home + "/.local/share";
-    std::string xdg_cfg  = xdg_ch ? xdg_ch : home + "/.config";
+    auto home     = paths::home_dir( ).string( );
+    auto xdg_dh   = std::getenv( "XDG_DATA_HOME" );
+    auto xdg_ch   = std::getenv( "XDG_CONFIG_HOME" );
+    auto xdg_data = xdg_dh ? xdg_dh : home + "/.local/share";
+    auto xdg_cfg  = xdg_ch ? xdg_ch : home + "/.config";
+    auto user_id  = SteamHelper::parse_steam_userid( ).value_or( "" );
 
     std::unordered_map<std::string, std::string> vars = {
-        { "<home>", home },
-        { "<xdgData>", xdg_data },
-        { "<xdgConfig>", xdg_cfg },
-    };
+        { "<home>", home }, { "<xdgData>", xdg_data }, { "<xdgConfig>", xdg_cfg }, { "<storeUserId>", user_id } };
 
     std::string result{ raw };
     for ( auto& [var, val] : vars ) {

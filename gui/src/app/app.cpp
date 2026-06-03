@@ -2,6 +2,7 @@
 #include <constants.hpp>
 
 #include <utils/blacklist/blacklist.hpp>
+#include <utils/steam/steam.hpp>
 #include <utils/translations/translations.hpp>
 
 #include <frontend/fonts/font_awesome.hpp>
@@ -26,7 +27,9 @@ void CApp::init( ) {
     Blacklist::init( );
 
     ThemeManager::apply_style( );
-    m_shader.emplace( );
+
+    auto staging = std::make_shared<std::optional<CLudusaviParser>>( );
+    m_task_runner.run( [staging] { staging->emplace( ); }, [this, staging] { m_parser = std::move( *staging ); } );
 
     m_ui_manager.add_view( { std::make_unique<CDashboardView>( m_config ), ICON_HOME, "Dashboard" } );
     m_ui_manager.add_view( { std::make_unique<CEditorView>( ), ICON_EDIT, "Save Editor" } );
@@ -45,6 +48,7 @@ void CApp::render( ) {
     ConfirmDialog::render( );
 }
 
+// wtf?
 void CApp::render_shader( std::pair<int, int> window_size ) {
     if ( m_config.settings.dark_mode ) {
         glClearColor( 0.145f, 0.145f, 0.141f, 1.0f );

@@ -572,6 +572,7 @@ void CDashboardView::on_result_changed( ) {
 
     auto temp          = std::make_shared<std::unordered_map<std::string, GameCache>>( );
     auto temp_modified = std::make_shared<std::unordered_map<std::string, fs::file_time_type>>( );
+
     m_task_runner.run(
         [games = m_games_snapshot, temp, temp_modified]( ) {
             for ( const auto& game : games ) {

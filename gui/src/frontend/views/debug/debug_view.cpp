@@ -3,7 +3,6 @@
 #include <frontend/notification/notification.hpp>
 
 #include <utils/ludisavi_parser/ludusavi_parser.hpp>
-
 #include <utils/steam/steam.hpp>
 
 void CDebugView::render( ) {
@@ -34,17 +33,6 @@ void CDebugView::render( ) {
     }
 
     if ( ImGui::Button( "Test manifest" ) ) {
-        m_task_runner.run(
-            [] {
-                CLudusaviParser               m_parser;
-                std::vector<ManifestSavePath> test = m_parser.get_save_paths( 3768760 ); // test
-                for ( const auto& entry : test ) {
-                    SPDLOG_INFO(
-                        "path: {} resolved: {} linux: {}", entry.unresolved_path.string( ),
-                        entry.resolved_path.string( ), entry.is_linux );
-                }
-            },
-            [] { Notify::show_notification( "Async", "Manifest test complete!", 2000 ); } );
     }
     ImGui::SameLine( );
     if ( ImGui::Button( "Steam UserID test" ) ) {
