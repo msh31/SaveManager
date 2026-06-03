@@ -195,6 +195,7 @@ void CDashboardView::render_game_content(
     // saves
     if ( sb_count.first <= 0 ) {
         ImGui::TextDisabled( "Game detected but no saves were found!" );
+        return;
     }
 
     if ( game.type != PlatformType::MINECRAFT ) ImGui::TextDisabled( "SAVE FILES" );
