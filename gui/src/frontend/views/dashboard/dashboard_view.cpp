@@ -61,7 +61,7 @@ void CDashboardView::render( ) {
 }
 
 void CDashboardView::on_exit( ) {}
-CDashboardView::~CDashboardView( ) {}
+CDashboardView::~CDashboardView( ) { m_task_runner.shutdown( ); }
 
 // private
 void CDashboardView::render_toolbar( ) {

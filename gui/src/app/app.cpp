@@ -22,6 +22,11 @@
 #include <frontend/dialogs/confirm/confirm_dialog.hpp>
 #include <frontend/notification/notification.hpp>
 
+CApp::~CApp( ) {
+    SPDLOG_INFO( "Exiting SaveManager.." );
+    m_task_runner.shutdown( );
+}
+
 void CApp::init( ) {
     translations::init( );
     Blacklist::init( );

@@ -42,4 +42,4 @@ void CDebugView::render( ) {
 
 void CDebugView::on_enter( ) {};
 void CDebugView::on_exit( ) {}
-CDebugView::~CDebugView( ) {}
+CDebugView::~CDebugView( ) { m_task_runner.shutdown( ); }

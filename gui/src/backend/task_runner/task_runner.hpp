@@ -5,6 +5,8 @@ class CTaskRunner {
         void run( std::function<void( )> work, std::function<void( )> on_complete );
         void update( );
 
+        void shutdown( );
+
     private:
         struct Task {
                 std::future<void>      future;
