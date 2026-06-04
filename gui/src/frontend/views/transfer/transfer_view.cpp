@@ -10,12 +10,9 @@
 #include <frontend/components/spinner.hpp>
 #include <frontend/notification/notification.hpp>
 
-std::optional<CLudusaviParser> no_parser; // nullopt by default - TODO: hookup
-
 void CTransferView::on_enter( ) {
     if ( m_result.games.empty( ) )
-        m_detection_future =
-            std::async( std::launch::async, [this] { Detection::find_saves( m_config, m_result, no_parser ); } );
+        m_detection_future = std::async( std::launch::async, [this] { Detection::find_saves( m_config, m_result ); } );
 }
 
 void CTransferView::render( ) {

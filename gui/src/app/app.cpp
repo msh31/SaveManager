@@ -33,8 +33,16 @@ void CApp::init( ) {
 
     ThemeManager::apply_style( );
 
-    auto staging = std::make_shared<std::optional<CLudusaviParser>>( );
-    m_task_runner.run( [staging] { staging->emplace( ); }, [this, staging] { m_parser = std::move( *staging ); } );
+    auto staging = std::make_shared<std::shared_ptr<CLudusaviParser>>( );
+    m_task_runner.run(
+        [staging] {
+            // SPDLOG_INFO( "CApp::m_task_runner work fired!" );
+            *staging = std::make_shared<CLudusaviParser>( );
+        },
+        [this, staging] {
+            m_parser = *staging;
+            // SPDLOG_INFO( "CApp::m_task_runner on complete fired!" );
+        } );
 
     m_ui_manager.add_view( { std::make_unique<CDashboardView>( m_config, m_parser ), ICON_HOME, "Dashboard" } );
     m_ui_manager.add_view( { std::make_unique<CEditorView>( ), ICON_EDIT, "Save Editor" } );
@@ -47,6 +55,7 @@ void CApp::init( ) {
 }
 
 void CApp::render( ) {
+    m_task_runner.update( );
     ThemeManager::apply_colors( m_config.settings.dark_mode ? ThemeType::Dark : ThemeType::Light );
     m_ui_manager.render( );
     Notify::render_notifications( );

@@ -10,7 +10,7 @@
 
 class CDashboardView : public CBaseView {
     public:
-        CDashboardView( CConfig& config, std::optional<CLudusaviParser>& parser )
+        CDashboardView( CConfig& config, std::shared_ptr<CLudusaviParser>& parser )
             : m_config( config ), m_parser( parser ), m_backups_view( config, m_result ) {};
         ~CDashboardView( ) override;
         void render( ) override;
@@ -30,11 +30,10 @@ class CDashboardView : public CBaseView {
             const fs::path& backup, const Game& game, const std::unordered_map<std::string, std::string>& labels );
         void render_modals( );
 
-        CConfig&                        m_config;
-        std::optional<CLudusaviParser>& m_parser;
-        Detection::DetectionResult      m_result;
-        CBackupsView                    m_backups_view;
-        bool                            m_backups_tab_was_active = false;
+        CConfig&                          m_config;
+        std::shared_ptr<CLudusaviParser>& m_parser;
+        Detection::DetectionResult        m_result;
+        CBackupsView                      m_backups_view;
 
         CTaskRunner m_task_runner;
 
@@ -50,7 +49,8 @@ class CDashboardView : public CBaseView {
         std::vector<std::vector<int>>                       m_grouped_games;
         std::unordered_map<std::string, GameCache>          m_game_cache;
         std::unordered_map<std::string, fs::file_time_type> m_game_last_modified;
-        size_t                                              m_last_game_count = 0;
+
+        size_t m_last_game_count = 0;
 
         // UI state
         enum class SortMode { Recent, Alphabetical };
@@ -63,11 +63,13 @@ class CDashboardView : public CBaseView {
 
         std::unordered_map<std::string, bool> m_card_collapsed;
         std::unordered_map<std::string, bool> m_backups_expanded;
-        static constexpr PlatformType         filter_cycle[] = {
+
+        static constexpr PlatformType filter_cycle[] = {
             PlatformType::UBISOFT, PlatformType::ROCKSTAR, PlatformType::UNREAL, PlatformType::MINECRAFT,
             PlatformType::CUSTOM };
 
-        float m_detection_duration;
+        float m_detection_duration     = 0.0f;
+        bool  m_backups_tab_was_active = false;
 
         std::chrono::time_point<std::chrono::steady_clock> m_detection_start_time;
 
@@ -83,6 +85,8 @@ class CDashboardView : public CBaseView {
         // Futures
         std::future<void> m_refresh_future;
         std::future<void> m_backup_future;
+        std::future<void> m_ludusavi_future;
+        bool              m_ludusavi_done = false;
 
         // TODO: implement schedule usage from the lib
         //  Game pending_schedule_game;

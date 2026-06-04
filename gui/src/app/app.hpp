@@ -17,10 +17,12 @@ class CApp {
         void render_shader( std::pair<int, int> window_size );
 
     private:
-        CConfig     m_config;
-        CUIManager  m_ui_manager{ std::make_unique<CTabbarShell>( ) };
-        CTaskRunner m_task_runner;
+        CConfig m_config;
 
-        std::optional<CShader>         m_shader;
-        std::optional<CLudusaviParser> m_parser;
+        std::shared_ptr<CLudusaviParser> m_parser;
+
+        CUIManager m_ui_manager{ std::make_unique<CTabbarShell>( ) };
+
+        CTaskRunner            m_task_runner;
+        std::optional<CShader> m_shader;
 };

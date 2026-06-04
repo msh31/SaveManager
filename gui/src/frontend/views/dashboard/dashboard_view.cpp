@@ -21,13 +21,25 @@ void CDashboardView::on_enter( ) {
         m_grouped_games.clear( );
         m_game_cache.clear( );
         m_detection_start_time = std::chrono::steady_clock::now( );
-        m_refresh_future =
-            std::async( std::launch::async, [this] { Detection::find_saves( m_config, m_result, m_parser ); } );
+        m_ludusavi_done  = false;
+        m_refresh_future = std::async( std::launch::async, [this] { Detection::find_saves( m_config, m_result ); } );
     }
 };
 
 void CDashboardView::render( ) {
     m_task_runner.update( );
+
+    bool refresh_done = m_refresh_future.valid( ) &&
+                        m_refresh_future.wait_for( std::chrono::seconds( 0 ) ) == std::future_status::ready;
+    bool ludusavi_idle = !m_ludusavi_future.valid( ) ||
+                         m_ludusavi_future.wait_for( std::chrono::seconds( 0 ) ) == std::future_status::ready;
+
+    if ( !m_ludusavi_done && refresh_done && ludusavi_idle && m_parser != nullptr ) {
+        m_ludusavi_done    = true;
+        m_ludusavi_future = std::async( std::launch::async, [this, parser = m_parser]() mutable {
+            Detection::find_saves_ludusavi( m_config, m_result, parser );
+        } );
+    }
 
     {
         std::shared_lock lock( m_result.d_mutex );
@@ -130,8 +142,8 @@ void CDashboardView::render_toolbar( ) {
         m_grouped_games.clear( );
         m_game_cache.clear( );
         m_detection_start_time = std::chrono::steady_clock::now( );
-        m_refresh_future =
-            std::async( std::launch::async, [this] { Detection::find_saves( m_config, m_result, m_parser ); } );
+        m_ludusavi_done  = false;
+        m_refresh_future = std::async( std::launch::async, [this] { Detection::find_saves( m_config, m_result ); } );
     }
     if ( is_refreshing ) ImGui::EndDisabled( );
     ImGui::SetItemTooltip( "Re-runs the detection logic to find new saves" );
@@ -587,7 +599,7 @@ void CDashboardView::on_result_changed( ) {
                               game.save_path, fs::directory_options::skip_permission_denied ) ) {
                         if ( !fs::is_regular_file( file ) ) continue;
                         auto ext = file.path( ).extension( ).string( );
-                        if ( game.type != PlatformType::CUSTOM ) {
+                        if ( game.type != PlatformType::CUSTOM && game.type != PlatformType::GENERIC ) {
                             if ( std::find( extension_blocklist.begin( ), extension_blocklist.end( ), ext ) !=
                                  extension_blocklist.end( ) )
                                 continue;
