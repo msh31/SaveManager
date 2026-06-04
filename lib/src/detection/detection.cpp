@@ -92,53 +92,8 @@ void scan_prefix_dir(
     }
 }
 
-void Detection::find_saves( CConfig& config, DetectionResult& d_result, std::optional<CLudusaviParser>& parser ) {
+void Detection::find_saves( CConfig& config, DetectionResult& d_result ) {
     Detectors detectors;
-    auto      libraries = SteamHelper::get_library_folders( );
-
-    if ( parser.has_value( ) ) {
-        for ( const auto& library : libraries ) {
-            for ( const auto& entry :
-                  fs::directory_iterator( library / "steamapps", fs::directory_options::skip_permission_denied ) ) {
-                if ( entry.is_directory( ) ) continue;
-                if ( entry.path( ).extension( ) != ".acf" ) continue;
-
-                auto manifest = SteamHelper::parse_app_manifest( entry.path( ) );
-                if ( !manifest ) continue;
-                SPDLOG_INFO( "name: {}", manifest->name );
-                SPDLOG_INFO( "appid: {}", manifest->appid );
-
-                auto parser_paths = parser->get_save_paths( manifest->appid );
-                if ( parser_paths.empty( ) ) continue;
-
-                for ( auto& path : parser_paths ) {
-                    SPDLOG_INFO( " found: {}", path.unresolved_path.string( ) );
-
-                    auto str = path.unresolved_path.string( );
-
-                    auto pos = str.find( "<root>" );
-                    if ( pos != std::string::npos ) {
-                        str.replace( pos, std::string( "<root>" ).length( ), ( library / "steamapps" ).string( ) );
-                    }
-
-                    if ( !fs::exists( str ) ) continue;
-
-                    Game game;
-                    game.appid            = manifest->appid;
-                    game.game_name        = manifest->name;
-                    game.save_path        = str;
-                    game.type             = PlatformType::GENERIC;
-                    game.show_parent_path = true; // verify
-                    SPDLOG_INFO( " set: {}", str );
-
-                    std::scoped_lock lock( d_result.d_mutex );
-                    d_result.games.emplace_back( game );
-                }
-            }
-        }
-    } else
-        SPDLOG_ERROR( "parser has no value" );
-
     // cool lua support
     int plugin_count = 0;
     for ( const auto& plugin : fs::recursive_directory_iterator(
@@ -157,6 +112,8 @@ void Detection::find_saves( CConfig& config, DetectionResult& d_result, std::opt
     Detection::add_game( detectors.minecraft_detect.find_saves( ), "minecraft", d_result );
 
 #ifdef __linux__
+    auto libraries = SteamHelper::get_library_folders( );
+
     // steam
     for ( const auto& library : libraries ) {
         fs::path compatdata = library / "steamapps/compatdata";
@@ -221,13 +178,60 @@ void Detection::find_saves( CConfig& config, DetectionResult& d_result, std::opt
     // Detection::add_game(detectors.custom_detect.find_saves(paths::home_dir()), "custom", result);
 #endif
 
-    std::unique_lock<std::shared_mutex> lock( d_result.d_mutex );
-    if ( d_result.games.empty( ) ) {
-        SPDLOG_ERROR( "No savegames found!" );
+    {
+        std::unique_lock<std::shared_mutex> lock( d_result.d_mutex );
+        if ( d_result.games.empty( ) ) {
+            SPDLOG_ERROR( "No savegames found!" );
+        }
+
+        std::erase_if( d_result.games, []( const Game& game ) { return Blacklist::is_blacklisted( game.game_name ); } );
+        std::erase_if( d_result.games, []( const Game& game ) {
+            return !fs::is_directory( game.save_path ) || fs::is_empty( game.save_path );
+        } );
     }
 
-    std::erase_if( d_result.games, []( const Game& game ) { return Blacklist::is_blacklisted( game.game_name ); } );
-    std::erase_if( d_result.games, []( const Game& game ) {
-        return !fs::is_directory( game.save_path ) || fs::is_empty( game.save_path );
-    } );
+}
+
+void Detection::find_saves_ludusavi(
+    CConfig& config, DetectionResult& d_result, std::shared_ptr<CLudusaviParser>& parser ) {
+    if ( parser == nullptr ) return; // fuck this we outta here
+
+    auto manifest = SteamHelper::get_app_manifests( );
+    if ( manifest.empty( ) ) return;
+
+    // SPDLOG_INFO( "name: {}", manifest->name );
+    // SPDLOG_INFO( "appid: {}", manifest->appid );
+
+    for ( const auto& entry : manifest ) {
+        auto parser_paths = parser->get_save_paths( entry.second.appid );
+        if ( parser_paths.empty( ) ) continue;
+        std::scoped_lock lock( d_result.d_mutex );
+        if ( std::ranges::any_of(
+                 d_result.games, [&]( const Game& g ) { return g.appid == std::to_string( entry.second.appid ); } ) )
+            continue;
+
+        for ( auto& path : parser_paths ) {
+            SPDLOG_INFO( " found: {}", path.unresolved_path.string( ) );
+            auto str = path.resolved_path.string( );
+
+            auto pos = str.find( "<root>" );
+            if ( pos != std::string::npos ) {
+                str.replace(
+                    pos, std::string( "<root>" ).length( ),
+                    ( entry.second.library_dir / "steamapps" / "common" / entry.second.install_dir ) );
+            }
+
+            if ( !fs::exists( str ) ) continue;
+
+            Game game;
+            game.appid            = std::to_string( entry.second.appid );
+            game.game_name        = entry.second.name;
+            game.save_path        = str;
+            game.type             = PlatformType::GENERIC;
+            game.show_parent_path = true; // verify
+            SPDLOG_INFO( " set: {}", str );
+
+            d_result.games.emplace_back( game );
+        }
+    }
 }

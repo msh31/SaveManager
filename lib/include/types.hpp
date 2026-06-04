@@ -67,4 +67,5 @@ struct SteamManifest {
         uint32_t    appid;
         std::string name;
         std::string install_dir;
+        fs::path    library_dir;
 };
