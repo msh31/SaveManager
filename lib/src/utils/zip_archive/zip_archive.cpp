@@ -116,7 +116,6 @@ bool CZipArchive::extract_archive( const fs::path& save_path, std::vector<std::p
             // SPDLOG_INFO("Saving to: {}", output_path.string());
 
             zip_file* file = zip_fopen_index( m_archive, i, 0 );
-
             if ( file == nullptr ) {
                 SPDLOG_WARN( "Failed to open file in archive: {}", fileInfo.name );
                 failed_files.push_back( fileInfo.name );

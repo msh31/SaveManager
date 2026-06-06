@@ -1,5 +1,4 @@
 #pragma once
-#include <logger/logger.hpp>
 #include <types.hpp>
 
 #include <openssl/evp.h>

@@ -49,6 +49,27 @@
 
 ---
 
+
+## [1.7.1] - 2026-06-06
+This release is mainly bug fixes ported back from the in development 1.8.0 version whilst I go through the code and 
+refactor it to improve some pain points when it comes to adding new features
+
+### Core
+#### Fixed
+- Backup extraction now aborts if a restored file's SHA-256 hash doesn't match the manifest (was silently ignored)
+- `list_dir` plugin API no longer crashes on permission-denied paths
+- Opening a path in the file manager does not cause zombie processes to be created anymore on linux
+
+#### GUI
+### Fixed
+- Config `win_props` keys falling back to defaults instead of aborting the full parse on missing keys
+- MacOS version no longer show a separate terminal window
+
+### Changed
+- Refresh and mass backup buttons are now disabled during active operations instead of hidden
+- Improved log view with color-coded levels
+
+
 ## [1.7.0] - 2026-05-21
 *Core logic moved into a separate library linked by the GUI*
  
