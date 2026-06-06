@@ -65,28 +65,23 @@ void SettingsTab::render( const Fonts &fonts, Config &config ) {
     ImGui::Checkbox( "Animated background", &config.settings.animated_background );
     ImGui::Separator( );
 
-    if ( !is_checking ) {
-        if ( ImGui::Button( "Check for updates" ) ) {
-            update_future = std::async( std::launch::async, []( ) { return Network::is_update_available( ); } );
-        }
-    } else {
-        char spin_char = spinner[( spinner_frame / 10 ) % 4];
-        ImGui::Text( "%s", std::format( "Checking for updates {}", spin_char ).c_str( ) );
+    if ( is_checking ) ImGui::BeginDisabled( true );
+    if ( ImGui::Button( "Check for updates" ) ) {
+        update_future = std::async( std::launch::async, []( ) { return Network::is_update_available( ); } );
     }
+    if ( is_checking ) ImGui::EndDisabled( );
     ImGui::SameLine( );
-    if ( !is_checking_t ) {
-        if ( ImGui::Button( "Update translations" ) ) {
-            update_t_future = std::async( std::launch::async, [this]( ) -> std::pair<bool, bool> {
-                bool ubi = Network::download_file( ubi_translation_url, paths::ubi_translations( ).string( ) );
-                bool steam = Network::download_file( steam_translation_url, paths::steam_appids( ).string( ) );
-                return { ubi, steam };
-            } );
-        }
-        ImGui::SetItemTooltip( "Forces a new download of the ubisoft id and steam id translations" );
-    } else {
-        char spin_char = spinner[( spinner_frame / 10 ) % 4];
-        ImGui::Text( "%s", std::format( "Updating translations {}", spin_char ).c_str( ) );
+    if ( is_checking_t ) ImGui::BeginDisabled( true );
+    if ( ImGui::Button( "Update translations" ) ) {
+        update_t_future = std::async( std::launch::async, [this]( ) -> std::pair<bool, bool> {
+            bool ubi = Network::download_file( ubi_translation_url, paths::ubi_translations( ).string( ) );
+            bool steam = Network::download_file( steam_translation_url, paths::steam_appids( ).string( ) );
+            return { ubi, steam };
+        } );
     }
+    ImGui::SetItemTooltip( "Forces a new download of the ubisoft id and steam id translations" );
+    if ( is_checking_t ) ImGui::EndDisabled( );
+
     if ( ImGui::Button( "Open config" ) ) {
         open_in_file_manager( paths::config_dir( ).string( ).c_str( ) );
     }
