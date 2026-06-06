@@ -47,13 +47,15 @@ Plugin::Plugin( std::filesystem::path path ) {
         if ( !fs::is_directory( path ) ) return sol::table( );
 
         sol::table table = lua.create_table( );
-        int index = 1; // lua
+        int index = 1;
 
-        for ( const auto &entry : fs::directory_iterator( path ) ) {
-            table[index] = entry.path( ).string( );
-            index++;
+        try {
+            for ( const auto &entry : fs::directory_iterator( path ) ) {
+                table[index++] = entry.path( ).string( );
+            }
+        } catch ( const fs::filesystem_error &e ) {
+            SPDLOG_WARN( "list_dir: {}", e.what( ) );
         }
-
         return table;
     } );
 
