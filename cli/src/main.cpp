@@ -12,6 +12,7 @@ int main( int argc, char* argv[] ) {
     if ( argc < 2 ) SPDLOG_ERROR( "Use --help to see a full list of available commands!" );
 
     init_logger( "[%n]: [%l] %d-%m-%Y %H:%M:%S - %v" );
+    spdlog::set_level( spdlog::level::err );
 
     translations::init( );
     Blacklist::init( );
