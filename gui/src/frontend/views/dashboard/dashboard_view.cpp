@@ -363,7 +363,9 @@ void CDashboardView::render_save_row( const fs::path& save_file, const Game& gam
     std::string size_text;
     if ( game.type != PlatformType::MINECRAFT ) {
         auto b_size = fs::file_size( save_file ) / 1024;
-        size_text   = std::format( "{}KB  ", b_size );
+        if ( b_size <= 0 ) return;
+        // might produce false positives if the file size is genuinenly, lower than 1KB but this is highly unlikely
+        size_text = std::format( "{}KB  ", b_size );
     }
 
     float size_width  = ImGui::CalcTextSize( size_text.c_str( ) ).x;
@@ -600,6 +602,7 @@ void CDashboardView::on_result_changed( ) {
                     for ( const auto& file : fs::recursive_directory_iterator(
                               game.save_path, fs::directory_options::skip_permission_denied ) ) {
                         if ( !fs::is_regular_file( file ) ) continue;
+                        if ( fs::file_size( file ) == 0 ) continue;
                         auto ext = file.path( ).extension( ).string( );
                         if ( game.type != PlatformType::CUSTOM && game.type != PlatformType::GENERIC ) {
                             if ( std::find( extension_blocklist.begin( ), extension_blocklist.end( ), ext ) !=
