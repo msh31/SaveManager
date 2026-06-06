@@ -1,8 +1,20 @@
 #include <CLI/CLI.hpp>
 
+#include "config/config.hpp"
+#include <detection/detection.hpp>
+#include <utils/blacklist/blacklist.hpp>
+#include <utils/translations/translations.hpp>
+
+Detection::DetectionResult result;
+CConfig                    config;
+
 int main( int argc, char* argv[] ) {
     if ( argc < 2 ) SPDLOG_ERROR( "Use --help to see a full list of available commands!" );
 
+    init_logger( "[%n]: [%l] %d-%m-%Y %H:%M:%S - %v" );
+
+    translations::init( );
+    Blacklist::init( );
     CLI::App app{ "The CLI version of SaveManager" };
     argv = app.ensure_utf8( argv );
 
@@ -23,7 +35,11 @@ int main( int argc, char* argv[] ) {
     CLI11_PARSE( app, argc, argv );
 
     if ( *list ) {
-        SPDLOG_INFO( "LIST COMMAND" );
+        Detection::find_saves( config, result );
+
+        for ( const auto& entry : result.games ) {
+            std::println( "{}", entry.game_name );
+        }
     }
     if ( *backup ) {
         SPDLOG_INFO( "BACKUP COMMAND" );
