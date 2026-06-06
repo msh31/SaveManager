@@ -3,38 +3,29 @@
 ## [1.8.0] - 2026-06-03
 *Rewrote the GUI using a custom ImGui framework, improving code quality and maintainability.*
 
-### Core
-#### Added
-- Support for EA Games
+#### Core
+### Added
 - Ludusavi manifest integration
 
-#### Fixed
-- Backup extraction now aborts if a restored file's SHA-256 hash doesn't match the manifest (was silently ignored)
-- `list_dir` plugin API no longer crashes on permission-denied paths
-- Opening a path in the file manager does not cause zombie processes to be created anymore (linux)
+### Fixed
 - Downloading a save from an SFTP server places the save in the ``path/to/savemanager/backups/`` instead of it's corresponding game folder
 
-#### Changed
+### Changed
 - Plugin loading errors are now caught per-plugin; remaining plugins continue loading
 - Plugins returning entries with missing `game_name` or `save_path` are now skipped with a warning
 
 
-### GUI
-#### Added
+#### GUI
+### Added
 - Auto scroll in the log tab
 - Minecraft filter in dashboard
 - Total games found in dashboard
 - Total detection time in dashboard
 
 ### Fixed
-- Config `win_props` keys falling back to defaults instead of aborting the full parse on missing keys
-- MacOS version does no longer show a seperate terminal window
+- Displayed file time in the save / backup rows
 
-#### Changed
-- Refresh and mass backup buttons are now disabled during active operations instead of hidden
-- Improved log view with color-coded levels
-
-#### Performance
+### Performance
 - Cache rebuilds after detection now run asynchronously, eliminating frame stalls on large game libraries
 
 
@@ -54,8 +45,8 @@
 This release is mainly bug fixes ported back from the in development 1.8.0 version whilst I go through the code and 
 refactor it to improve some pain points when it comes to adding new features
 
-### Core
-#### Fixed
+#### Core
+### Fixed
 - Backup extraction now aborts if a restored file's SHA-256 hash doesn't match the manifest (was silently ignored)
 - `list_dir` plugin API no longer crashes on permission-denied paths
 - Opening a path in the file manager does not cause zombie processes to be created anymore on linux
