@@ -231,7 +231,7 @@ void Detection::find_saves_ludusavi(
             game.save_path        = str;
             game.type             = PlatformType::GENERIC;
             game.show_parent_path = true; // verify
-            SPDLOG_INFO( "ludusavi: {} -> {}", sm.name, str.string( ) );
+            // SPDLOG_INFO( "ludusavi: {} -> {}", sm.name, str.string( ) );
 
             discovered.emplace_back( std::move( game ) );
         }
