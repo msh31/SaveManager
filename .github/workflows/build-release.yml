@@ -169,8 +169,9 @@ jobs:
 
       - name: Package
         run: |
-          cd build
-          zip -r ../SaveManager-macOS-arm64.zip SaveManager.app
+          APP=$(find build -name "SaveManager.app" -type d | head -1)
+          cd "$(dirname "$APP")"
+          zip -r "$GITHUB_WORKSPACE/SaveManager-macOS-arm64.zip" SaveManager.app
 
       - uses: actions/upload-artifact@v4
         with:
