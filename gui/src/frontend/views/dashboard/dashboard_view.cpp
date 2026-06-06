@@ -21,7 +21,7 @@ void CDashboardView::on_enter( ) {
         m_grouped_games.clear( );
         m_game_cache.clear( );
         m_detection_start_time = std::chrono::steady_clock::now( );
-        m_ludusavi_done  = false;
+        m_ludusavi_done        = false;
         m_refresh_future = std::async( std::launch::async, [this] { Detection::find_saves( m_config, m_result ); } );
     }
 };
@@ -29,14 +29,14 @@ void CDashboardView::on_enter( ) {
 void CDashboardView::render( ) {
     m_task_runner.update( );
 
-    bool refresh_done = m_refresh_future.valid( ) &&
-                        m_refresh_future.wait_for( std::chrono::seconds( 0 ) ) == std::future_status::ready;
+    bool refresh_done  = m_refresh_future.valid( ) &&
+                         m_refresh_future.wait_for( std::chrono::seconds( 0 ) ) == std::future_status::ready;
     bool ludusavi_idle = !m_ludusavi_future.valid( ) ||
                          m_ludusavi_future.wait_for( std::chrono::seconds( 0 ) ) == std::future_status::ready;
 
     if ( !m_ludusavi_done && refresh_done && ludusavi_idle && m_parser != nullptr ) {
-        m_ludusavi_done    = true;
-        m_ludusavi_future = std::async( std::launch::async, [this, parser = m_parser]() mutable {
+        m_ludusavi_done   = true;
+        m_ludusavi_future = std::async( std::launch::async, [this, parser = m_parser]( ) mutable {
             Detection::find_saves_ludusavi( m_config, m_result, parser );
         } );
     }
@@ -142,7 +142,7 @@ void CDashboardView::render_toolbar( ) {
         m_grouped_games.clear( );
         m_game_cache.clear( );
         m_detection_start_time = std::chrono::steady_clock::now( );
-        m_ludusavi_done  = false;
+        m_ludusavi_done        = false;
         m_refresh_future = std::async( std::launch::async, [this] { Detection::find_saves( m_config, m_result ); } );
     }
     if ( is_refreshing ) ImGui::EndDisabled( );
@@ -356,7 +356,8 @@ void CDashboardView::render_game_row( const std::vector<int>& group, int gi ) {
 void CDashboardView::render_save_row( const fs::path& save_file, const Game& game ) {
     ImGui::PushID( save_file.string( ).c_str( ) );
 
-    std::string date_text  = std::format( "{:%d/%m/%y %H:%M} | ", fs::last_write_time( save_file ) );
+    auto        time = std::chrono::current_zone( )->to_local( file_time_to_sys( fs::last_write_time( save_file ) ) );
+    std::string date_text  = std::format( "{:%d/%m/%y %H:%M} | ", time );
     float       date_width = ImGui::CalcTextSize( date_text.c_str( ) ).x;
 
     std::string size_text;
@@ -402,7 +403,8 @@ void CDashboardView::render_backup_row(
     auto        it      = labels.find( backup.filename( ).string( ) );
     std::string display = ( it != labels.end( ) ) ? it->second : backup.filename( ).string( );
 
-    std::string date_text  = std::format( "{:%d/%m/%y %H:%M} | ", fs::last_write_time( backup ) );
+    auto        time      = std::chrono::current_zone( )->to_local( file_time_to_sys( fs::last_write_time( backup ) ) );
+    std::string date_text = std::format( "{:%d/%m/%y %H:%M} | ", time );
     float       date_width = ImGui::CalcTextSize( date_text.c_str( ) ).x;
     auto        b_size     = fs::file_size( backup ) / 1024;
 

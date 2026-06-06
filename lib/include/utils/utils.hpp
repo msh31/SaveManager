@@ -167,3 +167,14 @@ inline std::vector<std::vector<int>> get_grouped( const std::vector<Game>& games
 
     return groups;
 }
+
+// file_clock::to_sys / from_sys are not available on MSVC or Apple Clang
+static std::chrono::system_clock::time_point file_time_to_sys( fs::file_time_type ft ) {
+    return std::chrono::system_clock::now( ) +
+           std::chrono::duration_cast<std::chrono::system_clock::duration>( ft - fs::file_time_type::clock::now( ) );
+}
+
+static fs::file_time_type sys_to_file_time( std::chrono::system_clock::time_point tp ) {
+    return fs::file_time_type::clock::now( ) +
+           std::chrono::duration_cast<fs::file_time_type::clock::duration>( tp - std::chrono::system_clock::now( ) );
+}
