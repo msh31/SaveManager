@@ -6,14 +6,14 @@
 #include "frontend/views/about/about.hpp"
 #include "frontend/views/dashboard/dashboard.hpp"
 #include "frontend/views/editor/editor_view.hpp"
-#include "frontend/views/log/log.hpp"
+#include "frontend/views/log/log_view.hpp"
 #include "frontend/views/settings/settings.hpp"
 #include "frontend/views/transfer/transfer.hpp"
 // #include "frontend/views/backups/backup_view.hpp"
 #include "frontend/views/about/about.hpp"
 
 class App {
-  public:
+    public:
     App( fs::path config_dir = paths::config_dir( ) );
     ~App( );
 
@@ -25,7 +25,7 @@ class App {
 
     TabState state;
 
-  private:
+    private:
     void init_background( );
     bool is_bg_initialized = false;
 

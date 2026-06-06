@@ -147,7 +147,7 @@ set(savemanager_SOURCES
 	"gui/src/frontend/views/backups/backup_view.cpp"
 	"gui/src/frontend/views/dashboard/dashboard.cpp"
 	"gui/src/frontend/views/editor/editor_view.cpp"
-	"gui/src/frontend/views/log/log.cpp"
+	"gui/src/frontend/views/log/log_view.cpp"
 	"gui/src/frontend/views/settings/settings.cpp"
 	"gui/src/frontend/views/transfer/transfer.cpp"
 	"gui/src/main.cpp"
