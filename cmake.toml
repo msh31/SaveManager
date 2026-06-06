@@ -36,6 +36,9 @@ required = true
 required = true
 [find-package.yaml-cpp]
 required = true
+[find-package.CLI11]
+required = true
+
 
 [target.savemanager-core]
 type = "static"
@@ -108,7 +111,7 @@ link-libraries = ["shell32"]
 type = "executable"
 sources = ["cli/src/**.cpp"]
 include-directories = ["cli/src"]
-link-libraries = ["savemanager-core"]
+link-libraries = ["savemanager-core", "CLI11::CLI11"]
 compile-features = ["cxx_std_23"]
 precompile-headers = ["lib/include/pch.hpp"]
 

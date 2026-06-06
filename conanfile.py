@@ -24,10 +24,12 @@ class SaveManager(ConanFile):
         self.requires("sol2/3.5.0")
         self.requires("spdlog/1.17.0")
         self.requires("yaml-cpp/0.9.0")
+        self.requires("cli11/2.6.2")
 
     def configure(self):
         if self.settings.os == "Windows":
             self.options["libcurl"].with_ssl = "schannel"
+        self.options["cli11"].header_only = True 
 
     def layout(self):
         cmake_layout(self)

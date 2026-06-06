@@ -69,6 +69,8 @@ find_package(spdlog REQUIRED)
 
 find_package(yaml-cpp REQUIRED)
 
+find_package(CLI11 REQUIRED)
+
 # Target: savemanager-core
 set(savemanager-core_SOURCES
 	cmake.toml
@@ -257,6 +259,7 @@ target_include_directories(savemgr PRIVATE
 
 target_link_libraries(savemgr PRIVATE
 	savemanager-core
+	CLI11::CLI11
 )
 
 target_precompile_headers(savemgr PRIVATE
