@@ -189,7 +189,6 @@ void Detection::find_saves( CConfig& config, DetectionResult& d_result ) {
             return !fs::is_directory( game.save_path ) || fs::is_empty( game.save_path );
         } );
     }
-
 }
 
 void Detection::find_saves_ludusavi(
@@ -199,39 +198,51 @@ void Detection::find_saves_ludusavi(
     auto manifest = SteamHelper::get_app_manifests( );
     if ( manifest.empty( ) ) return;
 
-    // SPDLOG_INFO( "name: {}", manifest->name );
-    // SPDLOG_INFO( "appid: {}", manifest->appid );
+    std::unordered_set<std::string> seen;
+    {
+        std::shared_lock<std::shared_mutex> lock( d_result.d_mutex );
+        for ( const auto& g : d_result.games )
+            seen.insert( g.appid );
+    }
+
+    std::vector<Game> discovered;
 
     for ( const auto& entry : manifest ) {
-        auto parser_paths = parser->get_save_paths( entry.second.appid );
+        const SteamManifest& sm        = entry.second;
+        std::string          appid_str = std::to_string( sm.appid );
+        if ( seen.contains( appid_str ) ) continue;
+
+        CLudusaviParser::ResolveContext ctx;
+        ctx.install_dir = sm.library_dir / "steamapps" / "common" / sm.install_dir;
+        fs::path prefix = sm.library_dir / "steamapps" / "compatdata" / appid_str / "pfx";
+        if ( fs::exists( prefix ) ) ctx.proton_prefix = prefix;
+
+        auto parser_paths = parser->get_save_paths( sm.appid, ctx );
         if ( parser_paths.empty( ) ) continue;
-        std::scoped_lock lock( d_result.d_mutex );
-        if ( std::ranges::any_of(
-                 d_result.games, [&]( const Game& g ) { return g.appid == std::to_string( entry.second.appid ); } ) )
-            continue;
 
         for ( auto& path : parser_paths ) {
-            SPDLOG_INFO( " found: {}", path.unresolved_path.string( ) );
-            auto str = path.resolved_path.string( );
-
-            auto pos = str.find( "<root>" );
-            if ( pos != std::string::npos ) {
-                str.replace(
-                    pos, std::string( "<root>" ).length( ),
-                    ( entry.second.library_dir / "steamapps" / "common" / entry.second.install_dir ) );
-            }
-
+            const auto& str = path.resolved_path;
             if ( !fs::exists( str ) ) continue;
+            if ( fs::is_regular_file( str ) && fs::file_size( str ) == 0 ) continue;
 
             Game game;
-            game.appid            = std::to_string( entry.second.appid );
-            game.game_name        = entry.second.name;
+            game.appid            = appid_str;
+            game.game_name        = sm.name;
             game.save_path        = str;
             game.type             = PlatformType::GENERIC;
             game.show_parent_path = true; // verify
-            SPDLOG_INFO( " set: {}", str );
+            SPDLOG_INFO( "ludusavi: {} -> {}", sm.name, str.string( ) );
 
-            d_result.games.emplace_back( game );
+            discovered.emplace_back( std::move( game ) );
         }
+
+        seen.insert( appid_str );
     }
+
+    if ( discovered.empty( ) ) return;
+
+    std::unique_lock<std::shared_mutex> lock( d_result.d_mutex );
+    d_result.games.insert(
+        d_result.games.end( ), std::make_move_iterator( discovered.begin( ) ),
+        std::make_move_iterator( discovered.end( ) ) );
 }
