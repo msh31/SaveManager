@@ -2,9 +2,9 @@
 #include "utils/translations/translations.hpp"
 // #include "logger/logger.hpp"
 
-std::expected<std::vector<Game>, DetectionError> CUbisoftDetector::find_saves( const fs::path& prefix ) const {
+std::expected<std::vector<Game>, SMError> CUbisoftDetector::find_saves( const fs::path& prefix ) const {
     if ( !fs::exists( prefix ) ) {
-        return std::unexpected{ DetectionError::PathNotFound };
+        return std::unexpected{ SMError::PATH_NOT_FOUND };
     }
     std::vector<Game> games;
     // get_logger().debug("scanning path: {}", prefix.string());
@@ -42,9 +42,9 @@ std::expected<std::vector<Game>, DetectionError> CUbisoftDetector::find_saves( c
     return games;
 }
 
-std::expected<std::vector<Game>, DetectionError> CUbisoftDetector::find_anno_saves( const fs::path& prefix ) const {
+std::expected<std::vector<Game>, SMError> CUbisoftDetector::find_anno_saves( const fs::path& prefix ) const {
     if ( !fs::exists( prefix ) ) {
-        return std::unexpected{ DetectionError::PathNotFound };
+        return std::unexpected{ SMError::PATH_NOT_FOUND };
     }
     std::vector<Game> games;
     // get_logger().debug("scanning path: {}", prefix.string());

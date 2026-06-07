@@ -5,11 +5,8 @@ class CConfig;
 class CLudusaviParser;
 
 namespace Detection {
-    GameKey get_game_identity_key( const Game& game );
-
-    void add_game(
-        std::expected<std::vector<Game>, DetectionError> result, const std::string& platform,
-        std::vector<Game>& games );
+    void
+    add_game( std::expected<std::vector<Game>, SMError> result, const std::string& platform, std::vector<Game>& games );
     void find_saves( CConfig& config, std::vector<Game>& games );
 
     // should not be called externally

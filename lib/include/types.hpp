@@ -5,10 +5,15 @@ struct RemoteEntry {
         bool        is_directory;
 };
 
-enum class DetectionError {
-    PathNotFound,
-    PermissionDenied,
-    NoSavesFound,
+enum class SMError {
+    PATH_NOT_FOUND,
+    PERMISSION_DENIED,
+    NO_SAVES_FOUND,
+    CONFIG_PARSING_ERROR,
+    CONFIG_LOAD_ERROR,
+    CONNECTION_FAILED,
+    DOWNLOAD_FAILED,
+    PLUGIN_LOAD_ERROR,
 };
 
 enum class PlatformType { UBISOFT = 1, ROCKSTAR, UNREAL, PSP, PPSSPP, MINECRAFT, CUSTOM, GENERIC = 69 };

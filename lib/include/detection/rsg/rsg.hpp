@@ -3,17 +3,17 @@
 namespace fs = std::filesystem;
 
 class CRockstarDetector {
-  public:
-    std::expected<std::vector<Game>, DetectionError> find_saves( const fs::path &prefix ) const;
-    std::expected<std::vector<Game>, DetectionError> find_legacy_saves( const fs::path &prefix ) const;
+    public:
+        std::expected<std::vector<Game>, SMError> find_saves( const fs::path& prefix ) const;
+        std::expected<std::vector<Game>, SMError> find_legacy_saves( const fs::path& prefix ) const;
 
-  private:
-    const std::unordered_map<std::string_view, std::string> m_legacy_games = {
-        // small enough, for now.
-        { "GTA3 User Files", "Grand Theft Auto III" },
-        { "GTA Vice City User Files", "Grand Theft Auto Vice City" },
-        { "GTA San Andreas User Files", "Grand Theft Auto San Andreas" },
-        { "Manhunt User Files", "Manhunt" },
-        { "Manhunt 2", "Manhunt 2" },
-    };
+    private:
+        const std::unordered_map<std::string_view, std::string> m_legacy_games = {
+            // small enough, for now.
+            { "GTA3 User Files", "Grand Theft Auto III" },
+            { "GTA Vice City User Files", "Grand Theft Auto Vice City" },
+            { "GTA San Andreas User Files", "Grand Theft Auto San Andreas" },
+            { "Manhunt User Files", "Manhunt" },
+            { "Manhunt 2", "Manhunt 2" },
+        };
 };

@@ -22,7 +22,7 @@ struct Detectors {
 };
 
 void Detection::add_game(
-    std::expected<std::vector<Game>, DetectionError> result, const std::string& platform, std::vector<Game>& games ) {
+    std::expected<std::vector<Game>, SMError> result, const std::string& platform, std::vector<Game>& games ) {
 
     if ( result ) {
         // std::unique_lock<std::shared_mutex> lock( games.d_mutex );
@@ -30,13 +30,28 @@ void Detection::add_game(
         games.insert( games.end( ), v.begin( ), v.end( ) );
     } else {
         switch ( result.error( ) ) {
-        case DetectionError::PathNotFound:
+        case SMError::PATH_NOT_FOUND:
             break;
-        case DetectionError::PermissionDenied:
+        case SMError::PERMISSION_DENIED:
             SPDLOG_WARN( "{}: permission denied", platform );
             break;
-        case DetectionError::NoSavesFound:
+        case SMError::NO_SAVES_FOUND:
             SPDLOG_WARN( "{}: no saves found", platform );
+            break;
+        case SMError::CONFIG_PARSING_ERROR:
+            SPDLOG_ERROR( "Failed to parse config!" );
+            break;
+        case SMError::CONFIG_LOAD_ERROR:
+            SPDLOG_ERROR( "Failed to load config!" );
+            break;
+        case SMError::CONNECTION_FAILED:
+            SPDLOG_ERROR( "Failed to communicate with server!" );
+            break;
+        case SMError::DOWNLOAD_FAILED:
+            SPDLOG_ERROR( "Failed to download file!" );
+            break;
+        case SMError::PLUGIN_LOAD_ERROR:
+            SPDLOG_ERROR( "Failed to load plugin!" );
             break;
         }
     }

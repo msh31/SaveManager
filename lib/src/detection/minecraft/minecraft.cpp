@@ -2,7 +2,7 @@
 #include "types.hpp"
 #include "utils/paths.hpp"
 
-std::expected<std::vector<Game>, DetectionError> CMinecraftDetector::find_saves( ) const {
+std::expected<std::vector<Game>, SMError> CMinecraftDetector::find_saves( ) const {
     std::vector<Game> games;
 
     auto append = [&]( std::vector<Game> result ) { games.insert( games.end( ), result.begin( ), result.end( ) ); };

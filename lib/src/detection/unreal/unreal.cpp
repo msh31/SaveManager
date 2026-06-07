@@ -40,13 +40,13 @@ void CUnrealDetector::scan_for_saves( const fs::path& path, std::set<fs::path>& 
     }
 }
 
-std::expected<std::vector<Game>, DetectionError>
+std::expected<std::vector<Game>, SMError>
 CUnrealDetector::find_saves( const fs::path& prefix, CUnrealDetector::ScanMode scan_mode ) const {
     std::set<fs::path> directories;
     std::vector<Game>  games;
 
     if ( !fs::exists( prefix ) ) {
-        return std::unexpected{ DetectionError::PathNotFound };
+        return std::unexpected{ SMError::PATH_NOT_FOUND };
     }
 
     switch ( scan_mode ) {

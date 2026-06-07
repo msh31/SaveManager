@@ -2,9 +2,9 @@
 #include "detection/detection.hpp"
 #include "utils/translations/translations.hpp"
 
-std::expected<std::vector<Game>, DetectionError> CRockstarDetector::find_saves( const fs::path& prefix ) const {
+std::expected<std::vector<Game>, SMError> CRockstarDetector::find_saves( const fs::path& prefix ) const {
     if ( !fs::exists( prefix ) ) {
-        return std::unexpected{ DetectionError::PathNotFound };
+        return std::unexpected{ SMError::PATH_NOT_FOUND };
     }
     std::vector<Game> games;
 
@@ -38,9 +38,9 @@ std::expected<std::vector<Game>, DetectionError> CRockstarDetector::find_saves( 
     return games;
 }
 
-std::expected<std::vector<Game>, DetectionError> CRockstarDetector::find_legacy_saves( const fs::path& prefix ) const {
+std::expected<std::vector<Game>, SMError> CRockstarDetector::find_legacy_saves( const fs::path& prefix ) const {
     if ( !fs::exists( prefix ) ) {
-        return std::unexpected{ DetectionError::PathNotFound };
+        return std::unexpected{ SMError::PATH_NOT_FOUND };
     }
     std::vector<Game> games;
 
