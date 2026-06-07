@@ -12,10 +12,10 @@
 #include <features/backup/backup.hpp>
 
 void CDashboardView::on_enter( ) {
-    if ( m_result.games.empty( ) ) {
+    if ( m_result.empty( ) ) {
         {
-            std::unique_lock lock( m_result.d_mutex );
-            m_result.games.clear( );
+            // std::unique_lock lock( m_result.d_mutex );
+            m_result.clear( );
         }
         m_last_game_count = 0;
         m_grouped_games.clear( );
@@ -37,13 +37,13 @@ void CDashboardView::render( ) {
     if ( !m_ludusavi_done && refresh_done && ludusavi_idle && m_parser != nullptr ) {
         m_ludusavi_done   = true;
         m_ludusavi_future = std::async( std::launch::async, [this, parser = m_parser]( ) mutable {
-            Detection::find_saves_ludusavi( m_config, m_result, parser );
+            // Detection::find_saves_ludusavi( m_config, m_result, parser );
         } );
     }
 
-    {
-        std::shared_lock lock( m_result.d_mutex );
-        m_games_snapshot = m_result.games;
+    if ( refresh_done ) {
+        m_games_snapshot = m_result;
+        m_refresh_future.get( );
     }
 
     if ( m_games_snapshot.size( ) != m_last_game_count ) {
@@ -135,8 +135,8 @@ void CDashboardView::render_toolbar( ) {
     if ( ( ImGui::Button( "Refresh" ) || ( ImGui::GetIO( ).KeyCtrl && ImGui::IsKeyPressed( ImGuiKey_R ) ) ) &&
          !is_refreshing ) {
         {
-            std::unique_lock lock( m_result.d_mutex );
-            m_result.games.clear( );
+            // std::unique_lock lock( m_result.d_mutex );
+            m_result.clear( );
         }
         m_last_game_count = 0;
         m_grouped_games.clear( );
@@ -153,8 +153,8 @@ void CDashboardView::render_toolbar( ) {
         m_backup_future = std::async( std::launch::async, [&result = m_result, &config = m_config]( ) {
             std::vector<Game> snapshot;
             {
-                std::shared_lock lock( result.d_mutex );
-                snapshot = result.games;
+                // std::shared_lock lock( result.d_mutex );
+                snapshot = result;
             }
             Features::backup_all_games( snapshot, config );
             Notify::show_notification( "Mass Backup", "Succesfully backed up all gamesaves!", 1500 );
@@ -305,6 +305,7 @@ void CDashboardView::render_game_row( const std::vector<int>& group, int gi ) {
     auto& cache         = m_game_cache[cache_key( primary )];
     int   save_count    = cache.save_files.size( );
     int   backup_count  = cache.backup_count;
+    auto  backup_paths  = cache.backup_paths;
     auto  labels        = cache.labels;
     bool  has_conflicts = cache.has_conflicts;
 
@@ -321,8 +322,7 @@ void CDashboardView::render_game_row( const std::vector<int>& group, int gi ) {
 
         if ( backup_count > 0 ) {
             Card::draw( selectable_id, "BACKUPS", bk_collapsed, std::nullopt, [&]( ) {
-                auto backups = Features::get_backups( primary.game_name );
-                for ( auto& backup : backups ) {
+                for ( auto& backup : backup_paths ) {
                     ImGui::Separator( );
                     render_backup_row( backup, primary, labels );
                 }
@@ -368,9 +368,7 @@ void CDashboardView::render_save_row( const fs::path& save_file, const Game& gam
     std::string size_text;
     if ( game.type != PlatformType::MINECRAFT ) {
         auto b_size = fs::file_size( save_file ) / 1024;
-        if ( b_size <= 0 ) return;
-        // might produce false positives if the file size is genuinenly, lower than 1KB but this is highly unlikely
-        size_text = std::format( "{}KB  ", b_size );
+        size_text   = std::format( "{}KB  ", b_size );
     }
 
     float size_width  = ImGui::CalcTextSize( size_text.c_str( ) ).x;
@@ -589,9 +587,9 @@ void CDashboardView::render_modals( ) {
 
 void CDashboardView::on_result_changed( ) {
     {
-        Detection::DetectionResult tmp;
-        tmp.games       = m_games_snapshot;
-        m_grouped_games = get_grouped( tmp.games );
+        std::vector<Game> games;
+        games           = m_games_snapshot;
+        m_grouped_games = get_grouped( games );
     }
     m_game_cache.clear( );
 
@@ -625,7 +623,9 @@ void CDashboardView::on_result_changed( ) {
                     } else {
                         cache.save_files.push_back( save_path );
                     }
-                    cache.backup_count = Features::get_backups( game.game_name ).size( );
+                    auto backups       = Features::get_backups( game.game_name );
+                    cache.backup_count = backups.size( );
+                    cache.backup_paths = backups;
                     cache.labels       = Features::load_labels( game.game_name );
                     auto key           = cache_key( game );
                     if ( game.type == PlatformType::MINECRAFT ) {

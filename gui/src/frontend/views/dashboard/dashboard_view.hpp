@@ -32,21 +32,25 @@ class CDashboardView : public CBaseView {
 
         CConfig&                          m_config;
         std::shared_ptr<CLudusaviParser>& m_parser;
-        Detection::DetectionResult        m_result;
+        std::vector<Game>                 m_result;
         CBackupsView                      m_backups_view;
 
         CTaskRunner m_task_runner;
 
         // Detection / cache
         struct GameCache {
-                std::vector<fs::path>                        save_files;
-                int                                          backup_count;
+                std::vector<fs::path> save_files;
+                int                   backup_count;
+                bool                  has_conflicts = false;
+                std::vector<fs::path> backup_paths;
+
                 std::unordered_map<std::string, std::string> labels;
-                bool                                         has_conflicts = false;
         };
 
-        std::vector<Game>                                   m_games_snapshot;
-        std::vector<std::vector<int>>                       m_grouped_games;
+        std::mutex                    m_result_mutex;
+        std::vector<Game>             m_games_snapshot;
+        std::vector<std::vector<int>> m_grouped_games;
+
         std::unordered_map<std::string, GameCache>          m_game_cache;
         std::unordered_map<std::string, fs::file_time_type> m_game_last_modified;
 

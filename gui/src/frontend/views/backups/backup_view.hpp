@@ -5,14 +5,14 @@
 
 class CBackupsView {
     public:
-        CBackupsView( CConfig& config, Detection::DetectionResult& result ) : m_config( config ), m_result( result ) {};
+        CBackupsView( CConfig& config, std::vector<Game>& games ) : m_config( config ), m_result( games ) {};
         void render( );
         void on_enter( );
         void on_exit( );
 
     private:
-        CConfig&                    m_config;
-        Detection::DetectionResult& m_result;
+        CConfig&           m_config;
+        std::vector<Game>& m_result;
 
         // UI state
         std::unordered_map<std::string, bool> m_card_collapsed;

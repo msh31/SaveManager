@@ -24,7 +24,7 @@ enum class LauncherType {
 struct Game {
         PlatformType               type; // display
         std::string                appid;
-        std::optional<std::string> game_id;
+        std::optional<std::string> game_id; // ubi only
         std::string                game_name;
         // fs::path                   save_path;
         std::vector<fs::path> save_paths;

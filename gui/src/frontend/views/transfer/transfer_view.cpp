@@ -11,7 +11,7 @@
 #include <frontend/notification/notification.hpp>
 
 void CTransferView::on_enter( ) {
-    if ( m_result.games.empty( ) )
+    if ( m_result.empty( ) )
         m_detection_future = std::async( std::launch::async, [this] { Detection::find_saves( m_config, m_result ); } );
 }
 
@@ -216,11 +216,11 @@ void CTransferView::render( ) {
     float content_height = ImGui::GetContentRegionAvail( ).y - 10.0f;
 
     {
-        std::shared_lock         lock( m_result.d_mutex );
-        auto                     groups = get_grouped( m_result.games );
+        // std::shared_lock         lock( m_result.d_mutex );
+        auto                     groups = get_grouped( m_result );
         std::vector<std::string> game_names;
         for ( const auto& group : groups )
-            game_names.push_back( m_result.games[group[0]].game_name );
+            game_names.push_back( m_result[group[0]].game_name );
 
         if ( !game_names.empty( ) ) {
             if ( m_selected_game_idx >= (int)game_names.size( ) ) m_selected_game_idx = 0;
@@ -231,8 +231,7 @@ void CTransferView::render( ) {
                     bool is_selected = ( m_selected_game_idx == static_cast<int>( gi ) );
                     if ( ImGui::Selectable( name.c_str( ), is_selected ) ) {
                         m_selected_game_idx = static_cast<int>( gi );
-                        m_backups =
-                            Features::get_backups( m_result.games[groups[static_cast<int>( gi )][0]].game_name );
+                        m_backups = Features::get_backups( m_result[groups[static_cast<int>( gi )][0]].game_name );
                         m_selected_backups.assign( m_backups.size( ), false );
                     }
                     if ( is_selected ) ImGui::SetItemDefaultFocus( );

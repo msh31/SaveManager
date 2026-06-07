@@ -13,9 +13,9 @@ class CTransferView : public CBaseView {
         void on_exit( ) override {}
 
     private:
-        CConfig&                   m_config;
-        Detection::DetectionResult m_result;
-        std::future<void>          m_detection_future;
+        CConfig&          m_config;
+        std::vector<Game> m_result;
+        std::future<void> m_detection_future;
 
         bool m_initialized       = false;
         bool m_connected         = false;

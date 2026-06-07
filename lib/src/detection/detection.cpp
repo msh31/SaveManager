@@ -20,12 +20,33 @@ struct Detectors {
         CMinecraftDetector minecraft_detect;
 };
 
+GameKey Detection::get_game_identity_key( const Game& game ) {
+    if ( !game.appid.empty( ) ) return { GameKeyKind::STEAM_APPID, game.appid };
+
+    // ubisoft
+    if ( game.game_id.has_value( ) ) return { GameKeyKind::UBISOFT_ID, *game.game_id };
+
+    // minecraft launchers
+    if ( game.type == PlatformType::MINECRAFT ) return { GameKeyKind::MINECRAFT, game.game_name };
+
+    if ( !game.game_name.empty( ) ) return { GameKeyKind::NAME, game.game_name };
+
+    if ( !game.save_paths.empty( ) ) {
+        SPDLOG_INFO( "save path hit: {}", game.game_name );
+        return { GameKeyKind::PATH, weakly_canonical( game.save_paths[0] ).string( ) };
+    }
+
+    SPDLOG_ERROR( "Failed to get game identify key" );
+    return { GameKeyKind::INVALID }; // caller must check this
+}
+
 void Detection::add_game(
-    std::expected<std::vector<Game>, DetectionError> result, const std::string& platform, DetectionResult& d_result ) {
+    std::expected<std::vector<Game>, DetectionError> result, const std::string& platform, std::vector<Game>& games ) {
+
     if ( result ) {
-        std::unique_lock<std::shared_mutex> lock( d_result.d_mutex );
-        auto&                               v = result.value( );
-        d_result.games.insert( d_result.games.end( ), v.begin( ), v.end( ) );
+        // std::unique_lock<std::shared_mutex> lock( games.d_mutex );
+        auto& v = result.value( );
+        games.insert( games.end( ), v.begin( ), v.end( ) );
     } else {
         switch ( result.error( ) ) {
         case DetectionError::PathNotFound:
@@ -41,8 +62,7 @@ void Detection::add_game(
 }
 
 void scan_prefix_dir(
-    const fs::path& compatdata, Detection::DetectionResult& result, const CConfig& config,
-    const Detectors& detectors ) {
+    const fs::path& compatdata, std::vector<Game>& games, const CConfig& config, const Detectors& detectors ) {
     for ( const auto& entry : fs::directory_iterator( compatdata ) ) {
         try {
             fs::path prefix = entry.path( );
@@ -54,7 +74,7 @@ void scan_prefix_dir(
                 Detection::add_game(
                     detectors.ubisoft_detect.find_saves(
                         drive_c / "Program Files (x86)" / "Ubisoft" / "Ubisoft Game Launcher" / "savegames" ),
-                    "ubi", result );
+                    "ubi", games );
             }
 
             if ( fs::exists( users_dir ) ) {
@@ -63,26 +83,26 @@ void scan_prefix_dir(
 
                     if ( config.settings.ubi_enabled ) {
                         Detection::add_game(
-                            detectors.ubisoft_detect.find_saves( user.path( ) / "Documents" ), "ubi", result );
+                            detectors.ubisoft_detect.find_saves( user.path( ) / "Documents" ), "ubi", games );
                         Detection::add_game(
-                            detectors.ubisoft_detect.find_anno_saves( user.path( ) / "Documents" ), "ubi", result );
+                            detectors.ubisoft_detect.find_anno_saves( user.path( ) / "Documents" ), "ubi", games );
                         Detection::add_game(
                             detectors.ubisoft_detect.find_anno_saves( user.path( ) / "AppData" / "Roaming" ), "ubi",
-                            result );
+                            games );
                     }
                     if ( config.settings.rsg_enabled ) {
                         Detection::add_game(
                             detectors.rockstar_detect.find_saves( user.path( ) / "Documents" / "Rockstar Games" ),
-                            "rsg", result );
+                            "rsg", games );
                         Detection::add_game(
-                            detectors.rockstar_detect.find_legacy_saves( user.path( ) / "Documents" ), "rsg", result );
+                            detectors.rockstar_detect.find_legacy_saves( user.path( ) / "Documents" ), "rsg", games );
                         Detection::add_game(
                             detectors.rockstar_detect.find_legacy_saves(
                                 user.path( ) / "AppData" / "Local" / "Rockstar Games" ),
-                            "rsg", result );
+                            "rsg", games );
                     }
                     if ( config.settings.unreal_enabled ) {
-                        Detection::add_game( detectors.unreal_detect.find_saves( user.path( ) ), "unreal", result );
+                        Detection::add_game( detectors.unreal_detect.find_saves( user.path( ) ), "unreal", games );
                     }
                 }
             }
@@ -92,8 +112,12 @@ void scan_prefix_dir(
     }
 }
 
-void Detection::find_saves( CConfig& config, DetectionResult& d_result ) {
+void Detection::find_saves( CConfig& config, std::vector<Game>& games ) {
     Detectors detectors;
+    // CLudusaviParser parser;
+    //
+    // Detection::find_saves_ludusavi( config, games, parser );
+
     // cool lua support
     int plugin_count = 0;
     for ( const auto& plugin : fs::recursive_directory_iterator(
@@ -104,12 +128,11 @@ void Detection::find_saves( CConfig& config, DetectionResult& d_result ) {
         plugin_count++;
 
         CPlugin plugins( plugin );
-        Detection::add_game( plugins.find_saves( ), "Custom", d_result );
+        Detection::add_game( plugins.find_saves( ), "Custom", games );
     }
     if ( plugin_count > 0 ) SPDLOG_INFO( "Loaded {} plugins!", plugin_count );
 
-    // TODO: move this
-    Detection::add_game( detectors.minecraft_detect.find_saves( ), "minecraft", d_result );
+    Detection::add_game( detectors.minecraft_detect.find_saves( ), "minecraft", games );
 
 #ifdef __linux__
     auto libraries = SteamHelper::get_library_folders( );
@@ -119,19 +142,19 @@ void Detection::find_saves( CConfig& config, DetectionResult& d_result ) {
         fs::path compatdata = library / "steamapps/compatdata";
         if ( !fs::exists( compatdata ) ) continue;
 
-        scan_prefix_dir( compatdata, d_result, config, detectors );
+        scan_prefix_dir( compatdata, games, config, detectors );
     }
 
     // lutris
     if ( fs::exists( paths::lutris_dir( ) ) ) {
-        scan_prefix_dir( paths::lutris_dir( ), d_result, config, detectors );
+        scan_prefix_dir( paths::lutris_dir( ), games, config, detectors );
     }
 
     // heroic
     fs::path heroic_dir = paths::heroic_dir( ) / "Prefixes/default";
 
     if ( fs::exists( heroic_dir ) ) {
-        scan_prefix_dir( heroic_dir, d_result, config, detectors );
+        scan_prefix_dir( heroic_dir, games, config, detectors );
     }
 #endif
 
@@ -139,24 +162,23 @@ void Detection::find_saves( CConfig& config, DetectionResult& d_result ) {
     if ( config.settings.ubi_enabled ) {
         Detection::add_game(
             detectors.ubisoft_detect.find_saves( "C:\\Program Files (x86)\\Ubisoft\\Ubisoft Game Launcher\\savegames" ),
-            "ubi", d_result );
-        Detection::add_game( detectors.ubisoft_detect.find_anno_saves( paths::documents_dir( ) ), "ubi", d_result );
+            "ubi", games );
+        Detection::add_game( detectors.ubisoft_detect.find_anno_saves( paths::documents_dir( ) ), "ubi", games );
         Detection::add_game(
-            detectors.ubisoft_detect.find_anno_saves( paths::home_dir( ) / "AppData" / "Roaming" ), "ubi", d_result );
+            detectors.ubisoft_detect.find_anno_saves( paths::home_dir( ) / "AppData" / "Roaming" ), "ubi", games );
     }
 
     if ( config.settings.rsg_enabled ) {
         Detection::add_game(
-            detectors.rockstar_detect.find_saves( paths::documents_dir( ) / "Rockstar Games" ), "rsg", d_result );
-        Detection::add_game( detectors.rockstar_detect.find_legacy_saves( paths::documents_dir( ) ), "rsg", d_result );
+            detectors.rockstar_detect.find_saves( paths::documents_dir( ) / "Rockstar Games" ), "rsg", games );
+        Detection::add_game( detectors.rockstar_detect.find_legacy_saves( paths::documents_dir( ) ), "rsg", games );
         Detection::add_game(
             detectors.rockstar_detect.find_legacy_saves( paths::home_dir( ) / "AppData" / "Local" / "Rockstar Games" ),
-            "rsg", d_result );
+            "rsg", games );
     }
     if ( config.settings.unreal_enabled ) {
-        Detection::add_game( detectors.unreal_detect.find_saves( paths::home_dir( ) ), "unreal", d_result );
+        Detection::add_game( detectors.unreal_detect.find_saves( paths::home_dir( ) ), "unreal", games );
     }
-    // Detection::add_game(detectors.custom_detect.find_saves(paths::home_dir()), "custom", d_result);
 #endif
 
 #ifdef __APPLE__
@@ -171,27 +193,25 @@ void Detection::find_saves( CConfig& config, DetectionResult& d_result ) {
         Detection::add_game(
             detectors.unreal_detect.find_saves(
                 paths::home_dir( ) / "Library" / "Application Support", CUnrealDetector::ScanMode::Native ),
-            "unreal", d_result );
-        Detection::add_game(
-            detectors.unreal_detect.find_saves( paths::heroic_dir( ) / "Prefixes" ), "unreal", d_result );
+            "unreal", games );
+        Detection::add_game( detectors.unreal_detect.find_saves( paths::heroic_dir( ) / "Prefixes" ), "unreal", games );
     }
-    // Detection::add_game(detectors.custom_detect.find_saves(paths::home_dir()), "custom", result);
 #endif
 
     {
-        std::unique_lock<std::shared_mutex> lock( d_result.d_mutex );
-        if ( d_result.games.empty( ) ) {
+        // std::unique_lock<std::shared_mutex> lock( games.d_mutex );
+        if ( games.empty( ) ) {
             SPDLOG_ERROR( "No savegames found!" );
         }
 
-        std::unordered_map<std::string, size_t> seen;
-        std::vector<size_t>                     to_remove;
-        for ( size_t i = 0; i < d_result.games.size( ); i++ ) {
-            auto&       game = d_result.games[i];
-            std::string key  = game.appid.empty( ) ? game.game_name : game.appid;
+        std::map<GameKey, size_t> seen;
+        std::vector<size_t>       to_remove;
+        for ( size_t i = 0; i < games.size( ); i++ ) {
+            auto& game = games[i];
+            auto  key  = get_game_identity_key( game );
 
             if ( seen.contains( key ) ) {
-                auto& existing = d_result.games[seen[key]];
+                auto& existing = games[seen[key]];
                 existing.save_paths.insert(
                     existing.save_paths.end( ), game.save_paths.begin( ), game.save_paths.end( ) );
                 to_remove.push_back( i );
@@ -201,11 +221,11 @@ void Detection::find_saves( CConfig& config, DetectionResult& d_result ) {
         }
 
         for ( int i = to_remove.size( ) - 1; i >= 0; i-- ) {
-            d_result.games.erase( d_result.games.begin( ) + to_remove[i] );
+            games.erase( games.begin( ) + to_remove[i] );
         }
 
-        std::erase_if( d_result.games, []( const Game& game ) { return Blacklist::is_blacklisted( game.game_name ); } );
-        std::erase_if( d_result.games, []( const Game& game ) {
+        std::erase_if( games, []( const Game& game ) { return Blacklist::is_blacklisted( game.game_name ); } );
+        std::erase_if( games, []( const Game& game ) {
             return std::ranges::none_of(
                 game.save_paths, []( const fs::path& p ) { return fs::is_directory( p ) && !fs::is_empty( p ); } );
         } );
@@ -213,17 +233,18 @@ void Detection::find_saves( CConfig& config, DetectionResult& d_result ) {
 }
 
 void Detection::find_saves_ludusavi(
-    CConfig& config, DetectionResult& d_result, std::shared_ptr<CLudusaviParser>& parser ) {
-    if ( parser == nullptr ) return; // fuck this we outta here
+    CConfig& config, std::vector<Game>& games, std::shared_ptr<CLudusaviParser>& parser ) {
+    if ( parser == nullptr ) return;
 
     auto manifest = SteamHelper::get_app_manifests( );
     if ( manifest.empty( ) ) return;
 
     std::unordered_set<std::string> seen;
     {
-        std::shared_lock<std::shared_mutex> lock( d_result.d_mutex );
-        for ( const auto& g : d_result.games )
+        // std::shared_lock<std::shared_mutex> lock( games.d_mutex );
+        for ( const auto& g : games ) {
             seen.insert( g.appid );
+        }
     }
 
     std::vector<Game> discovered;
@@ -263,8 +284,7 @@ void Detection::find_saves_ludusavi(
 
     if ( discovered.empty( ) ) return;
 
-    std::unique_lock<std::shared_mutex> lock( d_result.d_mutex );
-    d_result.games.insert(
-        d_result.games.end( ), std::make_move_iterator( discovered.begin( ) ),
-        std::make_move_iterator( discovered.end( ) ) );
+    // std::unique_lock<std::shared_mutex> lock( games.d_mutex );
+    games.insert(
+        games.end( ), std::make_move_iterator( discovered.begin( ) ), std::make_move_iterator( discovered.end( ) ) );
 }
