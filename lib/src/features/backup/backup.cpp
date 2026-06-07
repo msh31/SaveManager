@@ -207,17 +207,11 @@ std::unordered_map<std::string, std::string> Features::load_labels( const std::s
 
 void Features::save_label( const std::string& game, const std::string& filename, const std::string& label ) {
     std::string file_name = ( paths::backup_dir( ) / sanitize_filename( game ) / "labels.json" ).string( );
-    auto        labels    = load_labels( game );
 
+    auto labels      = load_labels( game );
     labels[filename] = label;
 
-    json data;
-    for ( const auto& [key, value] : labels ) {
-        data[key] = value;
-    }
-
-    std::ofstream out( file_name );
-    out << data.dump( 4 );
+    Features::save_labels( game, labels );
 }
 
 void Features::save_labels( const std::string& game, const std::unordered_map<std::string, std::string>& labels ) {
@@ -233,5 +227,6 @@ void Features::save_labels( const std::string& game, const std::unordered_map<st
     } else {
         std::ofstream out( file_name );
         out << data.dump( 4 );
+        out.close( );
     }
 }
