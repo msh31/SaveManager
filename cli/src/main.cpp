@@ -41,13 +41,13 @@ int main( int argc, char* argv[] ) {
         for ( const auto& entry : result.games ) {
             std::println( "- {} (AppID: {})", entry.game_name, entry.appid );
 
-            for ( const auto& save :
-                  fs::recursive_directory_iterator( entry.save_path, fs::directory_options::skip_permission_denied ) ) {
-                if ( save.is_directory( ) ) continue;
-                std::println( "  - {}", save.path( ).filename( ).string( ) );
+            for ( const auto& path : entry.save_paths ) {
+                for ( const auto& save :
+                      fs::recursive_directory_iterator( path, fs::directory_options::skip_permission_denied ) ) {
+                    if ( save.is_directory( ) ) continue;
+                    std::println( "  - {}", save.path( ).filename( ).string( ) );
+                }
             }
-
-            // std::println( " Path: {}", entry.save_path.string( ) );
         }
     }
     if ( *backup ) {
