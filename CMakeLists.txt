@@ -160,7 +160,6 @@ set(savemanager_SOURCES
 	"gui/src/frontend/views/about/about_view.cpp"
 	"gui/src/frontend/views/backups/backup_view.cpp"
 	"gui/src/frontend/views/dashboard/dashboard_view.cpp"
-	"gui/src/frontend/views/debug/debug_view.cpp"
 	"gui/src/frontend/views/editor/editor_view.cpp"
 	"gui/src/frontend/views/log/log_view.cpp"
 	"gui/src/frontend/views/pipeline/pipeline_demo.cpp"
