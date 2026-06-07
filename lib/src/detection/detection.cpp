@@ -4,6 +4,7 @@
 
 #include "utils/blacklist/blacklist.hpp"
 #include "utils/paths.hpp"
+#include <utils/utils.hpp>
 
 #include <utils/steam/steam.hpp>
 
@@ -19,26 +20,6 @@ struct Detectors {
         CUnrealDetector    unreal_detect;
         CMinecraftDetector minecraft_detect;
 };
-
-GameKey Detection::get_game_identity_key( const Game& game ) {
-    if ( !game.appid.empty( ) ) return { GameKeyKind::STEAM_APPID, game.appid };
-
-    // ubisoft
-    if ( game.game_id.has_value( ) ) return { GameKeyKind::UBISOFT_ID, *game.game_id };
-
-    // minecraft launchers
-    if ( game.type == PlatformType::MINECRAFT ) return { GameKeyKind::MINECRAFT, game.game_name };
-
-    if ( !game.game_name.empty( ) ) return { GameKeyKind::NAME, game.game_name };
-
-    if ( !game.save_paths.empty( ) ) {
-        SPDLOG_INFO( "save path hit: {}", game.game_name );
-        return { GameKeyKind::PATH, weakly_canonical( game.save_paths[0] ).string( ) };
-    }
-
-    SPDLOG_ERROR( "Failed to get game identify key" );
-    return { GameKeyKind::INVALID }; // caller must check this
-}
 
 void Detection::add_game(
     std::expected<std::vector<Game>, DetectionError> result, const std::string& platform, std::vector<Game>& games ) {
@@ -208,7 +189,7 @@ void Detection::find_saves( CConfig& config, std::vector<Game>& games ) {
         std::vector<size_t>       to_remove;
         for ( size_t i = 0; i < games.size( ); i++ ) {
             auto& game = games[i];
-            auto  key  = get_game_identity_key( game );
+            auto  key  = utils::get_game_identity_key( game );
 
             if ( seen.contains( key ) ) {
                 auto& existing = games[seen[key]];

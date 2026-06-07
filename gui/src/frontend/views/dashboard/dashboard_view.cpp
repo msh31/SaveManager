@@ -290,18 +290,19 @@ void CDashboardView::render_game_content(
 }
 
 void CDashboardView::render_game_row( const std::vector<int>& group, int gi ) {
-    const Game& primary = m_games_snapshot[group[0]];
-    if ( !m_backups_expanded.contains( cache_key( primary ) ) ) {
-        m_backups_expanded[cache_key( primary )] = true;
+    const Game& primary  = m_games_snapshot[group[0]];
+    auto        game_key = utils::get_game_identity_key( primary ).value;
+    if ( !m_backups_expanded.contains( game_key ) ) {
+        m_backups_expanded[game_key] = true;
     }
 
-    bool&       not_collapsed = m_card_collapsed[cache_key( primary )];
-    bool&       bk_collapsed  = m_backups_expanded[cache_key( primary )];
+    bool&       not_collapsed = m_card_collapsed[game_key];
+    bool&       bk_collapsed  = m_backups_expanded[game_key];
     const char* chevron       = bk_collapsed ? "▶" : "▼";
 
     std::vector<std::pair<fs::path, const Game*>> files = { };
 
-    auto& cache         = m_game_cache[cache_key( primary )];
+    auto& cache         = m_game_cache[game_key];
     int   save_count    = cache.save_files.size( );
     int   backup_count  = cache.backup_count;
     auto  backup_paths  = cache.backup_paths;
@@ -626,15 +627,16 @@ void CDashboardView::on_result_changed( ) {
                     cache.backup_count = backups.size( );
                     cache.backup_paths = backups;
                     cache.labels       = Features::load_labels( game.game_name );
-                    auto key           = cache_key( game );
+
+                    auto key = utils::get_game_identity_key( game ).value;
                     if ( game.type == PlatformType::MINECRAFT ) {
                         if ( ( *temp ).contains( key ) ) {
                             ( *temp )[key].save_files.push_back( save_path );
                         } else {
-                            ( *temp )[cache_key( game )] = cache;
+                            ( *temp )[key] = cache;
                         }
                     } else {
-                        ( *temp )[cache_key( game )] = cache;
+                        ( *temp )[key] = cache;
                     }
 
                     try {

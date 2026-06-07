@@ -70,3 +70,11 @@ struct SteamManifest {
         std::string install_dir;
         fs::path    library_dir;
 };
+
+enum class GameKeyKind { INVALID, STEAM_APPID, UBISOFT_ID, MINECRAFT, NAME, PATH };
+struct GameKey {
+        GameKeyKind kind;
+        std::string value;
+        // spaceship operator,
+        auto operator<=>( const GameKey& ) const = default;
+};

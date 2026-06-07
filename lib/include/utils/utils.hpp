@@ -102,13 +102,6 @@ static std::string_view get_launcher_label( LauncherType t ) {
     return "";
 }
 
-inline std::string cache_key( const Game& game ) {
-    if ( game.type == PlatformType::MINECRAFT ) {
-        return "Minecraft";
-    }
-    return game.game_name;
-}
-
 inline void open_in_file_manager( const char* path ) {
 #ifdef __linux__
     pid_t pid = fork( );
@@ -149,12 +142,35 @@ inline void open_in_file_manager( const char* path ) {
 #endif
 }
 
+// TODO: move everything into this namespace so the code is easier to navigate
+namespace utils {
+    inline GameKey get_game_identity_key( const Game& game ) {
+        if ( !game.appid.empty( ) ) return { GameKeyKind::STEAM_APPID, game.appid };
+
+        // ubisoft
+        if ( game.game_id.has_value( ) ) return { GameKeyKind::UBISOFT_ID, *game.game_id };
+
+        // minecraft launchers
+        if ( game.type == PlatformType::MINECRAFT ) return { GameKeyKind::MINECRAFT, game.game_name };
+
+        if ( !game.game_name.empty( ) ) return { GameKeyKind::NAME, game.game_name };
+
+        if ( !game.save_paths.empty( ) ) {
+            SPDLOG_INFO( "save path hit: {}", game.game_name );
+            return { GameKeyKind::PATH, weakly_canonical( game.save_paths[0] ).string( ) };
+        }
+
+        SPDLOG_ERROR( "Failed to get game identify key" );
+        return { GameKeyKind::INVALID }; // caller must check this
+    }
+} // namespace utils
+
 inline std::vector<std::vector<int>> get_grouped( const std::vector<Game>& games ) {
-    std::unordered_map<std::string, size_t> key_to_group;
-    std::vector<std::vector<int>>           groups;
+    std::map<GameKey, size_t>     key_to_group;
+    std::vector<std::vector<int>> groups;
 
     enumerate( games, [&]( int i, auto& game ) {
-        std::string key = ( game.appid != "N/A" ) ? game.appid : cache_key( game );
+        auto key = utils::get_game_identity_key( game );
 
         auto it = key_to_group.find( key );
         if ( it != key_to_group.end( ) ) {
