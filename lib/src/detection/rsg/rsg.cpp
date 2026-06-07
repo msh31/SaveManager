@@ -2,17 +2,17 @@
 #include "detection/detection.hpp"
 #include "utils/translations/translations.hpp"
 
-std::expected<std::vector<Game>, DetectionError> CRockstarDetector::find_saves( const fs::path &prefix ) const {
+std::expected<std::vector<Game>, DetectionError> CRockstarDetector::find_saves( const fs::path& prefix ) const {
     if ( !fs::exists( prefix ) ) {
         return std::unexpected{ DetectionError::PathNotFound };
     }
     std::vector<Game> games;
 
-    for ( const auto &game :
+    for ( const auto& game :
           fs::directory_iterator( prefix, std::filesystem::directory_options::skip_permission_denied ) ) {
-        fs::path game_folder = game.path( );
-        std::string folder_name = game_folder.filename( ).string( );
-        fs::path profiles_folder = game_folder / "Profiles";
+        fs::path    game_folder     = game.path( );
+        std::string folder_name     = game_folder.filename( ).string( );
+        fs::path    profiles_folder = game_folder / "Profiles";
 
         if ( folder_name == "Launcher" || folder_name == "Social Club" ) {
             continue;
@@ -22,14 +22,15 @@ std::expected<std::vector<Game>, DetectionError> CRockstarDetector::find_saves( 
             continue;
         }
 
-        for ( const auto &profile : fs::directory_iterator( profiles_folder ) ) {
+        for ( const auto& profile : fs::directory_iterator( profiles_folder ) ) {
             fs::path uuid_folder = profile.path( );
 
             Game game;
-            game.type = PlatformType::ROCKSTAR;
+            game.type      = PlatformType::ROCKSTAR;
             game.game_name = translations::get_game_name_rsg( folder_name ).value_or( folder_name );
-            game.appid = translations::get_steam_id( game.game_name ).value_or( "N/A" );
-            game.save_path = uuid_folder;
+            game.appid     = translations::get_steam_id( game.game_name ).value_or( "N/A" );
+            // game.save_path = uuid_folder;
+            game.save_paths.push_back( uuid_folder );
 
             games.push_back( game );
         }
@@ -37,23 +38,24 @@ std::expected<std::vector<Game>, DetectionError> CRockstarDetector::find_saves( 
     return games;
 }
 
-std::expected<std::vector<Game>, DetectionError> CRockstarDetector::find_legacy_saves( const fs::path &prefix ) const {
+std::expected<std::vector<Game>, DetectionError> CRockstarDetector::find_legacy_saves( const fs::path& prefix ) const {
     if ( !fs::exists( prefix ) ) {
         return std::unexpected{ DetectionError::PathNotFound };
     }
     std::vector<Game> games;
 
-    for ( const auto &game :
+    for ( const auto& game :
           fs::directory_iterator( prefix, std::filesystem::directory_options::skip_permission_denied ) ) {
         std::string folder_name = game.path( ).filename( ).string( );
 
         if ( auto it = m_legacy_games.find( folder_name ); it != m_legacy_games.end( ) ) {
-            auto &[key, game_name] = *it;
+            auto& [key, game_name] = *it;
             Game l_game;
-            l_game.type = PlatformType::ROCKSTAR;
+            l_game.type      = PlatformType::ROCKSTAR;
             l_game.game_name = game_name;
-            l_game.appid = translations::get_steam_id( game_name ).value_or( "N/A" );
-            l_game.save_path = game.path( );
+            l_game.appid     = translations::get_steam_id( game_name ).value_or( "N/A" );
+            // l_game.save_path = game.path( );
+            l_game.save_paths.push_back( game.path( ) );
 
             games.push_back( l_game );
         }

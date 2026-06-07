@@ -2,9 +2,9 @@
 #include "utils/translations/translations.hpp"
 #include <logger/logger.hpp>
 
-void CUnrealDetector::scan_for_saves( const fs::path &path, std::set<fs::path> &directories ) const {
+void CUnrealDetector::scan_for_saves( const fs::path& path, std::set<fs::path>& directories ) const {
     try {
-        for ( const auto &entry :
+        for ( const auto& entry :
               fs::recursive_directory_iterator( path, fs::directory_options::skip_permission_denied ) ) {
             if ( entry.path( ).extension( ) != ".sav" ) {
                 continue;
@@ -35,15 +35,15 @@ void CUnrealDetector::scan_for_saves( const fs::path &path, std::set<fs::path> &
             // get_logger().debug("scan_for_saves: " + path.string());
             directories.insert( entry.path( ).parent_path( ) );
         }
-    } catch ( std::filesystem::filesystem_error & ) {
+    } catch ( std::filesystem::filesystem_error& ) {
         return;
     }
 }
 
 std::expected<std::vector<Game>, DetectionError>
-CUnrealDetector::find_saves( const fs::path &prefix, CUnrealDetector::ScanMode scan_mode ) const {
+CUnrealDetector::find_saves( const fs::path& prefix, CUnrealDetector::ScanMode scan_mode ) const {
     std::set<fs::path> directories;
-    std::vector<Game> games;
+    std::vector<Game>  games;
 
     if ( !fs::exists( prefix ) ) {
         return std::unexpected{ DetectionError::PathNotFound };
@@ -54,13 +54,13 @@ CUnrealDetector::find_saves( const fs::path &prefix, CUnrealDetector::ScanMode s
         scan_for_saves( prefix, directories );
         break;
     case CUnrealDetector::ScanMode::Native:
-        for ( const auto &folder :
+        for ( const auto& folder :
               fs::directory_iterator( prefix, std::filesystem::directory_options::skip_permission_denied ) ) {
             if ( !fs::is_directory( folder ) ) {
                 continue;
             }
 
-            fs::path save_games = folder.path( ) / "Saved" / "SaveGames";
+            fs::path save_games     = folder.path( ) / "Saved" / "SaveGames";
             fs::path save_games_alt = folder.path( ) / "SaveGames";
 
             fs::path target;
@@ -70,12 +70,12 @@ CUnrealDetector::find_saves( const fs::path &prefix, CUnrealDetector::ScanMode s
                 target = save_games_alt;
             } else {
                 try {
-                    for ( const auto &subfolder :
+                    for ( const auto& subfolder :
                           fs::directory_iterator( folder, fs::directory_options::skip_permission_denied ) ) {
                         if ( !fs::is_directory( subfolder ) ) {
                             continue;
                         }
-                        fs::path sub_save_games = subfolder.path( ) / "Saved" / "SaveGames";
+                        fs::path sub_save_games     = subfolder.path( ) / "Saved" / "SaveGames";
                         fs::path sub_save_games_alt = subfolder.path( ) / "SaveGames";
                         fs::path target_two;
 
@@ -89,7 +89,7 @@ CUnrealDetector::find_saves( const fs::path &prefix, CUnrealDetector::ScanMode s
                         // get_logger().debug("target_two: " + target_two.string());
                         scan_for_saves( target_two, directories );
                     }
-                } catch ( const fs::filesystem_error & ) {
+                } catch ( const fs::filesystem_error& ) {
                     continue;
                 }
                 continue;
@@ -97,24 +97,25 @@ CUnrealDetector::find_saves( const fs::path &prefix, CUnrealDetector::ScanMode s
 
             try {
                 scan_for_saves( target, directories );
-            } catch ( const fs::filesystem_error & ) {
+            } catch ( const fs::filesystem_error& ) {
                 continue;
             }
         }
         break;
     }
 
-    for ( const auto &entry : directories ) {
+    for ( const auto& entry : directories ) {
         auto it = entry.begin( );
         Game game;
         game.type = PlatformType::UNREAL;
-        game.save_path = entry;
+        // game.save_path = entry;
+        game.save_paths.push_back( entry );
         std::string found_name;
-        bool found_in_translations = false;
+        bool        found_in_translations = false;
 
         std::vector<std::string> path_comps;
-        std::ranges::transform( entry, std::back_inserter( path_comps ),
-                                []( const auto &part ) { return part.string( ); } );
+        std::ranges::transform(
+            entry, std::back_inserter( path_comps ), []( const auto& part ) { return part.string( ); } );
         auto comp_it = std::ranges::find( path_comps, "SaveGames" );
         // get_logger().debug(*comp_it);
 
@@ -131,9 +132,9 @@ CUnrealDetector::find_saves( const fs::path &prefix, CUnrealDetector::ScanMode s
                     break;
                 }
             } else if ( *comp_it != "Saved" && *comp_it != "Steam" && *comp_it != "Epic" && !is_numeric ) {
-                found_name = *comp_it;
+                found_name     = *comp_it;
                 game.game_name = found_name;
-                game.appid = "N/A";
+                game.appid     = "N/A";
                 break;
             }
         }
@@ -145,14 +146,14 @@ CUnrealDetector::find_saves( const fs::path &prefix, CUnrealDetector::ScanMode s
                     std::string appid = it->string( );
 
                     game.game_name = translations::get_steam_name( appid ).value_or( "N/A" );
-                    game.appid = appid;
+                    game.appid     = appid;
 
                     break;
                 } else if ( *it == "default" ) {
                     ++it;
                     std::string name = it->string( );
-                    game.game_name = name;
-                    game.appid = "N/A";
+                    game.game_name   = name;
+                    game.appid       = "N/A";
                     break;
                 }
             }
@@ -160,7 +161,7 @@ CUnrealDetector::find_saves( const fs::path &prefix, CUnrealDetector::ScanMode s
 
         if ( game.game_name.empty( ) && !found_name.empty( ) ) {
             game.game_name = found_name;
-            game.appid = "N/A";
+            game.appid     = "N/A";
         }
         games.push_back( game );
     }

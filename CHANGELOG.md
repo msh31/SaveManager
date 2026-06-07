@@ -60,6 +60,7 @@ refactor it to improve some pain points when it comes to adding new features
 - Refresh and mass backup buttons are now disabled during active operations instead of hidden
 - Improved log view with color-coded levels
 
+---
 
 ## [1.7.0] - 2026-05-21
 *Core logic moved into a separate library linked by the GUI*

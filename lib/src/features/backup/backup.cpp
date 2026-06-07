@@ -55,15 +55,17 @@ void Features::backup_game( const Game& game, const fs::path& file, CConfig& con
 
 void Features::backup_all_games( std::vector<Game> snapshot, CConfig& config ) {
     for ( auto& entry : snapshot ) {
-        if ( fs::is_directory( entry.save_path ) ) {
-            for ( const auto& file :
-                  fs::recursive_directory_iterator( entry.save_path, fs::directory_options::skip_permission_denied ) ) {
-                if ( fs::is_regular_file( file ) ) {
-                    auto ext = file.path( ).extension( ).string( );
-                    if ( std::find( extension_blocklist.begin( ), extension_blocklist.end( ), ext ) !=
-                         extension_blocklist.end( ) )
-                        continue;
-                    backup_game( entry, file.path( ), config );
+        for ( const auto& save : entry.save_paths ) {
+            if ( fs::is_directory( save ) ) {
+                for ( const auto& file :
+                      fs::recursive_directory_iterator( save, fs::directory_options::skip_permission_denied ) ) {
+                    if ( fs::is_regular_file( file ) ) {
+                        auto ext = file.path( ).extension( ).string( );
+                        if ( std::find( extension_blocklist.begin( ), extension_blocklist.end( ), ext ) !=
+                             extension_blocklist.end( ) )
+                            continue;
+                        backup_game( entry, file.path( ), config );
+                    }
                 }
             }
         }

@@ -26,9 +26,10 @@ struct Game {
         std::string                appid;
         std::optional<std::string> game_id;
         std::string                game_name;
-        std::filesystem::path      save_path;
-        LauncherType               launcher;                 // minecraft only | display
-        bool                       show_parent_path = false; // display
+        // fs::path                   save_path;
+        std::vector<fs::path> save_paths;
+        LauncherType          launcher;                 // minecraft only | display
+        bool                  show_parent_path = false; // display
 };
 
 struct ScheduleEntry {
@@ -40,8 +41,8 @@ struct ScheduleEntry {
         std::string  appid;
         std::string  game_name;
 
-        std::filesystem::path              save_path;
-        std::vector<std::filesystem::path> included_saves;
+        fs::path              save_path;
+        std::vector<fs::path> included_saves;
 };
 
 struct BackupEntry {

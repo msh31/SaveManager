@@ -184,9 +184,30 @@ void Detection::find_saves( CConfig& config, DetectionResult& d_result ) {
             SPDLOG_ERROR( "No savegames found!" );
         }
 
+        std::unordered_map<std::string, size_t> seen;
+        std::vector<size_t>                     to_remove;
+        for ( size_t i = 0; i < d_result.games.size( ); i++ ) {
+            auto&       game = d_result.games[i];
+            std::string key  = game.appid.empty( ) ? game.game_name : game.appid;
+
+            if ( seen.contains( key ) ) {
+                auto& existing = d_result.games[seen[key]];
+                existing.save_paths.insert(
+                    existing.save_paths.end( ), game.save_paths.begin( ), game.save_paths.end( ) );
+                to_remove.push_back( i );
+            } else {
+                seen[key] = i;
+            }
+        }
+
+        for ( int i = to_remove.size( ) - 1; i >= 0; i-- ) {
+            d_result.games.erase( d_result.games.begin( ) + to_remove[i] );
+        }
+
         std::erase_if( d_result.games, []( const Game& game ) { return Blacklist::is_blacklisted( game.game_name ); } );
         std::erase_if( d_result.games, []( const Game& game ) {
-            return !fs::is_directory( game.save_path ) || fs::is_empty( game.save_path );
+            return std::ranges::none_of(
+                game.save_paths, []( const fs::path& p ) { return fs::is_directory( p ) && !fs::is_empty( p ); } );
         } );
     }
 }
@@ -226,9 +247,10 @@ void Detection::find_saves_ludusavi(
             if ( fs::is_regular_file( str ) && fs::file_size( str ) == 0 ) continue;
 
             Game game;
-            game.appid            = appid_str;
-            game.game_name        = sm.name;
-            game.save_path        = str;
+            game.appid     = appid_str;
+            game.game_name = sm.name;
+            // game.save_path        = str;
+            game.save_paths.emplace_back( str );
             game.type             = PlatformType::GENERIC;
             game.show_parent_path = true; // verify
             // SPDLOG_INFO( "ludusavi: {} -> {}", sm.name, str.string( ) );
