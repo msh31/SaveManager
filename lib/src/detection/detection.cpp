@@ -24,7 +24,6 @@ void Detection::add_game(
     std::expected<std::vector<Game>, SMError> result, const std::string& platform, std::vector<Game>& games ) {
 
     if ( result ) {
-        // std::unique_lock<std::shared_mutex> lock( games.d_mutex );
         auto& v = result.value( );
         games.insert( games.end( ), v.begin( ), v.end( ) );
     } else {

@@ -12,10 +12,7 @@
 
 void CDashboardView::on_enter( ) {
     if ( m_result.empty( ) ) {
-        {
-            // std::unique_lock lock( m_result.d_mutex );
-            m_result.clear( );
-        }
+        m_result.clear( ); // edge case or stupid?
         m_last_game_count = 0;
         m_grouped_games.clear( );
         m_game_cache.clear( );
@@ -121,12 +118,9 @@ void CDashboardView::render_toolbar( ) {
     ImGui::SameLine( );
 
     if ( is_refreshing ) ImGui::BeginDisabled( true );
-    if ( ( ImGui::Button( "Refresh" ) || ( ImGui::GetIO( ).KeyCtrl && ImGui::IsKeyPressed( ImGuiKey_R ) ) ) &&
-         !is_refreshing ) {
-        {
-            // std::unique_lock lock( m_result.d_mutex );
-            m_result.clear( );
-        }
+    bool is_refresh_keybind_pressed = ( ImGui::GetIO( ).KeyCtrl && ImGui::IsKeyPressed( ImGuiKey_R ) );
+    if ( ( ImGui::Button( "Refresh" ) || is_refresh_keybind_pressed ) && !is_refreshing ) {
+        m_result.clear( );
         m_last_game_count = 0;
         m_grouped_games.clear( );
         m_game_cache.clear( );
@@ -139,11 +133,7 @@ void CDashboardView::render_toolbar( ) {
     if ( is_refreshing || is_backing_up ) ImGui::BeginDisabled( true );
     if ( ImGui::Button( "Mass Backup" ) ) {
         m_backup_future = std::async( std::launch::async, [&result = m_result, &config = m_config]( ) {
-            std::vector<Game> snapshot;
-            {
-                // std::shared_lock lock( result.d_mutex );
-                snapshot = result;
-            }
+            std::vector<Game> snapshot = result;
             Features::backup_all_games( snapshot, config );
             Notify::show_notification( "Mass Backup", "Succesfully backed up all gamesaves!", 1500 );
         } );

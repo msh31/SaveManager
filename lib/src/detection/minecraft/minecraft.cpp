@@ -43,7 +43,6 @@ std::vector<Game> CMinecraftDetector::scan_official( ) const {
             entry.type      = PlatformType::MINECRAFT;
             entry.game_name = "Minecraft";
             entry.appid     = "N/A";
-            // entry.save_path = world.path( ).string( );
             entry.save_paths.push_back( world.path( ) );
             entry.launcher = LauncherType::OFFICIAL;
             games.push_back( entry );
@@ -82,7 +81,6 @@ std::vector<Game> CMinecraftDetector::scan_modrinth( ) const {
                 entry.type      = PlatformType::MINECRAFT;
                 entry.game_name = "Minecraft";
                 entry.appid     = "N/A";
-                // entry.save_path = world.path( ).string( );
                 entry.save_paths.push_back( world.path( ) );
                 entry.launcher = LauncherType::MODRINTH;
                 games.push_back( entry );
@@ -121,7 +119,6 @@ std::vector<Game> CMinecraftDetector::scan_curseforge( ) const {
                 entry.type      = PlatformType::MINECRAFT;
                 entry.game_name = "Minecraft";
                 entry.appid     = "N/A";
-                // entry.save_path = world.path( ).string( );
                 entry.save_paths.push_back( world.path( ) );
                 entry.launcher = LauncherType::CURSEFORGE;
                 games.push_back( entry );
@@ -168,7 +165,6 @@ std::vector<Game> CMinecraftDetector::scan_prism( ) const {
                     entry.type      = PlatformType::MINECRAFT;
                     entry.game_name = "Minecraft";
                     entry.appid     = "N/A";
-                    // entry.save_path = world.path( ).string( );
                     entry.save_paths.push_back( world.path( ) );
                     entry.launcher = LauncherType::PRISM;
                     games.push_back( entry );
@@ -203,7 +199,6 @@ std::vector<Game> CMinecraftDetector::scan_multimc( ) const {
                 entry.type      = PlatformType::MINECRAFT;
                 entry.game_name = "Minecraft";
                 entry.appid     = "N/A";
-                // entry.save_path = world.path( ).string( );
                 entry.save_paths.push_back( world.path( ) );
                 entry.launcher = LauncherType::MULTIMC;
                 games.push_back( entry );

@@ -48,12 +48,13 @@ void CApp::render( ) {
     ConfirmDialog::render( );
 }
 
-// wtf?
+// called from main before render so the shader actually displays
 void CApp::render_shader( std::pair<int, int> window_size ) {
     if ( m_config.settings.dark_mode ) {
         glClearColor( 0.145f, 0.145f, 0.141f, 1.0f );
-    } else
+    } else {
         glClearColor( 0.980f, 0.976f, 0.961f, 1.00f );
+    }
     glClear( GL_COLOR_BUFFER_BIT ); // for the themes
     glViewport( 0, 0, window_size.first, window_size.second );
 

@@ -17,12 +17,9 @@ void CBackupsView::on_exit( ) {}
 
 void CBackupsView::add_new_entry( ) {
     std::unordered_map<std::string, fs::path> save_path_lookup;
-    {
-        // std::shared_lock lock( m_result.d_mutex );
-        for ( const auto& game : m_result ) {
-            for ( const auto& save : game.save_paths ) {
-                save_path_lookup[sanitize_filename( game.game_name )] = save;
-            }
+    for ( const auto& game : m_result ) {
+        for ( const auto& save : game.save_paths ) {
+            save_path_lookup[sanitize_filename( game.game_name )] = save;
         }
     }
 

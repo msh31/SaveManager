@@ -20,7 +20,7 @@ void CSaveScheduler::load( ) {
                 entry.enabled   = item.value( "enabled", true );
                 entry.game_name = item.value( "game_name", "" );
                 entry.appid     = item.value( "appid", "" );
-                // entry.save_path = item.value( "save_path", "" );
+                entry.save_path = item.value( "save_path", "" );
                 for ( const auto& s : item.value( "included_saves", std::vector<std::string>{ } ) ) {
                     entry.included_saves.push_back( fs::path( s ) );
                 }
@@ -78,11 +78,9 @@ void CSaveScheduler::backup_loop( ) {
             game.appid     = entry.appid;
             game.type      = entry.type;
             if ( entry.included_saves.empty( ) ) {
-                // game.save_path = entry.save_path; //TODO
                 Features::backup_game( game, entry.save_path, m_config );
             } else {
                 for ( const auto& save : entry.included_saves ) {
-                    // game.save_path = save.string( );
                     Features::backup_game( game, save, m_config );
                 }
             }

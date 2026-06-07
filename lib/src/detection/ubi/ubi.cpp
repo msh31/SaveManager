@@ -33,7 +33,6 @@ std::expected<std::vector<Game>, SMError> CUbisoftDetector::find_saves( const fs
             game.game_id   = game_id_folder.filename( ).string( );
             game.game_name = name.value( );
             game.appid     = translations::get_steam_id( game.game_name ).value_or( "N/A" );
-            // game.save_path = game_id_folder;
             game.save_paths.push_back( game_id_folder );
 
             games.push_back( game );
@@ -66,13 +65,11 @@ std::expected<std::vector<Game>, SMError> CUbisoftDetector::find_anno_saves( con
             if ( fs::exists( game.path( ) / "accounts" ) ) {
                 for ( const auto& entry : fs::directory_iterator(
                           game.path( ) / "accounts", std::filesystem::directory_options::skip_permission_denied ) ) {
-                    // anno.save_path = entry;
                     anno.save_paths.push_back( entry ); // a fallback
                     break;
                 }
             } else {
                 fs::path save = game.path( ) / anno_data.save_subpath;
-                // anno.save_path = fs::exists( save ) ? save : game.path( );             // a fallback
                 anno.save_paths.push_back( fs::exists( save ) ? save : game.path( ) ); // a fallback
             }
 

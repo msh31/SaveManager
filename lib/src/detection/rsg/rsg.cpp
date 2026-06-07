@@ -29,7 +29,6 @@ std::expected<std::vector<Game>, SMError> CRockstarDetector::find_saves( const f
             game.type      = PlatformType::ROCKSTAR;
             game.game_name = translations::get_game_name_rsg( folder_name ).value_or( folder_name );
             game.appid     = translations::get_steam_id( game.game_name ).value_or( "N/A" );
-            // game.save_path = uuid_folder;
             game.save_paths.push_back( uuid_folder );
 
             games.push_back( game );
@@ -54,7 +53,6 @@ std::expected<std::vector<Game>, SMError> CRockstarDetector::find_legacy_saves( 
             l_game.type      = PlatformType::ROCKSTAR;
             l_game.game_name = game_name;
             l_game.appid     = translations::get_steam_id( game_name ).value_or( "N/A" );
-            // l_game.save_path = game.path( );
             l_game.save_paths.push_back( game.path( ) );
 
             games.push_back( l_game );

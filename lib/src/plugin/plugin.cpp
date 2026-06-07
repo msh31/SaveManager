@@ -105,7 +105,6 @@ std::vector<Game> CPlugin::find_saves( ) {
         g.type      = PlatformType::CUSTOM;
         g.game_name = std::move( game_name );
         g.appid     = std::move( appid );
-        // g.save_path = std::move( save_path );
         g.save_paths.push_back( save_path ); //?
         g.show_parent_path = m_show_parent_path;
         games.emplace_back( g );

@@ -108,7 +108,6 @@ CUnrealDetector::find_saves( const fs::path& prefix, CUnrealDetector::ScanMode s
         auto it = entry.begin( );
         Game game;
         game.type = PlatformType::UNREAL;
-        // game.save_path = entry;
         game.save_paths.push_back( entry );
         std::string found_name;
         bool        found_in_translations = false;
