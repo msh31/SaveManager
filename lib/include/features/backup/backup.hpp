@@ -6,7 +6,7 @@ class CConfig;
 
 namespace Features {
     void backup_game( const Game& game, const fs::path& file, CConfig& config );
-    void backup_all_games( std::vector<Game> snapshot, CConfig& config );
+    void backup_all_games( const std::vector<Game>& snapshot, CConfig& config );
     void backup_to_path( fs::path source, fs::path dest );
     bool backup_game_files( const Game& game, std::vector<std::pair<fs::path, const Game*>> files );
 

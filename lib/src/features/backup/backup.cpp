@@ -53,8 +53,8 @@ void Features::backup_game( const Game& game, const fs::path& file, CConfig& con
     }
 }
 
-void Features::backup_all_games( std::vector<Game> snapshot, CConfig& config ) {
-    for ( auto& entry : snapshot ) {
+void Features::backup_all_games( const std::vector<Game>& snapshot, CConfig& config ) {
+    for ( const auto& entry : snapshot ) {
         for ( const auto& save : entry.save_paths ) {
             if ( fs::is_directory( save ) ) {
                 for ( const auto& file :
