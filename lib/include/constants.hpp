@@ -20,8 +20,8 @@ constexpr std::string_view ubi_translation_url =
 constexpr std::string_view steam_translation_url =
     "https://raw.githubusercontent.com/msh31/SaveManager/refs/heads/dev/data/steamids.json";
 
-constexpr std::array<std::string_view, 17> extension_blocklist{ ".dat",  ".bin",  ".upload", ".bak", ".cfg",    ".log",
-                                                                ".tmp",  ".ini",  ".set",    ".txt", ".lock",   ".lck",
-                                                                ".part", ".temp", ".swp",    ".swo", ".journal" };
+static const std::unordered_set<std::string_view> extension_blocklist{
+    ".dat", ".bin",  ".upload", ".bak",  ".cfg",  ".log", ".tmp", ".ini",    ".set",
+    ".txt", ".lock", ".lck",    ".part", ".temp", ".swp", ".swo", ".journal" };
 
-constexpr std::array<std::string_view, 5> g_extension_blocklist{ ".png", ".jpg", ".jpeg", ".webp", ".bmp" };
+static const std::unordered_set<std::string_view> g_extension_blocklist{ ".png", ".jpg", ".jpeg", ".webp", ".bmp" };

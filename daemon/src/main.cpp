@@ -27,9 +27,9 @@ int main( ) {
         []( const fs::path& path, uint32_t mask ) {
             if ( !fs::exists( path ) ) SPDLOG_WARN( "{} does not exist", path.string( ) );
             auto ext = path.extension( ).string( );
-            if ( std::ranges::contains( extension_blocklist, ext ) ||
-                 std::ranges::contains( g_extension_blocklist, ext ) )
-                return;
+
+            if ( extension_blocklist.contains( ext ) ) return;
+            if ( g_extension_blocklist.contains( ext ) ) return;
 
             if ( mask & IN_CREATE ) SPDLOG_INFO( "created: {}", path.string( ) );
             else if ( mask & IN_DELETE )

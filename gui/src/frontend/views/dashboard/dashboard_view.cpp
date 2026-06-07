@@ -586,17 +586,16 @@ void CDashboardView::on_result_changed( ) {
                     if ( game.type != PlatformType::MINECRAFT ) {
                         for ( const auto& file : fs::recursive_directory_iterator(
                                   save_path, fs::directory_options::skip_permission_denied ) ) {
+
                             if ( !fs::is_regular_file( file ) ) continue;
                             if ( fs::file_size( file ) == 0 ) continue;
+
                             auto ext = file.path( ).extension( ).string( );
                             if ( game.type != PlatformType::CUSTOM && game.type != PlatformType::GENERIC ) {
-                                if ( std::find( extension_blocklist.begin( ), extension_blocklist.end( ), ext ) !=
-                                     extension_blocklist.end( ) )
-                                    continue;
+                                if ( extension_blocklist.contains( ext ) ) continue;
                             }
-                            if ( std::find( g_extension_blocklist.begin( ), g_extension_blocklist.end( ), ext ) !=
-                                 g_extension_blocklist.end( ) )
-                                continue;
+
+                            if ( g_extension_blocklist.contains( ext ) ) continue;
                             cache.save_files.push_back( file.path( ) );
                         }
                     } else {

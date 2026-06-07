@@ -17,9 +17,7 @@ void Features::backup_game( const Game& game, const fs::path& file, CConfig& con
          !fs::is_regular_file( file ) ) {
         if ( !fs::is_directory( file ) ) return;
     } else {
-        if ( !fs::is_regular_file( file ) ||
-             std::find( extension_blocklist.begin( ), extension_blocklist.end( ), ext ) !=
-                 extension_blocklist.end( ) ) {
+        if ( !fs::is_regular_file( file ) || extension_blocklist.contains( ext ) ) {
             return;
         }
     }
@@ -56,17 +54,15 @@ void Features::backup_game( const Game& game, const fs::path& file, CConfig& con
 void Features::backup_all_games( const std::vector<Game>& snapshot, CConfig& config ) {
     for ( const auto& entry : snapshot ) {
         for ( const auto& save : entry.save_paths ) {
-            if ( fs::is_directory( save ) ) {
-                for ( const auto& file :
-                      fs::recursive_directory_iterator( save, fs::directory_options::skip_permission_denied ) ) {
-                    if ( fs::is_regular_file( file ) ) {
-                        auto ext = file.path( ).extension( ).string( );
-                        if ( std::find( extension_blocklist.begin( ), extension_blocklist.end( ), ext ) !=
-                             extension_blocklist.end( ) )
-                            continue;
-                        backup_game( entry, file.path( ), config );
-                    }
-                }
+            if ( !fs::is_directory( save ) ) continue;
+
+            for ( const auto& file :
+                  fs::recursive_directory_iterator( save, fs::directory_options::skip_permission_denied ) ) {
+                if ( !fs::is_regular_file( file ) ) continue;
+
+                auto ext = file.path( ).extension( ).string( );
+                if ( extension_blocklist.contains( ext ) ) continue;
+                backup_game( entry, file.path( ), config );
             }
         }
     }
