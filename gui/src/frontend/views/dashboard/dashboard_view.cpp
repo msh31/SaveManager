@@ -2,7 +2,6 @@
 #include <utils/utils.hpp>
 
 #include <backend/font_manager/font_manager.hpp>
-#include <backend/utils.hpp>
 
 #include <frontend/components/card.hpp>
 #include <frontend/components/spinner.hpp>
