@@ -1,5 +1,4 @@
 #include "transfer_view.hpp"
-#include <utils/ludisavi_parser/ludusavi_parser.hpp>
 #include <utils/utils.hpp>
 
 #include <detection/detection.hpp>

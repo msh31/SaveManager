@@ -7,7 +7,6 @@
 #include <backend/shader/shader.hpp>
 #include <backend/ui_manager/ui_manager.hpp>
 #include <config/config.hpp>
-#include <utils/ludisavi_parser/ludusavi_parser.hpp>
 
 class CApp {
     public:
@@ -18,8 +17,6 @@ class CApp {
 
     private:
         CConfig m_config;
-
-        std::shared_ptr<CLudusaviParser> m_parser;
 
         CUIManager m_ui_manager{ std::make_unique<CTabbarShell>( ) };
 

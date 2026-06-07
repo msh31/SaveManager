@@ -12,7 +12,6 @@
 #include "detection/rsg/rsg.hpp"
 #include "detection/ubi/ubi.hpp"
 #include "detection/unreal/unreal.hpp"
-#include <utils/ludisavi_parser/ludusavi_parser.hpp>
 
 struct Detectors {
         CRockstarDetector  rockstar_detect;
@@ -114,9 +113,6 @@ std::vector<Game> scan_prefix_dir( const fs::path& compatdata, const CConfig& co
 
 void Detection::find_saves( CConfig& config, std::vector<Game>& games ) {
     Detectors detectors;
-    // CLudusaviParser parser;
-    //
-    // Detection::find_saves_ludusavi( config, games, parser );
 
     // cool lua support
     int plugin_count = 0;
@@ -250,7 +246,9 @@ void Detection::find_saves( CConfig& config, std::vector<Game>& games ) {
         unreal_future = std::async( std::launch::async, [detectors, config]( ) -> std::vector<Game> {
             std::vector<Game> result;
             Detection::add_game(
-                detectors.unreal_detect.find_saves( path, CUnrealDetector::ScanMode::Native ), "unreal", result );
+                detectors.unreal_detect.find_saves(
+                    paths::home_dir( ) / "Library" / "Application Support", CUnrealDetector::ScanMode::Native ),
+                "unreal", result );
             Detection::add_game(
                 detectors.unreal_detect.find_saves( paths::heroic_dir( ) / "Prefixes" ), "unreal", result );
             return result;
@@ -288,61 +286,4 @@ void Detection::find_saves( CConfig& config, std::vector<Game>& games ) {
         return std::ranges::none_of(
             game.save_paths, []( const fs::path& p ) { return fs::is_directory( p ) && !fs::is_empty( p ); } );
     } );
-}
-
-void Detection::find_saves_ludusavi(
-    CConfig& config, std::vector<Game>& games, std::shared_ptr<CLudusaviParser>& parser ) {
-    if ( parser == nullptr ) return;
-
-    auto manifest = SteamHelper::get_app_manifests( );
-    if ( manifest.empty( ) ) return;
-
-    std::unordered_set<std::string> seen;
-    {
-        // std::shared_lock<std::shared_mutex> lock( games.d_mutex );
-        for ( const auto& g : games ) {
-            seen.insert( g.appid );
-        }
-    }
-
-    std::vector<Game> discovered;
-
-    for ( const auto& entry : manifest ) {
-        const SteamManifest& sm        = entry.second;
-        std::string          appid_str = std::to_string( sm.appid );
-        if ( seen.contains( appid_str ) ) continue;
-
-        CLudusaviParser::ResolveContext ctx;
-        ctx.install_dir = sm.library_dir / "steamapps" / "common" / sm.install_dir;
-        fs::path prefix = sm.library_dir / "steamapps" / "compatdata" / appid_str / "pfx";
-        if ( fs::exists( prefix ) ) ctx.proton_prefix = prefix;
-
-        auto parser_paths = parser->get_save_paths( sm.appid, ctx );
-        if ( parser_paths.empty( ) ) continue;
-
-        for ( auto& path : parser_paths ) {
-            const auto& str = path.resolved_path;
-            if ( !fs::exists( str ) ) continue;
-            if ( fs::is_regular_file( str ) && fs::file_size( str ) == 0 ) continue;
-
-            Game game;
-            game.appid     = appid_str;
-            game.game_name = sm.name;
-            // game.save_path        = str;
-            game.save_paths.emplace_back( str );
-            game.type             = PlatformType::GENERIC;
-            game.show_parent_path = true; // verify
-            // SPDLOG_INFO( "ludusavi: {} -> {}", sm.name, str.string( ) );
-
-            discovered.emplace_back( std::move( game ) );
-        }
-
-        seen.insert( appid_str );
-    }
-
-    if ( discovered.empty( ) ) return;
-
-    // std::unique_lock<std::shared_mutex> lock( games.d_mutex );
-    games.insert(
-        games.end( ), std::make_move_iterator( discovered.begin( ) ), std::make_move_iterator( discovered.end( ) ) );
 }

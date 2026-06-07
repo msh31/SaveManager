@@ -30,21 +30,9 @@ CApp::~CApp( ) {
 void CApp::init( ) {
     translations::init( );
     Blacklist::init( );
-
     ThemeManager::apply_style( );
 
-    auto staging = std::make_shared<std::shared_ptr<CLudusaviParser>>( );
-    m_task_runner.run(
-        [staging] {
-            // SPDLOG_INFO( "CApp::m_task_runner work fired!" );
-            *staging = std::make_shared<CLudusaviParser>( );
-        },
-        [this, staging] {
-            m_parser = *staging;
-            // SPDLOG_INFO( "CApp::m_task_runner on complete fired!" );
-        } );
-
-    m_ui_manager.add_view( { std::make_unique<CDashboardView>( m_config, m_parser ), ICON_HOME, "Dashboard" } );
+    m_ui_manager.add_view( { std::make_unique<CDashboardView>( m_config ), ICON_HOME, "Dashboard" } );
     m_ui_manager.add_view( { std::make_unique<CEditorView>( ), ICON_EDIT, "Save Editor" } );
     m_ui_manager.add_view( { std::make_unique<CTransferView>( m_config ), ICON_TRANSFER, "Transfer" } );
     m_ui_manager.add_view( { std::make_unique<CAboutView>( ), ICON_INFO, "About" } );

@@ -20,7 +20,6 @@ void CDashboardView::on_enter( ) {
         m_grouped_games.clear( );
         m_game_cache.clear( );
         m_detection_start_time = std::chrono::steady_clock::now( );
-        m_ludusavi_done        = false;
         m_refresh_future = std::async( std::launch::async, [this] { Detection::find_saves( m_config, m_result ); } );
     }
 };
@@ -28,17 +27,8 @@ void CDashboardView::on_enter( ) {
 void CDashboardView::render( ) {
     m_task_runner.update( );
 
-    bool refresh_done  = m_refresh_future.valid( ) &&
-                         m_refresh_future.wait_for( std::chrono::seconds( 0 ) ) == std::future_status::ready;
-    bool ludusavi_idle = !m_ludusavi_future.valid( ) ||
-                         m_ludusavi_future.wait_for( std::chrono::seconds( 0 ) ) == std::future_status::ready;
-
-    if ( !m_ludusavi_done && refresh_done && ludusavi_idle && m_parser != nullptr ) {
-        m_ludusavi_done   = true;
-        m_ludusavi_future = std::async( std::launch::async, [this, parser = m_parser]( ) mutable {
-            // Detection::find_saves_ludusavi( m_config, m_result, parser );
-        } );
-    }
+    bool refresh_done = m_refresh_future.valid( ) &&
+                        m_refresh_future.wait_for( std::chrono::seconds( 0 ) ) == std::future_status::ready;
 
     if ( refresh_done ) {
         m_games_snapshot = m_result;
@@ -141,7 +131,6 @@ void CDashboardView::render_toolbar( ) {
         m_grouped_games.clear( );
         m_game_cache.clear( );
         m_detection_start_time = std::chrono::steady_clock::now( );
-        m_ludusavi_done        = false;
         m_refresh_future = std::async( std::launch::async, [this] { Detection::find_saves( m_config, m_result ); } );
     }
     if ( is_refreshing ) ImGui::EndDisabled( );

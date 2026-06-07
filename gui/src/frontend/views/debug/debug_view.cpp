@@ -2,7 +2,6 @@
 #include <frontend/dialogs/confirm/confirm_dialog.hpp>
 #include <frontend/notification/notification.hpp>
 
-#include <utils/ludisavi_parser/ludusavi_parser.hpp>
 #include <utils/steam/steam.hpp>
 
 void CDebugView::render( ) {
@@ -32,8 +31,6 @@ void CDebugView::render( ) {
             [] { Notify::show_notification( "Async", "Task complete!", 2000 ); } );
     }
 
-    if ( ImGui::Button( "Test manifest" ) ) {
-    }
     ImGui::SameLine( );
     if ( ImGui::Button( "Steam UserID test" ) ) {
         SPDLOG_INFO( SteamHelper::parse_steam_userid( ).value_or( "no user id found" ) );

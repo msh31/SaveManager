@@ -1,7 +1,6 @@
 #pragma once
 #include <config/config.hpp>
 #include <detection/detection.hpp>
-#include <utils/ludisavi_parser/ludusavi_parser.hpp>
 
 #include <frontend/views/backups/backup_view.hpp>
 #include <frontend/views/base_view.hpp>
@@ -10,8 +9,7 @@
 
 class CDashboardView : public CBaseView {
     public:
-        CDashboardView( CConfig& config, std::shared_ptr<CLudusaviParser>& parser )
-            : m_config( config ), m_parser( parser ), m_backups_view( config, m_result ) {};
+        CDashboardView( CConfig& config ) : m_config( config ), m_backups_view( config, m_result ) {};
         ~CDashboardView( ) override;
         void render( ) override;
         void on_enter( ) override;
@@ -30,10 +28,9 @@ class CDashboardView : public CBaseView {
             const fs::path& backup, const Game& game, const std::unordered_map<std::string, std::string>& labels );
         void render_modals( );
 
-        CConfig&                          m_config;
-        std::shared_ptr<CLudusaviParser>& m_parser;
-        std::vector<Game>                 m_result;
-        CBackupsView                      m_backups_view;
+        CConfig&          m_config;
+        std::vector<Game> m_result;
+        CBackupsView      m_backups_view;
 
         CTaskRunner m_task_runner;
 
@@ -89,8 +86,6 @@ class CDashboardView : public CBaseView {
         // Futures
         std::future<void> m_refresh_future;
         std::future<void> m_backup_future;
-        std::future<void> m_ludusavi_future;
-        bool              m_ludusavi_done = false;
 
         // TODO: implement schedule usage from the lib
         //  Game pending_schedule_game;
