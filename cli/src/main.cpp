@@ -5,8 +5,7 @@
 #include <utils/blacklist/blacklist.hpp>
 #include <utils/translations/translations.hpp>
 
-Detection::DetectionResult result;
-CConfig                    config;
+CConfig config;
 
 int main( int argc, char* argv[] ) {
     if ( argc < 2 ) SPDLOG_ERROR( "Use --help to see a full list of available commands!" );
@@ -36,9 +35,10 @@ int main( int argc, char* argv[] ) {
     CLI11_PARSE( app, argc, argv );
 
     if ( *list ) {
+        std::vector<Game> result;
         Detection::find_saves( config, result );
 
-        for ( const auto& entry : result.games ) {
+        for ( const auto& entry : result ) {
             std::println( "- {} (AppID: {})", entry.game_name, entry.appid );
 
             for ( const auto& path : entry.save_paths ) {
