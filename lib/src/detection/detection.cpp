@@ -194,38 +194,31 @@ void Detection::find_saves( CConfig& config, std::vector<Game>& games ) {
     }
 #endif
 
-    {
-        // std::unique_lock<std::shared_mutex> lock( games.d_mutex );
-        if ( games.empty( ) ) {
-            SPDLOG_ERROR( "No savegames found!" );
-        }
-
-        std::map<GameKey, size_t> seen;
-        std::vector<size_t>       to_remove;
-        for ( size_t i = 0; i < games.size( ); i++ ) {
-            auto& game = games[i];
-            auto  key  = utils::get_game_identity_key( game );
-
-            if ( seen.contains( key ) ) {
-                auto& existing = games[seen[key]];
-                existing.save_paths.insert(
-                    existing.save_paths.end( ), game.save_paths.begin( ), game.save_paths.end( ) );
-                to_remove.push_back( i );
-            } else {
-                seen[key] = i;
-            }
-        }
-
-        for ( int i = to_remove.size( ) - 1; i >= 0; i-- ) {
-            games.erase( games.begin( ) + to_remove[i] );
-        }
-
-        std::erase_if( games, []( const Game& game ) { return Blacklist::is_blacklisted( game.game_name ); } );
-        std::erase_if( games, []( const Game& game ) {
-            return std::ranges::none_of(
-                game.save_paths, []( const fs::path& p ) { return fs::is_directory( p ) && !fs::is_empty( p ); } );
-        } );
+    if ( games.empty( ) ) {
+        SPDLOG_ERROR( "No savegames found!" );
     }
+
+    std::map<GameKey, size_t> seen;
+    std::vector<Game>         deduped;
+    for ( size_t i = 0; i < games.size( ); i++ ) {
+        auto& game = games[i];
+        auto  key  = utils::get_game_identity_key( game );
+
+        if ( seen.contains( key ) ) {
+            deduped[seen[key]].save_paths.insert(
+                deduped[seen[key]].save_paths.end( ), game.save_paths.begin( ), game.save_paths.end( ) );
+        } else {
+            deduped.push_back( game );
+            seen[key] = deduped.size( ) - 1;
+        }
+    }
+    games = std::move( deduped );
+
+    std::erase_if( games, []( const Game& game ) { return Blacklist::is_blacklisted( game.game_name ); } );
+    std::erase_if( games, []( const Game& game ) {
+        return std::ranges::none_of(
+            game.save_paths, []( const fs::path& p ) { return fs::is_directory( p ) && !fs::is_empty( p ); } );
+    } );
 }
 
 void Detection::find_saves_ludusavi(
