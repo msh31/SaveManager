@@ -145,7 +145,7 @@ inline void open_in_file_manager( const char* path ) {
 // TODO: move everything into this namespace so the code is easier to navigate
 namespace utils {
     inline GameKey get_game_identity_key( const Game& game ) {
-        if ( !game.appid.empty( ) ) return { GameKeyKind::STEAM_APPID, game.appid };
+        if ( !game.appid.empty( ) && game.appid != "N/A" ) return { GameKeyKind::STEAM_APPID, game.appid };
 
         // ubisoft
         if ( game.game_id.has_value( ) ) return { GameKeyKind::UBISOFT_ID, *game.game_id };
