@@ -83,10 +83,6 @@ bool CZipArchive::extract_archive( const fs::path& save_path, std::vector<std::p
     int                      file_count = zip_get_num_entries( m_archive, 0 );
     std::vector<std::string> failed_files;
 
-    if ( !read_manifest_from_zip( m_archive ) ) {
-        SPDLOG_WARN( "Failed to read file manifest, proceed with caution!" );
-    }
-
     json manifest_json;
     try {
         manifest_json = json::parse( m_manifest );
