@@ -1,11 +1,11 @@
 #pragma once
-#include <types.hpp>
-namespace fs = std::filesystem;
+#include <detection/idetector.hpp>
 
-class CRockstarDetector {
+class CRockstarDetector : public IDetector {
     public:
-        std::expected<std::vector<Game>, SMError> find_saves( const fs::path& prefix ) const;
-        std::expected<std::vector<Game>, SMError> find_legacy_saves( const fs::path& prefix ) const;
+        std::expected<std::vector<Game>, SMError> find( ) override;
+
+        std::string_view name( ) const override;
 
     private:
         const std::unordered_map<std::string_view, std::string> m_legacy_games = {

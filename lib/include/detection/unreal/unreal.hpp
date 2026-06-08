@@ -1,17 +1,17 @@
 #pragma once
-#include <types.hpp>
-namespace fs = std::filesystem;
+#include <detection/idetector.hpp>
 
-class CUnrealDetector {
+class CUnrealDetector : public IDetector {
     public:
-        enum class ScanMode { Recursive, Native };
-        std::expected<std::vector<Game>, SMError>
-        find_saves( const fs::path& prefix, ScanMode mode = ScanMode::Recursive ) const;
+        std::expected<std::vector<Game>, SMError> find( ) override;
+
+        std::string_view name( ) const override;
 
     private:
         char m_header[4] = { 'G', 'V', 'A', 'S' };
         void scan_for_saves( const fs::path& path, std::set<fs::path>& directories ) const;
 
+        // wtf?
         const std::unordered_map<std::string_view, std::string> m_translations = {
             { "MGSDelta", "2417610" }, { "detnoir", "1939970" },    { "Sandfall", "1903340" },
             { "Sackboy", "1599660" },  { "ReadyOrNot", "1144200" }, { "Oregon", "1583230" },

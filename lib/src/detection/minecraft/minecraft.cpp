@@ -1,8 +1,7 @@
 #include "detection/minecraft/minecraft.hpp"
-#include "types.hpp"
 #include "utils/paths.hpp"
 
-std::expected<std::vector<Game>, SMError> CMinecraftDetector::find_saves( ) const {
+std::expected<std::vector<Game>, SMError> CMinecraftDetector::find( ) {
     std::vector<Game> games;
 
     auto append = [&]( std::vector<Game> result ) { games.insert( games.end( ), result.begin( ), result.end( ) ); };
@@ -49,6 +48,10 @@ std::vector<Game> CMinecraftDetector::scan_official( ) const {
     if ( entry.save_paths.empty( ) ) return { };
     return { entry };
 }
+
+std::string_view CMinecraftDetector::name( ) const { return "Minecraft"; }
+
+// private
 
 std::vector<Game> CMinecraftDetector::scan_modrinth( ) const {
 #if defined( __linux__ )
@@ -199,7 +202,3 @@ std::vector<Game> CMinecraftDetector::scan_multimc( ) const {
     if ( entry.save_paths.empty( ) ) return { };
     return { entry };
 }
-//
-// std::vector<Game> CMinecraftDetector::scan_atllauncher() const {
-//
-// }

@@ -1,9 +1,11 @@
 #pragma once
-#include <types.hpp>
+#include <detection/idetector.hpp>
 
-class CMinecraftDetector {
+class CMinecraftDetector : public IDetector {
     public:
-        std::expected<std::vector<Game>, SMError> find_saves( ) const;
+        std::expected<std::vector<Game>, SMError> find( ) override;
+
+        std::string_view name( ) const override;
 
     private:
         std::vector<Game> scan_official( ) const;
@@ -11,5 +13,4 @@ class CMinecraftDetector {
         std::vector<Game> scan_curseforge( ) const;
         std::vector<Game> scan_prism( ) const;
         std::vector<Game> scan_multimc( ) const;
-        // std::vector<Game> scan_atllauncher() const;
 };
