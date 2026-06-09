@@ -8,6 +8,9 @@ class CMinecraftDetector : public IDetector {
         std::string_view name( ) const override;
 
     private:
+        friend class CWinePrefixDetector;
+        static std::vector<Game> scan( fs::path );
+
         std::vector<Game> scan_official( ) const;
         std::vector<Game> scan_modrinth( ) const;
         std::vector<Game> scan_curseforge( ) const;

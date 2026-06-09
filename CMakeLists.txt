@@ -80,6 +80,7 @@ set(savemanager-core_SOURCES
 	"lib/src/detection/rsg/rsg.cpp"
 	"lib/src/detection/ubi/ubi.cpp"
 	"lib/src/detection/unreal/unreal.cpp"
+	"lib/src/detection/wine/wine.cpp"
 	"lib/src/features/backup/backup.cpp"
 	"lib/src/features/remote_transfer/remote_transfer.cpp"
 	"lib/src/features/save_editor/save_editor.cpp"
