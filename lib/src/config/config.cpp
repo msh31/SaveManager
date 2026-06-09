@@ -78,10 +78,6 @@ bool CConfig::init( ) {
 
 void CConfig::save( ) {
     json data;
-    data["ubi_enabled"]    = settings.ubi_enabled;
-    data["rsg_enabled"]    = settings.rsg_enabled;
-    data["unreal_enabled"] = settings.unreal_enabled;
-
     data["dark_mode"]           = settings.dark_mode;
     data["animated_background"] = settings.animated_background;
 
@@ -119,10 +115,7 @@ void CConfig::load( ) {
     }
 
     try {
-        data                    = json::parse( file );
-        settings.ubi_enabled    = data.value( "ubi_enabled", true );
-        settings.rsg_enabled    = data.value( "rsg_enabled", true );
-        settings.unreal_enabled = data.value( "unreal_enabled", true );
+        data = json::parse( file );
 
         settings.dark_mode           = data.value( "dark_mode", true );
         settings.animated_background = data.value( "animated_background", false );

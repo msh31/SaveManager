@@ -96,20 +96,6 @@ void CSettingsView::render( ) {
     }
     ImGui::SetItemTooltip( "Opens your file manager to the config directory." );
     ImGui::EndChild( );
-    ImGui::SameLine( 0.0f, 10.0f );
-
-    ImGui::BeginChild(
-        "##support", ImVec2( window_width, 250.0f ), true,
-        ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse );
-
-    ImGui::PushFont( CFontManager::get( ).get_font( "jbm_med" ).value_or( nullptr ) );
-    ImGui::Text( "Launcher Support" );
-    ImGui::PopFont( );
-
-    ImGui::Checkbox( "Ubisoft Connect", &m_config.settings.ubi_enabled );
-    ImGui::Checkbox( "Rockstar Games Launcher", &m_config.settings.rsg_enabled );
-    ImGui::Checkbox( "Unreal Games (.sav saves)", &m_config.settings.unreal_enabled );
-    ImGui::EndChild( );
 
     ImGui::SameLine( 0.0f, 10.0f );
 
