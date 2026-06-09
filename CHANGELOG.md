@@ -14,6 +14,10 @@
 - Plugin loading errors are now caught per-plugin; remaining plugins continue loading
 - Plugins returning entries with missing `game_name` or `save_path` are now skipped with a warning
 
+### Removed
+- Launcher support configuration (All by default now)
+- 
+
 
 #### GUI
 ### Added
@@ -31,6 +35,7 @@
 
 ### Development
 - GUI has been re-written using a custom ImGui framework I have been cooking up
+- Lib's detection systems have undergone an overhaul which now allows for better future addons
 - `hash_file` moved into `CZipArchive`; no longer compiled into every translation unit
 
 

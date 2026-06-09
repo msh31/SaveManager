@@ -1,5 +1,4 @@
 #include "detection/detection.hpp"
-#include "config/config.hpp"
 #include "plugin/plugin.hpp"
 
 #include "utils/blacklist/blacklist.hpp"
@@ -18,7 +17,7 @@
 #include <detection/ubi/ubi.hpp>
 #include <detection/unreal/unreal.hpp>
 
-void Detection::find_saves( CConfig& config, std::vector<Game>& games ) {
+void Detection::find_saves( std::vector<Game>& games ) {
     std::vector<std::unique_ptr<IDetector>> detectors;
 
 #ifdef _WIN32

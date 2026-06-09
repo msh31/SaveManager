@@ -36,7 +36,7 @@ int main( int argc, char* argv[] ) {
 
     if ( *list ) {
         std::vector<Game> result;
-        Detection::find_saves( config, result );
+        Detection::find_saves( result );
 
         for ( const auto& entry : result ) {
             std::println( "- {} (AppID: {})", entry.game_name, entry.appid );

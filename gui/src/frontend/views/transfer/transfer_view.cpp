@@ -11,7 +11,7 @@
 
 void CTransferView::on_enter( ) {
     if ( m_result.empty( ) )
-        m_detection_future = std::async( std::launch::async, [this] { Detection::find_saves( m_config, m_result ); } );
+        m_detection_future = std::async( std::launch::async, [this] { Detection::find_saves( m_result ); } );
 }
 
 void CTransferView::render( ) {
