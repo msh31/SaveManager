@@ -6,6 +6,7 @@
 #include <zip.h>
 
 #ifdef __APPLE__
+    #include <ctime>
     #include <spawn.h>
     #include <sys/wait.h>
 #elif __linux__
@@ -198,7 +199,8 @@ static fs::file_time_type sys_to_file_time( std::chrono::system_clock::time_poin
 static std::string format_file_time( fs::file_time_type f ) {
 #ifdef __APPLE__
     char buf[32];
-    auto tm = std::localtime( &time );
+    auto ts = std::chrono::system_clock::to_time_t( file_time_to_sys( f ) );
+    auto tm = std::localtime( &ts );
     std::strftime( buf, sizeof( buf ), "%d-%m-%y %H:%M:%S", tm );
     return buf;
 #else
