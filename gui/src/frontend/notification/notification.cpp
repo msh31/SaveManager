@@ -1,5 +1,7 @@
 #include "notification.hpp"
-std::vector<Notify::Notification> notifications;
+
+std::vector<Notify::Notification> notifications{ };
+std::vector<Notify::Notification> pending = { };
 
 void Notify::show_notification( const std::string& title, const std::string& text, int duration_ms ) {
     Notify::Notification notification;
@@ -8,10 +10,16 @@ void Notify::show_notification( const std::string& title, const std::string& tex
     notification.duration   = duration_ms / 1000.f;
     notification.start_time = std::chrono::steady_clock::now( );
 
-    notifications.push_back( notification );
+    std::unique_lock<std::mutex> lock( notification_mutex );
+    pending.push_back( notification );
 }
 
 void Notify::render_notifications( ) {
+    std::unique_lock<std::mutex> lock( notification_mutex );
+    std::ranges::move( pending, std::back_inserter( notifications ) );
+    pending.clear( );
+    lock.unlock( );
+
     std::erase_if( notifications, []( const Notification& n ) {
         float elapsed = std::chrono::duration<float>( std::chrono::steady_clock::now( ) - n.start_time ).count( );
         return elapsed > n.duration;
