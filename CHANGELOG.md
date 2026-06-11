@@ -9,6 +9,8 @@
 
 ### Fixed
 - Downloading a save from an SFTP server places the save in the ``path/to/savemanager/backups/`` instead of it's corresponding game folder
+- Possible race condition during parsing of the steam app manifest files
+- Zip Slip vulnerability during backup extraction due to not resolving the output path in a safe manner
 
 ### Changed
 - Plugin loading errors are now caught per-plugin; remaining plugins continue loading
@@ -28,6 +30,7 @@
 
 ### Fixed
 - Displayed file time in the save / backup rows
+- Possible deletion of a 'real' save during conflict resolution
 
 ### Performance
 - Cache rebuilds after detection now run asynchronously, eliminating frame stalls on large game libraries
