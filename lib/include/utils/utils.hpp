@@ -194,3 +194,15 @@ static fs::file_time_type sys_to_file_time( std::chrono::system_clock::time_poin
     return fs::file_time_type::clock::now( ) +
            std::chrono::duration_cast<fs::file_time_type::clock::duration>( tp - std::chrono::system_clock::now( ) );
 }
+
+static std::string format_file_time( fs::file_time_type f ) {
+#ifdef __APPLE__
+    auto time    = std::chrono::system_clock::to_time_t( file_time_to_sys( f ) );
+    auto floored = std::chrono::floor<std::chrono::seconds>( *std::localtime( &time ) );
+    return std::format( "{:%d-%m-%y %H:%M:%S}", floored );
+#else
+    auto time    = std::chrono::current_zone( )->to_local( file_time_to_sys( f ) );
+    auto floored = std::chrono::floor<std::chrono::seconds>( time );
+    return std::format( "{:%d-%m-%y %H:%M:%S}", floored );
+#endif
+}

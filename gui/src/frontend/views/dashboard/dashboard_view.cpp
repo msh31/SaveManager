@@ -340,8 +340,7 @@ void CDashboardView::render_game_row( const std::vector<int>& group, int gi ) {
 void CDashboardView::render_save_row( const fs::path& save_file, const Game& game ) {
     ImGui::PushID( save_file.string( ).c_str( ) );
 
-    auto        time = std::chrono::current_zone( )->to_local( file_time_to_sys( fs::last_write_time( save_file ) ) );
-    std::string date_text  = std::format( "{:%d/%m/%y %H:%M} | ", time );
+    std::string date_text  = std::format( "{} | ", format_file_time( fs::last_write_time( save_file ) ) );
     float       date_width = ImGui::CalcTextSize( date_text.c_str( ) ).x;
 
     std::string size_text;
@@ -387,8 +386,7 @@ void CDashboardView::render_backup_row(
     auto        it      = labels.find( backup.filename( ).string( ) );
     std::string display = ( it != labels.end( ) ) ? it->second : backup.filename( ).string( );
 
-    auto        time      = std::chrono::current_zone( )->to_local( file_time_to_sys( fs::last_write_time( backup ) ) );
-    std::string date_text = std::format( "{:%d/%m/%y %H:%M} | ", time );
+    std::string date_text  = std::format( "{} | ", format_file_time( fs::last_write_time( backup ) ) );
     float       date_width = ImGui::CalcTextSize( date_text.c_str( ) ).x;
     auto        b_size     = fs::file_size( backup ) / 1024;
 
