@@ -158,9 +158,11 @@ std::optional<SteamManifest> SteamHelper::parse_app_manifest( const fs::path& ac
 }
 
 const std::unordered_map<uint32_t, SteamManifest>& SteamHelper::get_app_manifests( ) {
+    static std::once_flag init_flag;
+
     static std::unordered_map<uint32_t, SteamManifest> cache;
 
-    if ( cache.empty( ) ) {
+    std::call_once( init_flag, [&] {
         auto libraries = get_library_folders( );
         for ( const auto& library : libraries ) {
             for ( const auto& entry :
@@ -173,6 +175,6 @@ const std::unordered_map<uint32_t, SteamManifest>& SteamHelper::get_app_manifest
                 }
             }
         }
-    }
+    } );
     return cache;
 }
