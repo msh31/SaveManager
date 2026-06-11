@@ -200,6 +200,7 @@ void CDashboardView::render_game_list( ) {
 void CDashboardView::render_game_content(
     std::pair<int, int> sb_count, const Game& game, bool has_conflicts,
     std::vector<std::pair<fs::path, const Game*>> files ) {
+
     // saves
     if ( sb_count.first <= 0 ) {
         ImGui::TextDisabled( "Game detected but no saves were found!" );
@@ -236,29 +237,18 @@ void CDashboardView::render_game_content(
         } );
     }
     ImGui::PopStyleColor( 2 );
-    // #ifndef NDEBUG
-    //             ImGui::SameLine( );
-    //             if ( ImGui::Button( "Create Schedule" ) ) {
-    //                 scheduled_files.clear( );
-    //                 scheduled_files_selected.clear( );
-    //
-    //                 pending_schedule_game = primary;
-    //                 open_schedule_modal = true;
-    //                 for ( const auto &entry : game_cache[cache_key( primary )].save_files ) {
-    //                     scheduled_files.push_back( entry );
-    //                 }
-    //             }
-    // #endif
     ImGui::SameLine( );
     if ( has_conflicts ) {
         if ( ImGui::Button( "Resolve Conflict(s)" ) ) {
             m_pending_conflicts.clear( );
             for ( const auto& sp : game.save_paths ) {
                 for ( const auto& f : fs::directory_iterator( sp ) ) {
-                    auto     full     = f.path( ).string( );
-                    auto     pos      = full.find( ".savemgr-conflict-" );
-                    fs::path original = full.substr( 0, pos );
-                    m_pending_conflicts.push_back( { original, f.path( ) } );
+                    auto full = f.path( ).string( );
+                    auto pos  = full.find( ".savemgr-conflict-" );
+                    if ( pos != std::string::npos ) {
+                        fs::path original = full.substr( 0, pos );
+                        m_pending_conflicts.push_back( { original, f.path( ) } );
+                    }
                 }
                 m_open_conflict_modal = true;
             }
