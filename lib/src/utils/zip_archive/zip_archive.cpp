@@ -90,15 +90,12 @@ bool CZipArchive::extract_archive( const fs::path& save_path, std::vector<std::p
         SPDLOG_ERROR( "manifest parsing error: {}", ex.what( ) );
     }
 
+    auto safe_base = fs::weakly_canonical( save_path );
     for ( int i = 0; i < file_count; i++ ) {
         struct zip_stat fileInfo;
         zip_stat_init( &fileInfo );
         if ( zip_stat_index( m_archive, i, 0, &fileInfo ) == 0 ) {
             if ( fileInfo.name && std::string( fileInfo.name ) == "manifest.json" ) continue;
-
-            // SPDLOG_INFO("File Name: {}", fileInfo.name);
-            const auto& output_path = save_path / fileInfo.name;
-            // SPDLOG_INFO("Saving to: {}", output_path.string());
 
             zip_file* file = zip_fopen_index( m_archive, i, 0 );
             if ( file == nullptr ) {
@@ -107,32 +104,39 @@ bool CZipArchive::extract_archive( const fs::path& save_path, std::vector<std::p
                 continue;
             }
 
+            auto resolved = fs::weakly_canonical( safe_base / fileInfo.name );
+            if ( !resolved.string( ).starts_with( safe_base.string( ) ) ) {
+                SPDLOG_WARN( "zip-slip attempt: {}", fileInfo.name );
+                zip_fclose( file );
+                continue;
+            }
+
             char        buffer[1024];
             zip_int64_t bytes_read;
-            fs::create_directories( output_path.parent_path( ) );
+            fs::create_directories( resolved.parent_path( ) );
 
-            if ( fs::exists( output_path ) ) {
-                SPDLOG_WARN( "{} already exists in your game directory!", output_path.filename( ).string( ) );
+            if ( fs::exists( resolved ) ) {
+                SPDLOG_WARN( "{} already exists in your game directory!", resolved.filename( ).string( ) );
 
                 auto save_time =
-                    std::chrono::system_clock::to_time_t( file_time_to_sys( fs::last_write_time( output_path ) ) );
+                    std::chrono::system_clock::to_time_t( file_time_to_sys( fs::last_write_time( resolved ) ) );
 
                 if ( save_time > fileInfo.mtime ) {
-                    SPDLOG_WARN( "{} is newer than {}!", output_path.filename( ).string( ), fileInfo.name );
+                    SPDLOG_WARN( "{} is newer than {}!", resolved.filename( ).string( ), fileInfo.name );
                     std::error_code ec;
                     fs::rename(
-                        output_path,
-                        output_path.parent_path( ) /
-                            std::format( "{}.savemgr-conflict-{}", output_path.filename( ).string( ), save_time ),
+                        resolved,
+                        resolved.parent_path( ) /
+                            std::format( "{}.savemgr-conflict-{}", resolved.filename( ).string( ), save_time ),
                         ec );
                     if ( ec ) SPDLOG_ERROR( "rename failed: {}", ec.message( ) );
                 }
             }
 
-            std::ofstream save_file( output_path, std::ios::binary );
+            std::ofstream save_file( resolved, std::ios::binary );
 
             if ( !save_file.is_open( ) ) {
-                SPDLOG_ERROR( "Failed to open save file for writing: {}", output_path.filename( ).string( ) );
+                SPDLOG_ERROR( "Failed to open save file for writing: {}", resolved.filename( ).string( ) );
                 failed_files.push_back( fileInfo.name );
                 zip_fclose( file );
                 continue;
@@ -156,13 +160,13 @@ bool CZipArchive::extract_archive( const fs::path& save_path, std::vector<std::p
                 if ( entry.contains( "mtime" ) ) {
                     auto mtime =
                         sys_to_file_time( std::chrono::system_clock::from_time_t( entry["mtime"].get<time_t>( ) ) );
-                    fs::last_write_time( output_path, mtime );
+                    fs::last_write_time( resolved, mtime );
                 }
 
-                if ( ( hash_file( output_path ).compare( entry["hash"].get<std::string>( ) ) ) != 0 ) {
+                if ( ( hash_file( resolved ).compare( entry["hash"].get<std::string>( ) ) ) != 0 ) {
                     SPDLOG_WARN(
                         "{}'s hash does not match {}'s hash, aborting restore operation!",
-                        output_path.filename( ).string( ), entry["hash"].get<std::string>( ) );
+                        resolved.filename( ).string( ), entry["hash"].get<std::string>( ) );
                     return false;
                 }
             }
