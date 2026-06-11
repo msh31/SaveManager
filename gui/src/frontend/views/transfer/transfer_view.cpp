@@ -124,7 +124,7 @@ void CTransferView::render( ) {
     } else if ( !m_connected ) {
         Spinner::render( );
     }
-    if ( m_connected ) {
+    if ( m_connected && !is_transferring ) {
         ImGui::PushStyleColor( ImGuiCol_Button, ImVec4( 0.8f, 0.2f, 0.2f, 1.0f ) );
         ImGui::PushStyleColor( ImGuiCol_ButtonHovered, ImVec4( 0.9f, 0.3f, 0.3f, 1.0f ) );
         if ( ImGui::Button( "Disconnect" ) ) {
