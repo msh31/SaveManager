@@ -18,6 +18,7 @@
     #include <filesystem>
     #include <fstream>
     #include <future>
+    #include <map>
     #include <memory>
     #include <optional>
     #include <print>
@@ -32,8 +33,6 @@
     #include <vector>
 
     #include <logger/logger.hpp>
-    #include <spdlog/sinks/daily_file_sink.h>
-    #include <spdlog/spdlog.h>
 #endif
 
 #ifdef __linux__
