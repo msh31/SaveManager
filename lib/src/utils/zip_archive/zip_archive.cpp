@@ -185,9 +185,13 @@ void CZipArchive::set_comment( const std::string& str ) {
     zip_set_archive_comment( m_archive, str.c_str( ), str.size( ) );
 }
 
-const char* CZipArchive::get_comment( ) {
-    int len = 0;
-    return zip_get_archive_comment( m_archive, &len, 0 );
+std::string CZipArchive::get_comment( ) {
+    int  len     = 0;
+    auto comment = zip_get_archive_comment( m_archive, &len, 0 );
+    if ( comment != NULL ) {
+        return comment;
+    }
+    return { };
 }
 
 std::string CZipArchive::hash_file( const std::filesystem::path& path ) {

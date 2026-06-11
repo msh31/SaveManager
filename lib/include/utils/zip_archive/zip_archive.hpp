@@ -23,7 +23,7 @@ class CZipArchive {
         bool extract_archive( const fs::path& save_path, std::vector<std::pair<fs::path, fs::path>>& conflicts );
 
         void        set_comment( const std::string& );
-        const char* get_comment( );
+        std::string get_comment( );
 
         std::vector<std::string> get_entry_names( );
 
