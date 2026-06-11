@@ -203,12 +203,13 @@ void CTransferView::render( ) {
             m_total_files        = selected_paths.size( );
             m_current_file_index = 0;
 
-            m_future = std::async( std::launch::async, [this, r = m_remote.get( ), selected_paths]( ) {
-                enumerate( selected_paths, [&]( int gi, auto& path ) {
-                    m_current_file_index = static_cast<int>( gi );
-                    r->upload_file( path, m_current_remote_path, m_config );
+            m_future = std::async(
+                std::launch::async, [this, r = m_remote.get( ), cr = m_current_remote_path, selected_paths]( ) {
+                    enumerate( selected_paths, [&]( int gi, auto& path ) {
+                        m_current_file_index = static_cast<int>( gi );
+                        r->upload_file( path, cr, m_config );
+                    } );
                 } );
-            } );
         }
     }
     ImGui::EndDisabled( );
