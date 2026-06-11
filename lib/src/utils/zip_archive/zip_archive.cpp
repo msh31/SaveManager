@@ -7,9 +7,8 @@
 using json = nlohmann::json;
 
 bool CZipArchive::add_to_archive( const fs::path& file ) {
-    int                                        file_count = 0;
-    std::vector<std::string>                   failed_files;
-    std::vector<std::pair<fs::path, fs::path>> save_files;
+    int                      file_count = 0;
+    std::vector<std::string> failed_files;
 
     if ( fs::is_regular_file( file ) ) {
         if ( m_archive == nullptr ) return false;
@@ -27,7 +26,7 @@ bool CZipArchive::add_to_archive( const fs::path& file ) {
             zip_source_free( source );
         }
         file_count++;
-        save_files.emplace_back( file, file.filename( ) );
+        m_save_files.emplace_back( file, file.filename( ) );
     }
 
     if ( fs::is_directory( file ) ) {
@@ -51,7 +50,7 @@ bool CZipArchive::add_to_archive( const fs::path& file ) {
                 zip_source_free( source );
             }
             file_count++;
-            save_files.emplace_back( entry.path( ), file_path );
+            m_save_files.emplace_back( entry.path( ), file_path );
         }
     }
 
@@ -62,19 +61,22 @@ bool CZipArchive::add_to_archive( const fs::path& file ) {
         }
         return false;
     } else {
-        m_manifest = build_manifest( save_files );
-        if ( m_manifest.empty( ) ) {
-            SPDLOG_ERROR( "Empty manifest, aborting backup!" );
-            return false;
-        }
-        if ( !write_manifest_to_zip( m_archive ) ) {
-            SPDLOG_ERROR( "Failed to add manifest to backup!" );
-            return false;
-        }
-
         SPDLOG_INFO( "backup for: {} has been created!", file.parent_path( ).filename( ).string( ) );
         return true;
     }
+}
+
+bool CZipArchive::finalize_add( ) {
+    m_manifest = build_manifest( m_save_files );
+    if ( m_manifest.empty( ) ) {
+        SPDLOG_ERROR( "Empty manifest, aborting backup!" );
+        return false;
+    }
+    if ( !write_manifest_to_zip( m_archive ) ) {
+        SPDLOG_ERROR( "Failed to add manifest to backup!" );
+        return false;
+    }
+    return true;
 }
 
 bool CZipArchive::extract_archive( const fs::path& save_path, std::vector<std::pair<fs::path, fs::path>>& conflicts ) {

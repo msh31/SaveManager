@@ -23,6 +23,8 @@ class CZipArchive {
 
         std::vector<std::string> get_entry_names( );
 
+        bool finalize_add( );
+
         // disable copying (prevent accidental double-cleanup)
         CZipArchive( const CZipArchive& )            = delete;
         CZipArchive& operator=( const CZipArchive& ) = delete;
@@ -30,6 +32,8 @@ class CZipArchive {
     private:
         zip_t*      m_archive  = nullptr;
         std::string m_manifest = { };
+
+        std::vector<std::pair<fs::path, fs::path>> m_save_files;
 
         static std::string hash_file( const std::filesystem::path& path );
         std::string        build_manifest( std::vector<std::pair<fs::path, fs::path>> paths );

@@ -36,7 +36,7 @@ void Features::backup_game( const Game& game, const fs::path& file, CConfig& con
         } else {
             archive.set_comment( file.parent_path( ).string( ) );
         }
-        success = archive.add_to_archive( file );
+        success = archive.add_to_archive( file ) && archive.finalize_add( );
     }
 
     if ( !success ) {
@@ -81,6 +81,10 @@ bool Features::backup_game_files( const Game& game, std::vector<std::pair<fs::pa
         CZipArchive za( MODE_CREATE_ARCHIVE, zip_name );
         for ( const auto& entry : files ) {
             if ( !za.add_to_archive( entry.first ) ) failed_to_add = true;
+        }
+        if ( !za.finalize_add( ) ) {
+            fs::remove( zip_name );
+            return false;
         }
     }
 
