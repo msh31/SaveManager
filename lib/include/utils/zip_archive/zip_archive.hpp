@@ -13,11 +13,7 @@ class CZipArchive {
             }
         }
 
-        ~CZipArchive( ) {
-            if ( m_archive != nullptr ) {
-                zip_close( m_archive );
-            }
-        }
+        ~CZipArchive( ) { close( ); }
 
         bool add_to_archive( const fs::path& file );
         bool extract_archive( const fs::path& save_path, std::vector<std::pair<fs::path, fs::path>>& conflicts );
@@ -40,4 +36,10 @@ class CZipArchive {
         bool               write_manifest_to_zip( zip_t* zip_handle );
 
         bool read_manifest_from_zip( zip_t* zip_handle );
+        void close( ) {
+            if ( m_archive != nullptr ) {
+                auto res = zip_close( m_archive );
+                if ( res != 0 ) SPDLOG_ERROR( "Zip close failure: {}", res );
+            }
+        }
 };
