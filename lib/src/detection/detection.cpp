@@ -17,8 +17,11 @@
 #include <detection/ubi/ubi.hpp>
 #include <detection/unreal/unreal.hpp>
 
-void Detection::find_saves( std::vector<Game>& games ) {
-    std::vector<std::unique_ptr<IDetector>> detectors;
+std::vector<Game> Detection::find_saves( ) {
+    std::vector<std::unique_ptr<IDetector>>                             detectors;
+    std::vector<std::future<std::expected<std::vector<Game>, SMError>>> detection_futures;
+
+    std::vector<Game> games;
 
 #ifdef _WIN32
     detectors.emplace_back( std::make_unique<CUbisoftDetector>( ) );
@@ -115,4 +118,6 @@ void Detection::find_saves( std::vector<Game>& games ) {
         return std::ranges::none_of(
             game.save_paths, []( const fs::path& p ) { return fs::is_directory( p ) && !fs::is_empty( p ); } );
     } );
+
+    return games;
 }

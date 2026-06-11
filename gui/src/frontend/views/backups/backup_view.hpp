@@ -5,25 +5,26 @@
 
 class CBackupsView {
     public:
-        CBackupsView( CConfig& config, std::vector<Game>& games ) : m_config( config ), m_result( games ) {};
-        void render( );
-        void on_enter( );
+        CBackupsView( CConfig& config ) : m_config( config ) {};
+        void render( const std::vector<Game>& games_snapshot );
+        void on_enter( const std::vector<Game>& games_snapshot );
         void on_exit( );
 
     private:
-        CConfig&           m_config;
-        std::vector<Game>& m_result;
+        CConfig& m_config;
 
         // UI state
         std::unordered_map<std::string, bool> m_card_collapsed;
-        std::mutex                            m_mutex;
+
+        std::mutex m_mutex;
 
         // Futures
         std::future<void> m_refresh_future;
 
         // other
-        bool                                                                          m_reload_backups = false;
-        std::vector<BackupEntry>                                                      m_backups;
+        bool                     m_reload_backups = false;
+        std::vector<BackupEntry> m_backups;
+
         std::unordered_map<std::string, std::unordered_map<std::string, std::string>> m_labels_cache;
 
         // Modal state
@@ -32,10 +33,12 @@ class CBackupsView {
         std::string m_pending_rename_game;
         fs::path    m_pending_rename_backup;
 
-        void render_game_row( const BackupEntry& bentry );
+        void render_game_row(
+            const BackupEntry&                                                                    bentry,
+            const std::unordered_map<std::string, std::unordered_map<std::string, std::string>>& labels_cache );
         void render_backup_row(
             fs::path path, const fs::path& save_path, const std::unordered_map<std::string, std::string>& labels,
             const std::string& game_name );
         void render_modals( );
-        void add_new_entry( );
+        void add_new_entry( std::vector<Game> snapshot );
 };

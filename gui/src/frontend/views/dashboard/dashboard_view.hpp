@@ -9,7 +9,7 @@
 
 class CDashboardView : public CBaseView {
     public:
-        CDashboardView( CConfig& config ) : m_config( config ), m_backups_view( config, m_result ) {};
+        CDashboardView( CConfig& config ) : m_config( config ), m_backups_view( config ) {};
         ~CDashboardView( ) override;
         void render( ) override;
         void on_enter( ) override;

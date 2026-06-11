@@ -6,25 +6,29 @@
 #include <utils/paths.hpp>
 #include <utils/utils.hpp>
 
-void CBackupsView::on_enter( ) {
+void CBackupsView::on_enter( const std::vector<Game>& games_snapshot ) {
     if ( m_backups.empty( ) || m_reload_backups ) {
         m_reload_backups = false;
-        m_refresh_future = std::async( std::launch::async, [this] { add_new_entry( ); } );
+        m_refresh_future = std::async( std::launch::async, [this, games_snapshot] { add_new_entry( games_snapshot ); } );
     }
 }
 
 void CBackupsView::on_exit( ) {}
 
-void CBackupsView::add_new_entry( ) {
+void CBackupsView::add_new_entry( std::vector<Game> snapshot ) {
     std::unordered_map<std::string, fs::path> save_path_lookup;
-    for ( const auto& game : m_result ) {
+
+    std::vector<BackupEntry> backups = { };
+
+    std::unordered_map<std::string, std::unordered_map<std::string, std::string>> labels_cache;
+
+    for ( const auto& game : snapshot ) {
         for ( const auto& save : game.save_paths ) {
             save_path_lookup[sanitize_filename( game.game_name )] = save;
         }
     }
 
-    std::lock_guard lock_em( m_mutex );
-    m_backups.clear( );
+    backups.clear( );
 
     for ( const auto& entry : fs::directory_iterator( paths::backup_dir( ) ) ) {
         if ( !entry.is_directory( ) ) continue;
@@ -32,7 +36,7 @@ void CBackupsView::add_new_entry( ) {
         BackupEntry bentry;
         bentry.name = entry.path( ).filename( ).string( );
 
-        m_labels_cache[bentry.name.string( )] = Features::load_labels( bentry.name.string( ) );
+        labels_cache[bentry.name.string( )] = Features::load_labels( bentry.name.string( ) );
 
         if ( auto it = save_path_lookup.find( bentry.name.string( ) ); it != save_path_lookup.end( ) )
             bentry.save_path = it->second;
@@ -44,11 +48,14 @@ void CBackupsView::add_new_entry( ) {
         }
 
         if ( bentry.entries.empty( ) ) continue;
-        m_backups.push_back( bentry );
+        backups.push_back( bentry );
     }
+    std::lock_guard lock_em( m_mutex );
+    m_labels_cache = std::move( labels_cache );
+    m_backups      = std::move( backups );
 }
 
-void CBackupsView::render( ) {
+void CBackupsView::render( const std::vector<Game>& games_snapshot ) {
     ImGui::BeginChild(
         "##backup_view", ImVec2( 0, ImGui::GetContentRegionAvail( ).y ), false, ImGuiWindowFlags_NoBackground );
 
@@ -59,26 +66,28 @@ void CBackupsView::render( ) {
 
     if ( !is_refreshing && m_reload_backups ) {
         m_reload_backups = false;
-        m_refresh_future = std::async( std::launch::async, [this] { add_new_entry( ); } );
+        m_refresh_future = std::async( std::launch::async, [this, games_snapshot] { add_new_entry( games_snapshot ); } );
     }
 
     std::vector<BackupEntry> snapshot;
+    std::unordered_map<std::string, std::unordered_map<std::string, std::string>> labels_cache;
     {
         std::lock_guard lock( m_mutex );
-        snapshot = m_backups;
+        snapshot     = m_backups;
+        labels_cache = m_labels_cache;
     }
 
     if ( is_refreshing ) {
         Spinner::render( );
     } else {
         if ( ImGui::Button( "Refresh" ) )
-            m_refresh_future = std::async( std::launch::async, [this] { add_new_entry( ); } );
+            m_refresh_future = std::async( std::launch::async, [this, games_snapshot] { add_new_entry( games_snapshot ); } );
         ImGui::SetItemTooltip( "Rescans the backups directory" );
 
         ImGui::Dummy( ImVec2( 0, 5.0f ) );
 
         for ( const auto& entry : snapshot ) {
-            render_game_row( entry );
+            render_game_row( entry, labels_cache );
             ImGui::Dummy( ImVec2( 0, 6.0f ) );
         }
     }
@@ -87,7 +96,9 @@ void CBackupsView::render( ) {
     ImGui::EndChild( );
 }
 
-void CBackupsView::render_game_row( const BackupEntry& bentry ) {
+void CBackupsView::render_game_row(
+    const BackupEntry&                                                                    bentry,
+    const std::unordered_map<std::string, std::unordered_map<std::string, std::string>>& labels_cache ) {
     bool& not_collapsed = m_card_collapsed[bentry.name.string( )];
 
     auto        selectable_id = std::format( "##backup_game_{}", bentry.name.string( ) );
@@ -115,7 +126,9 @@ void CBackupsView::render_game_row( const BackupEntry& bentry ) {
     ImGui::Text( "%s", right_text.c_str( ) );
 
     if ( not_collapsed ) {
-        const auto& labels = m_labels_cache[bentry.name.string( )];
+        static const std::unordered_map<std::string, std::string> empty_labels;
+        auto                                                       it = labels_cache.find( bentry.name.string( ) );
+        const auto& labels = ( it != labels_cache.end( ) ) ? it->second : empty_labels;
         for ( const auto& entry : bentry.entries )
             render_backup_row( entry, bentry.save_path, labels, bentry.name.string( ) );
     }
@@ -207,7 +220,11 @@ void CBackupsView::render_modals( ) {
         if ( ImGui::Button( "Save" ) ) {
             Features::save_label(
                 m_pending_rename_game, m_pending_rename_backup.filename( ).string( ), m_rename_input );
-            m_labels_cache[m_pending_rename_game][m_pending_rename_backup.filename( ).string( )] = m_rename_input;
+            {
+                std::lock_guard lock( m_mutex );
+                m_labels_cache[m_pending_rename_game][m_pending_rename_backup.filename( ).string( )] =
+                    m_rename_input;
+            }
             ImGui::CloseCurrentPopup( );
         }
         ImGui::SameLine( );

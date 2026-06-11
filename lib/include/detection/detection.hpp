@@ -2,7 +2,5 @@
 #include <types.hpp>
 
 namespace Detection {
-    void find_saves( std::vector<Game>& games );
-
-    inline std::vector<std::future<std::expected<std::vector<Game>, SMError>>> detection_futures;
+    std::vector<Game> find_saves( );
 }; // namespace Detection

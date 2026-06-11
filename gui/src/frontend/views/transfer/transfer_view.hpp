@@ -16,6 +16,7 @@ class CTransferView : public CBaseView {
         CConfig&          m_config;
         std::vector<Game> m_result;
         std::future<void> m_detection_future;
+        std::mutex        m_result_mutex;
 
         bool m_initialized       = false;
         bool m_connected         = false;

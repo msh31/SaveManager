@@ -11,7 +11,11 @@
 
 void CTransferView::on_enter( ) {
     if ( m_result.empty( ) )
-        m_detection_future = std::async( std::launch::async, [this] { Detection::find_saves( m_result ); } );
+        m_detection_future = std::async( std::launch::async, [this] {
+            auto            result = Detection::find_saves( );
+            std::lock_guard lock( m_result_mutex );
+            m_result = std::move( result );
+        } );
 }
 
 void CTransferView::render( ) {
