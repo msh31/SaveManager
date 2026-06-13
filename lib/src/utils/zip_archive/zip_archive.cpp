@@ -67,12 +67,12 @@ bool CZipArchive::add_to_archive( const fs::path& file ) {
 }
 
 bool CZipArchive::finalize_add( ) {
-    m_manifest = build_manifest( m_save_files );
-    if ( m_manifest.empty( ) ) {
+    auto manifest = build_manifest( m_save_files );
+    if ( manifest.empty( ) ) {
         SPDLOG_ERROR( "Empty manifest, aborting backup!" );
         return false;
     }
-    if ( !write_manifest_to_zip( m_archive ) ) {
+    if ( !write_manifest_to_zip( m_archive, manifest ) ) {
         SPDLOG_ERROR( "Failed to add manifest to backup!" );
         return false;
     }
@@ -82,14 +82,18 @@ bool CZipArchive::finalize_add( ) {
 bool CZipArchive::extract_archive( const fs::path& save_path, std::vector<std::pair<fs::path, fs::path>>& conflicts ) {
     if ( m_archive == nullptr ) return false;
 
+    auto manifest = read_manifest_from_zip( m_archive );
+
     int                      file_count = zip_get_num_entries( m_archive, 0 );
     std::vector<std::string> failed_files;
 
     json manifest_json;
-    try {
-        manifest_json = json::parse( m_manifest );
-    } catch ( json::exception& ex ) {
-        SPDLOG_ERROR( "manifest parsing error: {}", ex.what( ) );
+    if ( manifest ) {
+        try {
+            manifest_json = json::parse( *manifest );
+        } catch ( json::exception& ex ) {
+            SPDLOG_ERROR( "manifest parsing error: {}", ex.what( ) );
+        }
     }
 
     auto safe_base = fs::weakly_canonical( save_path );
@@ -277,13 +281,13 @@ std::string CZipArchive::build_manifest( std::vector<std::pair<fs::path, fs::pat
     return data.dump( );
 }
 
-bool CZipArchive::write_manifest_to_zip( zip_t* zip_handle ) {
+bool CZipArchive::write_manifest_to_zip( zip_t* zip_handle, const std::string& manifest ) {
     if ( zip_handle == nullptr ) {
         SPDLOG_ERROR( "invalid archive" );
         return false;
     }
 
-    zip_source_t* source = zip_source_buffer( zip_handle, m_manifest.data( ), m_manifest.size( ), 0 );
+    zip_source_t* source = zip_source_buffer( zip_handle, manifest.data( ), manifest.size( ), 0 );
     if ( source == nullptr ) {
         SPDLOG_ERROR( "Failed to create source for manifest" );
         return false;
@@ -298,15 +302,13 @@ bool CZipArchive::write_manifest_to_zip( zip_t* zip_handle ) {
     return true;
 }
 
-bool CZipArchive::read_manifest_from_zip( zip_t* zip_handle ) {
+std::optional<std::string> CZipArchive::read_manifest_from_zip( zip_t* zip_handle ) {
     if ( zip_handle == nullptr ) {
         SPDLOG_ERROR( "invalid archive" );
-        return false;
+        return std::nullopt;
     }
 
     auto entries = zip_get_num_entries( zip_handle, ZIP_FL_UNCHANGED );
-    bool found   = false;
-    json data;
 
     for ( size_t i{ }; i < entries; i++ ) {
         std::string found_file = zip_get_name( zip_handle, i, ZIP_FL_UNCHANGED );
@@ -324,14 +326,13 @@ bool CZipArchive::read_manifest_from_zip( zip_t* zip_handle ) {
             std::string content( fileInfo.size, '\0' );
             zip_fread( file, content.data( ), fileInfo.size );
             zip_fclose( file );
-            data  = json::parse( content );
-            found = true;
+            return content;
         }
+        zip_fclose( file );
     }
 
-    if ( !found ) SPDLOG_WARN( "m_manifest.json not found in archive" );
-    m_manifest = data.dump( );
-    return true;
+    SPDLOG_WARN( "manifest.json not found in archive" );
+    return std::nullopt;
 }
 
 std::vector<std::string> CZipArchive::get_entry_names( ) {

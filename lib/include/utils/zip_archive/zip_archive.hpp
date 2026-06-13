@@ -30,16 +30,15 @@ class CZipArchive {
         CZipArchive& operator=( const CZipArchive& ) = delete;
 
     private:
-        zip_t*      m_archive  = nullptr;
-        std::string m_manifest = { };
+        zip_t* m_archive = nullptr;
 
         std::vector<std::pair<fs::path, fs::path>> m_save_files;
 
         static std::string hash_file( const std::filesystem::path& path );
         std::string        build_manifest( std::vector<std::pair<fs::path, fs::path>> paths );
-        bool               write_manifest_to_zip( zip_t* zip_handle );
+        bool               write_manifest_to_zip( zip_t* zip_handle, const std::string& manifest );
 
-        bool read_manifest_from_zip( zip_t* zip_handle );
+        std::optional<std::string> read_manifest_from_zip( zip_t* zip_handle );
         void close( ) {
             if ( m_archive != nullptr ) {
                 auto res = zip_close( m_archive );
