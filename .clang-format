@@ -17,5 +17,5 @@ SortIncludes: CaseSensitive
 IncludeBlocks: Preserve
 BreakBeforeBraces: Attach
 IndentPPDirectives: BeforeHash
-AlignConsecutiveAssignments: Consecutive
-AlignConsecutiveDeclarations: Consecutive
+# AlignConsecutiveAssignments: Consecutive
+# AlignConsecutiveDeclarations: Consecutive
