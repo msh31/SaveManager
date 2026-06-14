@@ -136,6 +136,8 @@ jobs:
           restore-keys: conan-windows-
 
       - name: Install dependencies
+        env:
+          CONAN_CENTER_BUILD_SERVICE: "1"
         run: conan install . --build=missing -s build_type=Release -s compiler.cppstd=23
 
       - name: Save Conan cache
