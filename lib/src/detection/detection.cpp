@@ -18,7 +18,7 @@
 #include <detection/unreal/unreal.hpp>
 
 std::vector<Game> Detection::find_saves( ) {
-    std::vector<std::unique_ptr<IDetector>>                             detectors;
+    std::vector<std::unique_ptr<IDetector>> detectors;
     std::vector<std::future<std::expected<std::vector<Game>, SMError>>> detection_futures;
 
     std::vector<Game> games;
@@ -98,10 +98,11 @@ std::vector<Game> Detection::find_saves( ) {
     }
 
     std::map<GameKey, size_t> seen;
-    std::vector<Game>         deduped;
+    std::vector<Game> deduped;
     for ( size_t i = 0; i < games.size( ); i++ ) {
         auto& game = games[i];
-        auto  key  = utils::get_game_identity_key( game );
+        auto key = utils::get_game_identity_key( game );
+        if ( key.kind == GameKeyKind::INVALID ) continue;
 
         if ( seen.contains( key ) ) {
             deduped[seen[key]].save_paths.insert(

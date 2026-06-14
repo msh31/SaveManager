@@ -30,9 +30,9 @@ struct Fonts {
 // TODO: refactor transfer tab so this isnt needed
 struct TabState {
         std::vector<std::filesystem::path> backups;
-        std::vector<bool>                  selected_backups;
-        int                                selected_game_idx   = 0;
-        int                                selected_backup_idx = 0;
+        std::vector<bool> selected_backups;
+        int selected_game_idx = 0;
+        int selected_backup_idx = 0;
 };
 
 // apple clang doesnt support c++23 views as of apr 2026
@@ -106,8 +106,8 @@ static std::string_view get_launcher_label( LauncherType t ) {
 inline void open_in_file_manager( const char* path ) {
 #ifdef __linux__
     pid_t pid = fork( );
-    pid_t w   = 0;
-    int   status;
+    pid_t w = 0;
+    int status;
 
     if ( pid > 0 ) {
         w = waitpid( pid, &status, 0 );
@@ -133,10 +133,10 @@ inline void open_in_file_manager( const char* path ) {
 #endif
 #ifdef __APPLE__
     extern char** environ;
-    pid_t         pid;
+    pid_t pid;
 
     const char* argv[] = { "open", path, nullptr };
-    int         status = posix_spawn( &pid, "/usr/bin/open", nullptr, nullptr, (char* const*)argv, environ );
+    int status = posix_spawn( &pid, "/usr/bin/open", nullptr, nullptr, (char* const*)argv, environ );
     if ( status == 0 ) {
         waitpid( pid, &status, 0 );
     }
@@ -167,7 +167,7 @@ namespace utils {
 } // namespace utils
 
 inline std::vector<std::vector<int>> get_grouped( const std::vector<Game>& games ) {
-    std::map<GameKey, size_t>     key_to_group;
+    std::map<GameKey, size_t> key_to_group;
     std::vector<std::vector<int>> groups;
 
     enumerate( games, [&]( int i, auto& game ) {
@@ -204,7 +204,7 @@ static std::string format_file_time( fs::file_time_type f ) {
     std::strftime( buf, sizeof( buf ), "%d-%m-%y %H:%M:%S", tm );
     return buf;
 #else
-    auto time    = std::chrono::current_zone( )->to_local( file_time_to_sys( f ) );
+    auto time = std::chrono::current_zone( )->to_local( file_time_to_sys( f ) );
     auto floored = std::chrono::floor<std::chrono::seconds>( time );
     return std::format( "{:%d-%m-%y %H:%M:%S}", floored );
 #endif

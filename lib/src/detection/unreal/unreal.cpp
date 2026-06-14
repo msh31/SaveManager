@@ -35,7 +35,7 @@ std::vector<Game> CUnrealDetector::scan( fs::path path ) {
     for ( const auto& folder : fs::directory_iterator( path, fs::directory_options::skip_permission_denied ) ) {
         if ( !fs::is_directory( folder ) ) continue;
 
-        fs::path save_games     = folder.path( ) / "Saved" / "SaveGames";
+        fs::path save_games = folder.path( ) / "Saved" / "SaveGames";
         fs::path save_games_alt = folder.path( ) / "SaveGames";
         fs::path target;
 
@@ -50,7 +50,7 @@ std::vector<Game> CUnrealDetector::scan( fs::path path ) {
                     if ( !fs::is_directory( subfolder ) ) {
                         continue;
                     }
-                    fs::path sub_save_games     = subfolder.path( ) / "Saved" / "SaveGames";
+                    fs::path sub_save_games = subfolder.path( ) / "Saved" / "SaveGames";
                     fs::path sub_save_games_alt = subfolder.path( ) / "SaveGames";
                     fs::path target_two;
 
@@ -83,8 +83,8 @@ std::vector<Game> CUnrealDetector::scan( fs::path path ) {
 }
 
 std::vector<Game> CUnrealDetector::scan_recursive( const fs::path& path ) {
-    static char        header[4] = { 'G', 'V', 'A', 'S' };
-    std::vector<Game>  games;
+    static char header[4] = { 'G', 'V', 'A', 'S' };
+    std::vector<Game> games;
     std::set<fs::path> directories;
 
     for ( const auto& entry :
@@ -127,9 +127,9 @@ std::vector<Game> CUnrealDetector::scan_recursive( const fs::path& path ) {
             bool is_numeric = std::ranges::all_of( *comp_it, ::isdigit );
 
             if ( *comp_it != "Saved" && *comp_it != "Steam" && *comp_it != "Epic" && !is_numeric ) {
-                found_name     = *comp_it;
+                found_name = *comp_it;
                 game.game_name = found_name;
-                game.appid     = "N/A";
+                game.appid = "N/A";
                 break;
             }
         }
@@ -137,24 +137,28 @@ std::vector<Game> CUnrealDetector::scan_recursive( const fs::path& path ) {
         for ( ; it != entry.end( ); ++it ) {
             if ( *it == "compatdata" ) {
                 ++it; // next component is the appid
-                std::string appid = it->string( );
+                if ( it != entry.end( ) ) {
+                    std::string appid = it->string( );
 
-                game.game_name = translations::get_steam_name( appid ).value_or( "N/A" );
-                game.appid     = appid;
-
-                break;
+                    game.game_name = translations::get_steam_name( appid ).value_or( "N/A" );
+                    game.appid = appid;
+                    break;
+                }
             } else if ( *it == "default" ) {
                 ++it;
-                std::string name = it->string( );
-                game.game_name   = name;
-                game.appid       = "N/A";
-                break;
+                if ( it != entry.end( ) ) {
+                    std::string name = it->string( );
+
+                    game.game_name = name;
+                    game.appid = "N/A";
+                    break;
+                }
             }
         }
 
         if ( game.game_name.empty( ) && !found_name.empty( ) ) {
             game.game_name = found_name;
-            game.appid     = "N/A";
+            game.appid = "N/A";
         }
         games.push_back( game );
     }
