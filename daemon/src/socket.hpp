@@ -17,8 +17,6 @@
     #define SOCKET_ERROR ( -1 )
     #define SOCKLEN_T int
 #else
-    // #include <arpa/inet.h>
-    // #include <netinet/in.h>
     #include <sys/socket.h>
     #include <sys/un.h>
     #include <unistd.h>

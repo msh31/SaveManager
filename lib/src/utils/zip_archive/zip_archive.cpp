@@ -7,7 +7,6 @@
 using json = nlohmann::json;
 
 bool CZipArchive::add_to_archive( const fs::path& file ) {
-    int file_count = 0;
     std::vector<std::string> failed_files;
 
     if ( fs::is_regular_file( file ) ) {
@@ -25,7 +24,6 @@ bool CZipArchive::add_to_archive( const fs::path& file ) {
             failed_files.push_back( file.filename( ).string( ) );
             zip_source_free( source );
         } else {
-            file_count++;
             m_save_files.emplace_back( file, file.filename( ) );
         }
     }
@@ -50,7 +48,6 @@ bool CZipArchive::add_to_archive( const fs::path& file ) {
                 failed_files.push_back( entry.path( ).filename( ).string( ) );
                 zip_source_free( source );
             } else {
-                file_count++;
                 m_save_files.emplace_back( entry.path( ), file_path );
             }
         }

@@ -14,7 +14,6 @@
 #include <frontend/views/dashboard/dashboard_view.hpp>
 #include <frontend/views/editor/editor_view.hpp>
 #include <frontend/views/log/log_view.hpp>
-#include <frontend/views/pipeline/pipeline_demo.hpp>
 #include <frontend/views/settings/settings_view.hpp>
 #include <frontend/views/transfer/transfer_view.hpp>
 
@@ -35,7 +34,6 @@ void CApp::init( ) {
     m_ui_manager.add_view( { std::make_unique<CEditorView>( ), ICON_EDIT, "Save Editor" } );
     m_ui_manager.add_view( { std::make_unique<CTransferView>( m_config ), ICON_TRANSFER, "Transfer" } );
     m_ui_manager.add_view( { std::make_unique<CAboutView>( ), ICON_INFO, "About" } );
-    // m_ui_manager.add_view( { std::make_unique<CPipelineView>( ), "\xef\x83\xa8", "Pipeline Demo" } );
     m_ui_manager.add_view( { std::make_unique<CLogView>( ), ICON_SCROLL, "Log" } );
     m_ui_manager.set_settings_view( { std::make_unique<CSettingsView>( m_config ), ICON_GEAR, "Settings" } );
     m_shader.emplace( );

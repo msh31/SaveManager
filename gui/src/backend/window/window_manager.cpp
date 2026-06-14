@@ -24,7 +24,6 @@ void CWindowManager::run( std::function<void( )> pre, std::function<void( )> ui 
         ImGuiViewport* viewport = ImGui::GetMainViewport( );
         ImGui::SetNextWindowPos( viewport->Pos );
         ImGui::SetNextWindowSize( viewport->Size );
-        // ImGui::SetNextWindowViewport(viewport->ID);
 
         ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize |
                                         ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoCollapse |

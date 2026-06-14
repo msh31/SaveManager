@@ -89,7 +89,6 @@ std::vector<Game> Detection::find_saves( ) {
         plugin_count++;
 
         CPlugin plugins( plugin );
-        // Detection::add_game( plugins.find_saves( ), "Custom", games );
     }
     if ( plugin_count > 0 ) SPDLOG_INFO( "Loaded {} plugins!", plugin_count );
 

@@ -88,18 +88,6 @@ bool CWatcher::add_watch( const fs::path& path ) {
     return false;
 }
 
-bool CWatcher::remove_watch( const fs::path& path ) {
-#if defined( __linux__ )
-    if ( auto it = m_watch_descriptors.find( path ); it != m_watch_descriptors.end( ) ) {
-        inotify_rm_watch( m_notify_fd, it->second );
-        m_wd_to_path.erase( it->second );
-        m_watch_descriptors.erase( it );
-        return true;
-    }
-#endif
-    return false;
-}
-
 // ensures backups only trigger when no new file events happen on that save
 // so we dont backup a save thats being written to by the game
 void CWatcher::debounce_loop( ) {

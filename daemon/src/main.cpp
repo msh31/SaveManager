@@ -10,13 +10,9 @@
 #include <logger/logger.hpp>
 #include <utils/paths.hpp>
 
-// #include <features/scheduler/scheduler.hpp>
-
 int main( ) {
     CConfig config;
     CServer m_server;
-
-    // CSaveScheduler scheduler( config );
 
     spdlog::set_level( spdlog::level::debug );
     init_logger( "[%n]: [%l] %d-%m-%Y %H:%M:%S - %v", "savemanager-daemon" );
@@ -44,8 +40,6 @@ int main( ) {
             SPDLOG_ERROR( "failed to add watcher for: {}", entry.string( ) );
         }
     }
-    // scheduler.run( );
-    // watcher.run( );
     std::thread watcher_thread( &CWatcher::run, &watcher );
     watcher_thread.detach( );
 #endif

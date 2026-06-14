@@ -10,7 +10,6 @@ class CWatcher {
     ~CWatcher( ) { shutdown( ); }
 
     bool add_watch( const fs::path &path );
-    bool remove_watch( const fs::path &path );
 
     void run( );
 

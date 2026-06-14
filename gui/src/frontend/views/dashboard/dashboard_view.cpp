@@ -322,13 +322,7 @@ void CDashboardView::render_game_row( const std::vector<int>& group, int gi ) {
             }
             // if ( ImGui::BeginMenu( "Schedule backup" ) ) {
             //     for ( const auto &entry : group ) {
-            //         const Game &g = ctx.games[entry];
-            //         std::string label = std::format( "{}##entry_{}", g.save_path.filename( ).string( ), entry );
-            //         if ( ImGui::MenuItem( label.c_str( ) ) ) {
-            //             pending_schedule_game = g;
-            //             open_schedule_modal = true;
-            //             ImGui::OpenPopup( "Add schedule" );
-            //         }
+
             //     }
             //     ImGui::EndMenu( );
             // }
@@ -459,11 +453,6 @@ void CDashboardView::render_modals( ) {
         ImGui::OpenPopup( "Rename Backup" );
     }
 
-    // if ( open_schedule_modal ) {
-    //     open_schedule_modal = false;
-    //     ImGui::OpenPopup( "Add schedule" );
-    // }
-
     if ( m_open_conflict_modal ) {
         m_open_conflict_modal = false;
         ImGui::OpenPopup( "Resolve conflict(s)" );
@@ -483,50 +472,6 @@ void CDashboardView::render_modals( ) {
         }
         ImGui::EndPopup( );
     }
-
-    // if ( ImGui::BeginPopupModal( "Add schedule", nullptr, ImGuiWindowFlags_AlwaysAutoResize ) ) {
-    //     ImGui::Checkbox( "Enabled", &schedule_enabled );
-    //     ImGui::SliderInt( "Interval (hours)", &schedule_interval_hours, 1, 100 );
-    //
-    //     ImGui::Separator( );
-    //
-    //     ImGui::Text( "Found backups:" );
-    //     for ( const auto &file : scheduled_files ) {
-    //         bool is_included = false;
-    //         if ( scheduled_files_selected.contains( file ) ) {
-    //             is_included = true;
-    //         }
-    //         ImGui::Checkbox( ( "##" + file.string( ) ).c_str( ), &is_included );
-    //         ImGui::SameLine( );
-    //         ImGui::Text( "%s", file.filename( ).string( ).c_str( ) );
-    //
-    //         if ( is_included ) scheduled_files_selected.insert( file );
-    //         else
-    //             scheduled_files_selected.erase( file );
-    //     }
-    //
-    //     ScheduleEntry sentry;
-    //     const Game &g = pending_schedule_game;
-    //
-    //     sentry.appid = g.appid;
-    //     sentry.game_name = g.game_name;
-    //     sentry.save_path = g.save_path;
-    //     sentry.enabled = schedule_enabled;
-    //     sentry.interval_hours = schedule_interval_hours;
-    //     sentry.last_backup_time = -1;
-    //
-    //     if ( ImGui::Button( "Add" ) ) {
-    //         sentry.included_saves =
-    //             std::vector<fs::path>( scheduled_files_selected.begin( ), scheduled_files_selected.end( ) );
-    //         ctx.scheduler.add_entry( sentry );
-    //         ImGui::CloseCurrentPopup( );
-    //     }
-    //     ImGui::SameLine( );
-    //     if ( ImGui::Button( "Done" ) ) {
-    //         ImGui::CloseCurrentPopup( );
-    //     }
-    //     ImGui::EndPopup( );
-    // }
 
     ImGui::SetNextWindowSize( ImVec2( 500, 0 ), ImGuiCond_Always );
     if ( ImGui::BeginPopupModal( "Resolve conflict(s)", nullptr, ImGuiWindowFlags_AlwaysAutoResize ) ) {

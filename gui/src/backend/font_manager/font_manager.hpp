@@ -10,7 +10,6 @@ struct FontData {
 class CFontManager {
     public:
         void load_from_memory( FontData fd, void* data, int data_len );
-        // void load_from_disk(std::string font_name, float font_size, fs::path path);
 
         std::optional<ImFont*> get_font( std::string_view font_name );
         static CFontManager&   get( );

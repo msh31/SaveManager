@@ -16,7 +16,7 @@ enum class SMError {
     PLUGIN_LOAD_ERROR,
 };
 
-enum class PlatformType { UBISOFT = 1, ROCKSTAR, UNREAL, PSP, PPSSPP, MINECRAFT, CUSTOM, GENERIC = 69 };
+enum class PlatformType { UBISOFT = 1, ROCKSTAR, UNREAL, MINECRAFT, CUSTOM, GENERIC = 69 };
 
 enum class LauncherType {
     OFFICIAL = 1,
@@ -31,7 +31,6 @@ struct Game {
         std::string                appid;
         std::optional<std::string> game_id; // ubi only
         std::string                game_name;
-        // fs::path                   save_path;
         std::vector<fs::path> save_paths;
         LauncherType          launcher;                 // minecraft only | display
         bool                  show_parent_path = false; // display
@@ -55,18 +54,6 @@ struct BackupEntry {
         fs::path              save_path;
         std::vector<fs::path> entries;
         size_t                size;
-};
-
-struct ManifestSavePath {
-        bool is_mac;
-        bool is_windows;
-        bool is_linux;
-        bool fully_resolved;
-
-        fs::path unresolved_path;
-        fs::path resolved_path;
-
-        std::vector<std::string> tags;
 };
 
 struct SteamManifest {

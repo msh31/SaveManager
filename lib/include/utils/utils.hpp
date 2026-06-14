@@ -16,25 +16,6 @@
     #include <shellapi.h>
 #endif
 
-struct ImFont;
-struct Fonts {
-        ImFont* regular;
-        ImFont* medium;
-        ImFont* small_font;
-        ImFont* bold;
-
-        ImFont* title;
-        ImFont* header;
-};
-
-// TODO: refactor transfer tab so this isnt needed
-struct TabState {
-        std::vector<std::filesystem::path> backups;
-        std::vector<bool> selected_backups;
-        int selected_game_idx = 0;
-        int selected_backup_idx = 0;
-};
-
 // apple clang doesnt support c++23 views as of apr 2026
 template <typename Range, typename Fn> void enumerate( Range& range, Fn fn ) {
 #ifdef __APPLE__
@@ -73,32 +54,12 @@ static std::string_view get_platform_label( PlatformType t ) {
         return "Rockstar";
     case PlatformType::UNREAL:
         return "Unreal";
-    case PlatformType::PSP:
-        return "PSP";
-    case PlatformType::PPSSPP:
-        return "PPSSPP";
     case PlatformType::MINECRAFT:
         return "Minecraft"; // change to launcher?
     case PlatformType::CUSTOM:
         return "CUSTOM";
     case PlatformType::GENERIC:
         return "??";
-    }
-    return "";
-}
-
-static std::string_view get_launcher_label( LauncherType t ) {
-    switch ( t ) {
-    case LauncherType::OFFICIAL:
-        return "Official";
-    case LauncherType::MODRINTH:
-        return "Modrinth";
-    case LauncherType::CURSEFORGE:
-        return "CurseForge";
-    case LauncherType::PRISM:
-        return "Prism";
-    case LauncherType::MULTIMC:
-        return "MultiMC";
     }
     return "";
 }

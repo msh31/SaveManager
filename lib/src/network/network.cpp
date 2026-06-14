@@ -73,19 +73,6 @@ bool Network::download_file( std::string_view url, const std::string& output_pat
     return true;
 }
 
-void Network::download_game_image( std::string_view appid ) {
-    fs::path img_path = paths::cache_dir( ) / std::format( "{}.jpg", appid );
-    if ( fs::exists( img_path ) && fs::file_size( img_path ) > 0 ) {
-        return;
-    }
-
-    auto url = std::format( "https://cdn.cloudflare.steamstatic.com/steam/apps/{}/header.jpg", appid );
-    // auto url = std::format("https://cdn.cloudflare.steamstatic.com/steam/apps/{}/library_600x900.jpg", appid);
-    if ( !Network::download_file( url, img_path.string( ) ) ) {
-        SPDLOG_ERROR( "Could not download {}", img_path.string( ) );
-    }
-}
-
 bool Network::is_update_available( ) {
     json        data;
     std::string upstream = download_to_string( "https://api.github.com/repos/msh31/SaveManager/releases/latest" );
@@ -103,8 +90,6 @@ bool Network::is_update_available( ) {
     }
 
     std::string latest = data.value( "tag_name", std::string( "" ) );
-    // SPDLOG_INFO("Latest: " + latest + " Current: " + std::string(APP_VERSION));
-
     auto [maj, min, pat]       = parse_version( APP_VERSION );
     auto [l_maj, l_min, l_pat] = parse_version( latest );
 

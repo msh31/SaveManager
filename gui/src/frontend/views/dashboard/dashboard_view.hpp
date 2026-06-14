@@ -77,7 +77,6 @@ class CDashboardView : public CBaseView {
         // Model state
         bool                                       m_open_conflict_modal = false;
         bool                                       m_open_rename_modal   = false;
-        bool                                       m_open_schedule_modal = false;
         std::string                                m_rename_input;
         Game                                       m_pending_rename_game{ };
         fs::path                                   m_pending_rename_backup;
@@ -86,11 +85,4 @@ class CDashboardView : public CBaseView {
         // Futures
         std::future<void> m_refresh_future;
         std::future<void> m_backup_future;
-
-        // TODO: implement schedule usage from the lib
-        //  Game pending_schedule_game;
-        //  std::vector<fs::path> scheduled_files;
-        //  std::unordered_set<fs::path> scheduled_files_selected;
-        //  bool schedule_enabled = false;
-        //  int schedule_interval_hours = 1;
-};
+ };

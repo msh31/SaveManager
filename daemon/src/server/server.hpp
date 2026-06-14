@@ -3,10 +3,7 @@
 
 class CServer {
     public:
-        CServer( ) {
-
-        };
-        // ~CServer( ); //TODO
+        CServer( ) = default;
 
         void run( ); // listen
 

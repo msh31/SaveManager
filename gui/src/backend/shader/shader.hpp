@@ -7,9 +7,6 @@ class CShader {
         void render( int w, int h );
 
     private:
-        void init( );
-
-        // GLuint compile_shader_( const fs::path& path, GLenum type );
         GLuint compile_shader( const char* source, GLenum type );
         GLuint link_program( GLuint vert, GLuint frag );
         void   init_quad( );
@@ -58,8 +55,6 @@ void main() {
     vec2 cell = floor(vUV * 10.0); // which cell (10x10 grid)
     vec2 local = fract(vUV * 10.0); // position within cell
 
-    // vec2 uv = vec2(vUV.x * aspect, vUV.y);
-    // vec2 center = vec2(0.5);// * aspect + sin(iTime) * 0.3, 0.5 + cos(iTime) * 0.3);
     vec2 center = vec2(
         fract(rand(cell) + iTime * 0.1),
         fract(rand(cell + 1.0) + iTime * 0.07)
