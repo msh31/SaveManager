@@ -3,46 +3,61 @@
 ## [1.8.0] - 2026-06-03
 *Rewrote the GUI using a custom ImGui framework, improving code quality and maintainability.*
 
-#### Core
-### Added
+### Core
+#### Added
 - Ludusavi manifest integration
 
-### Fixed
+#### Fixed
 - Downloading a save from an SFTP server places the save in the ``path/to/savemanager/backups/`` instead of it's corresponding game folder
 - Possible race condition during parsing of the steam app manifest files
 - Zip Slip vulnerability during backup extraction due to not resolving the output path in a safe manner
+- Backup extraction now aborts if a restored file's SHA-256 hash doesn't match the manifest
+- Manifest could reference files not actually in the archive
+- Detection crash on permission-denied dirs (ubi / rsg)
+- Backup creation could silently produce a corrupted archive if writing finalized (closing) the zip file failed
 
-### Changed
+#### Changed
 - Plugin loading errors are now caught per-plugin; remaining plugins continue loading
 - Plugins returning entries with missing `game_name` or `save_path` are now skipped with a warning
+- Detection runs independent platform scans in parallel for faster startup
+- Config parsing uses safe `value()` access for `win_props` keys, no longer aborts on missing keys
+- Game detection groupings now use a unified identity key system for better merge accuracy
+- Restoring backups without a manifest now allowed (instead of failing silently)
 
-### Removed
+#### Removed
 - Launcher support configuration (All by default now)
-- 
 
 
-#### GUI
-### Added
+### GUI
+#### Added
 - Auto scroll in the log tab
 - Minecraft filter in dashboard
 - Total games found in dashboard
 - Total detection time in dashboard
 
-### Fixed
+#### Fixed
 - Displayed file time in the save / backup rows
 - Possible deletion of a 'real' save during conflict resolution
+- macOS .app bundle now packaged correctly (fixes [#8](https://github.com/msh31/SaveManager/issues/8))
+- Crash when shader had not fully initialized on startup
+- Upload worker race condition in transfer tab
+- opening the config or a directory does no longer exit the app on failure
 
-### Performance
+#### Changed
+- Empty files no longer shown as save entries in the dashboard
+- Notifications now use a queue instead of direct rendering, eliminating overlap and ordering issues
+
+#### Performance
 - Cache rebuilds after detection now run asynchronously, eliminating frame stalls on large game libraries
+- Deduplication of game entries is now O(n) instead of O(n²)
 
-
-### Development
+#### Development
 - GUI has been re-written using a custom ImGui framework I have been cooking up
 - Lib's detection systems have undergone an overhaul which now allows for better future addons
 - `hash_file` moved into `CZipArchive`; no longer compiled into every translation unit
 
 
-### Known Issues / Limitations
+#### Known Issues / Limitations
 - Original Anno editions not supported due to install path limitations (a plugin can be written for this)
 - Grouping issues with unknown / partially supported games (improved since [#2](https://github.com/msh31/SaveManager/issues/2)
 
