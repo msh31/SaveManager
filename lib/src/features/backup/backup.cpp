@@ -25,7 +25,7 @@ void Features::backup_game( const Game& game, const fs::path& file, CConfig& con
     if ( !fs::exists( game_backup_dir ) ) fs::create_directories( game_backup_dir );
 
     fs::path final_path = game_backup_dir / construct_backup_name( game.game_name );
-    fs::path zip_name   = final_path.parent_path( ) / ( final_path.filename( ).string( ) + ".tmp" );
+    fs::path zip_name = final_path.parent_path( ) / ( final_path.filename( ).string( ) + ".tmp" );
 
     // writing happens on the destructor so we scope it to do it immediatly, needs a refactor
     bool success = false;
@@ -74,7 +74,7 @@ bool Features::backup_game_files( const Game& game, std::vector<std::pair<fs::pa
     if ( !fs::exists( game_backup_dir ) ) fs::create_directories( game_backup_dir );
 
     fs::path final_path = game_backup_dir / Features::construct_backup_name( game.game_name );
-    fs::path zip_name   = final_path.parent_path( ) / ( final_path.filename( ).string( ) + ".tmp" );
+    fs::path zip_name = final_path.parent_path( ) / ( final_path.filename( ).string( ) + ".tmp" );
 
     bool failed_to_add = false;
     {
@@ -103,11 +103,11 @@ void Features::backup_to_path( fs::path source, fs::path dest ) {
     if ( !fs::exists( dest.parent_path( ) ) ) fs::create_directories( dest.parent_path( ) );
 
     fs::path zip_name = fs::path( dest.string( ) + ".tmp" );
-    bool     success  = false;
+    bool success = false;
     {
         CZipArchive archive( MODE_CREATE_ARCHIVE, zip_name.u8string( ) );
         archive.set_comment( source.parent_path( ).string( ) );
-        success = archive.add_to_archive( source );
+        success = archive.add_to_archive( source ) && archive.finalize_add( );
     }
 
     if ( !success ) {
@@ -141,7 +141,7 @@ void Features::restore_backup(
     const fs::path& name, const fs::path& save_path, std::vector<std::pair<fs::path, fs::path>>& conflicts ) {
     CZipArchive archive( MODE_EXTRACT_ARCHIVE, name.u8string( ) );
 
-    fs::path    restore_path;
+    fs::path restore_path;
     std::string comment = archive.get_comment( );
     if ( !comment.empty( ) ) {
         restore_path = comment;
@@ -150,7 +150,7 @@ void Features::restore_backup(
         restore_path = save_path;
     }
 
-    auto     entries     = archive.get_entry_names( );
+    auto entries = archive.get_entry_names( );
     fs::path undo_source = ( entries.size( ) == 1 ) ? restore_path / entries[0] : restore_path;
 
     if ( fs::exists( undo_source ) && !fs::is_empty( undo_source ) ) {
@@ -165,12 +165,12 @@ void Features::restore_backup(
 }
 
 std::string Features::construct_backup_name( const std::string& game, const std::string& custom_name ) {
-    auto now       = std::chrono::system_clock::now( );
+    auto now = std::chrono::system_clock::now( );
     auto timestamp = std::format( "{:%Y%m%d_%H%M%S}", now );
 
-    std::string game_name           = sanitize_filename( game );
+    std::string game_name = sanitize_filename( game );
     std::string game_name_sanitized = space2underscore( game_name );
-    std::string filename            = custom_name;
+    std::string filename = custom_name;
 
     if ( filename.empty( ) ) {
         filename = game_name_sanitized;
@@ -182,7 +182,7 @@ std::unordered_map<std::string, std::string> Features::load_labels( const std::s
     json data;
 
     std::unordered_map<std::string, std::string> backup_labels;
-    std::string   file_name = ( paths::backup_dir( ) / sanitize_filename( game ) / "labels.json" ).string( );
+    std::string file_name = ( paths::backup_dir( ) / sanitize_filename( game ) / "labels.json" ).string( );
     std::ifstream file( file_name.c_str( ) );
 
     if ( !fs::exists( file_name ) ) return { };
@@ -208,7 +208,7 @@ std::unordered_map<std::string, std::string> Features::load_labels( const std::s
 void Features::save_label( const std::string& game, const std::string& filename, const std::string& label ) {
     std::string file_name = ( paths::backup_dir( ) / sanitize_filename( game ) / "labels.json" ).string( );
 
-    auto labels      = load_labels( game );
+    auto labels = load_labels( game );
     labels[filename] = label;
 
     Features::save_labels( game, labels );

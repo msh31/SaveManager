@@ -94,7 +94,7 @@ bool CZipArchive::extract_archive( const fs::path& save_path, std::vector<std::p
     std::vector<std::string> failed_files;
 
     json manifest_json;
-    if ( manifest ) {
+    if ( manifest.has_value( ) ) {
         try {
             manifest_json = json::parse( *manifest );
         } catch ( json::exception& ex ) {
