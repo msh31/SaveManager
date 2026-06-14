@@ -121,6 +121,9 @@ jobs:
       - name: Install Conan
         run: pip install conan
 
+      - name: Install jinja2 (required by glad build)
+        run: pip install jinja2
+
       - name: Detect Conan profile
         run: conan profile detect
 
