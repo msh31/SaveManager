@@ -7,7 +7,7 @@
 using json = nlohmann::json;
 
 bool CZipArchive::add_to_archive( const fs::path& file ) {
-    int                      file_count = 0;
+    int file_count = 0;
     std::vector<std::string> failed_files;
 
     if ( fs::is_regular_file( file ) ) {
@@ -24,9 +24,10 @@ bool CZipArchive::add_to_archive( const fs::path& file ) {
             SPDLOG_ERROR( "Failed to add file: {}", zip_strerror( m_archive ) );
             failed_files.push_back( file.filename( ).string( ) );
             zip_source_free( source );
+        } else {
+            file_count++;
+            m_save_files.emplace_back( file, file.filename( ) );
         }
-        file_count++;
-        m_save_files.emplace_back( file, file.filename( ) );
     }
 
     if ( fs::is_directory( file ) ) {
@@ -48,9 +49,10 @@ bool CZipArchive::add_to_archive( const fs::path& file ) {
                 SPDLOG_ERROR( "Failed to add file: {}", zip_strerror( m_archive ) );
                 failed_files.push_back( entry.path( ).filename( ).string( ) );
                 zip_source_free( source );
+            } else {
+                file_count++;
+                m_save_files.emplace_back( entry.path( ), file_path );
             }
-            file_count++;
-            m_save_files.emplace_back( entry.path( ), file_path );
         }
     }
 
@@ -67,13 +69,20 @@ bool CZipArchive::add_to_archive( const fs::path& file ) {
 }
 
 bool CZipArchive::finalize_add( ) {
-    auto manifest = build_manifest( m_save_files );
-    if ( manifest.empty( ) ) {
+    m_manifest = build_manifest( m_save_files );
+
+    if ( m_manifest.empty( ) ) {
         SPDLOG_ERROR( "Empty manifest, aborting backup!" );
         return false;
     }
-    if ( !write_manifest_to_zip( m_archive, manifest ) ) {
+
+    if ( !write_manifest_to_zip( m_archive, m_manifest ) ) {
         SPDLOG_ERROR( "Failed to add manifest to backup!" );
+        return false;
+    }
+
+    if ( !close( ) ) {
+        SPDLOG_ERROR( "Failed to close!" );
         return false;
     }
     return true;
@@ -84,7 +93,7 @@ bool CZipArchive::extract_archive( const fs::path& save_path, std::vector<std::p
 
     auto manifest = read_manifest_from_zip( m_archive );
 
-    int                      file_count = zip_get_num_entries( m_archive, 0 );
+    int file_count = zip_get_num_entries( m_archive, 0 );
     std::vector<std::string> failed_files;
 
     json manifest_json;
@@ -111,13 +120,13 @@ bool CZipArchive::extract_archive( const fs::path& save_path, std::vector<std::p
             }
 
             auto resolved = fs::weakly_canonical( safe_base / fileInfo.name );
-            if ( !resolved.string( ).starts_with( safe_base.string( ) ) ) {
+            if ( fs::relative( resolved, safe_base ).string( ).starts_with( ".." ) ) {
                 SPDLOG_WARN( "zip-slip attempt: {}", fileInfo.name );
                 zip_fclose( file );
                 continue;
             }
 
-            char        buffer[1024];
+            char buffer[1024];
             zip_int64_t bytes_read;
             fs::create_directories( resolved.parent_path( ) );
 
@@ -196,7 +205,7 @@ void CZipArchive::set_comment( const std::string& str ) {
 }
 
 std::string CZipArchive::get_comment( ) {
-    int  len     = 0;
+    int len = 0;
     auto comment = zip_get_archive_comment( m_archive, &len, 0 );
     if ( comment != NULL ) {
         return comment;
@@ -225,8 +234,8 @@ std::string CZipArchive::hash_file( const std::filesystem::path& path ) {
     }
 
     unsigned char hash[SHA256_DIGEST_LENGTH];
-    unsigned int  hash_len = 0;
-    char          buffer[8192];
+    unsigned int hash_len = 0;
+    char buffer[8192];
 
     std::ifstream file( path, std::ios::binary );
     if ( !file.is_open( ) ) {
@@ -256,11 +265,11 @@ std::string CZipArchive::hash_file( const std::filesystem::path& path ) {
 }
 
 std::string CZipArchive::build_manifest( std::vector<std::pair<fs::path, fs::path>> paths ) {
-    json                  data;
+    json data;
     std::vector<fs::path> failed_files;
 
     for ( const auto& entry : paths ) {
-        auto hash      = hash_file( entry.first );
+        auto hash = hash_file( entry.first );
         auto save_time = std::chrono::system_clock::to_time_t( file_time_to_sys( fs::last_write_time( entry.first ) ) );
 
         if ( hash.empty( ) ) {
