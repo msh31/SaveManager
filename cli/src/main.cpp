@@ -19,8 +19,8 @@ int main( int argc, char* argv[] ) {
     argv = app.ensure_utf8( argv );
 
     // commands
-    auto list    = app.add_subcommand( "list", "Shows detected games" );
-    auto backup  = app.add_subcommand( "backup", "Create a backup" );
+    auto list = app.add_subcommand( "list", "Shows detected games" );
+    auto backup = app.add_subcommand( "backup", "Create a backup" );
     auto restore = app.add_subcommand( "restore", "Restore a backup" );
 
     // subcommands
@@ -35,8 +35,11 @@ int main( int argc, char* argv[] ) {
     CLI11_PARSE( app, argc, argv );
 
     if ( *list ) {
-        std::vector<Game> result;
-        Detection::find_saves( result );
+        std::vector<Game> result = Detection::find_saves( );
+        if ( result.empty( ) ) {
+            SPDLOG_CRITICAL( "No Savegames found!" );
+            return 1;
+        }
 
         for ( const auto& entry : result ) {
             std::println( "- {} (AppID: {})", entry.game_name, entry.appid );
