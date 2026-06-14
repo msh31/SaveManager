@@ -5,9 +5,9 @@ std::vector<Notify::Notification> pending = { };
 
 void Notify::show_notification( const std::string& title, const std::string& text, int duration_ms ) {
     Notify::Notification notification;
-    notification.title      = title;
-    notification.text       = text;
-    notification.duration   = duration_ms / 1000.f;
+    notification.title = title;
+    notification.text = text;
+    notification.duration = duration_ms / 1000.f;
     notification.start_time = std::chrono::steady_clock::now( );
 
     std::unique_lock<std::mutex> lock( notification_mutex );
