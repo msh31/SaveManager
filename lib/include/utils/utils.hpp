@@ -112,8 +112,7 @@ inline void open_in_file_manager( const char* path ) {
     if ( pid > 0 ) {
         w = waitpid( pid, &status, 0 );
         if ( w == -1 ) {
-            SPDLOG_ERROR( "waitpid failed: {}", EXIT_FAILURE );
-            exit( EXIT_FAILURE );
+            SPDLOG_ERROR( "waitpid failed: {}", strerror( errno ) );
         }
     }
 
@@ -122,10 +121,7 @@ inline void open_in_file_manager( const char* path ) {
 
         if ( g_pid == 0 ) {
             execl( "/usr/bin/xdg-open", "xdg-open", path, nullptr );
-            _exit( 1 );
         }
-
-        if ( g_pid > 0 ) _exit( 0 );
     }
 #endif
 #ifdef _WIN32
