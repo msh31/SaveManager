@@ -333,7 +333,10 @@ std::optional<std::string> CZipArchive::read_manifest_from_zip( zip_t* zip_handl
         zip_stat_init( &fileInfo );
         if ( zip_stat_index( zip_handle, i, 0, &fileInfo ) == 0 ) {
             std::string content( fileInfo.size, '\0' );
-            zip_fread( file, content.data( ), fileInfo.size );
+            auto bytes_read = zip_fread( file, content.data( ), fileInfo.size );
+            if ( bytes_read != static_cast<zip_int64_t>( fileInfo.size ) ) {
+                SPDLOG_WARN( "manifest read incomplete or failed ({} of {} bytes)", bytes_read, fileInfo.size );
+            }
             zip_fclose( file );
             return content;
         }
