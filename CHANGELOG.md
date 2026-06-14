@@ -19,10 +19,11 @@
 #### Changed
 - Plugin loading errors are now caught per-plugin; remaining plugins continue loading
 - Plugins returning entries with missing `game_name` or `save_path` are now skipped with a warning
-- Detection runs independent platform scans in parallel for faster startup
-- Config parsing uses safe `value()` access for `win_props` keys, no longer aborts on missing keys
 - Game detection groupings now use a unified identity key system for better merge accuracy
 - Restoring backups without a manifest now allowed (instead of failing silently)
+
+#### Performance
+- Detection runs independent platform scans in parallel for faster startup
 
 #### Removed
 - Launcher support configuration (All by default now)
@@ -38,7 +39,6 @@
 #### Fixed
 - Displayed file time in the save / backup rows
 - Possible deletion of a 'real' save during conflict resolution
-- macOS .app bundle now packaged correctly (fixes [#8](https://github.com/msh31/SaveManager/issues/8))
 - Crash when shader had not fully initialized on startup
 - Upload worker race condition in transfer tab
 - opening the config or a directory does no longer exit the app on failure
