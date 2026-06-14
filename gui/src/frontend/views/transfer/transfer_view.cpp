@@ -19,6 +19,14 @@ void CTransferView::on_enter( ) {
 }
 
 void CTransferView::render( ) {
+    bool detection_done = m_detection_future.valid( ) &&
+                          m_detection_future.wait_for( std::chrono::seconds( 0 ) ) == std::future_status::ready;
+
+    if ( detection_done ) {
+        m_games_snapshot = m_result;
+        m_detection_future.get( );
+    }
+
     if ( !m_initialized ) {
         m_remote = std::make_unique<CRemoteTransfer>( );
 
@@ -219,10 +227,10 @@ void CTransferView::render( ) {
 
     float content_height = ImGui::GetContentRegionAvail( ).y - 10.0f;
 
-    auto                     groups = get_grouped( m_result );
+    auto                     groups = get_grouped( m_games_snapshot );
     std::vector<std::string> game_names;
     for ( const auto& group : groups )
-        game_names.push_back( m_result[group[0]].game_name );
+        game_names.push_back( m_games_snapshot[group[0]].game_name );
 
     if ( !game_names.empty( ) ) {
         if ( m_selected_game_idx >= (int)game_names.size( ) ) m_selected_game_idx = 0;
@@ -233,7 +241,7 @@ void CTransferView::render( ) {
                 bool is_selected = ( m_selected_game_idx == static_cast<int>( gi ) );
                 if ( ImGui::Selectable( name.c_str( ), is_selected ) ) {
                     m_selected_game_idx = static_cast<int>( gi );
-                    m_backups = Features::get_backups( m_result[groups[static_cast<int>( gi )][0]].game_name );
+                    m_backups = Features::get_backups( m_games_snapshot[groups[static_cast<int>( gi )][0]].game_name );
                     m_selected_backups.assign( m_backups.size( ), false );
                 }
                 if ( is_selected ) ImGui::SetItemDefaultFocus( );

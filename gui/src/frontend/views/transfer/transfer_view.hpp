@@ -15,12 +15,13 @@ class CTransferView : public CBaseView {
     private:
         CConfig&          m_config;
         std::vector<Game> m_result;
+        std::vector<Game> m_games_snapshot;
         std::future<void> m_detection_future;
         std::mutex        m_result_mutex;
 
-        bool m_initialized       = false;
-        bool m_connected         = false;
-        bool m_was_transferring  = false;
+        bool m_initialized = false;
+        bool m_connected = false;
+        bool m_was_transferring = false;
         bool m_use_password_auth = true;
 
         std::string m_dest_addr;
@@ -38,11 +39,11 @@ class CTransferView : public CBaseView {
         std::future<void> m_future;
         std::future<bool> m_connect_future;
 
-        std::atomic<int> m_current_file_index  = 0;
-        std::atomic<int> m_total_files         = 0;
-        int              m_selected_remote_idx = -1;
+        std::atomic<int> m_current_file_index = 0;
+        std::atomic<int> m_total_files = 0;
+        int m_selected_remote_idx = -1;
 
-        int                   m_selected_game_idx = 0;
+        int m_selected_game_idx = 0;
         std::vector<fs::path> m_backups;
-        std::vector<bool>     m_selected_backups;
+        std::vector<bool> m_selected_backups;
 };
