@@ -12,7 +12,7 @@
 void CTransferView::on_enter( ) {
     if ( m_result.empty( ) )
         m_detection_future = std::async( std::launch::async, [this] {
-            auto            result = Detection::find_saves( );
+            auto result = Detection::find_saves( );
             std::lock_guard lock( m_result_mutex );
             m_result = std::move( result );
         } );
@@ -30,13 +30,13 @@ void CTransferView::render( ) {
     if ( !m_initialized ) {
         m_remote = std::make_unique<CRemoteTransfer>( );
 
-        m_dest_addr      = m_config.sftp.dest_addr;
-        m_username       = m_config.sftp.username;
-        m_password       = m_config.sftp.password;
-        m_pubkey         = m_config.sftp.pubkey.string( );
-        m_privkey        = m_config.sftp.privkey.string( );
+        m_dest_addr = m_config.sftp.dest_addr;
+        m_username = m_config.sftp.username;
+        m_password = m_config.sftp.password;
+        m_pubkey = m_config.sftp.pubkey.string( );
+        m_privkey = m_config.sftp.privkey.string( );
         m_key_passphrase = m_config.sftp.key_passphrase;
-        m_initialized    = true;
+        m_initialized = true;
     }
 
     bool is_transferring =
@@ -44,9 +44,9 @@ void CTransferView::render( ) {
     bool is_connecting = m_connect_future.valid( ) &&
                          m_connect_future.wait_for( std::chrono::seconds( 0 ) ) != std::future_status::ready;
 
-    float file_progress    = 0.0f;
+    float file_progress = 0.0f;
     float overall_progress = 0.0f;
-    bool  transferring     = is_transferring && m_remote;
+    bool transferring = is_transferring && m_remote;
 
     if ( transferring ) {
         if ( m_remote->m_total_bytes > 0 )
@@ -63,9 +63,9 @@ void CTransferView::render( ) {
          m_connect_future.wait_for( std::chrono::seconds( 0 ) ) == std::future_status::ready ) {
         bool success = m_connect_future.get( );
         if ( success ) {
-            m_connected           = true;
+            m_connected = true;
             m_current_remote_path = "/home/" + m_config.sftp.username; // TODO: allow custom start location..
-            m_remote_entries      = m_remote->list_directory( m_current_remote_path );
+            m_remote_entries = m_remote->list_directory( m_current_remote_path );
             Notify::show_notification( "SFTP Connection", "Connected!", 2000 );
         } else {
             Notify::show_notification( "SFTP Connection", "Failed to connect!", 2000 );
@@ -82,8 +82,8 @@ void CTransferView::render( ) {
         ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse | ImGuiWindowFlags_NoBackground );
 
     float window_width = ImGui::GetWindowSize( ).x;
-    float top_height   = m_use_password_auth ? 290.0f : 370.0f;
-    float half         = ( window_width - 20.0f ) / 2.0f;
+    float top_height = m_use_password_auth ? 290.0f : 370.0f;
+    float half = ( window_width - 20.0f ) / 2.0f;
 
     ImGui::BeginChild( "##server", ImVec2( half, top_height ), ImGuiChildFlags_Borders );
     ImGui::PushFont( CFontManager::get( ).get_font( "jbm_med" ).value_or( nullptr ) );
@@ -136,7 +136,7 @@ void CTransferView::render( ) {
         ImGui::PushStyleColor( ImGuiCol_Button, ImVec4( 0.8f, 0.2f, 0.2f, 1.0f ) );
         ImGui::PushStyleColor( ImGuiCol_ButtonHovered, ImVec4( 0.9f, 0.3f, 0.3f, 1.0f ) );
         if ( ImGui::Button( "Disconnect" ) ) {
-            m_connected      = false;
+            m_connected = false;
             m_remote_entries = { };
             m_remote->disconnect( );
             Notify::show_notification( "SFTP Connection", "Disconnected from server!", 2000 );
@@ -176,13 +176,13 @@ void CTransferView::render( ) {
 
     ImGui::SetCursorPosY( status_y );
     if ( ImGui::Button( "Save configuration" ) ) {
-        m_config.sftp.dest_addr      = fs::path( m_dest_addr ).string( );
-        m_config.sftp.username       = m_username;
-        m_config.sftp.password       = m_password;
-        m_config.sftp.pubkey         = fs::path( m_pubkey );
-        m_config.sftp.privkey        = fs::path( m_privkey );
+        m_config.sftp.dest_addr = fs::path( m_dest_addr ).string( );
+        m_config.sftp.username = m_username;
+        m_config.sftp.password = m_password;
+        m_config.sftp.pubkey = fs::path( m_pubkey );
+        m_config.sftp.privkey = fs::path( m_privkey );
         m_config.sftp.key_passphrase = m_key_passphrase;
-        m_config.sftp.auth_pw        = m_use_password_auth;
+        m_config.sftp.auth_pw = m_use_password_auth;
         m_config.save( );
         Notify::show_notification( "Config Saved!", "Settings saved successfully!", 1500 );
     }
@@ -208,7 +208,7 @@ void CTransferView::render( ) {
                               std::ranges::to<std::vector>( );
 
         if ( !selected_paths.empty( ) ) {
-            m_total_files        = selected_paths.size( );
+            m_total_files = selected_paths.size( );
             m_current_file_index = 0;
 
             m_future = std::async(
@@ -227,7 +227,7 @@ void CTransferView::render( ) {
 
     float content_height = ImGui::GetContentRegionAvail( ).y - 10.0f;
 
-    auto                     groups = get_grouped( m_games_snapshot );
+    auto groups = get_grouped( m_games_snapshot );
     std::vector<std::string> game_names;
     for ( const auto& group : groups )
         game_names.push_back( m_games_snapshot[group[0]].game_name );
@@ -281,7 +281,7 @@ void CTransferView::render( ) {
         ImGui::TextDisabled( "Connect to browse remote server" );
     } else {
         bool has_remote_selection = m_selected_remote_idx >= 0 && m_selected_remote_idx < (int)m_remote_entries.size( );
-        bool is_file_selected     = has_remote_selection && !m_remote_entries[m_selected_remote_idx].is_directory;
+        bool is_file_selected = has_remote_selection && !m_remote_entries[m_selected_remote_idx].is_directory;
 
         ImGui::BeginDisabled( !is_file_selected || is_transferring );
         if ( ImGui::Button( "Download" ) ) {
@@ -307,31 +307,35 @@ void CTransferView::render( ) {
 
         if ( ImGui::BeginListBox( "##remote_entries", ImVec2( -FLT_MIN, remote_content_height ) ) ) {
             if ( m_current_remote_path != "/" ) {
+                if ( is_transferring ) ImGui::BeginDisabled( true );
                 if ( ImGui::Selectable( "..##parent", false ) ) {
                     m_current_remote_path = fs::path( m_current_remote_path ).parent_path( ).string( );
                     if ( m_current_remote_path.empty( ) ) m_current_remote_path = "/";
-                    m_remote_entries      = m_remote->list_directory( m_current_remote_path );
+                    m_remote_entries = m_remote->list_directory( m_current_remote_path );
                     m_selected_remote_idx = -1;
                 }
+                if ( is_transferring ) ImGui::EndDisabled( );
             }
 
             enumerate( m_remote_entries, [&]( int gi, auto& entry ) {
                 if ( entry.name == "." || entry.name == ".." ) return;
 
                 std::string prefix = entry.is_directory ? "[DIR] " : "[FILE] ";
-                std::string label  = std::format( "{}{}##{}", prefix, entry.name, static_cast<int>( gi ) );
+                std::string label = std::format( "{}{}##{}", prefix, entry.name, static_cast<int>( gi ) );
+                if ( is_transferring ) ImGui::BeginDisabled( true );
                 if ( ImGui::Selectable(
                          label.c_str( ), m_selected_remote_idx == static_cast<int>( gi ),
                          ImGuiSelectableFlags_AllowDoubleClick ) ) {
                     if ( ImGui::IsMouseDoubleClicked( 0 ) && entry.is_directory ) {
                         m_current_remote_path =
                             m_current_remote_path + ( m_current_remote_path.back( ) == '/' ? "" : "/" ) + entry.name;
-                        m_remote_entries      = m_remote->list_directory( m_current_remote_path );
+                        m_remote_entries = m_remote->list_directory( m_current_remote_path );
                         m_selected_remote_idx = -1;
                     } else {
                         m_selected_remote_idx = static_cast<int>( gi );
                     }
                 }
+                if ( is_transferring ) ImGui::EndDisabled( );
             } );
             ImGui::EndListBox( );
         }
