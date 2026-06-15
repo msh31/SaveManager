@@ -3,7 +3,7 @@
 CUIManager::CUIManager( std::unique_ptr<IShell> shell ) : m_shell( std::move( shell ) ) {}
 
 CBaseView* CUIManager::add_view( ViewConfig cfg ) {
-    CBaseView*          raw = cfg.view.get( );
+    CBaseView* raw = cfg.view.get( );
     CBaseView::ViewItem item{ cfg.icon, cfg.label, raw };
 
     m_shell->add_nav_item( item );
@@ -15,7 +15,7 @@ CBaseView* CUIManager::add_view( ViewConfig cfg ) {
 }
 
 void CUIManager::set_settings_view( ViewConfig cfg ) {
-    CBaseView*          raw = cfg.view.get( );
+    CBaseView* raw = cfg.view.get( );
     CBaseView::ViewItem item{ cfg.icon, cfg.label, raw };
 
     m_shell->set_settings( item );

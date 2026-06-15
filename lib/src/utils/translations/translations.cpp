@@ -1,9 +1,9 @@
 #include "utils/translations/translations.hpp"
 #include "utils/paths.hpp"
 
-static std::unordered_map<std::string, std::string>            ubi_translations;
-static std::unordered_map<std::string, std::string>            steam_n2i_translation; // name to appid
-static std::unordered_map<std::string, std::string>            steam_i2n_translation; // appid to name
+static std::unordered_map<std::string, std::string> ubi_translations;
+static std::unordered_map<std::string, std::string> steam_n2i_translation; // name to appid
+static std::unordered_map<std::string, std::string> steam_i2n_translation; // appid to name
 static const std::unordered_map<std::string_view, std::string> rsg_translations = {
     // small enough, for now.
     { "GTA III", "Grand Theft Auto III" },
@@ -19,7 +19,7 @@ static const std::unordered_map<std::string_view, std::string> rsg_translations 
 };
 
 void translations::init( ) {
-    json          ubi_data, steam_data;
+    json ubi_data, steam_data;
     std::ifstream ubi_file( paths::ubi_translations( ).c_str( ) );
     std::ifstream steam_file( paths::steam_appids( ).c_str( ) );
 
@@ -46,9 +46,9 @@ void translations::init( ) {
             SPDLOG_INFO( "Loaded steamids.json!" );
             for ( const auto& [platform, games] : steam_data.items( ) ) {
                 for ( const auto& game : games ) {
-                    std::string name             = game["name"].get<std::string>( );
-                    std::string appid            = std::to_string( game["appid"].get<int>( ) );
-                    steam_n2i_translation[name]  = appid;
+                    std::string name = game["name"].get<std::string>( );
+                    std::string appid = std::to_string( game["appid"].get<int>( ) );
+                    steam_n2i_translation[name] = appid;
                     steam_i2n_translation[appid] = name;
                 }
             }

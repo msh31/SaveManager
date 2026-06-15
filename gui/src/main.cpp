@@ -10,7 +10,7 @@ int main( ) {
         init_logger( "[%n]: [%l] %d-%m-%Y %H:%M:%S - %v" );
 
         CWindowManager window;
-        CApp           app;
+        CApp app;
 
         app.init( );
         SPDLOG_INFO( "Initialized succesfully!" );

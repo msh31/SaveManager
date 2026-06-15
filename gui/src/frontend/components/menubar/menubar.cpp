@@ -23,12 +23,12 @@ void CMenuBar::render_item( const CMenuBarItem& item, float btn_h ) {
 }
 
 void CMenuBar::render( ) {
-    auto& style  = ImGui::GetStyle( );
+    auto& style = ImGui::GetStyle( );
     float font_h = ImGui::GetTextLineHeight( );
-    float pad_y  = style.FramePadding.y;
-    float gap    = style.ItemSpacing.y;
+    float pad_y = style.FramePadding.y;
+    float gap = style.ItemSpacing.y;
 
-    float btn_h   = font_h * 2.f + pad_y * 2.f;
+    float btn_h = font_h * 2.f + pad_y * 2.f;
     float label_y = btn_h + gap;
     float total_h = label_y + font_h + gap;
 
@@ -67,12 +67,12 @@ void CMenuBar::render( ) {
         }
 
         float x_start = 0.f, x_end = 0.f;
-        bool  first_item = true;
+        bool first_item = true;
         for ( auto& item : group.items ) {
             if ( !first_item ) ImGui::SameLine( 0, 4.f );
             render_item( item, btn_h );
             if ( first_item ) x_start = ImGui::GetItemRectMin( ).x - ImGui::GetWindowPos( ).x;
-            x_end      = ImGui::GetItemRectMax( ).x - ImGui::GetWindowPos( ).x;
+            x_end = ImGui::GetItemRectMax( ).x - ImGui::GetWindowPos( ).x;
             first_item = false;
         }
         bounds.push_back( { x_start, x_end } );
@@ -80,9 +80,9 @@ void CMenuBar::render( ) {
     }
 
     for ( size_t i = 0; i < m_groups.size( ); i++ ) {
-        float lbl_w   = ImGui::CalcTextSize( m_groups[i].label ).x;
+        float lbl_w = ImGui::CalcTextSize( m_groups[i].label ).x;
         float group_w = bounds[i].x_end - bounds[i].x_start;
-        float lbl_x   = bounds[i].x_start + ( group_w - lbl_w ) * 0.5f;
+        float lbl_x = bounds[i].x_start + ( group_w - lbl_w ) * 0.5f;
         ImGui::SetCursorPos( { std::max( bounds[i].x_start, lbl_x ), label_y } );
         ImGui::TextDisabled( "%s", m_groups[i].label );
     }

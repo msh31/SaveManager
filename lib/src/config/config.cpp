@@ -78,23 +78,23 @@ bool CConfig::init( ) {
 
 void CConfig::save( ) {
     json data;
-    data["dark_mode"]           = settings.dark_mode;
+    data["dark_mode"] = settings.dark_mode;
     data["animated_background"] = settings.animated_background;
 
     data["watch_paths"] = settings.watch_paths |
                           std::views::transform( []( const fs::path& p ) { return p.string( ); } ) |
                           std::ranges::to<std::vector>( );
 
-    data["dest_addr"]   = sftp.dest_addr;
-    data["username"]    = sftp.username;
-    data["password"]    = sftp.password;
-    data["pubkey"]      = sftp.pubkey.string( );
-    data["privkey"]     = sftp.privkey.string( );
+    data["dest_addr"] = sftp.dest_addr;
+    data["username"] = sftp.username;
+    data["password"] = sftp.password;
+    data["pubkey"] = sftp.pubkey.string( );
+    data["privkey"] = sftp.privkey.string( );
     data["remote_path"] = sftp.remote_path;
 
-    data["x"]      = win_props.x;
-    data["y"]      = win_props.y;
-    data["width"]  = win_props.width;
+    data["x"] = win_props.x;
+    data["y"] = win_props.y;
+    data["width"] = win_props.width;
     data["height"] = win_props.height;
 
     std::ofstream file( config_file );
@@ -117,7 +117,7 @@ void CConfig::load( ) {
     try {
         data = json::parse( file );
 
-        settings.dark_mode           = data.value( "dark_mode", true );
+        settings.dark_mode = data.value( "dark_mode", true );
         settings.animated_background = data.value( "animated_background", false );
 
         if ( data.contains( "watch_paths" ) ) {
@@ -127,16 +127,16 @@ void CConfig::load( ) {
         }
 
         // TODO: improve this by using a keychain on the OS
-        sftp.dest_addr   = data.value( "dest_addr", std::string( "" ) );
-        sftp.username    = data.value( "username", std::string( "" ) );
-        sftp.password    = data.value( "password", std::string( "" ) );
+        sftp.dest_addr = data.value( "dest_addr", std::string( "" ) );
+        sftp.username = data.value( "username", std::string( "" ) );
+        sftp.password = data.value( "password", std::string( "" ) );
         sftp.remote_path = data.value( "remote_path", std::string( "" ) );
-        sftp.pubkey      = data.value( "pubkey", fs::path( "" ) );
-        sftp.privkey     = data.value( "privkey", fs::path( "" ) );
+        sftp.pubkey = data.value( "pubkey", fs::path( "" ) );
+        sftp.privkey = data.value( "privkey", fs::path( "" ) );
 
-        win_props.x      = data.value( "x", -1 );
-        win_props.y      = data.value( "y", -1 );
-        win_props.width  = data.value( "width", -1 );
+        win_props.x = data.value( "x", -1 );
+        win_props.y = data.value( "y", -1 );
+        win_props.width = data.value( "width", -1 );
         win_props.height = data.value( "height", -1 );
     } catch ( json::exception& ex ) {
         SPDLOG_ERROR( "config parsing error: {}", ex.what( ) );

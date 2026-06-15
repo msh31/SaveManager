@@ -2,9 +2,9 @@
 
 struct FontData {
         std::string_view name;
-        float            size;
-        bool             is_icon;
-        bool             is_default;
+        float size;
+        bool is_icon;
+        bool is_default;
 };
 
 class CFontManager {
@@ -12,16 +12,16 @@ class CFontManager {
         void load_from_memory( FontData fd, void* data, int data_len );
 
         std::optional<ImFont*> get_font( std::string_view font_name );
-        static CFontManager&   get( );
+        static CFontManager& get( );
 
         // delete copy & move constructors since there must only be 1 instance
-        CFontManager( const CFontManager& )            = delete;
+        CFontManager( const CFontManager& ) = delete;
         CFontManager& operator=( const CFontManager& ) = delete;
-        CFontManager( CFontManager&& )                 = delete;
-        CFontManager& operator=( CFontManager&& )      = delete;
+        CFontManager( CFontManager&& ) = delete;
+        CFontManager& operator=( CFontManager&& ) = delete;
 
     private:
         CFontManager( );
         std::unordered_map<std::string, ImFont*> m_fonts;
-        std::vector<FontData>                    m_font_data;
+        std::vector<FontData> m_font_data;
 };

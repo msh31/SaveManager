@@ -20,6 +20,6 @@ class CApp {
 
         CUIManager m_ui_manager{ std::make_unique<CTabbarShell>( ) };
 
-        CTaskRunner            m_task_runner;
+        CTaskRunner m_task_runner;
         std::optional<CShader> m_shader;
 };

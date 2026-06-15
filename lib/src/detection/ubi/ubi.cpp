@@ -40,16 +40,16 @@ std::vector<Game> CUbisoftDetector::scan( fs::path path ) {
     };
 
     for ( const auto& uuid : fs::directory_iterator( path, fs::directory_options::skip_permission_denied ) ) {
-        fs::path    uuid_folder = uuid.path( );
+        fs::path uuid_folder = uuid.path( );
         std::string folder_name = uuid_folder.filename( ).string( );
 
         if ( auto it = anno_paths.find( folder_name ); it != anno_paths.end( ) ) {
             auto& [key, anno_data] = *it;
 
             Game anno;
-            anno.type             = PlatformType::UBISOFT;
-            anno.game_name        = anno_data.game_name;
-            anno.appid            = translations::get_steam_id( anno_data.game_name ).value_or( "N/A" );
+            anno.type = PlatformType::UBISOFT;
+            anno.game_name = anno_data.game_name;
+            anno.appid = translations::get_steam_id( anno_data.game_name ).value_or( "N/A" );
             anno.show_parent_path = true;
 
             if ( fs::exists( uuid.path( ) / "accounts" ) ) {
@@ -82,10 +82,10 @@ std::vector<Game> CUbisoftDetector::scan( fs::path path ) {
             }
 
             Game game;
-            game.type      = PlatformType::UBISOFT;
-            game.game_id   = game_id_folder.filename( ).string( );
+            game.type = PlatformType::UBISOFT;
+            game.game_id = game_id_folder.filename( ).string( );
             game.game_name = name.value( );
-            game.appid     = translations::get_steam_id( game.game_name ).value_or( "N/A" );
+            game.appid = translations::get_steam_id( game.game_name ).value_or( "N/A" );
             game.save_paths.push_back( game_id_folder );
 
             games.push_back( game );

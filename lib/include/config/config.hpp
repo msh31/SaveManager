@@ -9,14 +9,14 @@ class CConfig {
         void save( );
 
         struct WindowProperties {
-                int x      = -1;
-                int y      = -1;
-                int width  = -1;
+                int x = -1;
+                int y = -1;
+                int width = -1;
                 int height = -1;
         };
 
         struct AppConfig {
-                bool dark_mode           = true;
+                bool dark_mode = true;
                 bool animated_background = false;
 
                 std::vector<fs::path> watch_paths;
@@ -27,14 +27,14 @@ class CConfig {
                 std::string username;
                 std::string password;
                 std::string remote_path;
-                fs::path    pubkey;
-                fs::path    privkey;
+                fs::path pubkey;
+                fs::path privkey;
                 std::string key_passphrase;
-                bool        auth_pw = true;
+                bool auth_pw = true;
         };
 
-        AppConfig        settings;
-        SFTPConfig       sftp;
+        AppConfig settings;
+        SFTPConfig sftp;
         WindowProperties win_props;
 
     private:

@@ -7,7 +7,7 @@ namespace Card {
         std::string_view id, std::string_view text, bool& expanded, std::optional<std::string_view> r_text,
         F&& content ) {
         const char* chevron = expanded ? "▼" : "▶";
-        auto        label   = std::format( "##{}", id.data( ) );
+        auto label = std::format( "##{}", id.data( ) );
 
         ImGui::PushStyleColor( ImGuiCol_Border, ImVec4( 198 / 255.f, 97 / 255.f, 63 / 255.f, 1.f ) );
         ImGui::PushStyleVar( ImGuiStyleVar_ChildRounding, 4.0f );

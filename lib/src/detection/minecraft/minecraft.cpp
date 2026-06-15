@@ -28,10 +28,10 @@ std::vector<Game> CMinecraftDetector::scan_official( ) const {
     if ( !fs::is_directory( game_path ) ) return { };
 
     Game entry;
-    entry.type      = PlatformType::MINECRAFT;
+    entry.type = PlatformType::MINECRAFT;
     entry.game_name = "Minecraft (Official)";
-    entry.appid     = "N/A";
-    entry.launcher  = LauncherType::OFFICIAL;
+    entry.appid = "N/A";
+    entry.launcher = LauncherType::OFFICIAL;
 
     for ( const auto& game :
           fs::directory_iterator( game_path, std::filesystem::directory_options::skip_permission_denied ) ) {
@@ -64,10 +64,10 @@ std::vector<Game> CMinecraftDetector::scan_modrinth( ) const {
     if ( !fs::exists( modrinth_path ) ) return { };
 
     Game entry;
-    entry.type      = PlatformType::MINECRAFT;
+    entry.type = PlatformType::MINECRAFT;
     entry.game_name = "Minecraft (Modrinth)";
-    entry.appid     = "N/A";
-    entry.launcher  = LauncherType::MODRINTH;
+    entry.appid = "N/A";
+    entry.launcher = LauncherType::MODRINTH;
 
     for ( const auto& game :
           fs::directory_iterator( modrinth_path, std::filesystem::directory_options::skip_permission_denied ) ) {
@@ -100,10 +100,10 @@ std::vector<Game> CMinecraftDetector::scan_curseforge( ) const {
     if ( !fs::is_directory( curse_path ) ) return { };
 
     Game entry;
-    entry.type      = PlatformType::MINECRAFT;
+    entry.type = PlatformType::MINECRAFT;
     entry.game_name = "Minecraft (CurseForge)";
-    entry.appid     = "N/A";
-    entry.launcher  = LauncherType::CURSEFORGE;
+    entry.appid = "N/A";
+    entry.launcher = LauncherType::CURSEFORGE;
 
     for ( const auto& game :
           fs::directory_iterator( curse_path, std::filesystem::directory_options::skip_permission_denied ) ) {
@@ -138,10 +138,10 @@ std::vector<Game> CMinecraftDetector::scan_prism( ) const {
     if ( !fs::exists( prism_path ) ) return { };
 
     Game entry;
-    entry.type      = PlatformType::MINECRAFT;
+    entry.type = PlatformType::MINECRAFT;
     entry.game_name = "Minecraft (Prism)";
-    entry.appid     = "N/A";
-    entry.launcher  = LauncherType::PRISM;
+    entry.appid = "N/A";
+    entry.launcher = LauncherType::PRISM;
 
     for ( const auto& game :
           fs::directory_iterator( prism_path, std::filesystem::directory_options::skip_permission_denied ) ) {
@@ -177,10 +177,10 @@ std::vector<Game> CMinecraftDetector::scan_multimc( ) const {
     if ( !fs::exists( multimc_path ) ) return { };
 
     Game entry;
-    entry.type      = PlatformType::MINECRAFT;
+    entry.type = PlatformType::MINECRAFT;
     entry.game_name = "Minecraft (MultiMC)";
-    entry.appid     = "N/A";
-    entry.launcher  = LauncherType::MULTIMC;
+    entry.appid = "N/A";
+    entry.launcher = LauncherType::MULTIMC;
 
     for ( const auto& game :
           fs::directory_iterator( multimc_path, std::filesystem::directory_options::skip_permission_denied ) ) {

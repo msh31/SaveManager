@@ -7,8 +7,8 @@ CBaseView* CTabbarShell::render( CBaseView* active ) {
 
     if ( ImGui::BeginTabBar( "##navtabs" ) ) {
         for ( auto& item : m_items ) {
-            ImGuiTabItemFlags flags    = ( item.view == active ) ? ImGuiTabItemFlags_SetSelected : 0;
-            std::string       tab_name = std::format( "{} {}", item.icon, item.label );
+            ImGuiTabItemFlags flags = ( item.view == active ) ? ImGuiTabItemFlags_SetSelected : 0;
+            std::string tab_name = std::format( "{} {}", item.icon, item.label );
 
             if ( ImGui::BeginTabItem( tab_name.c_str( ), nullptr, flags ) ) ImGui::EndTabItem( );
             if ( ImGui::IsItemClicked( ) ) result = item.view;

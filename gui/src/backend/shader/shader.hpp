@@ -9,13 +9,13 @@ class CShader {
     private:
         GLuint compile_shader( const char* source, GLenum type );
         GLuint link_program( GLuint vert, GLuint frag );
-        void   init_quad( );
+        void init_quad( );
 
         GLuint m_vao;
         GLuint m_vbo;
         GLuint m_shader_program;
-        GLint  m_u_resolution;
-        GLint  m_u_time;
+        GLint m_u_resolution;
+        GLint m_u_time;
 };
 
 // dirty copy of the shader code

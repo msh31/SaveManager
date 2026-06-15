@@ -28,27 +28,27 @@ class CDashboardView : public CBaseView {
             const fs::path& backup, const Game& game, const std::unordered_map<std::string, std::string>& labels );
         void render_modals( );
 
-        CConfig&          m_config;
+        CConfig& m_config;
         std::vector<Game> m_result;
-        CBackupsView      m_backups_view;
+        CBackupsView m_backups_view;
 
         CTaskRunner m_task_runner;
 
         // Detection / cache
         struct GameCache {
                 std::vector<fs::path> save_files;
-                int                   backup_count;
-                bool                  has_conflicts = false;
+                int backup_count;
+                bool has_conflicts = false;
                 std::vector<fs::path> backup_paths;
 
                 std::unordered_map<std::string, std::string> labels;
         };
 
-        std::mutex                    m_result_mutex;
-        std::vector<Game>             m_games_snapshot;
+        std::mutex m_result_mutex;
+        std::vector<Game> m_games_snapshot;
         std::vector<std::vector<int>> m_grouped_games;
 
-        std::unordered_map<std::string, GameCache>          m_game_cache;
+        std::unordered_map<std::string, GameCache> m_game_cache;
         std::unordered_map<std::string, fs::file_time_type> m_game_last_modified;
 
         size_t m_last_game_count = 0;
@@ -56,11 +56,11 @@ class CDashboardView : public CBaseView {
         // UI state
         enum class SortMode { Recent, Alphabetical };
 
-        std::string                 m_search_query;
+        std::string m_search_query;
         std::optional<PlatformType> m_platform_filter;
-        SortMode                    m_sort_mode           = SortMode::Alphabetical;
-        bool                        m_focus_search        = false;
-        size_t                      m_filtered_game_count = 0;
+        SortMode m_sort_mode = SortMode::Alphabetical;
+        bool m_focus_search = false;
+        size_t m_filtered_game_count = 0;
 
         std::unordered_map<std::string, bool> m_card_collapsed;
         std::unordered_map<std::string, bool> m_backups_expanded;
@@ -69,20 +69,20 @@ class CDashboardView : public CBaseView {
             PlatformType::UBISOFT, PlatformType::ROCKSTAR, PlatformType::UNREAL, PlatformType::MINECRAFT,
             PlatformType::CUSTOM };
 
-        float m_detection_duration     = 0.0f;
-        bool  m_backups_tab_was_active = false;
+        float m_detection_duration = 0.0f;
+        bool m_backups_tab_was_active = false;
 
         std::chrono::time_point<std::chrono::steady_clock> m_detection_start_time;
 
         // Model state
-        bool                                       m_open_conflict_modal = false;
-        bool                                       m_open_rename_modal   = false;
-        std::string                                m_rename_input;
-        Game                                       m_pending_rename_game{ };
-        fs::path                                   m_pending_rename_backup;
+        bool m_open_conflict_modal = false;
+        bool m_open_rename_modal = false;
+        std::string m_rename_input;
+        Game m_pending_rename_game{ };
+        fs::path m_pending_rename_backup;
         std::vector<std::pair<fs::path, fs::path>> m_pending_conflicts;
 
         // Futures
         std::future<void> m_refresh_future;
         std::future<void> m_backup_future;
- };
+};

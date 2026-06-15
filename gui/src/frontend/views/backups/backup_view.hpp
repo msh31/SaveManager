@@ -22,19 +22,19 @@ class CBackupsView {
         std::future<void> m_refresh_future;
 
         // other
-        bool                     m_reload_backups = false;
+        bool m_reload_backups = false;
         std::vector<BackupEntry> m_backups;
 
         std::unordered_map<std::string, std::unordered_map<std::string, std::string>> m_labels_cache;
 
         // Modal state
         std::string m_rename_input;
-        bool        m_open_rename_modal = false;
+        bool m_open_rename_modal = false;
         std::string m_pending_rename_game;
-        fs::path    m_pending_rename_backup;
+        fs::path m_pending_rename_backup;
 
         void render_game_row(
-            const BackupEntry&                                                                    bentry,
+            const BackupEntry& bentry,
             const std::unordered_map<std::string, std::unordered_map<std::string, std::string>>& labels_cache );
         void render_backup_row(
             fs::path path, const fs::path& save_path, const std::unordered_map<std::string, std::string>& labels,

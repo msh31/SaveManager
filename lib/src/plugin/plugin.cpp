@@ -32,7 +32,7 @@ CPlugin::CPlugin( std::filesystem::path path ) {
     m_lua.set_function( "path_exists", []( const std::string& p ) { return fs::exists( p ); } );
 
     m_lua.set_function( "steam_library_paths", []( ) {
-        auto                     libs = SteamHelper::get_library_folders( );
+        auto libs = SteamHelper::get_library_folders( );
         std::vector<std::string> result;
         for ( const auto& p : libs )
             result.push_back( p.string( ) );
@@ -47,7 +47,7 @@ CPlugin::CPlugin( std::filesystem::path path ) {
         if ( !fs::is_directory( path ) ) return sol::table( );
 
         sol::table table = m_lua.create_table( );
-        int        index = 1;
+        int index = 1;
 
         try {
             for ( const auto& entry : fs::directory_iterator( path ) ) {
@@ -91,9 +91,9 @@ std::vector<Game> CPlugin::find_saves( ) {
 
     sol::table table = result.get<sol::table>( );
     for ( auto& [key, val] : table ) {
-        sol::table  entry     = val.as<sol::table>( );
+        sol::table entry = val.as<sol::table>( );
         std::string game_name = entry["game_name"].get_or<std::string>( "" );
-        std::string appid     = entry["appid"].get_or<std::string>( "" );
+        std::string appid = entry["appid"].get_or<std::string>( "" );
         std::string save_path = entry["save_path"].get_or<std::string>( "" );
 
         if ( game_name.empty( ) || save_path.empty( ) ) {
@@ -102,9 +102,9 @@ std::vector<Game> CPlugin::find_saves( ) {
         }
 
         Game g;
-        g.type      = PlatformType::CUSTOM;
+        g.type = PlatformType::CUSTOM;
         g.game_name = std::move( game_name );
-        g.appid     = std::move( appid );
+        g.appid = std::move( appid );
         g.save_paths.push_back( save_path ); //?
         g.show_parent_path = m_show_parent_path;
         games.emplace_back( g );

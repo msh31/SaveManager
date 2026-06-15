@@ -17,8 +17,8 @@ void CDashboardView::on_enter( ) {
         m_grouped_games.clear( );
         m_game_cache.clear( );
         m_detection_start_time = std::chrono::steady_clock::now( );
-        m_refresh_future       = std::async( std::launch::async, [this] {
-            auto            result = Detection::find_saves( );
+        m_refresh_future = std::async( std::launch::async, [this] {
+            auto result = Detection::find_saves( );
             std::lock_guard lock( m_result_mutex );
             m_result = std::move( result );
         } );
@@ -72,11 +72,11 @@ void CDashboardView::render_toolbar( ) {
     bool is_backing_up =
         m_backup_future.valid( ) && m_backup_future.wait_for( std::chrono::seconds( 0 ) ) != std::future_status::ready;
 
-    float sort_width    = ImGui::CalcTextSize( "Sort: Alphabetical" ).x + ImGui::GetStyle( ).FramePadding.x * 2;
-    float filter_width  = ImGui::CalcTextSize( "Filter: Rockstar" ).x + ImGui::GetStyle( ).FramePadding.x * 2;
+    float sort_width = ImGui::CalcTextSize( "Sort: Alphabetical" ).x + ImGui::GetStyle( ).FramePadding.x * 2;
+    float filter_width = ImGui::CalcTextSize( "Filter: Rockstar" ).x + ImGui::GetStyle( ).FramePadding.x * 2;
     float refresh_width = ImGui::CalcTextSize( "Refresh" ).x + ImGui::GetStyle( ).FramePadding.x * 2;
-    float backup_width  = ImGui::CalcTextSize( "Mass Backup" ).x + ImGui::GetStyle( ).FramePadding.x * 2;
-    float spacing       = ImGui::GetStyle( ).ItemSpacing.x * 3;
+    float backup_width = ImGui::CalcTextSize( "Mass Backup" ).x + ImGui::GetStyle( ).FramePadding.x * 2;
+    float spacing = ImGui::GetStyle( ).ItemSpacing.x * 3;
 
     ImGui::TextDisabled(
         "found %zu games in %s seconds", m_filtered_game_count,
@@ -129,8 +129,8 @@ void CDashboardView::render_toolbar( ) {
         m_grouped_games.clear( );
         m_game_cache.clear( );
         m_detection_start_time = std::chrono::steady_clock::now( );
-        m_refresh_future       = std::async( std::launch::async, [this] {
-            auto            result = Detection::find_saves( );
+        m_refresh_future = std::async( std::launch::async, [this] {
+            auto result = Detection::find_saves( );
             std::lock_guard lock( m_result_mutex );
             m_result = std::move( result );
         } );
@@ -162,7 +162,7 @@ void CDashboardView::render_toolbar( ) {
 
 void CDashboardView::render_game_list( ) {
     m_filtered_game_count = 0;
-    auto sorted           = m_grouped_games;
+    auto sorted = m_grouped_games;
 
     switch ( m_sort_mode ) {
     case SortMode::Recent:
@@ -183,7 +183,7 @@ void CDashboardView::render_game_list( ) {
 
         if ( m_platform_filter.has_value( ) && m_games_snapshot[group[0]].type != *m_platform_filter ) return;
 
-        const Game& primary   = m_games_snapshot[group[0]];
+        const Game& primary = m_games_snapshot[group[0]];
         std::string game_name = primary.game_name;
 
         std::transform( game_name.begin( ), game_name.end( ), game_name.begin( ), ::tolower );
@@ -213,7 +213,7 @@ void CDashboardView::render_game_content(
 
     // TODO: cache this
     fs::path undo_dir = paths::backup_dir( ) / sanitize_filename( game.game_name ) / "undo.zip";
-    bool     has_undo = false;
+    bool has_undo = false;
     if ( fs::exists( undo_dir ) ) has_undo = true;
 
     // TODO: refactor this, just disable dont hide
@@ -244,7 +244,7 @@ void CDashboardView::render_game_content(
             for ( const auto& sp : game.save_paths ) {
                 for ( const auto& f : fs::directory_iterator( sp ) ) {
                     auto full = f.path( ).string( );
-                    auto pos  = full.find( ".savemgr-conflict-" );
+                    auto pos = full.find( ".savemgr-conflict-" );
                     if ( pos != std::string::npos ) {
                         fs::path original = full.substr( 0, pos );
                         m_pending_conflicts.push_back( { original, f.path( ) } );
@@ -275,24 +275,24 @@ void CDashboardView::render_game_content(
 }
 
 void CDashboardView::render_game_row( const std::vector<int>& group, int gi ) {
-    const Game& primary  = m_games_snapshot[group[0]];
-    auto        game_key = utils::get_game_identity_key( primary ).value;
+    const Game& primary = m_games_snapshot[group[0]];
+    auto game_key = utils::get_game_identity_key( primary ).value;
     if ( !m_backups_expanded.contains( game_key ) ) {
         m_backups_expanded[game_key] = true;
     }
 
-    bool&       not_collapsed = m_card_collapsed[game_key];
-    bool&       bk_collapsed  = m_backups_expanded[game_key];
-    const char* chevron       = bk_collapsed ? "▶" : "▼";
+    bool& not_collapsed = m_card_collapsed[game_key];
+    bool& bk_collapsed = m_backups_expanded[game_key];
+    const char* chevron = bk_collapsed ? "▶" : "▼";
 
     std::vector<std::pair<fs::path, const Game*>> files = { };
 
-    auto& cache         = m_game_cache[game_key];
-    int   save_count    = cache.save_files.size( );
-    int   backup_count  = cache.backup_count;
-    auto  backup_paths  = cache.backup_paths;
-    auto  labels        = cache.labels;
-    bool  has_conflicts = cache.has_conflicts;
+    auto& cache = m_game_cache[game_key];
+    int save_count = cache.save_files.size( );
+    int backup_count = cache.backup_count;
+    auto backup_paths = cache.backup_paths;
+    auto labels = cache.labels;
+    bool has_conflicts = cache.has_conflicts;
 
     for ( const auto& path : cache.save_files ) {
         files.emplace_back( path, &primary );
@@ -340,16 +340,16 @@ void CDashboardView::render_game_row( const std::vector<int>& group, int gi ) {
 void CDashboardView::render_save_row( const fs::path& save_file, const Game& game ) {
     ImGui::PushID( save_file.string( ).c_str( ) );
 
-    std::string date_text  = std::format( "{} | ", format_file_time( fs::last_write_time( save_file ) ) );
-    float       date_width = ImGui::CalcTextSize( date_text.c_str( ) ).x;
+    std::string date_text = std::format( "{} | ", format_file_time( fs::last_write_time( save_file ) ) );
+    float date_width = ImGui::CalcTextSize( date_text.c_str( ) ).x;
 
     std::string size_text;
     if ( game.type != PlatformType::MINECRAFT ) {
         auto b_size = fs::file_size( save_file ) / 1024;
-        size_text   = std::format( "{}KB  ", b_size );
+        size_text = std::format( "{}KB  ", b_size );
     }
 
-    float size_width  = ImGui::CalcTextSize( size_text.c_str( ) ).x;
+    float size_width = ImGui::CalcTextSize( size_text.c_str( ) ).x;
     float total_width = date_width + size_width + 80.0f * 1 + 4.0f * 5;
 
     if ( game.show_parent_path ) {
@@ -383,15 +383,15 @@ void CDashboardView::render_backup_row(
     if ( backup.filename( ) == "undo.zip" ) return;
 
     ImGui::PushID( backup.string( ).c_str( ) );
-    auto        it      = labels.find( backup.filename( ).string( ) );
+    auto it = labels.find( backup.filename( ).string( ) );
     std::string display = ( it != labels.end( ) ) ? it->second : backup.filename( ).string( );
 
-    std::string date_text  = std::format( "{} | ", format_file_time( fs::last_write_time( backup ) ) );
-    float       date_width = ImGui::CalcTextSize( date_text.c_str( ) ).x;
-    auto        b_size     = fs::file_size( backup ) / 1024;
+    std::string date_text = std::format( "{} | ", format_file_time( fs::last_write_time( backup ) ) );
+    float date_width = ImGui::CalcTextSize( date_text.c_str( ) ).x;
+    auto b_size = fs::file_size( backup ) / 1024;
 
-    std::string size_text  = std::format( "{}KB  ", b_size );
-    float       size_width = ImGui::CalcTextSize( size_text.c_str( ) ).x;
+    std::string size_text = std::format( "{}KB  ", b_size );
+    float size_width = ImGui::CalcTextSize( size_text.c_str( ) ).x;
 
     float total_width = date_width + size_width + 80.0f * 3 + 4.0f * 5;
 
@@ -420,10 +420,10 @@ void CDashboardView::render_backup_row(
     ImGui::SameLine( 0.0f, 4.0f );
 
     if ( ImGui::Button( "Rename", ImVec2( 80.0f, 0 ) ) ) {
-        m_pending_rename_game   = game;
+        m_pending_rename_game = game;
         m_pending_rename_backup = backup;
-        m_rename_input          = ( it != labels.end( ) ) ? it->second : "";
-        m_open_rename_modal     = true;
+        m_rename_input = ( it != labels.end( ) ) ? it->second : "";
+        m_open_rename_modal = true;
     }
     ImGui::SetItemTooltip( "Rename this backup" );
     ImGui::SameLine( 0.0f, 4.0f );
@@ -516,12 +516,12 @@ void CDashboardView::render_modals( ) {
 void CDashboardView::on_result_changed( ) {
     {
         std::vector<Game> games;
-        games           = m_games_snapshot;
+        games = m_games_snapshot;
         m_grouped_games = get_grouped( games );
     }
     m_game_cache.clear( );
 
-    auto temp          = std::make_shared<std::unordered_map<std::string, GameCache>>( );
+    auto temp = std::make_shared<std::unordered_map<std::string, GameCache>>( );
     auto temp_modified = std::make_shared<std::unordered_map<std::string, fs::file_time_type>>( );
 
     m_task_runner.run(
@@ -550,10 +550,10 @@ void CDashboardView::on_result_changed( ) {
                     } else {
                         cache.save_files.push_back( save_path );
                     }
-                    auto backups       = Features::get_backups( game.game_name );
+                    auto backups = Features::get_backups( game.game_name );
                     cache.backup_count = backups.size( );
                     cache.backup_paths = backups;
-                    cache.labels       = Features::load_labels( game.game_name );
+                    cache.labels = Features::load_labels( game.game_name );
 
                     auto key = utils::get_game_identity_key( game ).value;
                     if ( game.type == PlatformType::MINECRAFT ) {
@@ -597,7 +597,7 @@ void CDashboardView::on_result_changed( ) {
             }
         },
         [this, temp, temp_modified]( ) {
-            m_game_cache         = std::move( *temp );
+            m_game_cache = std::move( *temp );
             m_game_last_modified = std::move( *temp_modified );
             m_detection_duration =
                 std::chrono::duration<double>( std::chrono::steady_clock::now( ) - m_detection_start_time ).count( );

@@ -11,51 +11,52 @@ class CConfig;
 // copied from
 // https://git.marco007.dev/marco/http-server/src/commit/db41ab8f0126ed57b257face7c396c08d0999da9/socket_wrapper.hpp
 #ifdef _WIN32
-#include <winsock2.h>
-#include <ws2tcpip.h>
+    #include <winsock2.h>
+    #include <ws2tcpip.h>
 
-#define CLOSE_SOCKET( s ) closesocket( s )
-#define SOCKADDR_CAST ( SOCKADDR * )
-#define SOCKET_ERROR ( -1 )
-#define SOCKLEN_T int
+    #define CLOSE_SOCKET( s ) closesocket( s )
+    #define SOCKADDR_CAST ( SOCKADDR* )
+    #define SOCKET_ERROR ( -1 )
+    #define SOCKLEN_T int
 #else
-#include <arpa/inet.h>
-#include <netinet/in.h>
-#include <sys/socket.h>
-#include <unistd.h>
+    #include <arpa/inet.h>
+    #include <netinet/in.h>
+    #include <sys/socket.h>
+    #include <unistd.h>
 
-#define CLOSE_SOCKET( s ) close( s )
-#define SOCKET int
-#define INVALID_SOCKET ( -1 )
-#define SOCKADDR_CAST ( struct sockaddr * )
-#define SOCKET_ERROR ( -1 )
-#define SOCKLEN_T socklen_t
+    #define CLOSE_SOCKET( s ) close( s )
+    #define SOCKET int
+    #define INVALID_SOCKET ( -1 )
+    #define SOCKADDR_CAST ( struct sockaddr* )
+    #define SOCKET_ERROR ( -1 )
+    #define SOCKLEN_T socklen_t
 #endif
 
 class CRemoteTransfer {
-  public:
-    CRemoteTransfer( );
-    ~CRemoteTransfer( ) { disconnect( ); }
+    public:
+        CRemoteTransfer( );
+        ~CRemoteTransfer( ) { disconnect( ); }
 
-    bool connect( const std::string &dest_addr, const CConfig &config, bool auth_pw, const std::string &key_passphrase );
-    bool disconnect( );
-    void upload_file( const fs::path &backup_path, const std::string &remote_path, const CConfig &config );
-    void download_file( const fs::path &backup_path, const CConfig &config );
-    std::vector<RemoteEntry> list_directory( const std::string &path );
+        bool
+        connect( const std::string& dest_addr, const CConfig& config, bool auth_pw, const std::string& key_passphrase );
+        bool disconnect( );
+        void upload_file( const fs::path& backup_path, const std::string& remote_path, const CConfig& config );
+        void download_file( const fs::path& backup_path, const CConfig& config );
+        std::vector<RemoteEntry> list_directory( const std::string& path );
 
-    // disable copying (prevent accidental double-cleanup)
-    CRemoteTransfer( const CRemoteTransfer & ) = delete;
-    CRemoteTransfer &operator=( const CRemoteTransfer & ) = delete;
+        // disable copying (prevent accidental double-cleanup)
+        CRemoteTransfer( const CRemoteTransfer& ) = delete;
+        CRemoteTransfer& operator=( const CRemoteTransfer& ) = delete;
 
-    std::atomic<size_t> m_bytes_transferred = 0;
-    std::atomic<size_t> m_total_bytes = 0;
+        std::atomic<size_t> m_bytes_transferred = 0;
+        std::atomic<size_t> m_total_bytes = 0;
 
-  private:
-    uint32_t m_hostaddr;
-    libssh2_socket_t m_sock = LIBSSH2_INVALID_SOCKET;
-    struct sockaddr_in m_sin;
-    const char *m_fingerprint;
-    LIBSSH2_SESSION *m_session = nullptr;
-    LIBSSH2_SFTP_HANDLE *m_sftp_handle = nullptr;
-    LIBSSH2_SFTP *m_sftp_session = nullptr;
+    private:
+        uint32_t m_hostaddr;
+        libssh2_socket_t m_sock = LIBSSH2_INVALID_SOCKET;
+        struct sockaddr_in m_sin;
+        const char* m_fingerprint;
+        LIBSSH2_SESSION* m_session = nullptr;
+        LIBSSH2_SFTP_HANDLE* m_sftp_handle = nullptr;
+        LIBSSH2_SFTP* m_sftp_session = nullptr;
 };

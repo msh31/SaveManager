@@ -9,7 +9,7 @@ class CTaskRunner {
 
     private:
         struct Task {
-                std::future<void>      future;
+                std::future<void> future;
                 std::function<void( )> on_complete;
         };
 

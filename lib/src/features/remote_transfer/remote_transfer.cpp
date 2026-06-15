@@ -4,8 +4,8 @@
 // https://libssh2.org/examples/sftp_write.html
 CRemoteTransfer::CRemoteTransfer( ) {}
 
-bool CRemoteTransfer::connect( const std::string &dest_addr, const CConfig &config, bool auth_pw,
-                              const std::string &key_passphrase ) {
+bool CRemoteTransfer::connect(
+    const std::string& dest_addr, const CConfig& config, bool auth_pw, const std::string& key_passphrase ) {
 #ifdef _WIN32
     WSADATA wsadata;
     WSAStartup( MAKEWORD( 2, 2 ), &wsadata );
@@ -62,10 +62,10 @@ bool CRemoteTransfer::connect( const std::string &dest_addr, const CConfig &conf
             return fail( );
         }
     } else {
-        if ( libssh2_userauth_publickey_fromfile( m_session, config.sftp.username.c_str( ),
-                                                  config.sftp.pubkey.string( ).c_str( ),
-                                                  config.sftp.privkey.string( ).c_str( ),
-                                                  key_passphrase.empty( ) ? nullptr : key_passphrase.c_str( ) ) ) {
+        if ( libssh2_userauth_publickey_fromfile(
+                 m_session, config.sftp.username.c_str( ), config.sftp.pubkey.string( ).c_str( ),
+                 config.sftp.privkey.string( ).c_str( ),
+                 key_passphrase.empty( ) ? nullptr : key_passphrase.c_str( ) ) ) {
             SPDLOG_ERROR( "Authentication by public key failed." );
             return fail( );
         }
@@ -112,11 +112,12 @@ bool CRemoteTransfer::disconnect( ) {
     return false;
 }
 
-void CRemoteTransfer::upload_file( const fs::path &backup_path, const std::string &remote_path, const CConfig &config ) {
+void CRemoteTransfer::upload_file(
+    const fs::path& backup_path, const std::string& remote_path, const CConfig& config ) {
     char mem[1024 * 100];
     size_t nread;
     ssize_t nwritten;
-    char *ptr;
+    char* ptr;
 
     std::string remote_file =
         remote_path + ( remote_path.back( ) == '/' ? "" : "/" ) + backup_path.filename( ).string( );
@@ -162,8 +163,8 @@ void CRemoteTransfer::upload_file( const fs::path &backup_path, const std::strin
     m_sftp_handle = nullptr;
 }
 
-std::vector<RemoteEntry> CRemoteTransfer::list_directory( const std::string &path ) {
-    LIBSSH2_SFTP_HANDLE *handle = libssh2_sftp_opendir( m_sftp_session, path.c_str( ) );
+std::vector<RemoteEntry> CRemoteTransfer::list_directory( const std::string& path ) {
+    LIBSSH2_SFTP_HANDLE* handle = libssh2_sftp_opendir( m_sftp_session, path.c_str( ) );
     if ( !handle ) {
         return { };
     }
@@ -182,7 +183,7 @@ std::vector<RemoteEntry> CRemoteTransfer::list_directory( const std::string &pat
     return entry;
 }
 
-void CRemoteTransfer::download_file( const fs::path &backup_path, const CConfig &config ) {
+void CRemoteTransfer::download_file( const fs::path& backup_path, const CConfig& config ) {
     char mem[1024 * 100];
 
     fs::path local_path = paths::backup_dir( ) / backup_path.filename( );

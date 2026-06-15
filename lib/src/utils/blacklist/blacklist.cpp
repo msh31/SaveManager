@@ -13,10 +13,10 @@ void Blacklist::init( ) {
             data = json::parse( file );
             SPDLOG_INFO( "Loaded blacklist JSON" );
 
-            for ( const auto &entry : data ) {
+            for ( const auto& entry : data ) {
                 blacklisted_games.insert( entry.get<std::string>( ) );
             }
-        } catch ( json::exception &ex ) {
+        } catch ( json::exception& ex ) {
             SPDLOG_ERROR( "blacklist parsing error: {}", ex.what( ) );
         }
     } else {
@@ -26,7 +26,7 @@ void Blacklist::init( ) {
 
 void Blacklist::save( ) {
     json data;
-    for ( const auto &entry : blacklisted_games ) {
+    for ( const auto& entry : blacklisted_games ) {
         data.emplace_back( entry );
     }
 
@@ -34,4 +34,4 @@ void Blacklist::save( ) {
     file << data.dump( 4 );
 }
 
-bool Blacklist::is_blacklisted( const std::string &game_name ) { return blacklisted_games.count( game_name ) > 0; }
+bool Blacklist::is_blacklisted( const std::string& game_name ) { return blacklisted_games.count( game_name ) > 0; }

@@ -40,11 +40,11 @@ std::optional<std::string> SteamHelper::parse_steam_userid( ) {
     auto base = get_steam_location( );
     if ( base == std::nullopt ) return std::nullopt;
 
-    auto steam_root     = base->parent_path( ).parent_path( );
+    auto steam_root = base->parent_path( ).parent_path( );
     auto loginusers_vdf = steam_root / "config" / "loginusers.vdf";
 
     std::ifstream file( loginusers_vdf.string( ) );
-    std::string   line;
+    std::string line;
 
     if ( !file.is_open( ) ) {
         SPDLOG_ERROR( "Failed to open loginusers.vdf for parsing!" );
@@ -55,7 +55,7 @@ std::optional<std::string> SteamHelper::parse_steam_userid( ) {
     while ( std::getline( file, line ) ) {
         if ( line.find( "\"7656119" ) != std::string::npos ) {
             auto last_close = line.rfind( '"' );
-            auto last_open  = line.rfind( '"', last_close - 1 );
+            auto last_open = line.rfind( '"', last_close - 1 );
 
             std::string value = line.substr( last_open + 1, last_close - last_open - 1 );
 
@@ -64,7 +64,7 @@ std::optional<std::string> SteamHelper::parse_steam_userid( ) {
         }
         if ( line.find( "\"MostRecent\"" ) != std::string::npos ) {
             auto last_close = line.rfind( '"' );
-            auto last_open  = line.rfind( '"', last_close - 1 );
+            auto last_open = line.rfind( '"', last_close - 1 );
 
             std::string value = line.substr( last_open + 1, last_close - last_open - 1 );
             if ( value == "1" ) return current_id;
@@ -78,7 +78,7 @@ std::optional<std::string> SteamHelper::parse_steam_userid( ) {
 }
 
 std::vector<fs::path> SteamHelper::get_library_folders( ) {
-    auto                  vdf_file = get_steam_location( );
+    auto vdf_file = get_steam_location( );
     std::vector<fs::path> libraries;
 
     if ( !vdf_file ) {
@@ -87,7 +87,7 @@ std::vector<fs::path> SteamHelper::get_library_folders( ) {
     }
 
     std::ifstream file( vdf_file.value( ).string( ) );
-    std::string   line;
+    std::string line;
 
     if ( !file.is_open( ) ) {
         SPDLOG_ERROR( "Failed to open Steam library file" );
@@ -96,9 +96,9 @@ std::vector<fs::path> SteamHelper::get_library_folders( ) {
 
     while ( std::getline( file, line ) ) {
         if ( line.find( "\"path\"" ) != std::string::npos ) {
-            size_t first_quote  = line.find( '"' );
+            size_t first_quote = line.find( '"' );
             size_t second_quote = line.find( '"', first_quote + 1 );
-            size_t third_quote  = line.find( '"', second_quote + 1 );
+            size_t third_quote = line.find( '"', second_quote + 1 );
             size_t fourth_quote = line.find( '"', third_quote + 1 );
 
             if ( fourth_quote == std::string::npos ) {
@@ -115,7 +115,7 @@ std::vector<fs::path> SteamHelper::get_library_folders( ) {
 }
 
 std::optional<SteamManifest> SteamHelper::parse_app_manifest( const fs::path& acf_path ) {
-    uint32_t    appid = 0;
+    uint32_t appid = 0;
     std::string name;
     std::string install_dir;
 
@@ -129,7 +129,7 @@ std::optional<SteamManifest> SteamHelper::parse_app_manifest( const fs::path& ac
     while ( std::getline( f, str ) ) {
         if ( str.find( "\"appid\"" ) != std::string::npos ) {
             auto last_close = str.rfind( '"' );
-            auto last_open  = str.rfind( '"', last_close - 1 );
+            auto last_open = str.rfind( '"', last_close - 1 );
 
             std::string value = str.substr( last_open + 1, last_close - last_open - 1 );
 
@@ -137,7 +137,7 @@ std::optional<SteamManifest> SteamHelper::parse_app_manifest( const fs::path& ac
         }
         if ( str.find( "\"name\"" ) != std::string::npos ) {
             auto last_close = str.rfind( '"' );
-            auto last_open  = str.rfind( '"', last_close - 1 );
+            auto last_open = str.rfind( '"', last_close - 1 );
 
             std::string value = str.substr( last_open + 1, last_close - last_open - 1 );
 
@@ -145,7 +145,7 @@ std::optional<SteamManifest> SteamHelper::parse_app_manifest( const fs::path& ac
         }
         if ( str.find( "\"installdir\"" ) != std::string::npos ) {
             auto last_close = str.rfind( '"' );
-            auto last_open  = str.rfind( '"', last_close - 1 );
+            auto last_open = str.rfind( '"', last_close - 1 );
 
             std::string value = str.substr( last_open + 1, last_close - last_open - 1 );
 

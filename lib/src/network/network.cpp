@@ -74,7 +74,7 @@ bool Network::download_file( std::string_view url, const std::string& output_pat
 }
 
 bool Network::is_update_available( ) {
-    json        data;
+    json data;
     std::string upstream = download_to_string( "https://api.github.com/repos/msh31/SaveManager/releases/latest" );
 
     if ( upstream.empty( ) ) {
@@ -90,7 +90,7 @@ bool Network::is_update_available( ) {
     }
 
     std::string latest = data.value( "tag_name", std::string( "" ) );
-    auto [maj, min, pat]       = parse_version( APP_VERSION );
+    auto [maj, min, pat] = parse_version( APP_VERSION );
     auto [l_maj, l_min, l_pat] = parse_version( latest );
 
     if ( maj > l_maj ) return false;
@@ -106,9 +106,9 @@ bool Network::is_update_available( ) {
 
 std::tuple<int, int, int> Network::parse_version( std::string_view v ) {
     std::istringstream ss( ( std::string( v ) ) );
-    std::string        segment;
-    int                major = 0, minor = 0, patch = 0;
-    int                i = 0;
+    std::string segment;
+    int major = 0, minor = 0, patch = 0;
+    int i = 0;
     while ( std::getline( ss, segment, '.' ) && i < 3 ) {
         if ( i == 0 ) segment.erase( 0, 1 ); // strip 'v'
         if ( i == 0 ) major = std::stoi( segment );

@@ -1,15 +1,15 @@
 #pragma once
 
 struct CMenuBarItem {
-        const char*            icon;
-        const char*            label;
+        const char* icon;
+        const char* label;
         std::function<void( )> callback = nullptr;
-        bool*                  state    = nullptr;
-        std::optional<ImVec4>  active_color;
+        bool* state = nullptr;
+        std::optional<ImVec4> active_color;
 };
 
 struct CMenuBarGroup {
-        const char*               label;
+        const char* label;
         std::vector<CMenuBarItem> items;
 };
 

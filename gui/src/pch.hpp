@@ -3,9 +3,9 @@
 #define IMGUI_IMPL_OPENGL_LOADER_CUSTOM // use glad not their own loader
 
 #ifdef __cplusplus
-#include <imgui.h>
-#include <imgui_internal.h>
-#include <imgui_stdlib.h>
+    #include <imgui.h>
+    #include <imgui_internal.h>
+    #include <imgui_stdlib.h>
 #endif
 
 // clang-format off

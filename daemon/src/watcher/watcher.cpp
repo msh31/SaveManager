@@ -95,7 +95,7 @@ void CWatcher::debounce_loop( ) {
         std::vector<std::pair<fs::path, uint32_t>> to_fire;
         {
             std::lock_guard<std::mutex> lock( m_debounce_mutex );
-            auto                        now = std::chrono::system_clock::now( );
+            auto now = std::chrono::system_clock::now( );
 
             for ( auto& entry : m_save_event_times ) {
                 if ( now - entry.second.first > m_interval ) {
@@ -119,16 +119,16 @@ void CWatcher::debounce_loop( ) {
 void CWatcher::run( ) {
 #if defined( __linux__ )
     struct pollfd fds[2];
-    fds[0].fd     = m_notify_fd;
+    fds[0].fd = m_notify_fd;
     fds[0].events = POLLIN;
-    fds[1].fd     = m_signal_fd;
+    fds[1].fd = m_signal_fd;
     fds[1].events = POLLIN;
 
     struct signalfd_siginfo fdsi;
-    char                    buffer[BUFFER_LEN];
+    char buffer[BUFFER_LEN];
 #endif
 
-    m_running         = true;
+    m_running = true;
     m_debounce_thread = std::thread( &CWatcher::debounce_loop, this );
 
     while ( true ) {

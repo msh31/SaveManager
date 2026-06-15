@@ -17,7 +17,7 @@ void CServer::run( ) {
 
     while ( true ) {
         sockaddr_un client_address;
-        SOCKLEN_T   client_address_size = sizeof( client_address );
+        SOCKLEN_T client_address_size = sizeof( client_address );
 
         SOCKET client_socket = accept( m_socket, SOCKADDR_CAST & client_address, &client_address_size );
 

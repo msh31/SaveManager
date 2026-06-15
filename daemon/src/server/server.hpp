@@ -8,7 +8,7 @@ class CServer {
         void run( ); // listen
 
     private:
-        void        handle_client( SOCKET client_socket );
-        CSocket     m_socket;
+        void handle_client( SOCKET client_socket );
+        CSocket m_socket;
         sockaddr_un m_server_address;
 };

@@ -18,6 +18,6 @@ class CSettingsView : public CBaseView {
         std::string m_new_game_path;
         std::string m_new_game_appid;
 
-        std::future<bool>                  m_update_future;
+        std::future<bool> m_update_future;
         std::future<std::pair<bool, bool>> m_update_t_future;
 };

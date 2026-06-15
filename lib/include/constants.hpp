@@ -1,7 +1,7 @@
 #pragma once
 
-constexpr std::string APP_NAME    = "SaveManager";
-constexpr std::string APP_AUTHOR  = "marco007";
+constexpr std::string APP_NAME = "SaveManager";
+constexpr std::string APP_AUTHOR = "marco007";
 constexpr std::string APP_VERSION = "v1.8.0";
 
 #define MODE_CREATE_ARCHIVE ( ZIP_CREATE | ZIP_TRUNCATE )

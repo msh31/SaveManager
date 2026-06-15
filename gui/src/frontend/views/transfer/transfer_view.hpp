@@ -13,11 +13,11 @@ class CTransferView : public CBaseView {
         void on_exit( ) override {}
 
     private:
-        CConfig&          m_config;
+        CConfig& m_config;
         std::vector<Game> m_result;
         std::vector<Game> m_games_snapshot;
         std::future<void> m_detection_future;
-        std::mutex        m_result_mutex;
+        std::mutex m_result_mutex;
 
         bool m_initialized = false;
         bool m_connected = false;

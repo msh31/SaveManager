@@ -10,7 +10,7 @@ namespace fs = std::filesystem;
 
 namespace paths {
     inline fs::path g_config_dir;
-    inline void     set_config_dir( const fs::path& p ) { g_config_dir = p; }
+    inline void set_config_dir( const fs::path& p ) { g_config_dir = p; }
 
     inline fs::path home_dir( ) {
         const char* home;
@@ -63,7 +63,7 @@ namespace paths {
 
     inline fs::path documents_dir( ) {
 #if defined( _WIN32 )
-        PWSTR   path  = NULL;
+        PWSTR path = NULL;
         HRESULT h_res = SHGetKnownFolderPath( FOLDERID_Documents, 0, NULL, &path );
         if ( SUCCEEDED( h_res ) ) {
             fs::path result( path );

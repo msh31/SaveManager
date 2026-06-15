@@ -46,8 +46,8 @@ void CSettingsView::render( ) {
     bool is_checking_t = m_update_t_future.valid( ) &&
                          m_update_t_future.wait_for( std::chrono::seconds( 0 ) ) != std::future_status::ready;
 
-    float half         = ( ImGui::GetWindowSize( ).x - 20.0f ) / 2.0f;
-    auto  window_width = ( ImGui::GetWindowSize( ).x / 3.0f );
+    float half = ( ImGui::GetWindowSize( ).x - 20.0f ) / 2.0f;
+    auto window_width = ( ImGui::GetWindowSize( ).x / 3.0f );
 
     ImGui::PushFont( CFontManager::get( ).get_font( "jbm_header" ).value_or( nullptr ) );
     ImGui::Text( "Settings" );
@@ -76,7 +76,7 @@ void CSettingsView::render( ) {
     if ( is_checking_t ) ImGui::BeginDisabled( true );
     if ( ImGui::Button( "Update translations" ) ) {
         m_update_t_future = std::async( std::launch::async, [this]( ) -> std::pair<bool, bool> {
-            bool ubi   = Network::download_file( ubi_translation_url, paths::ubi_translations( ).string( ) );
+            bool ubi = Network::download_file( ubi_translation_url, paths::ubi_translations( ).string( ) );
             bool steam = Network::download_file( steam_translation_url, paths::steam_appids( ).string( ) );
             return { ubi, steam };
         } );

@@ -10,6 +10,6 @@ class CEditorView : public CBaseView {
         void on_exit( ) override {}
 
     private:
-        SanAndreas  m_san_andreas;
+        SanAndreas m_san_andreas;
         std::string file_path;
 };

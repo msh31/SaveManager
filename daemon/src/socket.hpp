@@ -53,10 +53,10 @@ class CSocket {
         }
 
         operator SOCKET( ) const { return m_sock; }
-        CSocket( const CSocket& )            = delete;
+        CSocket( const CSocket& ) = delete;
         CSocket& operator=( const CSocket& ) = delete;
 
     private:
         SOCKET m_sock;
-        bool   m_wsa_initialized = false;
+        bool m_wsa_initialized = false;
 };

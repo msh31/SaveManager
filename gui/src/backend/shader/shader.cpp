@@ -1,11 +1,11 @@
 #include "shader.hpp"
 
 CShader::CShader( ) {
-    GLuint vert      = compile_shader( default_vert, GL_VERTEX_SHADER );
-    GLuint frag      = compile_shader( default_frag, GL_FRAGMENT_SHADER );
+    GLuint vert = compile_shader( default_vert, GL_VERTEX_SHADER );
+    GLuint frag = compile_shader( default_frag, GL_FRAGMENT_SHADER );
     m_shader_program = link_program( vert, frag );
-    m_u_resolution   = glGetUniformLocation( m_shader_program, "iResolution" );
-    m_u_time         = glGetUniformLocation( m_shader_program, "iTime" );
+    m_u_resolution = glGetUniformLocation( m_shader_program, "iResolution" );
+    m_u_time = glGetUniformLocation( m_shader_program, "iTime" );
     init_quad( );
 }
 
@@ -45,8 +45,8 @@ GLuint CShader::compile_shader( const char* source, GLenum type ) {
 }
 
 GLuint CShader::link_program( GLuint vert, GLuint frag ) {
-    GLuint pid       = glCreateProgram( );
-    GLint  is_linked = 0;
+    GLuint pid = glCreateProgram( );
+    GLint is_linked = 0;
 
     glAttachShader( pid, vert );
     glAttachShader( pid, frag );

@@ -127,7 +127,7 @@ bool SanAndreas::save( fs::path path ) {
         SPDLOG_ERROR( "Failed to open savegame for writing!" );
         return false;
     }
-    out.write( reinterpret_cast<const char *>( data.data( ) ), data.size( ) );
+    out.write( reinterpret_cast<const char*>( data.data( ) ), data.size( ) );
     return true;
 }
 
@@ -139,7 +139,7 @@ void SanAndreas::parse_block_zero( ) {
     }
 
     save_version = get_version_string( bz_offset );
-    auto ptr = reinterpret_cast<const char *>( data.data( ) + bz_offset + 4 );
+    auto ptr = reinterpret_cast<const char*>( data.data( ) + bz_offset + 4 );
     save_name = std::string( ptr, strnlen( ptr, 100 ) );
 }
 
@@ -204,8 +204,8 @@ void SanAndreas::parse_block_twenty_four( ) {
 void SanAndreas::serialize( ) {
     auto bz_offset = block_offsets[0];
     if ( bz_offset + 4 + 100 > data.size( ) ) return;
-    std::memcpy( data.data( ) + bz_offset + 4, save_name.c_str( ),
-                 std::min( save_name.size( ), static_cast<size_t>( 100 ) ) );
+    std::memcpy(
+        data.data( ) + bz_offset + 4, save_name.c_str( ), std::min( save_name.size( ), static_cast<size_t>( 100 ) ) );
 
     auto bt_offset = block_offsets[2];
     if ( bt_offset + 0x04 + 0x20 > data.size( ) ) return;

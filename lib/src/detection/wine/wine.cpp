@@ -22,7 +22,7 @@ std::expected<std::vector<Game>, SMError> CWinePrefixDetector::find( ) {
             fs::path prefix = entry.path( );
             if ( !fs::exists( prefix ) ) continue;
 
-            fs::path drive_c   = fs::exists( prefix / "pfx" ) ? prefix / "pfx/drive_c" : prefix / "drive_c";
+            fs::path drive_c = fs::exists( prefix / "pfx" ) ? prefix / "pfx/drive_c" : prefix / "drive_c";
             fs::path users_dir = drive_c / "users";
 
             if ( !fs::exists( users_dir ) ) continue;
@@ -38,14 +38,14 @@ std::expected<std::vector<Game>, SMError> CWinePrefixDetector::find( ) {
 
                 // ubisoft
                 auto ubi_documents = CUbisoftDetector::scan( user.path( ) / "Documents" );
-                auto ubi_anno      = CUbisoftDetector::scan( user.path( ) / "Documents" );
-                auto ubi_anno_alt  = CUbisoftDetector::scan( user.path( ) / "AppData" / "Roaming" );
+                auto ubi_anno = CUbisoftDetector::scan( user.path( ) / "Documents" );
+                auto ubi_anno_alt = CUbisoftDetector::scan( user.path( ) / "AppData" / "Roaming" );
                 std::ranges::move( ubi_documents, std::back_inserter( games ) );
                 std::ranges::move( ubi_anno, std::back_inserter( games ) );
                 std::ranges::move( ubi_anno_alt, std::back_inserter( games ) );
 
                 // rockstar
-                auto rsg_documents     = CRockstarDetector::scan( user.path( ) / "Documents" / "Rockstar Games" );
+                auto rsg_documents = CRockstarDetector::scan( user.path( ) / "Documents" / "Rockstar Games" );
                 auto rsg_leg_documents = CRockstarDetector::scan( user.path( ) / "Documents" );
                 auto rsg_leg_appdata = CRockstarDetector::scan( user.path( ) / "AppData" / "Local" / "Rockstar Games" );
                 std::ranges::move( rsg_documents, std::back_inserter( games ) );

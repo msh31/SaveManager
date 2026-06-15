@@ -11,7 +11,7 @@ void ConfirmDialog::render( ) {
     bool p_open = true;
 
     float spacing = ImGui::GetStyle( ).ItemSpacing.x;
-    float total   = btn_width * 2 + spacing;
+    float total = btn_width * 2 + spacing;
 
     ImVec2 center = ImGui::GetMainViewport( )->GetCenter( );
     ImGui::SetNextWindowPos( center, ImGuiCond_Always, { 0.5f, 0.5f } );
@@ -30,6 +30,6 @@ void ConfirmDialog::render( ) {
 
 void ConfirmDialog::show( std::string str, std::function<void( )> callback ) {
     message = str;
-    fun     = callback;
+    fun = callback;
     is_open = true;
 }

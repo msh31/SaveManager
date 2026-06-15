@@ -3,15 +3,15 @@
 static const ImWchar icon_ranges[] = { 0xf000, 0xf2e0, 0 };
 
 void CFontManager::load_from_memory( FontData fd, void* data, int data_len ) {
-    ImGuiIO&     io = ImGui::GetIO( );
+    ImGuiIO& io = ImGui::GetIO( );
     ImFontConfig cfg;                 //???
     cfg.FontDataOwnedByAtlas = false; // imgui will try to free mem of an embedded header which will fail
 
     ImFont* font = nullptr;
     if ( fd.is_icon ) {
-        cfg.MergeMode        = true;
+        cfg.MergeMode = true;
         cfg.GlyphMinAdvanceX = fd.size;
-        font                 = io.Fonts->AddFontFromMemoryTTF( data, data_len, fd.size, &cfg, icon_ranges );
+        font = io.Fonts->AddFontFromMemoryTTF( data, data_len, fd.size, &cfg, icon_ranges );
     } else {
         font = io.Fonts->AddFontFromMemoryTTF( data, data_len, fd.size, &cfg );
     }

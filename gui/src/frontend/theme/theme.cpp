@@ -37,7 +37,7 @@ void ThemeManager::apply_style( ) {
 void ThemeManager::apply_colors( ThemeType theme ) {
     ThemeType selectedTheme = theme;
 
-    auto &colors = ImGui::GetStyle( ).Colors;
+    auto& colors = ImGui::GetStyle( ).Colors;
     switch ( selectedTheme ) {
     case ThemeType::Dark:
         colors[ImGuiCol_Text] = ImVec4( 1.00f, 1.00f, 1.00f, 1.00f );

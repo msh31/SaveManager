@@ -12,12 +12,12 @@ void CEditorView::render( ) {
     if ( ImGui::Button( "Open savefile" ) ) {
         NFD_Init( );
 
-        nfdu8char_t*          outPath;
-        nfdu8filteritem_t     filters[2] = { { "GTA SAN ANDREAS SAVE FILE", "b" } };
-        nfdopendialogu8args_t args       = { 0 };
-        args.filterList                  = filters;
-        args.filterCount                 = 1;
-        nfdresult_t result               = NFD_OpenDialogU8_With( &outPath, &args );
+        nfdu8char_t* outPath;
+        nfdu8filteritem_t filters[2] = { { "GTA SAN ANDREAS SAVE FILE", "b" } };
+        nfdopendialogu8args_t args = { 0 };
+        args.filterList = filters;
+        args.filterCount = 1;
+        nfdresult_t result = NFD_OpenDialogU8_With( &outPath, &args );
         if ( result == NFD_OKAY ) {
             std::string path( outPath );
             NFD_FreePathU8( outPath );
@@ -44,15 +44,15 @@ void CEditorView::render( ) {
         if ( ImGui::Button( "Close" ) ) {
             m_san_andreas.close( );
             m_san_andreas = { };
-            file_path     = { };
+            file_path = { };
         }
     }
 
     if ( !file_path.empty( ) ) {
-        float window_width  = ImGui::GetWindowSize( ).x;
+        float window_width = ImGui::GetWindowSize( ).x;
         float window_height = ImGui::GetContentRegionAvail( ).y;
-        float top_height    = 250.0f;
-        float half          = ( window_width - 20.0f ) / 2.0f;
+        float top_height = 250.0f;
+        float half = ( window_width - 20.0f ) / 2.0f;
 
         ImGui::BeginChild( "#SA_INFO", ImVec2( half, 200.0f ), true );
         ImGui::PushFont( CFontManager::get( ).get_font( "jbm_bold" ).value_or( nullptr ) );

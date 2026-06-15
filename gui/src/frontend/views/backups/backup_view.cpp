@@ -9,7 +9,8 @@
 void CBackupsView::on_enter( const std::vector<Game>& games_snapshot ) {
     if ( m_backups.empty( ) || m_reload_backups ) {
         m_reload_backups = false;
-        m_refresh_future = std::async( std::launch::async, [this, games_snapshot] { add_new_entry( games_snapshot ); } );
+        m_refresh_future =
+            std::async( std::launch::async, [this, games_snapshot] { add_new_entry( games_snapshot ); } );
     }
 }
 
@@ -52,7 +53,7 @@ void CBackupsView::add_new_entry( std::vector<Game> snapshot ) {
     }
     std::lock_guard lock_em( m_mutex );
     m_labels_cache = std::move( labels_cache );
-    m_backups      = std::move( backups );
+    m_backups = std::move( backups );
 }
 
 void CBackupsView::render( const std::vector<Game>& games_snapshot ) {
@@ -66,14 +67,15 @@ void CBackupsView::render( const std::vector<Game>& games_snapshot ) {
 
     if ( !is_refreshing && m_reload_backups ) {
         m_reload_backups = false;
-        m_refresh_future = std::async( std::launch::async, [this, games_snapshot] { add_new_entry( games_snapshot ); } );
+        m_refresh_future =
+            std::async( std::launch::async, [this, games_snapshot] { add_new_entry( games_snapshot ); } );
     }
 
     std::vector<BackupEntry> snapshot;
     std::unordered_map<std::string, std::unordered_map<std::string, std::string>> labels_cache;
     {
         std::lock_guard lock( m_mutex );
-        snapshot     = m_backups;
+        snapshot = m_backups;
         labels_cache = m_labels_cache;
     }
 
@@ -81,7 +83,8 @@ void CBackupsView::render( const std::vector<Game>& games_snapshot ) {
         Spinner::render( );
     } else {
         if ( ImGui::Button( "Refresh" ) )
-            m_refresh_future = std::async( std::launch::async, [this, games_snapshot] { add_new_entry( games_snapshot ); } );
+            m_refresh_future =
+                std::async( std::launch::async, [this, games_snapshot] { add_new_entry( games_snapshot ); } );
         ImGui::SetItemTooltip( "Rescans the backups directory" );
 
         ImGui::Dummy( ImVec2( 0, 5.0f ) );
@@ -97,12 +100,12 @@ void CBackupsView::render( const std::vector<Game>& games_snapshot ) {
 }
 
 void CBackupsView::render_game_row(
-    const BackupEntry&                                                                    bentry,
+    const BackupEntry& bentry,
     const std::unordered_map<std::string, std::unordered_map<std::string, std::string>>& labels_cache ) {
     bool& not_collapsed = m_card_collapsed[bentry.name.string( )];
 
-    auto        selectable_id = std::format( "##backup_game_{}", bentry.name.string( ) );
-    std::string right_text    = std::format( "{} backups", bentry.entries.size( ) );
+    auto selectable_id = std::format( "##backup_game_{}", bentry.name.string( ) );
+    std::string right_text = std::format( "{} backups", bentry.entries.size( ) );
 
     ImGui::PushStyleColor( ImGuiCol_Border, ImVec4( 198 / 255.f, 97 / 255.f, 63 / 255.f, 1.f ) );
     ImGui::PushStyleVar( ImGuiStyleVar_ChildRounding, 4.0f );
@@ -127,7 +130,7 @@ void CBackupsView::render_game_row(
 
     if ( not_collapsed ) {
         static const std::unordered_map<std::string, std::string> empty_labels;
-        auto                                                       it = labels_cache.find( bentry.name.string( ) );
+        auto it = labels_cache.find( bentry.name.string( ) );
         const auto& labels = ( it != labels_cache.end( ) ) ? it->second : empty_labels;
         for ( const auto& entry : bentry.entries )
             render_backup_row( entry, bentry.save_path, labels, bentry.name.string( ) );
@@ -147,16 +150,16 @@ void CBackupsView::render_backup_row(
         return;
     }
 
-    auto        it      = labels.find( path.filename( ).string( ) );
+    auto it = labels.find( path.filename( ).string( ) );
     std::string display = ( it != labels.end( ) ) ? it->second : path.filename( ).string( );
 
-    std::string date_text   = std::format( "{:%d/%m/%y %H:%M} | ", fs::last_write_time( path ) );
-    float       date_width  = ImGui::CalcTextSize( date_text.c_str( ) ).x;
-    auto        b_size      = fs::file_size( path ) / 1024;
-    std::string size_text   = std::format( "{}KB  ", b_size );
-    float       size_width  = ImGui::CalcTextSize( size_text.c_str( ) ).x;
-    float       spacing     = ImGui::GetStyle( ).ItemSpacing.x;
-    float       total_width = date_width + size_width + 80.0f * 3 + spacing * 5;
+    std::string date_text = std::format( "{:%d/%m/%y %H:%M} | ", fs::last_write_time( path ) );
+    float date_width = ImGui::CalcTextSize( date_text.c_str( ) ).x;
+    auto b_size = fs::file_size( path ) / 1024;
+    std::string size_text = std::format( "{}KB  ", b_size );
+    float size_width = ImGui::CalcTextSize( size_text.c_str( ) ).x;
+    float spacing = ImGui::GetStyle( ).ItemSpacing.x;
+    float total_width = date_width + size_width + 80.0f * 3 + spacing * 5;
 
     ImGui::Text( "%s", display.c_str( ) );
     ImGui::SameLine( ImGui::GetContentRegionMax( ).x - total_width );
@@ -180,10 +183,10 @@ void CBackupsView::render_backup_row(
     ImGui::SameLine( 0.0f, spacing );
 
     if ( ImGui::Button( "Rename", ImVec2( 80.0f, 0 ) ) ) {
-        m_pending_rename_game   = game_name;
+        m_pending_rename_game = game_name;
         m_pending_rename_backup = path;
-        m_rename_input          = ( it != labels.end( ) ) ? it->second : "";
-        m_open_rename_modal     = true;
+        m_rename_input = ( it != labels.end( ) ) ? it->second : "";
+        m_open_rename_modal = true;
     }
     ImGui::SetItemTooltip( "Rename this backup" );
     ImGui::SameLine( 0.0f, spacing );
@@ -222,8 +225,7 @@ void CBackupsView::render_modals( ) {
                 m_pending_rename_game, m_pending_rename_backup.filename( ).string( ), m_rename_input );
             {
                 std::lock_guard lock( m_mutex );
-                m_labels_cache[m_pending_rename_game][m_pending_rename_backup.filename( ).string( )] =
-                    m_rename_input;
+                m_labels_cache[m_pending_rename_game][m_pending_rename_backup.filename( ).string( )] = m_rename_input;
             }
             ImGui::CloseCurrentPopup( );
         }
