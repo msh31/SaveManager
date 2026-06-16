@@ -3,6 +3,13 @@
 void CServer::run( ) {
     fs::remove( paths::socket( ) );
     m_server_address.sun_family = AF_UNIX;
+
+    // if for some reason the temporary path resolved using std::filesystem goes over whatever
+    // the OS limit it, this copy will soft-fail and truncate the actual path to the socket
+    // should NOT be an issue since on linux it resolves to /tmp - on windows %temp% or sum
+    // and mac is kinda weird, its a randomized per-user path which will be like 40+ characters long.
+    //
+    // the limit, at least on linux is 108 bytes - to be verified on Windows & MacOS (TODO)
     std::strncpy( m_server_address.sun_path, paths::socket( ).string( ).c_str( ), sizeof( m_server_address.sun_path ) );
 
     if ( bind( m_socket, SOCKADDR_CAST & m_server_address, sizeof( m_server_address ) ) == SOCKET_ERROR ) {
