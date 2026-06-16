@@ -46,8 +46,8 @@ void Features::backup_game( const Game& game, const fs::path& file, CConfig& con
         std::error_code ec;
         fs::rename( zip_name, final_path, ec );
         if ( ec ) SPDLOG_ERROR( "rename failed: {}", ec.message( ) );
-
-        SPDLOG_INFO( "backup created: {}", game.game_name );
+        else
+            SPDLOG_INFO( "backup created: {}", game.game_name );
     }
 }
 
