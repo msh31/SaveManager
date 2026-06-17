@@ -72,10 +72,15 @@ std::vector<Game> Detection::find_saves( ) {
     // c++23 ftw; wait for async completions and insert them
     for ( auto&& [detector, future] : std::views::zip( detectors, detection_futures ) ) {
         if ( future.valid( ) ) {
-            auto res = future.get( );
-            if ( res.has_value( ) ) std::ranges::move( res.value( ), std::back_inserter( games ) );
-            else
-                SPDLOG_WARN( "{} detection failed", detector->name( ) );
+            try {
+                auto res = future.get( );
+                if ( res.has_value( ) ) std::ranges::move( res.value( ), std::back_inserter( games ) );
+                else
+                    SPDLOG_WARN( "{} detection failed", detector->name( ) );
+            } catch ( fs::filesystem_error& ex ) {
+                SPDLOG_ERROR(
+                    "{} failed in {} because: {}", detector->name( ), ex.path1( ).string( ), ex.code( ).message( ) );
+            }
         }
     }
 
