@@ -169,17 +169,17 @@ bool CZipArchive::extract_archive( const fs::path& save_path, std::vector<std::p
 
             if ( manifest_json.contains( fileInfo.name ) ) {
                 auto& entry = manifest_json[fileInfo.name];
-                if ( entry.contains( "mtime" ) ) {
-                    auto mtime =
-                        sys_to_file_time( std::chrono::system_clock::from_time_t( entry["mtime"].get<time_t>( ) ) );
-                    fs::last_write_time( resolved, mtime );
-                }
-
                 if ( ( hash_file( resolved ).compare( entry["hash"].get<std::string>( ) ) ) != 0 ) {
                     SPDLOG_WARN(
                         "{}'s hash does not match {}'s hash, aborting restore operation!",
                         resolved.filename( ).string( ), entry["hash"].get<std::string>( ) );
                     return false;
+                }
+
+                if ( entry.contains( "mtime" ) ) {
+                    auto mtime =
+                        sys_to_file_time( std::chrono::system_clock::from_time_t( entry["mtime"].get<time_t>( ) ) );
+                    fs::last_write_time( resolved, mtime );
                 }
             }
         }
