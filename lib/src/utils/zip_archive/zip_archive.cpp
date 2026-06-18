@@ -1,8 +1,7 @@
+#include "zip_archive.hpp"
 #include <utils/utils.hpp>
-#include <utils/zip_archive/zip_archive.hpp>
 
 #include <nlohmann/json.hpp>
-#include <zip.h>
 
 using json = nlohmann::json;
 

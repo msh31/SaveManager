@@ -1,5 +1,6 @@
-#include "detection/detection.hpp"
-#include "plugin/plugin.hpp"
+// clang-format off
+#include <detection/detection.hpp>
+#include "../plugin/plugin.hpp"
 
 #include "utils/blacklist/blacklist.hpp"
 #include "utils/paths.hpp"
@@ -7,15 +8,15 @@
 
 #include <utils/steam/steam.hpp>
 
-#include "detection/minecraft/minecraft.hpp"
-
+#include "minecraft/minecraft.hpp"
 #if defined __APPLE__ || defined __linux__
-    #include <detection/wine/wine.hpp>
+    #include "wine/wine.hpp"
+#else
+#include "rsg/rsg.hpp"
+#include "ubi/ubi.hpp"
+#include "unreal/unreal.hpp"
 #endif
-
-#include <detection/rsg/rsg.hpp>
-#include <detection/ubi/ubi.hpp>
-#include <detection/unreal/unreal.hpp>
+// clang-format on
 
 std::vector<Game> Detection::find_saves( ) {
     std::vector<std::unique_ptr<IDetector>> detectors;

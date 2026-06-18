@@ -1,4 +1,4 @@
-#include "plugin/plugin.hpp"
+#include "plugin.hpp"
 #include "utils/paths.hpp"
 #include "utils/steam/steam.hpp"
 

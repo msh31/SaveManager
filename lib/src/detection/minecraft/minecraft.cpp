@@ -1,4 +1,4 @@
-#include "detection/minecraft/minecraft.hpp"
+#include "minecraft.hpp"
 #include "utils/paths.hpp"
 
 std::expected<std::vector<Game>, SMError> CMinecraftDetector::find( ) {

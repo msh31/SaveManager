@@ -1,5 +1,5 @@
 #pragma once
-#include <detection/idetector.hpp>
+#include "../idetector.hpp"
 
 class CMinecraftDetector : public IDetector {
     public:

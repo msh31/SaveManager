@@ -1,4 +1,4 @@
-#include "detection/ubi/ubi.hpp"
+#include "ubi.hpp"
 #include "utils/translations/translations.hpp"
 
 std::string_view CUbisoftDetector::name( ) const { return "Ubisoft"; }

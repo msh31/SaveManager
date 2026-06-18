@@ -1,4 +1,4 @@
-#include "detection/rsg/rsg.hpp"
+#include "rsg.hpp"
 #include "utils/translations/translations.hpp"
 
 std::expected<std::vector<Game>, SMError> CRockstarDetector::find( ) {

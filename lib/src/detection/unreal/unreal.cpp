@@ -1,4 +1,4 @@
-#include "detection/unreal/unreal.hpp"
+#include "unreal.hpp"
 #include "utils/translations/translations.hpp"
 
 std::string_view CUnrealDetector::name( ) const { return "Unreal"; };

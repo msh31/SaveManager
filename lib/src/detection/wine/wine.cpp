@@ -1,8 +1,8 @@
 // clang-format off
-#include <detection/wine/wine.hpp>
-#include <detection/ubi/ubi.hpp>
-#include <detection/rsg/rsg.hpp>
-#include <detection/unreal/unreal.hpp>
+#include "wine.hpp"
+#include "../ubi/ubi.hpp"
+#include "../rsg/rsg.hpp"
+#include "../unreal/unreal.hpp"
 // clang-format on
 
 CWinePrefixDetector::CWinePrefixDetector( fs::path prefix ) : m_path( std::move( prefix ) ) {}

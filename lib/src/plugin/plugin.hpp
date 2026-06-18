@@ -1,6 +1,6 @@
 #pragma once
-#include "types.hpp"
 #include <sol/sol.hpp>
+#include <types.hpp>
 
 class CPlugin {
     public:

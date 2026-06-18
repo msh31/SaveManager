@@ -1,7 +1,8 @@
 #include "config/config.hpp"
+#include "../utils/translations/steamids.hpp"
+#include "../utils/translations/ubi_translations.hpp"
+
 #include "utils/paths.hpp"
-#include "utils/translations/steamids.hpp"
-#include "utils/translations/ubi_translations.hpp"
 #include <nlohmann/json.hpp>
 
 using json = nlohmann::json;
