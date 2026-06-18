@@ -215,7 +215,13 @@ void CTransferView::render( ) {
                 std::launch::async, [this, r = m_remote.get( ), cr = m_current_remote_path, selected_paths]( ) {
                     enumerate( selected_paths, [&]( int gi, auto& path ) {
                         m_current_file_index = static_cast<int>( gi );
-                        r->upload_file( path, cr, m_config );
+                        if ( !r->upload_file( path, cr, m_config ) ) {
+                            auto str = std::format( "Failed to upload: {}", path );
+                            Notify::show_notification( "Upload", str, 2500 );
+                        } else {
+                            auto str = std::format( "Uploaded {}!", path );
+                            Notify::show_notification( "Upload", str, 2500 );
+                        }
                     } );
                 } );
         }
@@ -287,8 +293,14 @@ void CTransferView::render( ) {
         if ( ImGui::Button( "Download" ) ) {
             std::string path = m_current_remote_path + ( m_current_remote_path.back( ) == '/' ? "" : "/" ) +
                                m_remote_entries[m_selected_remote_idx].name;
-            m_remote->download_file( path, m_config );
-            Notify::show_notification( "Remote Transfer", "Backup has been downloaded!", 2000 );
+            ;
+            if ( !m_remote->download_file( path, m_config ) ) {
+                auto str = std::format( "Failed to download: {}", path );
+                Notify::show_notification( "Download", str, 2500 );
+            } else {
+                auto str = std::format( "Downloaded {}!", path );
+                Notify::show_notification( "Download", str, 2500 );
+            }
         }
         ImGui::EndDisabled( );
 

@@ -112,7 +112,7 @@ bool CRemoteTransfer::disconnect( ) {
     return false;
 }
 
-void CRemoteTransfer::upload_file(
+bool CRemoteTransfer::upload_file(
     const fs::path& backup_path, const std::string& remote_path, const CConfig& config ) {
     char mem[1024 * 100];
     size_t nread;
@@ -126,7 +126,7 @@ void CRemoteTransfer::upload_file(
         LIBSSH2_SFTP_S_IRUSR | LIBSSH2_SFTP_S_IWUSR | LIBSSH2_SFTP_S_IRGRP | LIBSSH2_SFTP_S_IROTH );
     if ( !m_sftp_handle ) {
         SPDLOG_ERROR( "Unable to open path with SFTP {}", libssh2_sftp_last_error( m_sftp_session ) );
-        return;
+        return false;
     }
 
     std::ifstream file( backup_path, std::ios::binary );
@@ -134,10 +134,11 @@ void CRemoteTransfer::upload_file(
         libssh2_sftp_close_handle( m_sftp_handle );
         m_sftp_handle = nullptr;
         SPDLOG_ERROR( "Could not open backup path with SFTP" );
-        return;
+        return false;
     }
 
     m_total_bytes = fs::file_size( backup_path );
+    bool failed = false;
     do {
         file.read( mem, sizeof( mem ) );
         if ( file.gcount( ) <= 0 ) {
@@ -150,17 +151,53 @@ void CRemoteTransfer::upload_file(
             nwritten = libssh2_sftp_write( m_sftp_handle, ptr, nread );
 
             if ( nwritten < 0 ) {
+                failed = true;
                 break;
             }
             ptr += nwritten;
             nread -= (size_t)nwritten;
             m_bytes_transferred += nwritten;
         } while ( nread );
-    } while ( file.gcount( ) > 0 );
+    } while ( file.gcount( ) > 0 && !failed );
 
-    SPDLOG_INFO( "File has been uploaded!" );
     libssh2_sftp_close_handle( m_sftp_handle );
     m_sftp_handle = nullptr;
+    if ( !failed ) SPDLOG_INFO( "File has been uploaded!" );
+    return !failed;
+}
+
+bool CRemoteTransfer::download_file( const fs::path& backup_path, const CConfig& config ) {
+    char mem[1024 * 100];
+
+    fs::path local_path = paths::backup_dir( ) / backup_path.filename( );
+    m_sftp_handle = libssh2_sftp_open( m_sftp_session, backup_path.string( ).c_str( ), LIBSSH2_FXF_READ, 0 );
+    if ( !m_sftp_handle ) {
+        SPDLOG_ERROR( "Unable to open path with SFTP: {}", libssh2_sftp_last_error( m_sftp_session ) );
+        return false;
+    }
+
+    std::ofstream file( local_path, std::ios::binary );
+    if ( !file.is_open( ) ) {
+        SPDLOG_ERROR( "Could not open backup path with SFTP" );
+        libssh2_sftp_close( m_sftp_handle );
+        m_sftp_handle = nullptr;
+        return false;
+    }
+
+    ssize_t rc;
+    bool failed = false;
+    while ( ( rc = libssh2_sftp_read( m_sftp_handle, mem, sizeof( mem ) ) ) > 0 ) {
+        if ( !file.write( mem, rc ) ) {
+            failed = true;
+            break;
+        }
+        m_bytes_transferred += rc;
+    }
+    libssh2_sftp_close( m_sftp_handle );
+    m_sftp_handle = nullptr;
+
+    if ( !failed ) SPDLOG_INFO( "File has been downloaded!" );
+    return !failed;
 }
 
 std::vector<RemoteEntry> CRemoteTransfer::list_directory( const std::string& path ) {
@@ -181,32 +218,4 @@ std::vector<RemoteEntry> CRemoteTransfer::list_directory( const std::string& pat
 
     libssh2_sftp_closedir( handle );
     return entry;
-}
-
-void CRemoteTransfer::download_file( const fs::path& backup_path, const CConfig& config ) {
-    char mem[1024 * 100];
-
-    fs::path local_path = paths::backup_dir( ) / backup_path.filename( );
-    m_sftp_handle = libssh2_sftp_open( m_sftp_session, backup_path.string( ).c_str( ), LIBSSH2_FXF_READ, 0 );
-    if ( !m_sftp_handle ) {
-        SPDLOG_ERROR( "Unable to open path with SFTP: {}", libssh2_sftp_last_error( m_sftp_session ) );
-        return;
-    }
-
-    std::ofstream file( local_path, std::ios::binary );
-    if ( !file.is_open( ) ) {
-        SPDLOG_ERROR( "Could not open backup path with SFTP" );
-        libssh2_sftp_close( m_sftp_handle );
-        m_sftp_handle = nullptr;
-        return;
-    }
-
-    ssize_t rc;
-    while ( ( rc = libssh2_sftp_read( m_sftp_handle, mem, sizeof( mem ) ) ) > 0 ) {
-        if ( !file.write( mem, rc ) ) break;
-        m_bytes_transferred += rc;
-    }
-    SPDLOG_INFO( "File has been downloaded!" );
-    libssh2_sftp_close( m_sftp_handle );
-    m_sftp_handle = nullptr;
 }

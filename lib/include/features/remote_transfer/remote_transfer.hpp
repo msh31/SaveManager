@@ -40,8 +40,8 @@ class CRemoteTransfer {
         bool
         connect( const std::string& dest_addr, const CConfig& config, bool auth_pw, const std::string& key_passphrase );
         bool disconnect( );
-        void upload_file( const fs::path& backup_path, const std::string& remote_path, const CConfig& config );
-        void download_file( const fs::path& backup_path, const CConfig& config );
+        bool upload_file( const fs::path& backup_path, const std::string& remote_path, const CConfig& config );
+        bool download_file( const fs::path& backup_path, const CConfig& config );
         std::vector<RemoteEntry> list_directory( const std::string& path );
 
         // disable copying (prevent accidental double-cleanup)
