@@ -25,6 +25,7 @@ std::string SanAndreas::get_version_string( size_t offset ) {
     for ( size_t i = { }; i < 4; i++ ) {
         if ( offset + i >= data.size( ) ) {
             SPDLOG_ERROR( "Version ID truncated" );
+            return { };
         }
         v_bytes.push_back( data[offset + i] );
     }
