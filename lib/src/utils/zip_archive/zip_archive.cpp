@@ -16,15 +16,14 @@ bool CZipArchive::add_to_archive( const fs::path& file ) {
         if ( source == nullptr ) {
             SPDLOG_ERROR( "Failed to create source for: {}", file.filename( ).string( ).c_str( ) );
             failed_files.push_back( file.filename( ).string( ).c_str( ) );
-            return false;
-        }
-
-        if ( zip_file_add( m_archive, file.filename( ).string( ).c_str( ), source, ZIP_FL_OVERWRITE ) < 0 ) {
-            SPDLOG_ERROR( "Failed to add file: {}", zip_strerror( m_archive ) );
-            failed_files.push_back( file.filename( ).string( ) );
-            zip_source_free( source );
         } else {
-            m_save_files.emplace_back( file, file.filename( ) );
+            if ( zip_file_add( m_archive, file.filename( ).string( ).c_str( ), source, ZIP_FL_OVERWRITE ) < 0 ) {
+                SPDLOG_ERROR( "Failed to add file: {}", zip_strerror( m_archive ) );
+                failed_files.push_back( file.filename( ).string( ) );
+                zip_source_free( source );
+            } else {
+                m_save_files.emplace_back( file, file.filename( ) );
+            }
         }
     }
 
@@ -37,18 +36,17 @@ bool CZipArchive::add_to_archive( const fs::path& file ) {
             zip_source_t* source = zip_source_file( m_archive, entry.path( ).string( ).c_str( ), 0, 0 );
             if ( source == nullptr ) {
                 SPDLOG_ERROR( "Failed to create source for: {}", entry.path( ).filename( ).string( ).c_str( ) );
-                failed_files.push_back( file.filename( ).string( ).c_str( ) );
-                return false;
-            }
-
-            auto file_path = fs::relative( entry.path( ), file );
-
-            if ( zip_file_add( m_archive, file_path.string( ).c_str( ), source, ZIP_FL_OVERWRITE ) < 0 ) {
-                SPDLOG_ERROR( "Failed to add file: {}", zip_strerror( m_archive ) );
-                failed_files.push_back( entry.path( ).filename( ).string( ) );
-                zip_source_free( source );
+                failed_files.push_back( entry.path( ).filename( ).string( ).c_str( ) );
             } else {
-                m_save_files.emplace_back( entry.path( ), file_path );
+                auto file_path = fs::relative( entry.path( ), file );
+
+                if ( zip_file_add( m_archive, file_path.string( ).c_str( ), source, ZIP_FL_OVERWRITE ) < 0 ) {
+                    SPDLOG_ERROR( "Failed to add file: {}", zip_strerror( m_archive ) );
+                    failed_files.push_back( entry.path( ).filename( ).string( ) );
+                    zip_source_free( source );
+                } else {
+                    m_save_files.emplace_back( entry.path( ).filename( ), file_path );
+                }
             }
         }
     }
