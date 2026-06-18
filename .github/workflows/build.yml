@@ -121,6 +121,11 @@ jobs:
         with:
           submodules: recursive
 
+      - name: Setup MSVC environment
+        uses: ilammy/msvc-dev-cmd@v1
+        with:
+          arch: x64
+
       - name: Install Conan
         run: pip install conan==2.29.1
 
@@ -144,7 +149,7 @@ jobs:
       - name: Install dependencies
         env:
           CONAN_CENTER_BUILD_SERVICE: "1"
-        run: conan install . --build=missing -s build_type=Release -s compiler.cppstd=23
+        run: conan install . --build=missing -s build_type=Release -s compiler.cppstd=23 -c tools.cmake.cmaketoolchain:generator=Ninja
 
       - name: Save Conan cache
         if: always() && steps.conan-cache.outputs.cache-hit != 'true'
@@ -154,9 +159,7 @@ jobs:
           key: ${{ steps.conan-cache.outputs.cache-primary-key }}
 
       - name: Build
-        shell: cmd
         run: |
-          for /f "usebackq tokens=*" %%i in (`"%ProgramFiles(x86)%\Microsoft Visual Studio\Installer\vswhere.exe" -latest -products * -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath`) do call "%%i\VC\Auxiliary\Build\vcvars64.bat"
           cmake --preset conan-release
           cmake --build --preset conan-release --target savemanager
 
