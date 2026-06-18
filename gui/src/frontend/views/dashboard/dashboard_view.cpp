@@ -266,8 +266,13 @@ void CDashboardView::render_game_content(
     if ( has_undo ) {
         if ( ImGui::Button( "Undo last restore" ) ) {
             for ( const auto& sp : game.save_paths ) {
-                Features::restore_backup( undo_dir, sp, m_pending_conflicts );
-                fs::remove( undo_dir );
+                if ( Features::restore_backup( undo_dir, sp, m_pending_conflicts ) ) {
+                    fs::remove( undo_dir );
+                } else {
+                    SPDLOG_ERROR( "Failed to restore backup, kept undo zip!" );
+                    Notify::show_notification( "Undo Last Restore", "Failed to restore backup, kept undo zip!", 2000 );
+                    continue;
+                }
             }
         }
     }
