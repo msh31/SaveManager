@@ -5,7 +5,7 @@ class CConfig {
     public:
         CConfig( fs::path config_dir = paths::config_dir( ) );
         ~CConfig( );
-        bool init( );
+        void init( );
         void save( );
 
         struct WindowProperties {

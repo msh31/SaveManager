@@ -10,37 +10,38 @@ CConfig::CConfig( fs::path config_dir ) : config_file( config_dir / "config.json
     try {
         if ( !fs::exists( config_dir ) ) {
             if ( !fs::create_directories( config_dir ) ) {
-                SPDLOG_ERROR( "Failed to create config directory" );
+                throw std::runtime_error( "Failed to create config directory" );
             }
         }
 
         if ( !fs::exists( paths::log_dir( ) ) ) {
             if ( !fs::create_directories( paths::log_dir( ) ) ) {
-                SPDLOG_ERROR( "Failed to create log directory" );
+                throw std::runtime_error( "Failed to create log directory" );
             }
         }
 
         if ( !fs::exists( paths::backup_dir( ) ) ) {
             if ( !fs::create_directories( paths::backup_dir( ) ) ) {
-                SPDLOG_ERROR( "Failed to create backup directory" );
+                throw std::runtime_error( "Failed to create backup directory" );
             }
         }
 
         if ( !fs::exists( paths::plugin_dir( ) ) ) {
             if ( !fs::create_directories( paths::plugin_dir( ) ) ) {
-                SPDLOG_ERROR( "Failed to create plugins directory" );
+                throw std::runtime_error( "Failed to create plugins directory" );
             }
         }
 
         if ( !fs::exists( paths::cache_dir( ) ) ) {
             if ( !fs::create_directories( paths::cache_dir( ) ) ) {
-                SPDLOG_ERROR( "Failed to create cache directory" );
+                throw std::runtime_error( "Failed to create cache directory" );
             }
         }
 
         load( );
     } catch ( const std::exception& err ) {
-        SPDLOG_ERROR( "config constructor: {}", err.what( ) );
+        auto er = std::format( "config constructor: {}", err.what( ) );
+        throw std::runtime_error( er );
     }
 }
 
@@ -48,32 +49,38 @@ CConfig::~CConfig( ) {
     try {
         save( );
     } catch ( const std::exception& err ) {
-        SPDLOG_ERROR( "config destructor: {}", err.what( ) );
+        auto er = std::format( "config destructor: {}", err.what( ) );
+        SPDLOG_CRITICAL( er );
     }
 }
 
-bool CConfig::init( ) {
+void CConfig::init( ) {
     if ( !fs::exists( paths::ubi_translations( ) ) ) {
         std::ofstream f( paths::ubi_translations( ), std::ios::binary );
-        f.write( reinterpret_cast<const char*>( ubi_translations_json ), ubi_translations_json_len );
+        if ( f.is_open( ) ) {
+            f.write( reinterpret_cast<const char*>( ubi_translations_json ), ubi_translations_json_len );
+        } else {
+            SPDLOG_WARN( "Failed to open ubisoft translations for writing!" );
+        }
     }
 
     if ( !fs::exists( paths::steam_appids( ) ) ) {
         std::ofstream f( paths::steam_appids( ), std::ios::binary );
-        f.write( reinterpret_cast<const char*>( steamids_json ), steamids_json_len );
+        if ( f.is_open( ) ) {
+            f.write( reinterpret_cast<const char*>( steamids_json ), steamids_json_len );
+        } else {
+            SPDLOG_WARN( "Failed to open steamids for writing" );
+        }
     }
 
     if ( !fs::exists( paths::blacklist( ) ) ) {
         std::ofstream f( paths::blacklist( ) );
-        f << R"(["The Crew Motorfest"])"; // kinda sucks
+        if ( f.is_open( ) ) {
+            f << R"(["The Crew Motorfest", "Skull and Bones"])"; // kinda sucks
+        } else {
+            SPDLOG_WARN( "Failed to open blacklist for writing" );
+        }
     }
-
-    // if(!fs::exists(paths::custom_games())) {
-    //     std::ofstream f(paths::custom_games());
-    //     f << "[]";
-    // }
-
-    return true;
 }
 
 void CConfig::save( ) {
@@ -98,7 +105,11 @@ void CConfig::save( ) {
     data["height"] = win_props.height;
 
     std::ofstream file( config_file );
+    if ( !file.is_open( ) ) {
+        throw std::runtime_error( "Failed to open config!" );
+    }
     file << data.dump( 4 );
+    if ( !file.good( ) ) throw std::runtime_error( "Failed to save config, disk might be full!" );
 }
 
 void CConfig::load( ) {
@@ -110,8 +121,7 @@ void CConfig::load( ) {
 
     std::ifstream file( config_file.c_str( ) );
     if ( !file.is_open( ) ) {
-        SPDLOG_ERROR( "Failed to open config!" );
-        return;
+        throw std::runtime_error( "Failed to open config!" );
     }
 
     try {
@@ -139,6 +149,7 @@ void CConfig::load( ) {
         win_props.width = data.value( "width", -1 );
         win_props.height = data.value( "height", -1 );
     } catch ( json::exception& ex ) {
-        SPDLOG_ERROR( "config parsing error: {}", ex.what( ) );
+        auto er = std::format( "config parsing error: {}", ex.what( ) );
+        throw std::runtime_error( er );
     }
 }
