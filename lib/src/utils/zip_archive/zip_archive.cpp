@@ -85,6 +85,8 @@ bool CZipArchive::finalize_add( ) {
     return true;
 }
 
+// Manifest not being able to be parsed is fine, it might not exist
+// which is the case for old backups created before this was added
 bool CZipArchive::extract_archive( const fs::path& save_path, std::vector<std::pair<fs::path, fs::path>>& conflicts ) {
     if ( m_archive == nullptr ) return false;
 
@@ -154,11 +156,17 @@ bool CZipArchive::extract_archive( const fs::path& save_path, std::vector<std::p
                 continue;
             }
 
+            bool write_failed = false;
             while ( ( bytes_read = zip_fread( file, buffer, sizeof( buffer ) ) ) > 0 ) {
                 if ( !save_file.write( buffer, bytes_read ) ) {
-                    zip_fclose( file );
-                    return false;
+                    write_failed = true;
+                    break;
                 }
+            }
+            if ( write_failed ) {
+                zip_fclose( file );
+                failed_files.push_back( fileInfo.name );
+                continue;
             }
             if ( bytes_read == -1 ) {
                 SPDLOG_ERROR( "Failed to read file in archive: {}", fileInfo.name );
@@ -173,7 +181,8 @@ bool CZipArchive::extract_archive( const fs::path& save_path, std::vector<std::p
                     SPDLOG_WARN(
                         "{}'s hash does not match {}'s hash, aborting restore operation!",
                         resolved.filename( ).string( ), entry["hash"].get<std::string>( ) );
-                    return false;
+                    failed_files.emplace_back( fileInfo.name );
+                    continue;
                 }
 
                 if ( entry.contains( "mtime" ) ) {
