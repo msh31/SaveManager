@@ -8,17 +8,17 @@
 #include <nlohmann/json.hpp>
 using json = nlohmann::json;
 
-void Features::backup_game( const Game& game, const fs::path& file, CConfig& config ) {
+bool Features::backup_game( const Game& game, const fs::path& file, CConfig& config ) {
     SPDLOG_INFO( "creating backup of: {}", game.game_name );
     fs::path game_backup_dir = paths::backup_dir( ) / sanitize_filename( game.game_name );
 
     auto ext = file.extension( ).string( );
     if ( ( game.type == PlatformType::MINECRAFT || game.type == PlatformType::GENERIC ) &&
          !fs::is_regular_file( file ) ) {
-        if ( !fs::is_directory( file ) ) return;
+        if ( !fs::is_directory( file ) ) return false;
     } else {
         if ( !fs::is_regular_file( file ) || extension_blocklist.contains( ext ) ) {
-            return;
+            return false;
         }
     }
 
@@ -42,16 +42,22 @@ void Features::backup_game( const Game& game, const fs::path& file, CConfig& con
     if ( !success ) {
         fs::remove( zip_name );
         SPDLOG_ERROR( "failed to create backup for: {}", game.game_name );
+        return false;
     } else {
         std::error_code ec;
         fs::rename( zip_name, final_path, ec );
-        if ( ec ) SPDLOG_ERROR( "rename failed: {}", ec.message( ) );
-        else
-            SPDLOG_INFO( "backup created: {}", game.game_name );
+        if ( ec ) {
+            SPDLOG_ERROR( "rename failed: {}", ec.message( ) );
+            return false;
+        }
     }
+    SPDLOG_INFO( "backup created: {}", game.game_name );
+    return true;
 }
 
-void Features::backup_all_games( const std::vector<Game>& snapshot, CConfig& config ) {
+std::vector<std::string> Features::backup_all_games( const std::vector<Game>& snapshot, CConfig& config ) {
+    std::vector<std::string> failures = { };
+
     for ( const auto& entry : snapshot ) {
         for ( const auto& save : entry.save_paths ) {
             if ( !fs::is_directory( save ) ) continue;
@@ -62,10 +68,15 @@ void Features::backup_all_games( const std::vector<Game>& snapshot, CConfig& con
 
                 auto ext = file.path( ).extension( ).string( );
                 if ( extension_blocklist.contains( ext ) ) continue;
-                backup_game( entry, file.path( ), config );
+                if ( !backup_game( entry, file.path( ), config ) ) {
+                    SPDLOG_WARN( "Failed to create backup for: {}", entry.game_name );
+                    failures.emplace_back( entry.game_name );
+                    continue;
+                }
             }
         }
     }
+    return failures;
 }
 
 bool Features::backup_game_files( const Game& game, std::vector<std::pair<fs::path, const Game*>> files ) {
@@ -99,7 +110,7 @@ bool Features::backup_game_files( const Game& game, std::vector<std::pair<fs::pa
     return true;
 }
 
-void Features::backup_to_path( fs::path source, fs::path dest ) {
+bool Features::backup_to_path( fs::path source, fs::path dest ) {
     if ( !fs::exists( dest.parent_path( ) ) ) fs::create_directories( dest.parent_path( ) );
 
     fs::path zip_name = fs::path( dest.string( ) + ".tmp" );
@@ -113,13 +124,17 @@ void Features::backup_to_path( fs::path source, fs::path dest ) {
     if ( !success ) {
         fs::remove( zip_name );
         SPDLOG_ERROR( "failed to create undo backup" );
+        return false;
     } else {
         std::error_code ec;
         fs::rename( zip_name, dest, ec );
-        if ( ec ) SPDLOG_ERROR( "undo rename failed: {}", ec.message( ) );
-
-        SPDLOG_INFO( "undo backup created" );
+        if ( ec ) {
+            SPDLOG_ERROR( "undo rename failed: {}", ec.message( ) );
+            return false;
+        }
     }
+    SPDLOG_INFO( "undo backup created" );
+    return true;
 }
 
 std::vector<fs::path> Features::get_backups( const std::string& game ) {
@@ -137,7 +152,7 @@ std::vector<fs::path> Features::get_backups( const std::string& game ) {
     return backups;
 }
 
-void Features::restore_backup(
+bool Features::restore_backup(
     const fs::path& name, const fs::path& save_path, std::vector<std::pair<fs::path, fs::path>>& conflicts ) {
     CZipArchive archive( MODE_EXTRACT_ARCHIVE, name.u8string( ) );
 
@@ -154,14 +169,18 @@ void Features::restore_backup(
     fs::path undo_source = ( entries.size( ) == 1 ) ? restore_path / entries[0] : restore_path;
 
     if ( fs::exists( undo_source ) && !fs::is_empty( undo_source ) ) {
-        backup_to_path( undo_source, name.parent_path( ) / "undo.zip" );
+        if ( !backup_to_path( undo_source, name.parent_path( ) / "undo.zip" ) ) {
+            SPDLOG_ERROR( "Failed to create backup before overwriting newer savefile, aborting.." );
+            return false;
+        }
     }
 
     if ( !archive.extract_archive( restore_path, conflicts ) ) {
         SPDLOG_ERROR( "failed to restore backup: {}", name.filename( ).string( ) );
-    } else {
-        SPDLOG_INFO( "backup restored: {}", name.filename( ).string( ) );
+        return false;
     }
+    SPDLOG_INFO( "backup restored: {}", name.filename( ).string( ) );
+    return true;
 }
 
 std::string Features::construct_backup_name( const std::string& game, const std::string& custom_name ) {
@@ -195,11 +214,13 @@ std::unordered_map<std::string, std::string> Features::load_labels( const std::s
             }
         } catch ( json::exception& ex ) {
             SPDLOG_ERROR( "label parsing error: {}", ex.what( ) );
+            return { };
         }
 
         return backup_labels;
     } else {
         SPDLOG_ERROR( "Failed to open labels to load it!" );
+        return { };
     }
 
     return { };
@@ -214,7 +235,7 @@ void Features::save_label( const std::string& game, const std::string& filename,
     Features::save_labels( game, labels );
 }
 
-void Features::save_labels( const std::string& game, const std::unordered_map<std::string, std::string>& labels ) {
+bool Features::save_labels( const std::string& game, const std::unordered_map<std::string, std::string>& labels ) {
     std::string file_name = ( paths::backup_dir( ) / sanitize_filename( game ) / "labels.json" ).string( );
 
     json data;
@@ -226,7 +247,16 @@ void Features::save_labels( const std::string& game, const std::unordered_map<st
         fs::remove( file_name );
     } else {
         std::ofstream out( file_name );
+        if ( !out.is_open( ) ) {
+            SPDLOG_ERROR( "Failed to write labels.json for: {}", game );
+            return false;
+        }
         out << data.dump( 4 );
+        if ( !out.good( ) ) {
+            SPDLOG_ERROR( "Failed to save label for: {}", game );
+            return false;
+        }
         out.close( );
     }
+    return true;
 }

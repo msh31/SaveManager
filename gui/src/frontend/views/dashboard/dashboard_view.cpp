@@ -150,8 +150,16 @@ void CDashboardView::render_toolbar( ) {
                 Notify::show_notification( "Mass Backup", "Failed to create snapshot of all saves!", 2000 );
                 return;
             }
-            Features::backup_all_games( snapshot, m_config );
-            Notify::show_notification( "Mass Backup", "Succesfully backed up all gamesaves!", 1500 );
+
+            auto failed_games = Features::backup_all_games( snapshot, m_config );
+            if ( !failed_games.empty( ) ) {
+                for ( const auto& entry : failed_games ) {
+                    auto str = std::format( "Failed to backup {}!", entry );
+                    Notify::show_notification( "Mass Backup", str, 1500 );
+                }
+            } else {
+                Notify::show_notification( "Mass Backup", "Succesfully backed up all gamesaves!", 1500 );
+            }
         } );
     }
     if ( is_refreshing || is_backing_up ) ImGui::EndDisabled( );
@@ -368,7 +376,10 @@ void CDashboardView::render_save_row( const fs::path& save_file, const Game& gam
     ImGui::PushStyleVar( ImGuiStyleVar_FramePadding, ImVec2( 3.0f, 3.0f ) );
     if ( ImGui::Button( "Backup", ImVec2( 80.0f, 0 ) ) ) {
         m_backup_future = std::async( std::launch::async, [this, game, save_file, &config = m_config]( ) {
-            Features::backup_game( game, save_file, config );
+            if ( !Features::backup_game( game, save_file, config ) ) {
+                auto str = std::format( "Failed to create backup for: {}", game.game_name );
+                Notify::show_notification( "Backup Failure", str, 3000 );
+            }
         } );
     }
     ImGui::SetItemTooltip( "Create a backup of this save" );
@@ -409,9 +420,12 @@ void CDashboardView::render_backup_row(
             if ( sp.empty( ) ) {
                 Notify::show_notification( "Restore", "Cannot restore: save location unknown.", 2000 );
             } else {
-                Features::restore_backup( backup, sp, m_pending_conflicts );
-                if ( !m_pending_conflicts.empty( ) ) {
-                    m_open_conflict_modal = true;
+                if ( Features::restore_backup( backup, sp, m_pending_conflicts ) ) {
+                    if ( !m_pending_conflicts.empty( ) ) {
+                        m_open_conflict_modal = true;
+                    }
+                } else {
+                    Notify::show_notification( "Restore", "Failed to restore backup!", 2000 );
                 }
             }
         }
