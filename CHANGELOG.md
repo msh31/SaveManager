@@ -15,6 +15,10 @@
 - Backup creation could silently produce a corrupted archive if writing finalized (closing) the zip file failed
 - Backup rename failure no longer logged as a successful backup
 - Restored file's modification time is no longer set before its hash is verified, so a failed/corrupted restore can't leave a mismatched file with the original timestamp
+- Backup restore no longer aborts entirely when a single file fails to write or fails its hash check; remaining files are still restored and failures are reported individually
+- Fixed an incorrect file path being reported for a failed file when adding a directory to a backup archive
+- GTA:SA save editor no longer loads a save with garbage data when BLOCK0 fails to parse
+- GTA:SA save editor no longer reads past a truncated version ID
 
 #### Changed
 - Plugin loading errors are now caught per-plugin; remaining plugins continue loading
@@ -42,6 +46,7 @@
 - Crash when shader had not fully initialized on startup
 - Upload worker race condition in transfer tab
 - Opening the config or a directory does no longer exit the app on failure
+- Uploading/downloading a file in the transfer tab now shows a success/failure notification instead of failing silently
 - Grouping issues with unknown / partially supported games (improved since [#2](https://github.com/msh31/SaveManager/issues/2)
     - This was a known issue for a long time but some great effort has gone into making sure all games are reportedly uniquely even if there are multiple versions installed on the system, i.e. for Ubisoft games
 - Removal of undo backup if backup fails to be restored
