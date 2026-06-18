@@ -216,10 +216,10 @@ void CTransferView::render( ) {
                     enumerate( selected_paths, [&]( int gi, auto& path ) {
                         m_current_file_index = static_cast<int>( gi );
                         if ( !r->upload_file( path, cr, m_config ) ) {
-                            auto str = std::format( "Failed to upload: {}", path );
+                            auto str = std::format( "Failed to upload: {}", path.c_str( ) );
                             Notify::show_notification( "Upload", str, 2500 );
                         } else {
-                            auto str = std::format( "Uploaded {}!", path );
+                            auto str = std::format( "Uploaded {}!", path.c_str( ) );
                             Notify::show_notification( "Upload", str, 2500 );
                         }
                     } );
@@ -295,10 +295,10 @@ void CTransferView::render( ) {
                                m_remote_entries[m_selected_remote_idx].name;
             ;
             if ( !m_remote->download_file( path, m_config ) ) {
-                auto str = std::format( "Failed to download: {}", path );
+                auto str = std::format( "Failed to download: {}", path.c_str( ) );
                 Notify::show_notification( "Download", str, 2500 );
             } else {
-                auto str = std::format( "Downloaded {}!", path );
+                auto str = std::format( "Downloaded {}!", path.c_str( ) );
                 Notify::show_notification( "Download", str, 2500 );
             }
         }
