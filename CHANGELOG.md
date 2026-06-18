@@ -1,6 +1,4 @@
-# Changelog
-
-## [1.8.0] - 2026-06-03
+## [1.8.0] - 2026-06-25
 *Rewrote the GUI using a custom ImGui framework, improving code quality and maintainability.*
 
 ### Core
@@ -15,6 +13,8 @@
 - Manifest could reference files not actually in the archive
 - Detection crash on permission-denied dirs (ubi / rsg)
 - Backup creation could silently produce a corrupted archive if writing finalized (closing) the zip file failed
+- Backup rename failure no longer logged as a successful backup
+- Restored file's modification time is no longer set before its hash is verified, so a failed/corrupted restore can't leave a mismatched file with the original timestamp
 
 #### Changed
 - Plugin loading errors are now caught per-plugin; remaining plugins continue loading
@@ -41,11 +41,15 @@
 - Possible deletion of a 'real' save during conflict resolution
 - Crash when shader had not fully initialized on startup
 - Upload worker race condition in transfer tab
-- opening the config or a directory does no longer exit the app on failure
+- Opening the config or a directory does no longer exit the app on failure
+- Grouping issues with unknown / partially supported games (improved since [#2](https://github.com/msh31/SaveManager/issues/2)
+    - This was a known issue for a long time but some great effort has gone into making sure all games are reportedly uniquely even if there are multiple versions installed on the system, i.e. for Ubisoft games
+- Removal of undo backup if backup fails to be restored
 
 #### Changed
 - Empty files no longer shown as save entries in the dashboard
 - Notifications now use a queue instead of direct rendering, eliminating overlap and ordering issues
+- Remote file browser entries in the transfer tab are now disabled while a transfer is in progress (previously still interactable during fast transfers)
 
 #### Performance
 - Cache rebuilds after detection now run asynchronously, eliminating frame stalls on large game libraries
@@ -59,7 +63,6 @@
 
 #### Known Issues / Limitations
 - Original Anno editions not supported due to install path limitations (a plugin can be written for this)
-- Grouping issues with unknown / partially supported games (improved since [#2](https://github.com/msh31/SaveManager/issues/2)
 
 ---
 
