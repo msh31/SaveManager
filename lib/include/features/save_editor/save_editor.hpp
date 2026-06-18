@@ -43,7 +43,7 @@ struct SanAndreas {
         bool validate_file( );
         void find_block_offsets( size_t start_offset = 0 );
         std::string get_version_string( size_t offset );
-        void parse_block_zero( );
+        bool parse_block_zero( ); // if it fails, nothing else runs
         void parse_block_two( );
         void parse_block_five( );
         void parse_block_fifteen( );

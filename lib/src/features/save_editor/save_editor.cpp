@@ -102,7 +102,10 @@ bool SanAndreas::open( fs::path path ) {
         return false;
     }
     SPDLOG_INFO( "parsing savefile: {}", path.filename( ).string( ) );
-    parse_block_zero( );
+    if ( !parse_block_zero( ) ) {
+        SPDLOG_ERROR( "Failed to parse BLOCK0, aborting!" );
+        return false;
+    }
     parse_block_two( );
     parse_block_five( );
     parse_block_fifteen( );
@@ -132,16 +135,17 @@ bool SanAndreas::save( fs::path path ) {
     return true;
 }
 
-void SanAndreas::parse_block_zero( ) {
+bool SanAndreas::parse_block_zero( ) {
     auto bz_offset = block_offsets[0];
     if ( bz_offset + 0x138 > data.size( ) ) {
         SPDLOG_ERROR( "Expected data length for Block 0 data was not received" );
-        return;
+        return false;
     }
 
     save_version = get_version_string( bz_offset );
     auto ptr = reinterpret_cast<const char*>( data.data( ) + bz_offset + 4 );
     save_name = std::string( ptr, strnlen( ptr, 100 ) );
+    return true;
 }
 
 void SanAndreas::parse_block_two( ) {
