@@ -1,8 +1,8 @@
 #pragma once
 #include <config/config.hpp>
 #include <detection/detection.hpp>
-#include <features/remote_transfer/remote_transfer.hpp>
 #include <frontend/views/base_view.hpp>
+#include <remote_transfer/remote_transfer.hpp>
 
 class CTransferView : public CBaseView {
     public:

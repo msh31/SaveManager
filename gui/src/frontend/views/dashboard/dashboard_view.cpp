@@ -8,7 +8,7 @@
 #include <frontend/icons.hpp>
 #include <frontend/notification/notification.hpp>
 
-#include <features/backup/backup.hpp>
+#include <backup/backup.hpp>
 
 void CDashboardView::on_enter( ) {
     std::lock_guard<std::mutex> lock( m_result_mutex );

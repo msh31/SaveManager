@@ -1,10 +1,11 @@
 #include "backup_view.hpp"
 #include <backend/font_manager/font_manager.hpp>
-#include <features/backup/backup.hpp>
-#include <frontend/components/spinner.hpp>
-#include <frontend/notification/notification.hpp>
+#include <backup/backup.hpp>
 #include <utils/paths.hpp>
 #include <utils/utils.hpp>
+
+#include <frontend/components/spinner.hpp>
+#include <frontend/notification/notification.hpp>
 
 void CBackupsView::on_enter( const std::vector<Game>& games_snapshot ) {
     if ( m_backups.empty( ) || m_reload_backups ) {

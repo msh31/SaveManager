@@ -1,4 +1,4 @@
-#include "features/remote_transfer/remote_transfer.hpp"
+#include "remote_transfer/remote_transfer.hpp"
 #include "config/config.hpp"
 
 // https://libssh2.org/examples/sftp_write.html

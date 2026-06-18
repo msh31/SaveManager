@@ -1,5 +1,5 @@
 #pragma once
-#include "features/save_editor/save_editor.hpp"
+#include "save_editor/save_editor.hpp"
 #include <frontend/views/base_view.hpp>
 
 class CEditorView : public CBaseView {
