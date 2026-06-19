@@ -1,10 +1,12 @@
 #pragma once
 
-namespace Blacklist {
-    void init( );
-    void save( );
+struct Blacklist {
+    public:
+        bool init( );
+        void save( );
 
-    bool is_blacklisted( const std::string& game_name );
+        bool is_blacklisted( const std::string& game_name );
 
-    inline std::unordered_set<std::string> blacklisted_games;
-} // namespace Blacklist
+    private:
+        std::unordered_set<std::string> m_blacklisted_games;
+};

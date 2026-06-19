@@ -4,7 +4,7 @@
 
 using json = nlohmann::json;
 
-void Blacklist::init( ) {
+bool Blacklist::init( ) {
     json data;
     std::ifstream file( paths::blacklist( ).string( ).c_str( ) );
 
@@ -14,24 +14,29 @@ void Blacklist::init( ) {
             SPDLOG_INFO( "Loaded blacklist JSON" );
 
             for ( const auto& entry : data ) {
-                blacklisted_games.insert( entry.get<std::string>( ) );
+                m_blacklisted_games.insert( entry.get<std::string>( ) );
             }
+            file.close( );
         } catch ( json::exception& ex ) {
             SPDLOG_ERROR( "blacklist parsing error: {}", ex.what( ) );
+            return false;
         }
     } else {
         SPDLOG_ERROR( "Failed to open blacklist to load it!" );
+        return false;
     }
+    return true;
 }
 
 void Blacklist::save( ) {
     json data;
-    for ( const auto& entry : blacklisted_games ) {
+    for ( const auto& entry : m_blacklisted_games ) {
         data.emplace_back( entry );
     }
 
     std::ofstream file( paths::blacklist( ).string( ).c_str( ) );
     file << data.dump( 4 );
+    if ( file.good( ) ) file.close( );
 }
 
-bool Blacklist::is_blacklisted( const std::string& game_name ) { return blacklisted_games.count( game_name ) > 0; }
+bool Blacklist::is_blacklisted( const std::string& game_name ) { return m_blacklisted_games.count( game_name ) > 0; }

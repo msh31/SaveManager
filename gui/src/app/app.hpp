@@ -1,15 +1,18 @@
 #pragma once
+#include <config/config.hpp>
+
+#include <backend/shader/shader.hpp>
 #include <backend/task_runner/task_runner.hpp>
+#include <backend/ui_manager/ui_manager.hpp>
+
+#include <utils/blacklist/blacklist.hpp>
 #include <utils/paths.hpp>
 
 #include <frontend/layout/tabbar/tabbar.hpp>
 
-#include <backend/shader/shader.hpp>
-#include <backend/ui_manager/ui_manager.hpp>
-#include <config/config.hpp>
-
 class CApp {
     public:
+        CApp( Blacklist& blacklist ) : m_blacklist( blacklist ) {};
         ~CApp( );
         void init( );
         void render( );
@@ -19,6 +22,7 @@ class CApp {
         CConfig m_config;
 
         CUIManager m_ui_manager{ std::make_unique<CTabbarShell>( ) };
+        Blacklist& m_blacklist; // injected
 
         CTaskRunner m_task_runner;
         std::optional<CShader> m_shader;
