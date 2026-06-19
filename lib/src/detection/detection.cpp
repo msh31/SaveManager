@@ -11,11 +11,10 @@
 #include "minecraft/minecraft.hpp"
 #if defined __APPLE__ || defined __linux__
     #include "wine/wine.hpp"
-#else
+#endif
 #include "rsg/rsg.hpp"
 #include "ubi/ubi.hpp"
 #include "unreal/unreal.hpp"
-#endif
 // clang-format on
 
 std::vector<Game> Detection::find_saves( ) {
@@ -61,6 +60,7 @@ std::vector<Game> Detection::find_saves( ) {
         detectors.emplace_back( std::make_unique<CWinePrefixDetector>( prefix ) );
     }
 #endif
+
     detectors.emplace_back( std::make_unique<CMinecraftDetector>( ) );
 
     for ( const auto& detector : detectors ) {
