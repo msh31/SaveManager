@@ -2,6 +2,7 @@
 #include <backend/window/window_manager.hpp>
 
 #include <utils/blacklist/blacklist.hpp>
+// #include <utils/steam/steam.hpp>
 #include <utils/translations/translations.hpp>
 
 #ifdef _WIN32 // forces Windows to treat the app as a GUI Application
@@ -13,6 +14,9 @@ int main( ) {
         init_logger( "[%n]: [%l] %d-%m-%Y %H:%M:%S - %v" );
 
         translations::init( );
+
+        // SteamManifestCache steam_cache;
+        // steam_cache.init( );
 
         Blacklist blacklist;
         if ( !blacklist.init( ) ) {

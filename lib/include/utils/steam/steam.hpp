@@ -11,3 +11,12 @@ namespace SteamHelper {
 
     const std::unordered_map<uint32_t, SteamManifest>& get_app_manifests( );
 } // namespace SteamHelper
+
+struct SteamManifestCache {
+    public:
+        bool init( );
+        const std::unordered_map<uint32_t, SteamManifest>& get_app_manifests( );
+
+    private:
+        std::unordered_map<uint32_t, SteamManifest> m_cache = { };
+};

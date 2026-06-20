@@ -157,24 +157,25 @@ std::optional<SteamManifest> SteamHelper::parse_app_manifest( const fs::path& ac
     return SteamManifest{ appid, name, install_dir };
 }
 
-const std::unordered_map<uint32_t, SteamManifest>& SteamHelper::get_app_manifests( ) {
-    static std::once_flag init_flag;
-
-    static std::unordered_map<uint32_t, SteamManifest> cache;
-
-    std::call_once( init_flag, [&] {
-        auto libraries = get_library_folders( );
-        for ( const auto& library : libraries ) {
-            for ( const auto& entry :
-                  fs::directory_iterator( library / "steamapps", fs::directory_options::skip_permission_denied ) ) {
-                if ( entry.is_directory( ) ) continue;
-                if ( entry.path( ).extension( ) != ".acf" ) continue;
-                if ( auto manifest = parse_app_manifest( entry.path( ) ) ) {
-                    manifest->library_dir = library;
-                    cache.emplace( manifest->appid, *manifest );
-                }
-            }
-        }
-    } );
-    return cache;
-}
+// // SteamManifestCache
+// bool SteamManifestCache::init( ) {
+//     auto libraries = SteamHelper::get_library_folders( );
+//     if ( libraries.empty( ) ) return false;
+//
+//     for ( const auto& library : libraries ) {
+//         for ( const auto& entry :
+//               fs::directory_iterator( library / "steamapps", fs::directory_options::skip_permission_denied ) ) {
+//             if ( entry.is_directory( ) ) continue;
+//             if ( entry.path( ).extension( ) != ".acf" ) continue;
+//
+//             if ( auto manifest = SteamHelper::parse_app_manifest( entry.path( ) ) ) {
+//                 manifest->library_dir = library;
+//                 m_cache.emplace( manifest->appid, *manifest );
+//             }
+//         }
+//     }
+//     if ( m_cache.empty( ) ) return false;
+//     return true;
+// }
+//
+// const std::unordered_map<uint32_t, SteamManifest>& SteamManifestCache::get_app_manifests( ) { return m_cache; }
