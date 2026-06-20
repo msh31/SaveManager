@@ -39,4 +39,17 @@ void Blacklist::save( ) {
     if ( file.good( ) ) file.close( );
 }
 
-bool Blacklist::is_blacklisted( const std::string& game_name ) { return m_blacklisted_games.count( game_name ) > 0; }
+bool Blacklist::is_blacklisted( const std::string& game_name ) const {
+    return m_blacklisted_games.count( game_name ) > 0;
+}
+
+const std::unordered_set<std::string>& Blacklist::games( ) const { return m_blacklisted_games; }
+
+void Blacklist::add( const std::string& name ) {
+    m_blacklisted_games.insert( name );
+    save( );
+}
+void Blacklist::remove( const std::string& name ) {
+    m_blacklisted_games.erase( name );
+    save( );
+}

@@ -2,12 +2,12 @@
 #include <detection/detection.hpp>
 #include "../plugin/plugin.hpp"
 
-#include "utils/blacklist/blacklist.hpp"
 #include "utils/paths.hpp"
 #include <utils/utils.hpp>
 
 #include <utils/steam/steam.hpp>
 
+//TODO: clean ts up
 #include "minecraft/minecraft.hpp"
 #if defined __APPLE__ || defined __linux__
     #include "wine/wine.hpp"
@@ -17,7 +17,7 @@
 #include "unreal/unreal.hpp"
 // clang-format on
 
-std::vector<Game> Detection::find_saves( ) {
+std::vector<Game> Detection::find_saves( const Blacklist& blacklist ) {
     std::vector<std::unique_ptr<IDetector>> detectors;
     std::vector<std::future<std::expected<std::vector<Game>, SMError>>> detection_futures;
 
@@ -119,7 +119,7 @@ std::vector<Game> Detection::find_saves( ) {
     }
     games = std::move( deduped );
 
-    std::erase_if( games, []( const Game& game ) { return Blacklist::is_blacklisted( game.game_name ); } );
+    std::erase_if( games, [blacklist]( const Game& game ) { return blacklist.is_blacklisted( game.game_name ); } );
     std::erase_if( games, []( const Game& game ) {
         return std::ranges::none_of(
             game.save_paths, []( const fs::path& p ) { return fs::is_directory( p ) && !fs::is_empty( p ); } );
