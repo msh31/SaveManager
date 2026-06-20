@@ -6,7 +6,7 @@
 
 class CTransferView : public CBaseView {
     public:
-        CTransferView( CConfig& config ) : m_config( config ) {};
+        CTransferView( CConfig& config, const Blacklist& blacklist ) : m_config( config ), m_blacklist( blacklist ) {};
         ~CTransferView( ) override = default;
         void render( ) override;
         void on_enter( ) override;
@@ -15,6 +15,8 @@ class CTransferView : public CBaseView {
     private:
         CConfig& m_config;
         std::vector<Game> m_result;
+        const Blacklist& m_blacklist;
+
         std::vector<Game> m_games_snapshot;
         std::future<void> m_detection_future;
         std::mutex m_result_mutex;

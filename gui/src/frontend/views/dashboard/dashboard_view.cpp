@@ -18,7 +18,7 @@ void CDashboardView::on_enter( ) {
         m_game_cache.clear( );
         m_detection_start_time = std::chrono::steady_clock::now( );
         m_refresh_future = std::async( std::launch::async, [this] {
-            auto result = Detection::find_saves( );
+            auto result = Detection::find_saves( m_blacklist );
             std::lock_guard lock( m_result_mutex );
             m_result = std::move( result );
         } );
@@ -130,7 +130,7 @@ void CDashboardView::render_toolbar( ) {
         m_game_cache.clear( );
         m_detection_start_time = std::chrono::steady_clock::now( );
         m_refresh_future = std::async( std::launch::async, [this] {
-            auto result = Detection::find_saves( );
+            auto result = Detection::find_saves( m_blacklist );
             std::lock_guard lock( m_result_mutex );
             m_result = std::move( result );
         } );

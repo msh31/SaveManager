@@ -5,10 +5,9 @@
 
 #include <network/network.hpp>
 
-#include <utils/blacklist/blacklist.hpp>
 #include <utils/utils.hpp>
 
-CSettingsView::CSettingsView( CConfig& cfg ) : m_config( cfg ) {};
+CSettingsView::CSettingsView( CConfig& cfg, Blacklist& blacklist ) : m_config( cfg ), m_blacklist( blacklist ) {};
 
 void CSettingsView::on_enter( ) {}
 
@@ -101,18 +100,16 @@ void CSettingsView::render( ) {
 
     if ( ImGui::BeginChild( "blacklist_child", ImVec2( 0, 120 ), true ) ) {
         int i = 0;
-        for ( auto it = Blacklist::blacklisted_games.begin( ); it != Blacklist::blacklisted_games.end( ); ) {
+        std::string game_to_remove = { };
+        for ( auto it = m_blacklist.games( ).begin( ); it != m_blacklist.games( ).end( ); ++it, ++i ) {
             ImGui::Text( "%s", it->c_str( ) );
             ImGui::SameLine( );
             ImGui::SetCursorPosX( ImGui::GetCursorPosX( ) + 5 );
             if ( ImGui::Button( std::format( "X##{}", i ).c_str( ) ) ) {
-                it = Blacklist::blacklisted_games.erase( it );
-                Blacklist::save( );
-            } else {
-                ++it;
-                ++i;
+                game_to_remove = *it;
             }
         }
+        m_blacklist.remove( game_to_remove );
         ImGui::EndChild( );
     } else {
         ImGui::EndChild( );
@@ -122,8 +119,7 @@ void CSettingsView::render( ) {
     ImGui::SameLine( );
     if ( ImGui::Button( "Add##blacklist" ) ) {
         if ( !m_blacklist_input.empty( ) ) {
-            Blacklist::blacklisted_games.insert( m_blacklist_input );
-            Blacklist::save( );
+            m_blacklist.add( m_blacklist_input );
             m_blacklist_input.clear( );
         }
     }

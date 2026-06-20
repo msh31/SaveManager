@@ -2,9 +2,11 @@
 #include <config/config.hpp>
 #include <frontend/views/base_view.hpp>
 
+#include <utils/blacklist/blacklist.hpp>
+
 class CSettingsView : public CBaseView {
     public:
-        CSettingsView( CConfig& cfg );
+        CSettingsView( CConfig& cfg, Blacklist& blacklist );
         ~CSettingsView( ) override;
         void render( ) override;
         void on_enter( ) override;
@@ -12,6 +14,7 @@ class CSettingsView : public CBaseView {
 
     private:
         CConfig& m_config;
+        Blacklist& m_blacklist;
 
         std::string m_blacklist_input;
         std::string m_new_game_name;
