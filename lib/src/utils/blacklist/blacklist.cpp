@@ -11,7 +11,7 @@ bool Blacklist::init( ) {
     if ( file.is_open( ) ) {
         try {
             data = json::parse( file );
-            SPDLOG_INFO( "Loaded blacklist JSON" );
+            SPDLOG_INFO( "Loaded blacklist!" );
 
             for ( const auto& entry : data ) {
                 m_blacklisted_games.insert( entry.get<std::string>( ) );

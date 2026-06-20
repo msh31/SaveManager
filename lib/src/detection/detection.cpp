@@ -17,16 +17,16 @@
 #include "unreal/unreal.hpp"
 // clang-format on
 
-std::vector<Game> Detection::find_saves( const Blacklist& blacklist ) {
+std::vector<Game> Detection::find_saves( const Blacklist& blacklist, const Translations& translations ) {
     std::vector<std::unique_ptr<IDetector>> detectors;
     std::vector<std::future<std::expected<std::vector<Game>, SMError>>> detection_futures;
 
     std::vector<Game> games;
 
 #ifdef _WIN32
-    detectors.emplace_back( std::make_unique<CUbisoftDetector>( ) );
-    detectors.emplace_back( std::make_unique<CRockstarDetector>( ) );
-    detectors.emplace_back( std::make_unique<CUnrealDetector>( ) );
+    detectors.emplace_back( std::make_unique<CUbisoftDetector>( translations ) );
+    detectors.emplace_back( std::make_unique<CRockstarDetector>( translations ) );
+    detectors.emplace_back( std::make_unique<CUnrealDetector>( translations ) );
 #endif
 
 #ifdef __linux__
@@ -34,30 +34,32 @@ std::vector<Game> Detection::find_saves( const Blacklist& blacklist ) {
 
     // steam
     for ( const auto& prefix : prefixes ) {
-        detectors.emplace_back( std::make_unique<CWinePrefixDetector>( prefix / "steamapps/compatdata" ) );
+        detectors.emplace_back(
+            std::make_unique<CWinePrefixDetector>( prefix / "steamapps/compatdata", translations ) );
     }
 
     // TODO: improve resolved paths for heroic and lutris
     // heroic
     if ( fs::exists( paths::heroic_dir( ) ) ) {
-        detectors.emplace_back( std::make_unique<CWinePrefixDetector>( paths::heroic_dir( ) / "Prefixes/default" ) );
+        detectors.emplace_back(
+            std::make_unique<CWinePrefixDetector>( paths::heroic_dir( ) / "Prefixes/default", translations ) );
     }
 
     // lutris
     if ( fs::exists( paths::lutris_dir( ) ) ) {
-        detectors.emplace_back( std::make_unique<CWinePrefixDetector>( paths::lutris_dir( ) ) );
+        detectors.emplace_back( std::make_unique<CWinePrefixDetector>( paths::lutris_dir( ), translations ) );
     }
 #endif
 
 #ifdef __APPLE__
     // native
-    detectors.emplace_back( std::make_unique<CUnrealDetector>( ) );
+    detectors.emplace_back( std::make_unique<CUnrealDetector>( translations ) );
 
     // non-native
     auto prefixes = SteamHelper::get_library_folders( );
 
     for ( const auto& prefix : prefixes ) {
-        detectors.emplace_back( std::make_unique<CWinePrefixDetector>( prefix ) );
+        detectors.emplace_back( std::make_unique<CWinePrefixDetector>( prefix, translations ) );
     }
 #endif
 

@@ -12,13 +12,13 @@ std::expected<std::vector<Game>, SMError> CRockstarDetector::find( ) {
     std::vector<Game> games = { };
     for ( const auto& prefix : prefixes ) {
         if ( !fs::exists( prefix ) ) continue;
-        auto found_games = scan( prefix );
+        auto found_games = scan( prefix, m_translations );
         std::ranges::move( found_games, std::back_inserter( games ) );
     }
     return games;
 }
 
-std::vector<Game> CRockstarDetector::scan( fs::path path ) {
+std::vector<Game> CRockstarDetector::scan( fs::path path, const Translations& translations ) {
     if ( !fs::exists( path ) ) return { };
     std::vector<Game> games = { };
 
@@ -41,7 +41,7 @@ std::vector<Game> CRockstarDetector::scan( fs::path path ) {
             Game l_game;
             l_game.type = PlatformType::ROCKSTAR;
             l_game.game_name = game_name;
-            l_game.appid = translations::get_steam_id( game_name ).value_or( "N/A" );
+            l_game.appid = translations.get_steam_id( game_name ).value_or( "N/A" );
             l_game.save_paths.push_back( game.path( ) );
 
             games.push_back( l_game );
@@ -61,8 +61,8 @@ std::vector<Game> CRockstarDetector::scan( fs::path path ) {
 
             Game game;
             game.type = PlatformType::ROCKSTAR;
-            game.game_name = translations::get_game_name_rsg( folder_name ).value_or( folder_name );
-            game.appid = translations::get_steam_id( game.game_name ).value_or( "N/A" );
+            game.game_name = translations.get_game_name_rsg( folder_name ).value_or( folder_name );
+            game.appid = translations.get_steam_id( game.game_name ).value_or( "N/A" );
             game.save_paths.push_back( uuid_folder );
 
             games.push_back( game );

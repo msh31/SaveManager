@@ -13,7 +13,10 @@ int main( ) {
     try {
         init_logger( "[%n]: [%l] %d-%m-%Y %H:%M:%S - %v" );
 
-        translations::init( );
+        Translations translations;
+        if ( !translations.init( ) ) {
+            SPDLOG_WARN( "Failed to initialize translations! Expect missing games!" );
+        }
 
         // SteamManifestCache steam_cache;
         // steam_cache.init( );
@@ -24,7 +27,7 @@ int main( ) {
         }
 
         CWindowManager window;
-        CApp app( blacklist );
+        CApp app( blacklist, translations );
 
         app.init( );
         SPDLOG_INFO( "Initialized succesfully!" );

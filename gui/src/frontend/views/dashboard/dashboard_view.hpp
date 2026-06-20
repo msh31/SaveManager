@@ -9,8 +9,8 @@
 
 class CDashboardView : public CBaseView {
     public:
-        CDashboardView( CConfig& config, const Blacklist& blacklist )
-            : m_config( config ), m_backups_view( config ), m_blacklist( blacklist ) {};
+        CDashboardView( CConfig& config, const Blacklist& blacklist, const Translations& translations )
+            : m_config( config ), m_backups_view( config ), m_blacklist( blacklist ), m_translations( translations ) {};
         ~CDashboardView( ) override;
         void render( ) override;
         void on_enter( ) override;
@@ -33,6 +33,7 @@ class CDashboardView : public CBaseView {
         std::vector<Game> m_result;
         CBackupsView m_backups_view;
         const Blacklist& m_blacklist;
+        const Translations& m_translations;
 
         CTaskRunner m_task_runner;
 

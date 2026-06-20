@@ -20,7 +20,7 @@ std::expected<std::vector<Game>, SMError> CUnrealDetector::find( ) {
     for ( const auto& prefix : prefixes ) {
         if ( !fs::exists( prefix ) ) continue;
 
-        auto found_games = scan( prefix );
+        auto found_games = scan( prefix, m_translations );
         std::ranges::move( found_games, std::back_inserter( games ) );
     }
 
@@ -28,7 +28,7 @@ std::expected<std::vector<Game>, SMError> CUnrealDetector::find( ) {
 }
 
 // private
-std::vector<Game> CUnrealDetector::scan( fs::path path ) {
+std::vector<Game> CUnrealDetector::scan( fs::path path, const Translations& translations ) {
     if ( !fs::exists( path ) ) return { };
     std::vector<Game> games;
 
@@ -62,7 +62,7 @@ std::vector<Game> CUnrealDetector::scan( fs::path path ) {
                         continue;
                     }
 
-                    auto found_games = scan_recursive( target_two );
+                    auto found_games = scan_recursive( target_two, translations );
                     std::ranges::move( found_games, std::back_inserter( games ) );
                 }
             } catch ( const fs::filesystem_error& ) {
@@ -72,7 +72,7 @@ std::vector<Game> CUnrealDetector::scan( fs::path path ) {
         }
 
         try {
-            auto found_games = scan_recursive( target );
+            auto found_games = scan_recursive( target, translations );
             std::ranges::move( found_games, std::back_inserter( games ) );
         } catch ( const fs::filesystem_error& ) {
             continue;
@@ -82,7 +82,7 @@ std::vector<Game> CUnrealDetector::scan( fs::path path ) {
     return games;
 }
 
-std::vector<Game> CUnrealDetector::scan_recursive( const fs::path& path ) {
+std::vector<Game> CUnrealDetector::scan_recursive( const fs::path& path, const Translations& translations ) {
     static char header[4] = { 'G', 'V', 'A', 'S' };
     std::vector<Game> games;
     std::set<fs::path> directories;
@@ -140,7 +140,7 @@ std::vector<Game> CUnrealDetector::scan_recursive( const fs::path& path ) {
                 if ( it != entry.end( ) ) {
                     std::string appid = it->string( );
 
-                    game.game_name = translations::get_steam_name( appid ).value_or( "N/A" );
+                    game.game_name = translations.get_steam_name( appid ).value_or( "N/A" );
                     game.appid = appid;
                     break;
                 }

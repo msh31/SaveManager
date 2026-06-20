@@ -6,7 +6,7 @@
 
 class CSettingsView : public CBaseView {
     public:
-        CSettingsView( CConfig& cfg, Blacklist& blacklist );
+        CSettingsView( CConfig& cfg, Blacklist& blacklist ) : m_config( cfg ), m_blacklist( blacklist ) {};
         ~CSettingsView( ) override;
         void render( ) override;
         void on_enter( ) override;

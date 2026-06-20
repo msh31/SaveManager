@@ -4,15 +4,17 @@
 #include <backend/shader/shader.hpp>
 #include <backend/task_runner/task_runner.hpp>
 #include <backend/ui_manager/ui_manager.hpp>
+#include <utils/paths.hpp>
 
 #include <utils/blacklist/blacklist.hpp>
-#include <utils/paths.hpp>
+#include <utils/translations/translations.hpp>
 
 #include <frontend/layout/tabbar/tabbar.hpp>
 
 class CApp {
     public:
-        CApp( Blacklist& blacklist ) : m_blacklist( blacklist ) {};
+        CApp( Blacklist& blacklist, const Translations& translations )
+            : m_blacklist( blacklist ), m_translations( translations ) {};
         ~CApp( );
         void init( );
         void render( );
@@ -23,6 +25,7 @@ class CApp {
 
         CUIManager m_ui_manager{ std::make_unique<CTabbarShell>( ) };
         Blacklist& m_blacklist; // injected
+        const Translations& m_translations;
 
         CTaskRunner m_task_runner;
         std::optional<CShader> m_shader;

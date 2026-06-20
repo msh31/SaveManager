@@ -1,7 +1,10 @@
 #pragma once
 #include "../idetector.hpp"
+#include <utils/translations/translations.hpp>
 
 class CRockstarDetector : public IDetector {
+        CRockstarDetector( const Translations& translations ) : m_translations( translations ) {}
+
     public:
         std::expected<std::vector<Game>, SMError> find( ) override;
 
@@ -9,5 +12,7 @@ class CRockstarDetector : public IDetector {
 
     private:
         friend class CWinePrefixDetector; // a friend wants to use this function
-        static std::vector<Game> scan( fs::path );
+
+        static std::vector<Game> scan( fs::path, const Translations& translations );
+        const Translations& m_translations;
 };

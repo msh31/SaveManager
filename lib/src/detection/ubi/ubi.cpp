@@ -1,5 +1,4 @@
 #include "ubi.hpp"
-#include "utils/translations/translations.hpp"
 
 std::string_view CUbisoftDetector::name( ) const { return "Ubisoft"; }
 
@@ -17,13 +16,13 @@ std::expected<std::vector<Game>, SMError> CUbisoftDetector::find( ) {
     for ( const auto& prefix : prefixes ) {
         if ( !fs::exists( prefix ) ) continue;
 
-        auto found_games = scan( prefix );
+        auto found_games = scan( prefix, m_translations );
         std::ranges::move( found_games, std::back_inserter( games ) );
     }
     return games;
 }
 
-std::vector<Game> CUbisoftDetector::scan( fs::path path ) {
+std::vector<Game> CUbisoftDetector::scan( fs::path path, const Translations& translations ) {
     if ( !fs::exists( path ) ) return { };
     std::vector<Game> games = { };
 
@@ -49,7 +48,7 @@ std::vector<Game> CUbisoftDetector::scan( fs::path path ) {
             Game anno;
             anno.type = PlatformType::UBISOFT;
             anno.game_name = anno_data.game_name;
-            anno.appid = translations::get_steam_id( anno_data.game_name ).value_or( "N/A" );
+            anno.appid = translations.get_steam_id( anno_data.game_name ).value_or( "N/A" );
             anno.show_parent_path = true;
 
             if ( fs::exists( uuid.path( ) / "accounts" ) ) {
@@ -76,7 +75,7 @@ std::vector<Game> CUbisoftDetector::scan( fs::path path ) {
                 continue;
             }
 
-            auto name = translations::get_game_name_ubi( game_id_folder.filename( ).string( ) );
+            auto name = translations.get_game_name_ubi( game_id_folder.filename( ).string( ) );
             if ( !name.has_value( ) ) {
                 continue;
             }
@@ -85,7 +84,7 @@ std::vector<Game> CUbisoftDetector::scan( fs::path path ) {
             game.type = PlatformType::UBISOFT;
             game.game_id = game_id_folder.filename( ).string( );
             game.game_name = name.value( );
-            game.appid = translations::get_steam_id( game.game_name ).value_or( "N/A" );
+            game.appid = translations.get_steam_id( game.game_name ).value_or( "N/A" );
             game.save_paths.push_back( game_id_folder );
 
             games.push_back( game );

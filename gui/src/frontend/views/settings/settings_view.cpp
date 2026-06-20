@@ -7,8 +7,6 @@
 
 #include <utils/utils.hpp>
 
-CSettingsView::CSettingsView( CConfig& cfg, Blacklist& blacklist ) : m_config( cfg ), m_blacklist( blacklist ) {};
-
 void CSettingsView::on_enter( ) {}
 
 void CSettingsView::render( ) {
