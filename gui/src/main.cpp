@@ -1,6 +1,8 @@
 #include "app/app.hpp"
 #include <backend/window/window_manager.hpp>
+
 #include <utils/blacklist/blacklist.hpp>
+#include <utils/translations/translations.hpp>
 
 #ifdef _WIN32 // forces Windows to treat the app as a GUI Application
     #pragma comment( linker, "/subsystem:windows /entry:mainCRTStartup" )
@@ -9,6 +11,9 @@
 int main( ) {
     try {
         init_logger( "[%n]: [%l] %d-%m-%Y %H:%M:%S - %v" );
+
+        translations::init( );
+
         Blacklist blacklist;
         if ( !blacklist.init( ) ) {
             SPDLOG_WARN( "Failed to initialize blacklist!" );
