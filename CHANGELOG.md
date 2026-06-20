@@ -3,7 +3,9 @@
 
 ### Core
 #### Added
-- Ludusavi manifest integration
+- Per-file cherry-pick restore from any snapshot
+- ``.savemgr-ignore`` per-game ignore files
+- Multi-value tags on snapshots 
 
 #### Fixed
 - Downloading a save from an SFTP server places the save in the ``path/to/savemanager/backups/`` instead of it's corresponding game folder
@@ -32,6 +34,10 @@
 #### Removed
 - Launcher support configuration (All by default now)
 
+#### Development
+- Blacklist, Translations and Steam manifest cache moved from global state to instance-owned objects, injected by reference
+- Private headers moved from ``lib/include/`` to ``lib/src/``
+
 
 ### GUI
 #### Added
@@ -49,6 +55,7 @@
 - Uploading/downloading a file in the transfer tab now shows a success/failure notification instead of failing silently
 - Grouping issues with unknown / partially supported games (improved since [#2](https://github.com/msh31/SaveManager/issues/2)
     - This was a known issue for a long time but some great effort has gone into making sure all games are reportedly uniquely even if there are multiple versions installed on the system, i.e. for Ubisoft games
+    - All games thar enot known just simply show up as "N/A" under their own cards.
 - Removal of undo backup if backup fails to be restored
 
 #### Changed
