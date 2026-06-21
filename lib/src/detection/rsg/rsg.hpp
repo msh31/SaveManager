@@ -3,9 +3,9 @@
 #include <utils/translations/translations.hpp>
 
 class CRockstarDetector : public IDetector {
+    public:
         CRockstarDetector( const Translations& translations ) : m_translations( translations ) {}
 
-    public:
         std::expected<std::vector<Game>, SMError> find( ) override;
 
         std::string_view name( ) const override;
