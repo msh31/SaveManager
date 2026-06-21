@@ -149,7 +149,7 @@ jobs:
       - name: Install dependencies
         env:
           CONAN_CENTER_BUILD_SERVICE: "1"
-        run: conan install . --build=missing -s build_type=Release -s compiler.cppstd=23 -c tools.cmake.cmaketoolchain:generator=Ninja
+        run: conan install . --build=missing -s build_type=Release -c tools.cmake.cmaketoolchain:generator=Ninja
 
       - name: Save Conan cache
         if: always() && steps.conan-cache.outputs.cache-hit != 'true'
