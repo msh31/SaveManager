@@ -143,8 +143,8 @@ jobs:
         uses: actions/cache/restore@v5
         with:
           path: C:\Users\runneradmin\.conan2\p
-          key: conan-windows-${{ hashFiles('conanfile.py', 'conan_profile.txt') }}
-          restore-keys: conan-windows-
+          key: conan-windows-cppstd17-${{ hashFiles('conanfile.py', 'conan_profile.txt') }}
+          restore-keys: conan-windows-cppstd17-
 
       - name: Install dependencies
         env:
