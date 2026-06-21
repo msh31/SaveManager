@@ -1,2 +1,3 @@
 const char* build_date = "@BUILD_DATE@";
 const char* git_commit = "@GIT_COMMIT@";
+const char* app_version = "@APP_VERSION@";

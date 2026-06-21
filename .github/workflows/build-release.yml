@@ -5,7 +5,21 @@ on:
     tags: [ 'v*' ]
 
 jobs:
+  check-version:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - name: Reject -dev versions
+        run: |
+          VERSION=$(grep -oP 'APP_VERSION\s*=\s*"\K[^"]+' cmake.toml)
+          echo "APP_VERSION=$VERSION"
+          if [[ "$VERSION" == *-dev* ]]; then
+            echo "::error::Refusing to release version '$VERSION' — it contains the -dev suffix. Bump APP_VERSION in cmake.toml before tagging."
+            exit 1
+          fi
+
   build:
+    needs: check-version
     uses: ./.github/workflows/build.yml
     with:
       package: true

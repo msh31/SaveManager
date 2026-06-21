@@ -33,6 +33,7 @@ endif()
 
 # Variables
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+set(APP_VERSION 1.8.0-dev)
 
 project(SaveManager
 	LANGUAGES
@@ -213,11 +214,11 @@ target_sources(savemanager PRIVATE
 )
 
 configure_file(
-    ${CMAKE_CURRENT_SOURCE_DIR}/gui/src/version.cpp.in
-    ${CMAKE_CURRENT_BINARY_DIR}/version.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/lib/include/version.cpp.in
+    ${CMAKE_CURRENT_BINARY_DIR}/lib/include/version.cpp
     @ONLY
 )
-target_sources(savemanager PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/version.cpp)
+target_sources(savemanager PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/lib/include/version.cpp)
 
 if(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
     configure_file(
