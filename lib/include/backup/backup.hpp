@@ -19,4 +19,6 @@ namespace Features {
     std::unordered_map<std::string, std::string> load_labels( const std::string& game );
     void save_label( const std::string& game, const std::string& filename, const std::string& label );
     bool save_labels( const std::string& game, const std::unordered_map<std::string, std::string>& labels );
+
+    void migrate_labels_to_metadata( );
 }; // namespace Features

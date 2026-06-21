@@ -260,3 +260,25 @@ bool Features::save_labels( const std::string& game, const std::unordered_map<st
     }
     return true;
 }
+
+void Features::migrate_labels_to_metadata( ) {
+    for ( const auto& dir : fs::directory_iterator( paths::backup_dir( ) ) ) {
+        if ( !dir.is_directory( ) ) continue;
+
+        auto labels_file = dir.path( ) / "labels.json";
+        auto metadata_file = dir.path( ) / "metadata.json";
+
+        auto labels = Features::load_labels( dir.path( ).filename( ).string( ) );
+        if ( labels.empty( ) ) continue;
+
+        if ( fs::exists( labels_file ) && !fs::exists( metadata_file ) ) {
+            std::ifstream lf( labels_file, std::ifstream::in );
+            if ( !lf.is_open( ) ) {
+                SPDLOG_DEBUG( "Failed to load labels for: {}", dir.path( ).string( ) );
+                continue;
+            }
+        }
+
+        fs::remove( labels_file );
+    }
+}
