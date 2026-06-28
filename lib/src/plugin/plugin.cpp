@@ -3,7 +3,8 @@
 #include "utils/steam/steam.hpp"
 
 CPlugin::CPlugin( std::filesystem::path path ) {
-    SPDLOG_INFO( "Loaded plugin: {}", path.filename( ).string( ) );
+    m_name = path.filename( ).string( );
+    SPDLOG_INFO( "Loaded plugin: {}", m_name );
     m_lua.open_libraries( sol::lib::base, sol::lib::string, sol::lib::table ); // allow print, type, tostring etc
 
     m_lua["print"] = []( std::string msg ) { SPDLOG_INFO( "[lua] {}", msg ); };
@@ -73,20 +74,20 @@ CPlugin::CPlugin( std::filesystem::path path ) {
     // SPDLOG_DEBUG("show_parent_path valid: {}", m_lua["config"]["show_parent_path"].valid());
 }
 
-std::vector<Game> CPlugin::find_saves( ) {
+std::expected<std::vector<Game>, SMError> CPlugin::find( ) {
     std::vector<Game> games;
 
     sol::protected_function fn = m_lua["find_saves"];
     if ( !fn.valid( ) ) {
         SPDLOG_ERROR( "Lua plugin missing find_saves function" );
-        return { };
+        return std::unexpected( SMError::PLUGIN_LOAD_ERROR );
     }
 
     auto result = fn( );
     if ( !result.valid( ) ) {
         sol::error err = result;
         SPDLOG_ERROR( "Lua error: {}", err.what( ) );
-        return { };
+        return std::unexpected( SMError::PLUGIN_LOAD_ERROR );
     }
 
     sol::table table = result.get<sol::table>( );

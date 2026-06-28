@@ -65,6 +65,19 @@ std::vector<Game> Detection::find_saves( const Blacklist& blacklist, const Trans
 
     detectors.emplace_back( std::make_unique<CMinecraftDetector>( ) );
 
+    // cool lua support
+    int plugin_count = 0;
+    for ( const auto& plugin : fs::recursive_directory_iterator(
+              paths::plugin_dir( ),
+              fs::directory_options::skip_permission_denied | fs::directory_options::follow_directory_symlink ) ) {
+        if ( plugin.path( ).extension( ) != ".lua" ) continue;
+        if ( !fs::is_regular_file( plugin ) ) continue;
+        plugin_count++;
+
+        detectors.emplace_back( std::make_unique<CPlugin>( plugin ) );
+    }
+    if ( plugin_count > 0 ) SPDLOG_INFO( "Loaded {} plugins!", plugin_count );
+
     for ( const auto& detector : detectors ) {
         detection_futures.emplace_back(
             std::async( std::launch::async, [d = detector.get( )]( ) -> std::expected<std::vector<Game>, SMError> {
@@ -86,19 +99,6 @@ std::vector<Game> Detection::find_saves( const Blacklist& blacklist, const Trans
             }
         }
     }
-
-    // cool lua support
-    int plugin_count = 0;
-    for ( const auto& plugin : fs::recursive_directory_iterator(
-              paths::plugin_dir( ),
-              fs::directory_options::skip_permission_denied | fs::directory_options::follow_directory_symlink ) ) {
-        if ( plugin.path( ).extension( ) != ".lua" ) continue;
-        if ( !fs::is_regular_file( plugin ) ) continue;
-        plugin_count++;
-
-        CPlugin plugins( plugin );
-    }
-    if ( plugin_count > 0 ) SPDLOG_INFO( "Loaded {} plugins!", plugin_count );
 
     if ( games.empty( ) ) {
         SPDLOG_ERROR( "No savegames found!" );
