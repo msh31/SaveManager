@@ -28,7 +28,7 @@ function find_saves()
 end
 ```
 
-3. Restart SaveManager and your custom games will appear automatically.
+3. Restart SaveManager (or press Ctrl+R in-app to refresh) and your custom games will appear automatically.
 
 ## Available API Functions
 | Function | Signature | Description |
@@ -42,7 +42,7 @@ end
 | `is_macos` | `is_macos() -> boolean` | Check if running on macOS |
 | `is_windows` | `is_windows() -> boolean` | Check if running on Windows |
 
-All standard Lua base library functions (`print`, `type`, `tostring`, etc.) are also available. Note that `print()` output is written to the SaveManager log file, not the console.
+Only the `base`, `string`, and `table` Lua libraries are loaded, so `print`, `type`, `tostring`, `string.*`, and `table.*` are available. Other standard libraries (`os`, `io`, `math`, ...) are intentionally not loaded. Note that `print()` output is written to the SaveManager log file, not the console.
 
 ## Game Entry Fields
 Each entry in the returned table must contain:

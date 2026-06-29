@@ -1,4 +1,4 @@
-## [1.8.0] - 2026-06-25
+## [1.8.0] - 2026-07-02
 *Rewrote the GUI using a custom ImGui framework, improving code quality and maintainability.*
 
 ### Core
