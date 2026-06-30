@@ -73,8 +73,7 @@ Backups live under `<config>/backups/<sanitized game name>/`. One game folder ho
 
 - `backup_<name>_<timestamp>.zip`: one backup. `<name>` defaults to the game name with spaces as underscores, `<timestamp>` is `YYYYMMDD_HHMMSS`. Written to a `.tmp` sibling first, then renamed in atomically (a failed write removes the `.tmp`, so a half-built archive never lands).
 - `undo.zip`: written automatically before a restore would overwrite newer data, so "Undo last restore" can roll back. Removed once consumed.
-- `labels.json`: map of backup filename to user label, shown instead of the raw filename. This is the active format.
-- `metadata.json`: the in-progress migration target meant to replace `labels.json` with richer per-backup info; the 1.8.0 tags feature is slated to live here. Migration (`migrate_labels_to_metadata`) is currently incomplete, so `labels.json` is still what gets read and written.
+- `tags.json`: map of backup filename to a list of user tags.
 
 Inside each `.zip`:
 - The save files, stored at paths relative to the save root.

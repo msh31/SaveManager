@@ -35,7 +35,7 @@
 - Launcher support configuration (All by default now)
 
 #### Development
-- Blacklist, Translations and Steam manifest cache moved from global state to instance-owned objects, injected by reference
+- Blacklist and Translations moved from global state to instance-owned objects, injected by reference
 - Private headers moved from ``lib/include/`` to ``lib/src/``
 
 
