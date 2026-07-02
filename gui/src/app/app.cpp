@@ -18,6 +18,8 @@
 #include <frontend/dialogs/confirm/confirm_dialog.hpp>
 #include <frontend/notification/notification.hpp>
 
+#include <features/features.hpp> //sus - for label migration
+
 CApp::~CApp( ) {
     SPDLOG_INFO( "Exiting SaveManager.." );
     m_task_runner.shutdown( );
@@ -25,6 +27,9 @@ CApp::~CApp( ) {
 
 void CApp::init( ) {
     ThemeManager::apply_style( );
+
+    // TODO: remove this in the future
+    Features::migrate_labels_to_tags( );
 
     m_ui_manager.add_view(
         { std::make_unique<CDashboardView>( m_config, m_blacklist, m_translations ), ICON_HOME, "Dashboard" } );

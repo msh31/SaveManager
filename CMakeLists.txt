@@ -75,7 +75,6 @@ find_package(CLI11 REQUIRED)
 # Target: savemanager-core
 set(savemanager-core_SOURCES
 	cmake.toml
-	"lib/src/backup/backup.cpp"
 	"lib/src/config/config.cpp"
 	"lib/src/detection/detection.cpp"
 	"lib/src/detection/minecraft/minecraft.cpp"
@@ -83,6 +82,7 @@ set(savemanager-core_SOURCES
 	"lib/src/detection/ubi/ubi.cpp"
 	"lib/src/detection/unreal/unreal.cpp"
 	"lib/src/detection/wine/wine.cpp"
+	"lib/src/features/features.cpp"
 	"lib/src/network/network.cpp"
 	"lib/src/plugin/plugin.cpp"
 	"lib/src/remote_transfer/remote_transfer.cpp"

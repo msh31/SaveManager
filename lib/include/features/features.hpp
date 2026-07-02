@@ -1,6 +1,5 @@
 #pragma once
 #include "detection/detection.hpp"
-namespace fs = std::filesystem;
 
 class CConfig;
 
@@ -16,9 +15,11 @@ namespace Features {
 
     std::string construct_backup_name( const std::string& game, const std::string& custom_name = "" );
 
-    std::unordered_map<std::string, std::string> load_labels( const std::string& game );
-    void save_label( const std::string& game, const std::string& filename, const std::string& label );
-    bool save_labels( const std::string& game, const std::unordered_map<std::string, std::string>& labels );
-
-    void migrate_labels_to_metadata( );
-}; // namespace Features
+    // TODO: introduce big bad telemetry collection to phase out shit like this in the future more easily
+    // COMMENT: this needs to be thought about more
+    void migrate_labels_to_tags( ); // not a feature
+    std::unordered_map<std::string, std::vector<std::string>> load_tags( const std::string& game );
+    std::expected<bool, SMError>
+    save_tags( const std::string& game, const std::string& filename, const std::vector<std::string>& tags );
+    bool delete_tags( const std::string& game, const std::string& filename );
+} // namespace Features

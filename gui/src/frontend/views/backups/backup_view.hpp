@@ -25,19 +25,20 @@ class CBackupsView {
         bool m_reload_backups = false;
         std::vector<BackupEntry> m_backups;
 
-        std::unordered_map<std::string, std::unordered_map<std::string, std::string>> m_labels_cache;
+        std::unordered_map<std::string, std::unordered_map<std::string, TagCache>> m_labels_cache;
 
         // Modal state
-        std::string m_rename_input;
-        bool m_open_rename_modal = false;
+        std::string m_new_tag_input;
+        std::vector<std::string> m_pending_tags;
+        bool m_open_tags_modal = false;
         std::string m_pending_rename_game;
         fs::path m_pending_rename_backup;
 
         void render_game_row(
             const BackupEntry& bentry,
-            const std::unordered_map<std::string, std::unordered_map<std::string, std::string>>& labels_cache );
+            const std::unordered_map<std::string, std::unordered_map<std::string, TagCache>>& labels_cache );
         void render_backup_row(
-            fs::path path, const fs::path& save_path, const std::unordered_map<std::string, std::string>& labels,
+            fs::path path, const fs::path& save_path, const std::unordered_map<std::string, TagCache>& labels,
             const std::string& game_name );
         void render_modals( );
         void add_new_entry( std::vector<Game> snapshot );

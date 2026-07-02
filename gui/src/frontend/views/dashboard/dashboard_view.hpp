@@ -1,4 +1,5 @@
 #pragma once
+#include <features/features.hpp>
 #include <config/config.hpp>
 #include <detection/detection.hpp>
 
@@ -26,7 +27,7 @@ class CDashboardView : public CBaseView {
         void render_game_row( const std::vector<int>& group, int gi );
         void render_save_row( const fs::path& save_file, const Game& game );
         void render_backup_row(
-            const fs::path& backup, const Game& game, const std::unordered_map<std::string, std::string>& labels );
+            const fs::path& backup, const Game& game, const std::unordered_map<std::string, TagCache>& labels );
         void render_modals( );
 
         CConfig& m_config;
@@ -44,7 +45,7 @@ class CDashboardView : public CBaseView {
                 bool has_conflicts = false;
                 std::vector<fs::path> backup_paths;
 
-                std::unordered_map<std::string, std::string> labels;
+                std::unordered_map<std::string, TagCache> tags;
         };
 
         std::mutex m_result_mutex;
@@ -79,8 +80,9 @@ class CDashboardView : public CBaseView {
 
         // Model state
         bool m_open_conflict_modal = false;
-        bool m_open_rename_modal = false;
-        std::string m_rename_input;
+        bool m_open_tags_modal = false;
+        std::string m_new_tag_input;
+        std::vector<std::string> m_pending_tags;
         Game m_pending_rename_game{ };
         fs::path m_pending_rename_backup;
         std::vector<std::pair<fs::path, fs::path>> m_pending_conflicts;

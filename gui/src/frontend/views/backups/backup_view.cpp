@@ -1,6 +1,7 @@
 #include "backup_view.hpp"
 #include <backend/font_manager/font_manager.hpp>
-#include <backup/backup.hpp>
+#include <backend/utils.hpp>
+#include <features/features.hpp>
 #include <utils/paths.hpp>
 #include <utils/utils.hpp>
 
@@ -22,7 +23,7 @@ void CBackupsView::add_new_entry( std::vector<Game> snapshot ) {
 
     std::vector<BackupEntry> backups = { };
 
-    std::unordered_map<std::string, std::unordered_map<std::string, std::string>> labels_cache;
+    std::unordered_map<std::string, std::unordered_map<std::string, TagCache>> labels_cache;
 
     for ( const auto& game : snapshot ) {
         for ( const auto& save : game.save_paths ) {
@@ -38,7 +39,7 @@ void CBackupsView::add_new_entry( std::vector<Game> snapshot ) {
         BackupEntry bentry;
         bentry.name = entry.path( ).filename( ).string( );
 
-        labels_cache[bentry.name.string( )] = Features::load_labels( bentry.name.string( ) );
+        labels_cache[bentry.name.string( )] = load_tag_cache( bentry.name.string( ) );
 
         if ( auto it = save_path_lookup.find( bentry.name.string( ) ); it != save_path_lookup.end( ) )
             bentry.save_path = it->second;
@@ -73,7 +74,7 @@ void CBackupsView::render( const std::vector<Game>& games_snapshot ) {
     }
 
     std::vector<BackupEntry> snapshot;
-    std::unordered_map<std::string, std::unordered_map<std::string, std::string>> labels_cache;
+    std::unordered_map<std::string, std::unordered_map<std::string, TagCache>> labels_cache;
     {
         std::lock_guard lock( m_mutex );
         snapshot = m_backups;
@@ -102,7 +103,7 @@ void CBackupsView::render( const std::vector<Game>& games_snapshot ) {
 
 void CBackupsView::render_game_row(
     const BackupEntry& bentry,
-    const std::unordered_map<std::string, std::unordered_map<std::string, std::string>>& labels_cache ) {
+    const std::unordered_map<std::string, std::unordered_map<std::string, TagCache>>& labels_cache ) {
     bool& not_collapsed = m_card_collapsed[bentry.name.string( )];
 
     auto selectable_id = std::format( "##backup_game_{}", bentry.name.string( ) );
@@ -130,7 +131,7 @@ void CBackupsView::render_game_row(
     ImGui::Text( "%s", right_text.c_str( ) );
 
     if ( not_collapsed ) {
-        static const std::unordered_map<std::string, std::string> empty_labels;
+        static const std::unordered_map<std::string, TagCache> empty_labels;
         auto it = labels_cache.find( bentry.name.string( ) );
         const auto& labels = ( it != labels_cache.end( ) ) ? it->second : empty_labels;
         for ( const auto& entry : bentry.entries )
@@ -142,7 +143,7 @@ void CBackupsView::render_game_row(
 }
 
 void CBackupsView::render_backup_row(
-    fs::path path, const fs::path& save_path, const std::unordered_map<std::string, std::string>& labels,
+    fs::path path, const fs::path& save_path, const std::unordered_map<std::string, TagCache>& labels,
     const std::string& game_name ) {
     if ( path.filename( ) == "undo.zip" ) return;
     ImGui::PushID( path.string( ).c_str( ) );
@@ -152,7 +153,7 @@ void CBackupsView::render_backup_row(
     }
 
     auto it = labels.find( path.filename( ).string( ) );
-    std::string display = ( it != labels.end( ) ) ? it->second : path.filename( ).string( );
+    const TagCache* tag_cache = ( it != labels.end( ) ) ? &it->second : nullptr;
 
     std::string date_text = std::format( "{:%d/%m/%y %H:%M} | ", fs::last_write_time( path ) );
     float date_width = ImGui::CalcTextSize( date_text.c_str( ) ).x;
@@ -162,7 +163,8 @@ void CBackupsView::render_backup_row(
     float spacing = ImGui::GetStyle( ).ItemSpacing.x;
     float total_width = date_width + size_width + 80.0f * 3 + spacing * 5;
 
-    ImGui::Text( "%s", display.c_str( ) );
+    std::string tag_text = ( tag_cache && !tag_cache->tags.empty( ) ) ? tag_cache->display : std::string( );
+    ImGui::TextDisabled( "%s", tag_text.c_str( ) );
     ImGui::SameLine( ImGui::GetContentRegionMax( ).x - total_width );
 
     ImGui::TextDisabled( "%s", date_text.c_str( ) );
@@ -183,22 +185,21 @@ void CBackupsView::render_backup_row(
     ImGui::SetItemTooltip( "Restore save from backup" );
     ImGui::SameLine( 0.0f, spacing );
 
-    if ( ImGui::Button( "Rename", ImVec2( 80.0f, 0 ) ) ) {
+    if ( ImGui::Button( "Tags", ImVec2( 80.0f, 0 ) ) ) {
         m_pending_rename_game = game_name;
         m_pending_rename_backup = path;
-        m_rename_input = ( it != labels.end( ) ) ? it->second : "";
-        m_open_rename_modal = true;
+        m_pending_tags = tag_cache ? tag_cache->tags : std::vector<std::string>{ };
+        m_new_tag_input.clear( );
+        m_open_tags_modal = true;
     }
-    ImGui::SetItemTooltip( "Rename this backup" );
+    ImGui::SetItemTooltip( "Manage tags for this backup" );
     ImGui::SameLine( 0.0f, spacing );
 
     ImGui::PushStyleColor( ImGuiCol_Button, ImVec4( 0.8f, 0.2f, 0.2f, 1.0f ) );
     ImGui::PushStyleColor( ImGuiCol_ButtonHovered, ImVec4( 0.9f, 0.3f, 0.3f, 1.0f ) );
     if ( ImGui::Button( "Delete", ImVec2( 80.0f, 0 ) ) ) {
         if ( fs::remove( path ) ) {
-            auto mutable_labels = labels;
-            mutable_labels.erase( path.filename( ).string( ) );
-            Features::save_labels( game_name, mutable_labels );
+            Features::delete_tags( game_name, path.filename( ).string( ) );
             m_reload_backups = true;
             Notify::show_notification( "Backup Deletion", "Backup deleted!", 1500 );
         } else {
@@ -213,20 +214,56 @@ void CBackupsView::render_backup_row(
 }
 
 void CBackupsView::render_modals( ) {
-    if ( m_open_rename_modal ) {
-        m_open_rename_modal = false;
-        ImGui::OpenPopup( "Rename Backup" );
+    if ( m_open_tags_modal ) {
+        m_open_tags_modal = false;
+        ImGui::OpenPopup( "Manage Tags" );
     }
 
-    if ( ImGui::BeginPopupModal( "Rename Backup", nullptr, ImGuiWindowFlags_AlwaysAutoResize ) ) {
+    if ( ImGui::BeginPopupModal( "Manage Tags", nullptr, ImGuiWindowFlags_AlwaysAutoResize ) ) {
         ImGui::Text( "%s", m_pending_rename_backup.filename( ).string( ).c_str( ) );
-        ImGui::InputText( "Label", &m_rename_input );
+        ImGui::Separator( );
+
+        int remove_index = -1;
+        for ( size_t i = 0; i < m_pending_tags.size( ); i++ ) {
+            ImGui::PushID( static_cast<int>( i ) );
+            ImGui::Text( "%s", m_pending_tags[i].c_str( ) );
+            ImGui::SameLine( );
+            if ( ImGui::SmallButton( "x" ) ) remove_index = static_cast<int>( i );
+            ImGui::PopID( );
+        }
+        if ( remove_index >= 0 ) m_pending_tags.erase( m_pending_tags.begin( ) + remove_index );
+
+        if ( m_pending_tags.empty( ) ) ImGui::TextDisabled( "No tags yet" );
+
+        ImGui::Separator( );
+
+        bool add_tag = ImGui::InputText( "##new_tag", &m_new_tag_input, ImGuiInputTextFlags_EnterReturnsTrue );
+        ImGui::SameLine( );
+        add_tag = ImGui::Button( "Add" ) || add_tag;
+        if ( add_tag && !m_new_tag_input.empty( ) ) {
+            if ( std::ranges::find( m_pending_tags, m_new_tag_input ) == m_pending_tags.end( ) )
+                m_pending_tags.push_back( m_new_tag_input );
+            m_new_tag_input.clear( );
+        }
+
+        ImGui::Dummy( ImVec2( 0, 5.0f ) );
         if ( ImGui::Button( "Save" ) ) {
-            Features::save_label(
-                m_pending_rename_game, m_pending_rename_backup.filename( ).string( ), m_rename_input );
-            {
+            auto result = Features::save_tags(
+                m_pending_rename_game, m_pending_rename_backup.filename( ).string( ), m_pending_tags );
+            if ( result.has_value( ) && *result ) {
                 std::lock_guard lock( m_mutex );
-                m_labels_cache[m_pending_rename_game][m_pending_rename_backup.filename( ).string( )] = m_rename_input;
+                auto& game_tags = m_labels_cache[m_pending_rename_game];
+                if ( m_pending_tags.empty( ) ) {
+                    game_tags.erase( m_pending_rename_backup.filename( ).string( ) );
+                } else {
+                    TagCache tcache;
+                    tcache.tags = m_pending_tags;
+                    tcache.display = m_pending_tags | std::ranges::views::join_with( std::string_view( ", " ) ) |
+                                     std::ranges::to<std::string>( );
+                    game_tags[m_pending_rename_backup.filename( ).string( )] = std::move( tcache );
+                }
+            } else {
+                Notify::show_notification( "Tags", "Failed to save tags!", 1500 );
             }
             ImGui::CloseCurrentPopup( );
         }

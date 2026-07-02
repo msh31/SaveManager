@@ -1,4 +1,4 @@
-#include "backup/backup.hpp"
+#include "features/features.hpp"
 #include "../utils/zip_archive/zip_archive.hpp"
 #include "config/config.hpp"
 #include "constants.hpp"
@@ -197,88 +197,138 @@ std::string Features::construct_backup_name( const std::string& game, const std:
     return std::format( "backup_{}_{}.zip", filename, timestamp );
 }
 
-std::unordered_map<std::string, std::string> Features::load_labels( const std::string& game ) {
-    json data;
-
-    std::unordered_map<std::string, std::string> backup_labels;
-    std::string file_name = ( paths::backup_dir( ) / sanitize_filename( game ) / "labels.json" ).string( );
-    std::ifstream file( file_name.c_str( ) );
-
-    if ( !fs::exists( file_name ) ) return { };
-
-    if ( file.is_open( ) ) {
-        try {
-            data = json::parse( file );
-            for ( const auto& entry : data.items( ) ) {
-                backup_labels[entry.key( )] = entry.value( ).get<std::string>( );
-            }
-        } catch ( json::exception& ex ) {
-            SPDLOG_ERROR( "label parsing error: {}", ex.what( ) );
-            return { };
-        }
-
-        return backup_labels;
-    } else {
-        SPDLOG_ERROR( "Failed to open labels to load it!" );
-        return { };
-    }
-
-    return { };
-}
-
-void Features::save_label( const std::string& game, const std::string& filename, const std::string& label ) {
-    std::string file_name = ( paths::backup_dir( ) / sanitize_filename( game ) / "labels.json" ).string( );
-
-    auto labels = load_labels( game );
-    labels[filename] = label;
-
-    Features::save_labels( game, labels );
-}
-
-bool Features::save_labels( const std::string& game, const std::unordered_map<std::string, std::string>& labels ) {
-    std::string file_name = ( paths::backup_dir( ) / sanitize_filename( game ) / "labels.json" ).string( );
-
-    json data;
-    for ( const auto& [key, value] : labels ) {
-        data[key] = value;
-    }
-
-    if ( data.empty( ) ) {
-        fs::remove( file_name );
-    } else {
-        std::ofstream out( file_name );
-        if ( !out.is_open( ) ) {
-            SPDLOG_ERROR( "Failed to write labels.json for: {}", game );
-            return false;
-        }
-        out << data.dump( 4 );
-        if ( !out.good( ) ) {
-            SPDLOG_ERROR( "Failed to save label for: {}", game );
-            return false;
-        }
-        out.close( );
-    }
-    return true;
-}
-
-void Features::migrate_labels_to_metadata( ) {
+void Features::migrate_labels_to_tags( ) {
     for ( const auto& dir : fs::directory_iterator( paths::backup_dir( ) ) ) {
         if ( !dir.is_directory( ) ) continue;
 
         auto labels_file = dir.path( ) / "labels.json";
-        auto metadata_file = dir.path( ) / "metadata.json";
+        auto tags_file = dir.path( ) / "tags.json";
 
-        auto labels = Features::load_labels( dir.path( ).filename( ).string( ) );
-        if ( labels.empty( ) ) continue;
+        if ( fs::exists( labels_file ) && !fs::exists( tags_file ) ) {
+            // load that mutaphuckin labels file once
+            json data;
 
-        if ( fs::exists( labels_file ) && !fs::exists( metadata_file ) ) {
-            std::ifstream lf( labels_file, std::ifstream::in );
-            if ( !lf.is_open( ) ) {
-                SPDLOG_DEBUG( "Failed to load labels for: {}", dir.path( ).string( ) );
+            std::unordered_map<std::string, std::string> backup_labels; // filename, label
+            std::ifstream file( labels_file.c_str( ) );
+
+            if ( !file.is_open( ) ) {
+                SPDLOG_CRITICAL( "Label migration: Failed to open labels for {}!", dir.path( ).string( ) );
                 continue;
             }
-        }
 
-        fs::remove( labels_file );
+            try {
+                data = json::parse( file );
+                if ( data.empty( ) ) continue;
+                for ( const auto& entry : data.items( ) ) {
+                    backup_labels[entry.key( )] = entry.value( ).get<std::string>( );
+                }
+            } catch ( json::exception& ex ) {
+                SPDLOG_ERROR( "Label migration: label parsing error: {}", ex.what( ) );
+                continue;
+            }
+
+            if ( backup_labels.empty( ) ) continue;
+            json j_tags;
+            for ( const auto& label : backup_labels ) {
+                j_tags[label.first] = json::array( { label.second } );
+            }
+
+            std::ofstream out( tags_file );
+            if ( !out.is_open( ) ) {
+                SPDLOG_ERROR( "Label migration: Failed to write labels.json for: {}", dir.path( ).string( ) );
+                continue;
+            }
+
+            out << j_tags.dump( 4 );
+            if ( !out.good( ) ) {
+                out.close( );
+                SPDLOG_ERROR( "Failed to save label for: {}", dir.path( ).string( ) );
+                continue;
+            }
+            out.close( );
+
+            fs::remove( labels_file );
+        }
     }
+}
+
+std::unordered_map<std::string, std::vector<std::string>> Features::load_tags( const std::string& game ) {
+    std::unordered_map<std::string, std::vector<std::string>> tags;
+    std::string file_name = ( paths::backup_dir( ) / sanitize_filename( game ) / "tags.json" ).string( );
+    if ( !fs::exists( file_name ) ) return { };
+
+    std::ifstream in( file_name );
+    if ( !in.is_open( ) ) {
+        SPDLOG_ERROR( "Failed to load tags for {}!", game );
+        return { };
+    }
+
+    json data;
+    try {
+        data = json::parse( in );
+        for ( const auto& entry : data.items( ) ) {
+            tags[entry.key( )] = entry.value( ).get<std::vector<std::string>>( );
+        }
+    } catch ( json::exception& ex ) {
+        SPDLOG_ERROR( "tag parsing error: {}", ex.what( ) );
+        return { };
+    }
+
+    return tags;
+}
+
+std::expected<bool, SMError>
+Features::save_tags( const std::string& game, const std::string& filename, const std::vector<std::string>& tags ) {
+    std::string file_name = ( paths::backup_dir( ) / sanitize_filename( game ) / "tags.json" ).string( );
+
+    json data = load_tags( game );
+    data[filename] = tags;
+
+    if ( data[filename].empty( ) ) {
+        data.erase( filename );
+    }
+
+    std::ofstream out( file_name );
+    if ( !out.is_open( ) ) {
+        SPDLOG_ERROR( "Failed to save tags for: {}", game );
+        return false;
+    }
+    if ( data.empty( ) ) {
+        fs::remove( file_name );
+        return true;
+    }
+
+    out << data.dump( 4 );
+    if ( !out.good( ) ) {
+        SPDLOG_ERROR( "Failed to save tag for: {}", game );
+        return false;
+    }
+    out.close( );
+    return true;
+}
+
+bool Features::delete_tags( const std::string& game, const std::string& filename ) {
+    std::string file_name = ( paths::backup_dir( ) / sanitize_filename( game ) / "tags.json" ).string( );
+
+    json data = load_tags( game );
+    data.erase( filename );
+
+    if ( data.empty( ) ) {
+        fs::remove( file_name );
+        return true;
+    }
+
+    std::ofstream out( file_name );
+    if ( !out.is_open( ) ) {
+        SPDLOG_ERROR( "Failed to save tags for: {}", game );
+        return false;
+    }
+
+    out << data.dump( 4 );
+    if ( !out.good( ) ) {
+        SPDLOG_ERROR( "Failed to save tag for: {}", game );
+        return false;
+    }
+    out.close( );
+    return true;
 }

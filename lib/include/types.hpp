@@ -70,3 +70,8 @@ struct GameKey {
         // spaceship operator,
         auto operator<=>( const GameKey& ) const = default;
 };
+
+struct TagCache {
+        std::vector<std::string> tags;
+        std::string display;
+};
