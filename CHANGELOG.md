@@ -1,10 +1,14 @@
-## [1.8.0] - 2026-07-02
+## [1.8.0] - 2026-07-06
 *Rewrote the GUI using a custom ImGui framework, improving code quality and maintainability.*
+
+#### Information
+Games no longer pop in due to an oversight when rewriting parts of the detection system,
+This will be fixed in the next release
 
 ### Core
 #### Added
-- Per-file cherry-pick restore from any snapshot
-- ``.savemgr-ignore`` per-game ignore files
+- Manual restoration of select files within a backup 
+- ``.savemgr-ignore`` for per-game save excludes 
 - Multi-value tags on snapshots 
 
 #### Fixed
