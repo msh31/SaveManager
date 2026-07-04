@@ -39,7 +39,7 @@ void CMenuBar::render( ) {
     ImGui::PushStyleColor( ImGuiCol_Button, ImVec4( 0.f, 0.f, 0.f, 0.f ) );
     ImGui::PushStyleColor( ImGuiCol_ButtonHovered, ImVec4( 0.f, 0.f, 0.f, 0.f ) );
     ImGui::PushStyleColor( ImGuiCol_ButtonActive, ImVec4( 0.f, 0.f, 0.f, 0.f ) );
-    ImGui::Button( APP_NAME.c_str( ), { 0.f, btn_h } );
+    ImGui::Button( APP_NAME.data(), { 0.f, btn_h } );
     ImGui::PopStyleColor( 3 );
     ImGui::SameLine( 0, 16.f );
 

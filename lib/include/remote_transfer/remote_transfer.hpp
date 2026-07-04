@@ -11,6 +11,7 @@ class CConfig;
 // copied from
 // https://git.marco007.dev/marco/http-server/src/commit/db41ab8f0126ed57b257face7c396c08d0999da9/socket_wrapper.hpp
 #ifdef _WIN32
+    #define WIN32_LEAN_AND_MEAN
     #include <winsock2.h>
     #include <ws2tcpip.h>
 

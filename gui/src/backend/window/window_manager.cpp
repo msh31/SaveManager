@@ -51,7 +51,7 @@ void CWindowManager::setup_opengl( ) {
     glfwWindowHint( GLFW_CONTEXT_VERSION_MINOR, 3 );
     glfwWindowHint( GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE ); // no old OpenGL
 
-    m_window = glfwCreateWindow( DEF_RES_W, DEF_RES_H, APP_NAME.c_str( ), nullptr, nullptr );
+    m_window = glfwCreateWindow( DEF_RES_W, DEF_RES_H, APP_NAME.data( ), nullptr, nullptr );
     if ( m_window == nullptr ) {
         glfwTerminate( );
         throw std::runtime_error( "Failed to create GLFW window, OpenGL 3.3 support is required" );
