@@ -167,9 +167,14 @@ bool CRemoteTransfer::upload_file(
 }
 
 bool CRemoteTransfer::download_file( const fs::path& backup_path, const CConfig& config ) {
-    char mem[1024 * 100];
+    char mem[1024 * 100]; // TODO: replace this because big bad
 
-    fs::path local_path = paths::backup_dir( ) / backup_path.filename( );
+    fs::path local_path = paths::backup_dir( ) / backup_path.parent_path( ).filename( ) / backup_path.filename( );
+
+    if ( !fs::exists( local_path.parent_path( ) ) ) {
+        fs::create_directories( local_path.parent_path( ) );
+    }
+
     m_sftp_handle = libssh2_sftp_open( m_sftp_session, backup_path.string( ).c_str( ), LIBSSH2_FXF_READ, 0 );
     if ( !m_sftp_handle ) {
         SPDLOG_ERROR( "Unable to open path with SFTP: {}", libssh2_sftp_last_error( m_sftp_session ) );
