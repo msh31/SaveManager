@@ -14,22 +14,24 @@ int main( ) {
         init_logger( "[%n]: [%l] %d-%m-%Y %H:%M:%S - %v" );
 
         Translations translations;
-        if ( !translations.init( ) ) {
-            SPDLOG_WARN( "Failed to initialize translations! Expect missing games!" );
-        }
 
         // SteamManifestCache steam_cache;
         // steam_cache.init( );
 
         Blacklist blacklist;
-        if ( !blacklist.init( ) ) {
-            SPDLOG_WARN( "Failed to initialize blacklist!" );
-        }
 
         CWindowManager window;
         CApp app( blacklist, translations );
 
         app.init( );
+
+        if ( !translations.init( ) ) {
+            SPDLOG_WARN( "Failed to initialize translations! Expect missing games!" );
+        }
+        if ( !blacklist.init( ) ) {
+            SPDLOG_WARN( "Failed to initialize blacklist!" );
+        }
+
         SPDLOG_INFO( "Initialized succesfully!" );
 
         window.run( [&] { app.render_shader( window.get_size( ) ); }, [&app] { app.render( ); } );

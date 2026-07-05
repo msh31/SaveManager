@@ -55,13 +55,18 @@ CConfig::~CConfig( ) {
     }
 }
 
-void CConfig::init( ) {
+bool CConfig::init( ) {
+    bool success = true;
+
     if ( !fs::exists( paths::ubi_translations( ) ) ) {
         std::ofstream f( paths::ubi_translations( ), std::ios::binary );
         if ( f.is_open( ) ) {
             f.write( reinterpret_cast<const char*>( ubi_translations_json ), ubi_translations_json_len );
+            success = success && f.good( );
+            f.close( );
         } else {
             SPDLOG_WARN( "Failed to open ubisoft translations for writing!" );
+            success = false;
         }
     }
 
@@ -69,8 +74,11 @@ void CConfig::init( ) {
         std::ofstream f( paths::steam_appids( ), std::ios::binary );
         if ( f.is_open( ) ) {
             f.write( reinterpret_cast<const char*>( steamids_json ), steamids_json_len );
+            success = success && f.good( );
+            f.close( );
         } else {
             SPDLOG_WARN( "Failed to open steamids for writing" );
+            success = false;
         }
     }
 
@@ -78,10 +86,15 @@ void CConfig::init( ) {
         std::ofstream f( paths::blacklist( ) );
         if ( f.is_open( ) ) {
             f << R"(["The Crew Motorfest", "Skull and Bones"])"; // kinda sucks
+            success = success && f.good( );
+            f.close( );
         } else {
             SPDLOG_WARN( "Failed to open blacklist for writing" );
+            success = false;
         }
     }
+
+    return success;
 }
 
 void CConfig::save( ) {

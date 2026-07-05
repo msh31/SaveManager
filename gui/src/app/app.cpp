@@ -27,6 +27,9 @@ CApp::~CApp( ) {
 
 void CApp::init( ) {
     ThemeManager::apply_style( );
+    if ( !m_config.init( ) ) {
+        throw std::runtime_error( "Config is missing and could not be generated!" );
+    }
 
     // TODO: remove this in the future
     Features::migrate_labels_to_tags( );
