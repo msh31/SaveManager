@@ -44,7 +44,7 @@ bool CZipArchive::add_to_archive( const fs::path& file ) {
                     failed_files.push_back( entry.path( ).filename( ).string( ) );
                     zip_source_free( source );
                 } else {
-                    m_save_files.emplace_back( entry.path( ).filename( ), file_path );
+                    m_save_files.emplace_back( entry.path( ), file_path );
                 }
             }
         }

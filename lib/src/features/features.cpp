@@ -43,13 +43,12 @@ bool Features::backup_game( const Game& game, const fs::path& file, CConfig& con
         fs::remove( zip_name );
         SPDLOG_ERROR( "failed to create backup for: {}", game.game_name );
         return false;
-    } else {
-        std::error_code ec;
-        fs::rename( zip_name, final_path, ec );
-        if ( ec ) {
-            SPDLOG_ERROR( "rename failed: {}", ec.message( ) );
-            return false;
-        }
+    }
+    std::error_code ec;
+    fs::rename( zip_name, final_path, ec );
+    if ( ec ) {
+        SPDLOG_ERROR( "rename failed: {}", ec.message( ) );
+        return false;
     }
     SPDLOG_INFO( "backup created: {}", game.game_name );
     return true;
@@ -106,7 +105,11 @@ bool Features::backup_game_files( const Game& game, std::vector<std::pair<fs::pa
 
     std::error_code ec;
     fs::rename( zip_name, final_path, ec );
-    if ( ec ) SPDLOG_ERROR( "rename failed: {}", ec.message( ) );
+    if ( ec ) {
+        SPDLOG_ERROR( "rename failed: {}", ec.message( ) );
+        return false;
+    }
+    SPDLOG_INFO( "backed up -> {}", final_path.string( ) );
     return true;
 }
 
