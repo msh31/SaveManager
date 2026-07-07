@@ -352,6 +352,9 @@ void CDashboardView::render_game_row( const std::vector<int>& group, int gi ) {
 void CDashboardView::render_save_row( const fs::path& save_file, const Game& game ) {
     ImGui::PushID( save_file.string( ).c_str( ) );
 
+    bool is_backing_up =
+        m_backup_future.valid( ) && m_backup_future.wait_for( std::chrono::seconds( 0 ) ) != std::future_status::ready;
+
     std::string date_text = std::format( "{} | ", format_file_time( fs::last_write_time( save_file ) ) );
     float date_width = ImGui::CalcTextSize( date_text.c_str( ) ).x;
 
@@ -378,6 +381,7 @@ void CDashboardView::render_save_row( const fs::path& save_file, const Game& gam
     ImGui::SameLine( 0.0f, 4.0f );
 
     ImGui::PushStyleVar( ImGuiStyleVar_FramePadding, ImVec2( 3.0f, 3.0f ) );
+    if ( is_backing_up ) ImGui::BeginDisabled( true );
     if ( ImGui::Button( "Backup", ImVec2( 80.0f, 0 ) ) ) {
         m_backup_future = std::async( std::launch::async, [this, game, save_file, &config = m_config]( ) {
             if ( !Features::backup_game( game, save_file, config ) ) {
@@ -386,6 +390,7 @@ void CDashboardView::render_save_row( const fs::path& save_file, const Game& gam
             }
         } );
     }
+    if ( is_backing_up ) ImGui::EndDisabled( );
     ImGui::SetItemTooltip( "Create a backup of this save" );
     ImGui::PopStyleVar( );
     ImGui::PopID( );
@@ -497,8 +502,7 @@ void CDashboardView::render_modals( ) {
 
         ImGui::Separator( );
 
-        bool add_tag =
-            ImGui::InputText( "##new_tag", &m_new_tag_input, ImGuiInputTextFlags_EnterReturnsTrue );
+        bool add_tag = ImGui::InputText( "##new_tag", &m_new_tag_input, ImGuiInputTextFlags_EnterReturnsTrue );
         ImGui::SameLine( );
         add_tag = ImGui::Button( "Add" ) || add_tag;
         if ( add_tag && !m_new_tag_input.empty( ) ) {
