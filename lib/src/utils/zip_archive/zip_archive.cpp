@@ -125,10 +125,15 @@ bool CZipArchive::extract_archive( const fs::path& save_path, std::vector<std::p
                 zip_fclose( file );
                 continue;
             }
+            auto resolved_tmp = resolved.string( ) + ".tmp";
 
             char buffer[1024];
             zip_int64_t bytes_read;
             fs::create_directories( resolved.parent_path( ) );
+
+            if ( fs::exists( resolved_tmp ) ) {
+                fs::remove( resolved_tmp );
+            }
 
             if ( fs::exists( resolved ) ) {
                 SPDLOG_WARN( "{} already exists in your game directory!", resolved.filename( ).string( ) );
@@ -144,12 +149,14 @@ bool CZipArchive::extract_archive( const fs::path& save_path, std::vector<std::p
                         resolved.parent_path( ) /
                             std::format( "{}.savemgr-conflict-{}", resolved.filename( ).string( ), save_time ),
                         ec );
-                    if ( ec ) SPDLOG_ERROR( "rename failed: {}", ec.message( ) );
+                    if ( ec ) {
+                        SPDLOG_ERROR( "rename failed: {}", ec.message( ) );
+                        continue;
+                    }
                 }
             }
 
-            std::ofstream save_file( resolved, std::ios::binary );
-
+            std::ofstream save_file( resolved_tmp, std::ios::binary );
             if ( !save_file.is_open( ) ) {
                 SPDLOG_ERROR( "Failed to open save file for writing: {}", resolved.filename( ).string( ) );
                 failed_files.push_back( fileInfo.name );
@@ -167,30 +174,38 @@ bool CZipArchive::extract_archive( const fs::path& save_path, std::vector<std::p
             if ( write_failed ) {
                 zip_fclose( file );
                 failed_files.push_back( fileInfo.name );
+                fs::remove( resolved_tmp );
                 continue;
             }
             if ( bytes_read == -1 ) {
                 SPDLOG_ERROR( "Failed to read file in archive: {}", fileInfo.name );
                 failed_files.push_back( fileInfo.name );
+                fs::remove( resolved_tmp );
+                continue;
             }
             zip_fclose( file );
             save_file.close( );
 
             if ( manifest_json.contains( fileInfo.name ) ) {
                 auto& entry = manifest_json[fileInfo.name];
-                if ( ( hash_file( resolved ).compare( entry["hash"].get<std::string>( ) ) ) != 0 ) {
+                if ( ( hash_file( resolved_tmp ).compare( entry["hash"].get<std::string>( ) ) ) != 0 ) {
                     SPDLOG_WARN(
                         "{}'s hash does not match {}'s hash, aborting restore operation!",
                         resolved.filename( ).string( ), entry["hash"].get<std::string>( ) );
+
                     failed_files.emplace_back( fileInfo.name );
+                    fs::remove( resolved_tmp );
                     continue;
                 }
+                fs::rename( resolved_tmp, resolved );
 
                 if ( entry.contains( "mtime" ) ) {
                     auto mtime =
                         sys_to_file_time( std::chrono::system_clock::from_time_t( entry["mtime"].get<time_t>( ) ) );
                     fs::last_write_time( resolved, mtime );
                 }
+            } else {
+                fs::rename( resolved_tmp, resolved );
             }
         }
     }
