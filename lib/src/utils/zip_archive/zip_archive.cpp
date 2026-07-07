@@ -106,7 +106,11 @@ bool CZipArchive::extract_archive( const fs::path& save_path, std::vector<std::p
         struct zip_stat fileInfo;
         zip_stat_init( &fileInfo );
         if ( zip_stat_index( m_archive, i, 0, &fileInfo ) == 0 ) {
-            if ( fileInfo.name && std::string( fileInfo.name ) == "manifest.json" ) continue;
+            if ( fileInfo.name == NULL ) {
+                SPDLOG_WARN( "Failed to get filename, skipping this file" );
+                continue;
+            }
+            if ( std::string( fileInfo.name ) == "manifest.json" ) continue;
 
             zip_file* file = zip_fopen_index( m_archive, i, 0 );
             if ( file == nullptr ) {
