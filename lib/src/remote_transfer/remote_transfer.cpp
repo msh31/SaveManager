@@ -119,6 +119,11 @@ bool CRemoteTransfer::upload_file(
     ssize_t nwritten;
     char* ptr;
 
+    if ( remote_path.empty( ) ) {
+        SPDLOG_ERROR( "Failed to upload file: No remote path specified!" );
+        return false;
+    }
+
     std::string remote_file =
         remote_path + ( remote_path.back( ) == '/' ? "" : "/" ) + backup_path.filename( ).string( );
     m_sftp_handle = libssh2_sftp_open(

@@ -1,8 +1,8 @@
 #include "transfer_view.hpp"
 #include <utils/utils.hpp>
 
-#include <features/features.hpp>
 #include <detection/detection.hpp>
+#include <features/features.hpp>
 
 #include <backend/font_manager/font_manager.hpp>
 
@@ -291,6 +291,10 @@ void CTransferView::render( ) {
 
         ImGui::BeginDisabled( !is_file_selected || is_transferring );
         if ( ImGui::Button( "Download" ) ) {
+            if ( m_current_remote_path.empty( ) ) {
+                SPDLOG_ERROR( "Failed to download file: No remote path specified!" );
+                return;
+            }
             std::string path = m_current_remote_path + ( m_current_remote_path.back( ) == '/' ? "" : "/" ) +
                                m_remote_entries[m_selected_remote_idx].name;
             ;
@@ -339,6 +343,10 @@ void CTransferView::render( ) {
                          label.c_str( ), m_selected_remote_idx == static_cast<int>( gi ),
                          ImGuiSelectableFlags_AllowDoubleClick ) ) {
                     if ( ImGui::IsMouseDoubleClicked( 0 ) && entry.is_directory ) {
+                        if ( m_current_remote_path.empty( ) ) {
+                            SPDLOG_ERROR( "Failed to download file: No remote path specified!" );
+                            return;
+                        }
                         m_current_remote_path =
                             m_current_remote_path + ( m_current_remote_path.back( ) == '/' ? "" : "/" ) + entry.name;
                         m_remote_entries = m_remote->list_directory( m_current_remote_path );
