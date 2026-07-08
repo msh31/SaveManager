@@ -10,10 +10,13 @@ namespace Features {
     bool backup_game_files( const Game& game, std::vector<std::pair<fs::path, const Game*>> files );
 
     bool restore_backup(
-        const fs::path& name, const fs::path& save_path, std::vector<std::pair<fs::path, fs::path>>& conflicts );
+        const fs::path& name, const fs::path& save_path, std::vector<std::pair<fs::path, fs::path>>& conflicts,
+        std::unordered_set<std::string> exclusions = { } );
     std::vector<fs::path> get_backups( const std::string& game );
 
     std::string construct_backup_name( const std::string& game, const std::string& custom_name = "" );
+
+    std::vector<std::string> get_backup_entries( const fs::path& backup );
 
     // TODO: introduce big bad telemetry collection to phase out shit like this in the future more easily
     // COMMENT: this needs to be thought about more

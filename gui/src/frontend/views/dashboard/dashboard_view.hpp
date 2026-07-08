@@ -1,7 +1,7 @@
 #pragma once
-#include <features/features.hpp>
 #include <config/config.hpp>
 #include <detection/detection.hpp>
+#include <features/features.hpp>
 
 #include <frontend/views/backups/backup_view.hpp>
 #include <frontend/views/base_view.hpp>
@@ -79,13 +79,20 @@ class CDashboardView : public CBaseView {
         std::chrono::time_point<std::chrono::steady_clock> m_detection_start_time;
 
         // Model state
-        bool m_open_conflict_modal = false;
         bool m_open_tags_modal = false;
         std::string m_new_tag_input;
         std::vector<std::string> m_pending_tags;
         Game m_pending_rename_game{ };
         fs::path m_pending_rename_backup;
+        bool m_open_conflict_modal = false;
         std::vector<std::pair<fs::path, fs::path>> m_pending_conflicts;
+
+        bool m_open_restore_modal = false;
+        std::unordered_set<std::string> m_pending_exclusions = { };
+        fs::path m_pending_restore_backup = { };
+        Game m_game_exclusions_restore; // horrible name
+        std::vector<std::string> m_restore_entries;
+        std::unordered_map<std::string, bool> m_restore_checked = { };
 
         // Futures
         std::future<void> m_refresh_future;

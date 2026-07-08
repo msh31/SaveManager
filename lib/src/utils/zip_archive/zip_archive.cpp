@@ -84,7 +84,9 @@ bool CZipArchive::finalize_add( ) {
 
 // Manifest not being able to be parsed is fine, it might not exist
 // which is the case for old backups created before this was added
-bool CZipArchive::extract_archive( const fs::path& save_path, std::vector<std::pair<fs::path, fs::path>>& conflicts ) {
+bool CZipArchive::extract_archive(
+    const fs::path& save_path, std::vector<std::pair<fs::path, fs::path>>& conflicts,
+    std::unordered_set<std::string> exclusions ) {
     if ( m_archive == nullptr ) return false;
 
     auto manifest = read_manifest_from_zip( m_archive );
@@ -110,7 +112,9 @@ bool CZipArchive::extract_archive( const fs::path& save_path, std::vector<std::p
                 SPDLOG_WARN( "Failed to get filename, skipping this file" );
                 continue;
             }
+
             if ( std::string( fileInfo.name ) == "manifest.json" ) continue;
+            if ( exclusions.contains( fileInfo.name ) ) continue;
 
             zip_file* file = zip_fopen_index( m_archive, i, 0 );
             if ( file == nullptr ) {

@@ -156,7 +156,8 @@ std::vector<fs::path> Features::get_backups( const std::string& game ) {
 }
 
 bool Features::restore_backup(
-    const fs::path& name, const fs::path& save_path, std::vector<std::pair<fs::path, fs::path>>& conflicts ) {
+    const fs::path& name, const fs::path& save_path, std::vector<std::pair<fs::path, fs::path>>& conflicts,
+    std::unordered_set<std::string> exclusions ) {
     CZipArchive archive( MODE_EXTRACT_ARCHIVE, name.u8string( ) );
 
     fs::path restore_path;
@@ -178,7 +179,7 @@ bool Features::restore_backup(
         }
     }
 
-    if ( !archive.extract_archive( restore_path, conflicts ) ) {
+    if ( !archive.extract_archive( restore_path, conflicts, exclusions ) ) {
         SPDLOG_ERROR( "failed to restore backup: {}", name.filename( ).string( ) );
         return false;
     }
@@ -334,4 +335,12 @@ bool Features::delete_tags( const std::string& game, const std::string& filename
     }
     out.close( );
     return true;
+}
+
+// caller must do empty check
+std::vector<std::string> Features::get_backup_entries( const fs::path& backup ) {
+    CZipArchive archive( MODE_EXTRACT_ARCHIVE, backup.u8string( ) );
+    std::vector<std::string> entries;
+    entries = archive.get_entry_names( );
+    return entries;
 }

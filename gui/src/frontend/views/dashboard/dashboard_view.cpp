@@ -426,20 +426,22 @@ void CDashboardView::render_backup_row(
 
     ImGui::PushStyleVar( ImGuiStyleVar_FramePadding, ImVec2( 3.0f, 3.0f ) );
     if ( ImGui::Button( "Restore", ImVec2( 80.0f, 0 ) ) ) {
-        for ( const auto& sp : game.save_paths ) {
-            if ( sp.empty( ) ) {
-                Notify::show_notification( "Restore", "Cannot restore: save location unknown.", 2000 );
-            } else {
-                if ( Features::restore_backup( backup, sp, m_pending_conflicts ) ) {
-                    if ( !m_pending_conflicts.empty( ) ) {
-                        m_open_conflict_modal = true;
-                    }
-                } else {
-                    Notify::show_notification( "Restore", "Failed to restore backup!", 2000 );
-                }
-            }
+        m_game_exclusions_restore = game;
+        m_pending_restore_backup = backup;
+        m_open_restore_modal = true;
+        auto res_entries = Features::get_backup_entries( backup );
+        if ( res_entries.empty( ) ) {
+            Notify::show_notification( "Restore Failed", "Found no entries in backup, odd.", 2000 );
+            return;
+        }
+        m_restore_entries = res_entries;
+        m_restore_checked.clear( );
+        for ( const auto& e : m_restore_entries ) {
+            m_restore_checked[e] = true;
         }
     }
+    ImGui::CloseCurrentPopup( );
+
     ImGui::SetItemTooltip( "Restore save from backup" );
     ImGui::SameLine( 0.0f, 4.0f );
 
@@ -482,6 +484,11 @@ void CDashboardView::render_modals( ) {
     if ( m_open_conflict_modal ) {
         m_open_conflict_modal = false;
         ImGui::OpenPopup( "Resolve conflict(s)" );
+    }
+
+    if ( m_open_restore_modal ) {
+        m_open_restore_modal = false;
+        ImGui::OpenPopup( "Restore backup" );
     }
 
     if ( ImGui::BeginPopupModal( "Manage Tags", nullptr, ImGuiWindowFlags_AlwaysAutoResize ) ) {
@@ -575,6 +582,52 @@ void CDashboardView::render_modals( ) {
         if ( ImGui::Button( "Cancel" ) ) {
             ImGui::CloseCurrentPopup( );
         }
+        ImGui::EndPopup( );
+    }
+
+    ImGui::SetNextWindowSize( ImVec2( 500, 0 ), ImGuiCond_Always );
+    if ( ImGui::BeginPopupModal( "Restore backup", nullptr, ImGuiWindowFlags_AlwaysAutoResize ) ) {
+        ImGui::TextWrapped(
+            "Select all files you would like to restore from %s",
+            m_pending_restore_backup.filename( ).string( ).c_str( ) );
+
+        // if ( ImGui::Button( "Select All" ) ) {
+        //     m_restore_checked[entry] = !m_restore_checked[entry];
+        // }
+        for ( const auto& entry : m_restore_entries ) {
+            ImGui::PushID( entry.c_str( ) );
+            ImGui::Separator( );
+            ImGui::Checkbox( "Include ", &m_restore_checked[entry] );
+            ImGui::SameLine( );
+            ImGui::TextWrapped( " %s", entry.c_str( ) );
+            ImGui::PopID( );
+        }
+
+        ImGui::Separator( );
+
+        if ( ImGui::Button( "Restore" ) ) {
+            m_pending_exclusions.clear( );
+            for ( const auto& entry : m_restore_checked ) {
+                if ( entry.second == false ) {
+                    m_pending_exclusions.insert( entry.first );
+                }
+            }
+
+            for ( const auto& entry : m_game_exclusions_restore.save_paths ) {
+                if ( Features::restore_backup(
+                         m_pending_restore_backup, entry, m_pending_conflicts, m_pending_exclusions ) ) {
+                    if ( !m_pending_conflicts.empty( ) ) {
+                        m_open_conflict_modal = true;
+                    }
+                } else {
+                    Notify::show_notification( "Restore", "Failed to restore backup!", 2000 );
+                    ImGui::CloseCurrentPopup( );
+                    break;
+                }
+            }
+        }
+        ImGui::SameLine( );
+        if ( ImGui::Button( "Cancel" ) ) ImGui::CloseCurrentPopup( );
         ImGui::EndPopup( );
     }
 }

@@ -16,7 +16,9 @@ class CZipArchive {
         ~CZipArchive( ) { close( ); }
 
         bool add_to_archive( const fs::path& file );
-        bool extract_archive( const fs::path& save_path, std::vector<std::pair<fs::path, fs::path>>& conflicts );
+        bool extract_archive(
+            const fs::path& save_path, std::vector<std::pair<fs::path, fs::path>>& conflicts,
+            std::unordered_set<std::string> exclusions = { } );
 
         void set_comment( const std::string& );
         std::string get_comment( );
