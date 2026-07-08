@@ -139,26 +139,39 @@ bool CZipArchive::extract_archive(
                 fs::remove( resolved_tmp );
             }
 
+            fs::path conflict_path = { };
             if ( fs::exists( resolved ) ) {
                 SPDLOG_WARN( "{} already exists in your game directory!", resolved.filename( ).string( ) );
 
                 auto save_time =
                     std::chrono::system_clock::to_time_t( file_time_to_sys( fs::last_write_time( resolved ) ) );
 
+                auto conflict_dest = resolved.parent_path( ) /
+                                     std::format( "{}.savemgr-conflict-{}", resolved.filename( ).string( ), save_time );
+
                 if ( save_time > fileInfo.mtime ) {
                     SPDLOG_WARN( "{} is newer than {}!", resolved.filename( ).string( ), fileInfo.name );
                     std::error_code ec;
-                    fs::rename(
-                        resolved,
-                        resolved.parent_path( ) /
-                            std::format( "{}.savemgr-conflict-{}", resolved.filename( ).string( ), save_time ),
-                        ec );
+                    fs::rename( resolved, conflict_dest, ec );
                     if ( ec ) {
                         SPDLOG_ERROR( "rename failed: {}", ec.message( ) );
                         continue;
                     }
+                    conflict_path = conflict_dest;
                 }
             }
+
+            auto restore_conflict = [&] {
+                if ( !conflict_path.empty( ) ) {
+                    std::error_code ec;
+                    fs::rename( conflict_path, resolved, ec );
+                    if ( ec ) {
+                        SPDLOG_WARN(
+                            "Rename from {} to {} failed: {}", conflict_path.string( ), resolved.string( ),
+                            ec.message( ) );
+                    }
+                }
+            };
 
             std::ofstream save_file( resolved_tmp, std::ios::binary );
             if ( !save_file.is_open( ) ) {
@@ -179,12 +192,15 @@ bool CZipArchive::extract_archive(
                 zip_fclose( file );
                 failed_files.push_back( fileInfo.name );
                 fs::remove( resolved_tmp );
+                restore_conflict( );
+
                 continue;
             }
             if ( bytes_read == -1 ) {
                 SPDLOG_ERROR( "Failed to read file in archive: {}", fileInfo.name );
                 failed_files.push_back( fileInfo.name );
                 fs::remove( resolved_tmp );
+                restore_conflict( );
                 continue;
             }
             zip_fclose( file );
@@ -199,6 +215,8 @@ bool CZipArchive::extract_archive(
 
                     failed_files.emplace_back( fileInfo.name );
                     fs::remove( resolved_tmp );
+
+                    restore_conflict( );
                     continue;
                 }
                 fs::rename( resolved_tmp, resolved );
