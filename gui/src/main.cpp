@@ -14,17 +14,8 @@ int main( ) {
         init_logger( "[%n]: [%l] %d-%m-%Y %H:%M:%S - %v" );
 
         Translations translations;
-
-        // SteamManifestCache steam_cache;
-        // steam_cache.init( );
-
         Blacklist blacklist;
-
         CWindowManager window;
-        CApp app( blacklist, translations );
-
-        app.init( );
-
         if ( !translations.init( ) ) {
             SPDLOG_WARN( "Failed to initialize translations! Expect missing games!" );
         }
@@ -32,8 +23,9 @@ int main( ) {
             SPDLOG_WARN( "Failed to initialize blacklist!" );
         }
 
+        CApp app( blacklist, translations );
+        app.init( );
         SPDLOG_INFO( "Initialized succesfully!" );
-
         window.run( [&] { app.render_shader( window.get_size( ) ); }, [&app] { app.render( ); } );
     } catch ( const std::exception& e ) {
         SPDLOG_CRITICAL( "Fatal: {}", e.what( ) );
