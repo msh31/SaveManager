@@ -27,4 +27,5 @@ class CWindowManager {
 
         void setup_opengl( );
         void setup_imgui( );
+        bool should_continue( );
 };
