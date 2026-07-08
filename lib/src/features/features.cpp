@@ -120,7 +120,11 @@ bool Features::backup_to_path( fs::path source, fs::path dest ) {
     bool success = false;
     {
         CZipArchive archive( MODE_CREATE_ARCHIVE, zip_name.u8string( ) );
-        archive.set_comment( source.parent_path( ).string( ) );
+        std::string original_path = source.parent_path( ).string( );
+        if ( fs::is_directory( source ) ) {
+            original_path = source.string( );
+        }
+        archive.set_comment( original_path );
         success = archive.add_to_archive( source ) && archive.finalize_add( );
     }
 
