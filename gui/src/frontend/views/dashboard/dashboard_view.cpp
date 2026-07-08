@@ -249,7 +249,7 @@ void CDashboardView::render_game_content(
         if ( ImGui::Button( "Resolve Conflict(s)" ) ) {
             m_pending_conflicts.clear( );
             for ( const auto& sp : game.save_paths ) {
-                for ( const auto& f : fs::directory_iterator( sp ) ) {
+                for ( const auto& f : fs::recursive_directory_iterator( sp ) ) {
                     auto full = f.path( ).string( );
                     auto pos = full.find( ".savemgr-conflict-" );
                     if ( pos != std::string::npos ) {
@@ -555,8 +555,16 @@ void CDashboardView::render_modals( ) {
 
             ImGui::PushID( i );
             if ( ImGui::Button( "Keep" ) ) {
-                fs::rename( m_pending_conflicts[i].second, m_pending_conflicts[i].first );
-                to_remove.push_back( i );
+                std::error_code ec;
+                fs::rename( m_pending_conflicts[i].second, m_pending_conflicts[i].first, ec );
+                if ( ec ) {
+                    auto str = std::format(
+                        "Failed to rename conflict! skipping: {}: {}", m_pending_conflicts[i].first.string( ),
+                        ec.message( ) );
+                    Notify::show_notification( "Conflict Rename failure!", str, 3000 );
+                } else {
+                    to_remove.push_back( i );
+                }
             }
             ImGui::PopID( );
             ImGui::SetItemTooltip( "Overwrite the newer save with this restored from backup file" );
