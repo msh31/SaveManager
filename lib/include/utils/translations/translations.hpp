@@ -15,4 +15,6 @@ struct Translations {
         std::unordered_map<std::string, std::string> m_steam_i2n_translation = { }; // appid to name
 
         std::unordered_map<std::string, std::string> m_ubi_translations = { };
+
+        mutable std::mutex m_translations_mutex;
 };

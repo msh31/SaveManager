@@ -6,11 +6,12 @@ struct Blacklist {
         void save( );
 
         bool is_blacklisted( const std::string& game_name ) const;
-        const std::unordered_set<std::string>& games( ) const;
+        const std::unordered_set<std::string> games( ) const;
 
         void add( const std::string& name );
         void remove( const std::string& name );
 
     private:
         std::unordered_set<std::string> m_blacklisted_games;
+        mutable std::mutex m_blacklist_mutex;
 };

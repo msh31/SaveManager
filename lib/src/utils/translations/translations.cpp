@@ -62,6 +62,7 @@ bool Translations::init( ) {
 }
 
 std::optional<std::string> Translations::get_game_name_ubi( const std::string& game_id ) const {
+    std::lock_guard<std::mutex> lock( m_translations_mutex );
     if ( auto it = m_ubi_translations.find( game_id ); it != m_ubi_translations.end( ) ) {
         return it->second;
     }
@@ -69,6 +70,7 @@ std::optional<std::string> Translations::get_game_name_ubi( const std::string& g
 }
 
 std::optional<std::string> Translations::get_steam_id( const std::string& game_name ) const {
+    std::lock_guard<std::mutex> lock( m_translations_mutex );
     if ( auto it = m_steam_n2i_translation.find( game_name ); it != m_steam_n2i_translation.end( ) ) {
         return it->second;
     }
@@ -77,6 +79,7 @@ std::optional<std::string> Translations::get_steam_id( const std::string& game_n
 }
 
 std::optional<std::string> Translations::get_steam_name( const std::string& appid ) const {
+    std::lock_guard<std::mutex> lock( m_translations_mutex );
     if ( auto it = m_steam_i2n_translation.find( appid ); it != m_steam_i2n_translation.end( ) ) {
         return it->second;
     }
@@ -85,6 +88,7 @@ std::optional<std::string> Translations::get_steam_name( const std::string& appi
 }
 
 std::optional<std::string> Translations::get_game_name_rsg( std::string_view folder_name ) const {
+    std::lock_guard<std::mutex> lock( m_translations_mutex );
     if ( auto it = rsg_translations.find( folder_name ); it != rsg_translations.end( ) ) {
         return it->second;
     }

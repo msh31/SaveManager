@@ -28,6 +28,7 @@ bool Blacklist::init( ) {
     return true;
 }
 
+// NOTE: this function does not lock itself and any caller MUST lock the interal mutex
 void Blacklist::save( ) {
     json data;
     for ( const auto& entry : m_blacklisted_games ) {
@@ -40,16 +41,22 @@ void Blacklist::save( ) {
 }
 
 bool Blacklist::is_blacklisted( const std::string& game_name ) const {
+    std::lock_guard<std::mutex> lock( m_blacklist_mutex );
     return m_blacklisted_games.count( game_name ) > 0;
 }
 
-const std::unordered_set<std::string>& Blacklist::games( ) const { return m_blacklisted_games; }
+const std::unordered_set<std::string> Blacklist::games( ) const {
+    std::lock_guard<std::mutex> lock( m_blacklist_mutex );
+    return m_blacklisted_games;
+}
 
 void Blacklist::add( const std::string& name ) {
+    std::lock_guard<std::mutex> lock( m_blacklist_mutex );
     m_blacklisted_games.insert( name );
     save( );
 }
 void Blacklist::remove( const std::string& name ) {
+    std::lock_guard<std::mutex> lock( m_blacklist_mutex );
     m_blacklisted_games.erase( name );
     save( );
 }
