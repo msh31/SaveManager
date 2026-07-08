@@ -175,7 +175,7 @@ void CTransferView::render( ) {
     ImGui::PopStyleColor( );
 
     ImGui::SetCursorPosY( status_y );
-    if ( !is_connecting ) ImGui::BeginDisabled( true );
+    if ( is_connecting ) ImGui::BeginDisabled( true );
     if ( ImGui::Button( "Save configuration" ) ) {
         m_config.sftp.dest_addr = fs::path( m_dest_addr ).string( );
         m_config.sftp.username = m_username;
@@ -187,7 +187,7 @@ void CTransferView::render( ) {
         m_config.save( );
         Notify::show_notification( "Config Saved!", "Settings saved successfully!", 1500 );
     }
-    if ( !is_connecting ) ImGui::EndDisabled( );
+    if ( is_connecting ) ImGui::EndDisabled( );
     ImGui::EndChild( );
     ImGui::Dummy( ImVec2( 0, 8.0f ) );
 
