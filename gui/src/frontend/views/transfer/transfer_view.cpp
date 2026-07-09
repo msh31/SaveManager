@@ -294,7 +294,9 @@ void CTransferView::render( ) {
         ImGui::BeginDisabled( !is_file_selected || is_transferring );
         if ( ImGui::Button( "Download" ) ) {
             if ( m_current_remote_path.empty( ) ) {
-                SPDLOG_ERROR( "Failed to download file: No remote path specified!" );
+                Notify::show_notification(
+                    "Download Failure", "Failed to download file: No remote path specified!", 2000 );
+                ImGui::EndDisabled( );
                 return;
             }
             std::string path = m_current_remote_path + ( m_current_remote_path.back( ) == '/' ? "" : "/" ) +
