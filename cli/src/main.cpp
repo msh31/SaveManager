@@ -13,8 +13,11 @@ int main( int argc, char* argv[] ) {
     init_logger( "[%n]: [%l] %d-%m-%Y %H:%M:%S - %v" );
     spdlog::set_level( spdlog::level::err );
 
-    translations::init( );
-    Blacklist::init( );
+    Translations translations;
+    Blacklist blacklist;
+    translations.init( );
+    blacklist.init( );
+
     CLI::App app{ "The CLI version of SaveManager" };
     argv = app.ensure_utf8( argv );
 
@@ -35,7 +38,7 @@ int main( int argc, char* argv[] ) {
     CLI11_PARSE( app, argc, argv );
 
     if ( *list ) {
-        std::vector<Game> result = Detection::find_saves( );
+        std::vector<Game> result = Detection::find_saves( blacklist, translations );
         if ( result.empty( ) ) {
             SPDLOG_CRITICAL( "No Savegames found!" );
             return 1;
