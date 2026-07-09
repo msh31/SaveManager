@@ -132,7 +132,11 @@ bool SanAndreas::save( fs::path path ) {
         return false;
     }
     out.write( reinterpret_cast<const char*>( data.data( ) ), data.size( ) );
-    return true;
+    if ( out.good( ) ) {
+        out.close( );
+        return true;
+    }
+    return false;
 }
 
 bool SanAndreas::parse_block_zero( ) {
