@@ -108,7 +108,9 @@ void CSettingsView::render( ) {
                 game_to_remove = *it;
             }
         }
-        m_blacklist.remove( game_to_remove );
+        if ( !game_to_remove.empty( ) ) {
+            m_blacklist.remove( game_to_remove );
+        }
         ImGui::EndChild( );
     } else {
         ImGui::EndChild( );
