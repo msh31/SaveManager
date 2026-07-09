@@ -121,7 +121,7 @@ std::vector<Game> Detection::find_saves( const Blacklist& blacklist, const Trans
     }
     games = std::move( deduped );
 
-    std::erase_if( games, [blacklist]( const Game& game ) { return blacklist.is_blacklisted( game.game_name ); } );
+    std::erase_if( games, [&blacklist]( const Game& game ) { return blacklist.is_blacklisted( game.game_name ); } );
     std::erase_if( games, []( const Game& game ) {
         return std::ranges::none_of(
             game.save_paths, []( const fs::path& p ) { return fs::is_directory( p ) && !fs::is_empty( p ); } );
