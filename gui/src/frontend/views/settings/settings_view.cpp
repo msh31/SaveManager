@@ -99,7 +99,8 @@ void CSettingsView::render( ) {
     if ( ImGui::BeginChild( "blacklist_child", ImVec2( 0, 120 ), true ) ) {
         int i = 0;
         std::string game_to_remove = { };
-        for ( auto it = m_blacklist.games( ).begin( ); it != m_blacklist.games( ).end( ); ++it, ++i ) {
+        auto games = m_blacklist.games( );
+        for ( auto it = games.begin( ); it != games.end( ); ++it, ++i ) {
             ImGui::Text( "%s", it->c_str( ) );
             ImGui::SameLine( );
             ImGui::SetCursorPosX( ImGui::GetCursorPosX( ) + 5 );
