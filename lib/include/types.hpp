@@ -53,7 +53,7 @@ struct BackupEntry {
         fs::path name;
         fs::path save_path;
         std::vector<fs::path> entries;
-        size_t size;
+        size_t size = 0;
 };
 
 struct SteamManifest {
