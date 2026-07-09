@@ -136,9 +136,9 @@ bool CRemoteTransfer::upload_file(
 
     std::ifstream file( backup_path, std::ios::binary );
     if ( !file.is_open( ) ) {
+        SPDLOG_ERROR( "Could not open backup path with SFTP" );
         libssh2_sftp_close_handle( m_sftp_handle );
         m_sftp_handle = nullptr;
-        SPDLOG_ERROR( "Could not open backup path with SFTP" );
         return false;
     }
 
@@ -193,6 +193,17 @@ bool CRemoteTransfer::download_file( const fs::path& backup_path, const CConfig&
         m_sftp_handle = nullptr;
         return false;
     }
+
+    _LIBSSH2_SFTP_ATTRIBUTES attrs;
+    int fstat = libssh2_sftp_fstat( m_sftp_handle, &attrs );
+    if ( fstat < 0 ) {
+        SPDLOG_ERROR( "Failed to fstat on the sftp handle: {}", fstat );
+        libssh2_sftp_close_handle( m_sftp_handle );
+        m_sftp_handle = nullptr;
+        file.close( );
+        return false;
+    }
+    m_total_bytes = attrs.filesize;
 
     ssize_t rc = -1; // failure
     bool failed = false;
