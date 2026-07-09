@@ -260,7 +260,9 @@ void CTransferView::render( ) {
         if ( !m_backups.empty( ) ) {
             if ( ImGui::BeginListBox( "##backups", ImVec2( -FLT_MIN, content_height ) ) ) {
                 enumerate( m_backups, [&]( int gi, auto& path ) {
-                    if ( path.filename( ) == "undo.zip" ) return;
+                    if ( path.filename( ) == "undo.zip" ) {
+                        return;
+                    }
                     std::string label = std::format( "{}##{}", path.filename( ).string( ), static_cast<int>( gi ) );
                     if ( ImGui::Selectable(
                              label.c_str( ), m_selected_backups[static_cast<int>( gi )],
@@ -297,6 +299,8 @@ void CTransferView::render( ) {
                 Notify::show_notification(
                     "Download Failure", "Failed to download file: No remote path specified!", 2000 );
                 ImGui::EndDisabled( );
+                ImGui::EndChild( );
+                ImGui::EndChild( );
                 return;
             }
             std::string path = m_current_remote_path + ( m_current_remote_path.back( ) == '/' ? "" : "/" ) +
@@ -338,7 +342,9 @@ void CTransferView::render( ) {
             }
 
             enumerate( m_remote_entries, [&]( int gi, auto& entry ) {
-                if ( entry.name == "." || entry.name == ".." ) return;
+                if ( entry.name == "." || entry.name == ".." ) {
+                    return;
+                }
 
                 std::string prefix = entry.is_directory ? "[DIR] " : "[FILE] ";
                 std::string label = std::format( "{}{}##{}", prefix, entry.name, static_cast<int>( gi ) );
@@ -348,7 +354,8 @@ void CTransferView::render( ) {
                          ImGuiSelectableFlags_AllowDoubleClick ) ) {
                     if ( ImGui::IsMouseDoubleClicked( 0 ) && entry.is_directory ) {
                         if ( m_current_remote_path.empty( ) ) {
-                            SPDLOG_ERROR( "Failed to download file: No remote path specified!" );
+                            Notify::show_notification(
+                                "Download failure", "Failed to download file: No remote path specified!", 2000 );
                             return;
                         }
                         m_current_remote_path =
