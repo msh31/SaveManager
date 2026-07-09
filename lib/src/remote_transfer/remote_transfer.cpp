@@ -194,17 +194,29 @@ bool CRemoteTransfer::download_file( const fs::path& backup_path, const CConfig&
         return false;
     }
 
-    ssize_t rc;
+    ssize_t rc = -1; // failure
     bool failed = false;
     while ( ( rc = libssh2_sftp_read( m_sftp_handle, mem, sizeof( mem ) ) ) > 0 ) {
         if ( !file.write( mem, rc ) ) {
             failed = true;
             break;
         }
+        if ( !file.good( ) ) {
+            failed = true;
+            break;
+        }
         m_bytes_transferred += rc;
     }
+
+    if ( rc < 0 ) {
+        SPDLOG_ERROR( "SFTP read failed: {}", rc );
+        failed = true;
+    }
+
     libssh2_sftp_close( m_sftp_handle );
     m_sftp_handle = nullptr;
+    file.close( );
+    m_bytes_transferred = { };
 
     if ( !failed ) SPDLOG_INFO( "File has been downloaded!" );
     return !failed;
