@@ -1,15 +1,15 @@
-## [1.8.0] - 2026-07-06
+## [1.8.0] - 2026-07-11
 *Rewrote the GUI using a custom ImGui framework, improving code quality and maintainability.*
 
 #### Information
 Games no longer pop in due to an oversight when rewriting parts of the detection system,
-This will be fixed in the next release
+This will be fixed in the next release on 20-07-2026
 
 ### Core
 #### Added
-- Manual restoration of select files within a backup 
-- ``.savemgr-ignore`` for per-game save excludes 
+- Manual restoration of select files within a backup (Using a modal in the GUI)
 - Multi-value tags on snapshots 
+    - Labels are automatically converted to tags however; **tags are empty by default!**
 
 #### Fixed
 - Downloading a save from an SFTP server places the save in the ``path/to/savemanager/backups/`` instead of it's corresponding game folder
@@ -25,6 +25,21 @@ This will be fixed in the next release
 - Fixed an incorrect file path being reported for a failed file when adding a directory to a backup archive
 - GTA:SA save editor no longer loads a save with garbage data when BLOCK0 fails to parse
 - GTA:SA save editor no longer reads past a truncated version ID
+- Directory backups (Minecraft, other folder-based saves) stored an incorrect manifest key
+  - Caused the backup to silently fail to finalize and leaving a stray .tmp file behind
+- An unhandled exception when reading a file's last-modified time during backup finalization
+  - Could crash the app mid-backup with no error logged
+- Handle NULL case for fileInfo.name in backup extraction
+    - Skips the file instead of trying to extract it from the archive, edge case
+- Write to temp file before overwriting live save during extraction
+- Config not saving the SSH keyphrase and auth method
+    - This is obviously not handled very well as its just plaintext but I plan to improve this by using the OS keyring in a future release.
+- Original save not being placed back upon restore from backup failure
+- Undo backup used wrong comment path for directory saves
+    - Caused an issue with minecraft worlds because 'backup_to_path' always assumed it was a regular file, which is not the case for minecraft.
+- GTA:SA save editor did not close the file after saving
+- Incorrectly file size used in the remote transfer's file download view
+- Not catching an SFTP read error during file download
 
 #### Changed
 - Plugin loading errors are now caught per-plugin; remaining plugins continue loading
@@ -36,7 +51,7 @@ This will be fixed in the next release
 - Detection runs independent platform scans in parallel for faster startup
 
 #### Removed
-- Launcher support configuration (All by default now)
+- Launcher support configuration (All are on by default now)
 
 #### Development
 - Blacklist and Translations moved from global state to instance-owned objects, injected by reference
@@ -61,6 +76,13 @@ This will be fixed in the next release
     - This was a known issue for a long time but some great effort has gone into making sure all games are reportedly uniquely even if there are multiple versions installed on the system, i.e. for Ubisoft games
     - All games thar enot known just simply show up as "N/A" under their own cards.
 - Removal of undo backup if backup fails to be restored
+- Prevent possible UB when downloading / uploading files through SFTP
+- Disable save config button when connecting in Transfer tab
+- Disable backup button when backing up already
+- Pressing Q would exit the app (Could happen when inputting text anywhere, now gated to just be in debug builds)
+- Settings view constantly writing to the blacklist json file when not doing anything
+- Missing EndDisabled() before early return in the transfer view's download button
+- Some missing EndChild calls in the transfer view in failure paths
 
 #### Changed
 - Empty files no longer shown as save entries in the dashboard
