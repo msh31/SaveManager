@@ -32,10 +32,8 @@ std::expected<std::vector<Game>, SMError> CWinePrefixDetector::find( ) {
 
                 // ubisoft
                 auto ubi_documents = CUbisoftDetector::scan( user.path( ) / "Documents", m_translations );
-                auto ubi_anno = CUbisoftDetector::scan( user.path( ) / "Documents", m_translations );
                 auto ubi_anno_alt = CUbisoftDetector::scan( user.path( ) / "AppData" / "Roaming", m_translations );
                 std::ranges::move( ubi_documents, std::back_inserter( games ) );
-                std::ranges::move( ubi_anno, std::back_inserter( games ) );
                 std::ranges::move( ubi_anno_alt, std::back_inserter( games ) );
 
                 // rockstar
