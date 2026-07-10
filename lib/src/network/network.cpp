@@ -47,9 +47,10 @@ bool Network::download_file( std::string_view url, const std::string& output_pat
         return false;
     }
 
-    FILE* fp = fopen( output_path.c_str( ), "wb" );
+    std::string tmp_path = output_path + ".tmp";
+    FILE* fp = fopen( tmp_path.c_str( ), "wb" );
     if ( !fp ) {
-        SPDLOG_ERROR( "Failed to open file for writing: {}", output_path );
+        SPDLOG_ERROR( "Failed to open file for writing: {}", tmp_path );
         curl_easy_cleanup( curl );
         return false;
     }
@@ -67,6 +68,15 @@ bool Network::download_file( std::string_view url, const std::string& output_pat
 
     if ( res != CURLE_OK ) {
         SPDLOG_ERROR( "Failed to download file: {}", curl_easy_strerror( res ) );
+        fs::remove( tmp_path );
+        return false;
+    }
+
+    std::error_code ec;
+    fs::rename( tmp_path, output_path, ec );
+    if ( ec ) {
+        SPDLOG_ERROR( "Failed to move downloaded file into place: {}", ec.message( ) );
+        fs::remove( tmp_path );
         return false;
     }
 
