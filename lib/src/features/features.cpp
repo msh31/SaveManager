@@ -93,8 +93,7 @@ bool Features::backup_game_files( const Game& game, std::vector<std::pair<fs::pa
             if ( !za.add_to_archive( entry.first ) ) failed_to_add = true;
         }
         if ( !za.finalize_add( ) ) {
-            fs::remove( zip_name );
-            return false;
+            failed_to_add = true;
         }
     }
 
