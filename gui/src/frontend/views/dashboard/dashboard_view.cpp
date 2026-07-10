@@ -212,6 +212,11 @@ void CDashboardView::render_game_content(
     std::pair<int, int> sb_count, const Game& game, bool has_conflicts,
     std::vector<std::pair<fs::path, const Game*>> files ) {
 
+    bool is_refreshing = m_refresh_future.valid( ) &&
+                         m_refresh_future.wait_for( std::chrono::seconds( 0 ) ) != std::future_status::ready;
+    bool is_backing_up =
+        m_backup_future.valid( ) && m_backup_future.wait_for( std::chrono::seconds( 0 ) ) != std::future_status::ready;
+
     // saves
     if ( sb_count.first <= 0 ) {
         ImGui::TextDisabled( "Game detected but no saves were found!" );
@@ -236,6 +241,7 @@ void CDashboardView::render_game_content(
 
     ImGui::PushStyleColor( ImGuiCol_Button, ImColor( 198, 97, 63 ).Value );
     ImGui::PushStyleColor( ImGuiCol_ButtonHovered, ImColor( 198, 97, 63 ).Value );
+    if ( is_backing_up || is_refreshing ) ImGui::BeginDisabled( true );
     if ( ImGui::Button( "Backup All" ) ) {
         SPDLOG_INFO( "creating backup of: {}", game.game_name );
         m_backup_future = std::async( std::launch::async, [this, game, files]( ) {
@@ -247,8 +253,10 @@ void CDashboardView::render_game_content(
             }
         } );
     }
+    if ( is_backing_up || is_refreshing ) ImGui::EndDisabled( );
     ImGui::PopStyleColor( 2 );
     ImGui::SameLine( );
+    if ( is_backing_up || is_refreshing ) ImGui::BeginDisabled( true );
     if ( has_conflicts ) {
         if ( ImGui::Button( "Resolve Conflict(s)" ) ) {
             m_pending_conflicts.clear( );
@@ -265,7 +273,9 @@ void CDashboardView::render_game_content(
             }
         }
     }
+    if ( is_backing_up || is_refreshing ) ImGui::EndDisabled( );
     ImGui::SameLine( );
+    if ( is_backing_up || is_refreshing ) ImGui::BeginDisabled( true );
     if ( has_undo ) {
         if ( ImGui::Button( "Undo last restore" ) ) {
             for ( const auto& sp : game.save_paths ) {
@@ -279,6 +289,7 @@ void CDashboardView::render_game_content(
             }
         }
     }
+    if ( is_backing_up || is_refreshing ) ImGui::EndDisabled( );
 
     for ( auto& save : files ) {
         if ( !fs::exists( save.first ) ) continue;
