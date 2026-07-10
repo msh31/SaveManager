@@ -369,9 +369,19 @@ std::optional<std::string> CZipArchive::read_manifest_from_zip( zip_t* zip_handl
     }
 
     auto entries = zip_get_num_entries( zip_handle, ZIP_FL_UNCHANGED );
+    if ( entries <= 0 ) {
+        SPDLOG_ERROR( "Failed to find file entries from archive!" );
+        return std::nullopt;
+    }
 
     for ( size_t i{ }; i < entries; i++ ) {
-        std::string found_file = zip_get_name( zip_handle, i, ZIP_FL_UNCHANGED );
+        const char* name = zip_get_name( zip_handle, i, ZIP_FL_UNCHANGED );
+        if ( name == NULL ) {
+            SPDLOG_WARN( "Failed to get filename, skipping this file" );
+            continue;
+        }
+
+        std::string found_file = name;
         if ( ( found_file.compare( "manifest.json" ) ) != 0 ) continue;
 
         zip_file* file = zip_fopen_index( zip_handle, i, 0 );
@@ -399,9 +409,14 @@ std::optional<std::string> CZipArchive::read_manifest_from_zip( zip_t* zip_handl
 }
 
 std::vector<std::string> CZipArchive::get_entry_names( ) {
-    std::vector<std::string> entry_names;
+    std::vector<std::string> entry_names = { };
 
     auto entries = zip_get_num_entries( m_archive, ZIP_FL_UNCHANGED );
+    if ( entries <= 0 ) {
+        SPDLOG_ERROR( "Failed to find file entries from archive!" );
+        return entry_names; // empty atp
+    }
+
     for ( size_t i{ }; i < entries; i++ ) {
         std::string name = zip_get_name( m_archive, i, ZIP_FL_UNCHANGED );
         if ( ( name.compare( "manifest.json" ) ) == 0 ) continue;
