@@ -288,6 +288,7 @@ std::unordered_map<std::string, std::vector<std::string>> Features::load_tags( c
 std::expected<bool, SMError>
 Features::save_tags( const std::string& game, const std::string& filename, const std::vector<std::string>& tags ) {
     std::string file_name = ( paths::backup_dir( ) / sanitize_filename( game ) / "tags.json" ).string( );
+    std::string tmp_name = file_name + ".tmp";
 
     json data = load_tags( game );
     data[filename] = tags;
@@ -296,22 +297,32 @@ Features::save_tags( const std::string& game, const std::string& filename, const
         data.erase( filename );
     }
 
-    std::ofstream out( file_name );
-    if ( !out.is_open( ) ) {
-        SPDLOG_ERROR( "Failed to save tags for: {}", game );
-        return false;
-    }
     if ( data.empty( ) ) {
         fs::remove( file_name );
         return true;
     }
 
+    std::ofstream out( tmp_name );
+    if ( !out.is_open( ) ) {
+        SPDLOG_ERROR( "Failed to save tags for: {}", game );
+        return false;
+    }
+
     out << data.dump( 4 );
     if ( !out.good( ) ) {
         SPDLOG_ERROR( "Failed to save tag for: {}", game );
+        out.close( );
+        fs::remove( tmp_name );
         return false;
     }
     out.close( );
+
+    std::error_code ec;
+    fs::rename( tmp_name, file_name, ec );
+    if ( ec ) {
+        SPDLOG_ERROR( "Failed to move tags into place for: {}", game );
+        return false;
+    }
     return true;
 }
 
