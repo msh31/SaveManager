@@ -112,7 +112,7 @@ void CEditorView::render( ) {
         if ( ImGui::Button( "Reset Spray Tags" ) ) std::ranges::fill( m_san_andreas.tag_statuses, 0 );
         if ( ImGui::CollapsingHeader( std::format( "Spray Tags ({})", m_san_andreas.tag_count ).c_str( ) ) ) {
             for ( int i = 0; i < m_san_andreas.tag_count; i++ ) {
-                bool tagged = false;
+                bool tagged = m_san_andreas.tag_statuses[i] > 0;
                 if ( ImGui::Checkbox( std::format( "Tag {}", i ).c_str( ), &tagged ) ) {
                     if ( tagged ) m_san_andreas.tag_statuses[i] = 255;
                     else
@@ -135,7 +135,8 @@ void CEditorView::render( ) {
             for ( int i = 0; i < m_san_andreas.usj_count; i++ ) {
                 bool completed = m_san_andreas.usj_done[i] > 0;
                 if ( ImGui::Checkbox( std::format( "Stunt Jump {}", i ).c_str( ), &completed ) ) {
-                    if ( completed ) m_san_andreas.usj_done[i] = completed;
+                    m_san_andreas.usj_done[i] = completed;
+                    m_san_andreas.usj_found[i] = completed;
                 }
                 if ( ( i + 1 ) % 5 != 0 ) ImGui::SameLine( );
             }
