@@ -179,7 +179,7 @@ void CBackupsView::render_backup_row(
             Notify::show_notification( "Restore", "Cannot restore: save location unknown.", 2000 );
         } else {
             std::vector<std::pair<fs::path, fs::path>> conflicts;
-            Features::restore_backup( path, save_path, conflicts );
+            Features::restore_backup( path, { save_path }, conflicts );
         }
     }
     ImGui::SetItemTooltip( "Restore save from backup" );

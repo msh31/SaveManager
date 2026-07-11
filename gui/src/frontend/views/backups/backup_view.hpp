@@ -13,6 +13,15 @@ class CBackupsView {
     private:
         CConfig& m_config;
 
+        void render_game_row(
+            const BackupEntry& bentry,
+            const std::unordered_map<std::string, std::unordered_map<std::string, TagCache>>& labels_cache );
+        void render_backup_row(
+            fs::path path, const fs::path& save_path, const std::unordered_map<std::string, TagCache>& labels,
+            const std::string& game_name );
+        void render_modals( );
+        void add_new_entry( std::vector<Game> snapshot );
+
         // UI state
         std::unordered_map<std::string, bool> m_card_collapsed;
 
@@ -33,13 +42,4 @@ class CBackupsView {
         bool m_open_tags_modal = false;
         std::string m_pending_rename_game;
         fs::path m_pending_rename_backup;
-
-        void render_game_row(
-            const BackupEntry& bentry,
-            const std::unordered_map<std::string, std::unordered_map<std::string, TagCache>>& labels_cache );
-        void render_backup_row(
-            fs::path path, const fs::path& save_path, const std::unordered_map<std::string, TagCache>& labels,
-            const std::string& game_name );
-        void render_modals( );
-        void add_new_entry( std::vector<Game> snapshot );
 };

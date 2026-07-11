@@ -5,23 +5,30 @@
 
 using json = nlohmann::json;
 
-bool CZipArchive::add_to_archive( const fs::path& file ) {
+bool CZipArchive::add_to_archive( const fs::path& file, std::optional<std::string> parent ) {
     std::vector<std::string> failed_files;
 
     if ( fs::is_regular_file( file ) ) {
         if ( m_archive == nullptr ) return false;
+
+        std::string entry_name;
+        if ( parent.has_value( ) ) {
+            entry_name = ( fs::path( parent.value( ) ) / file.filename( ) ).string( );
+        } else {
+            entry_name = file.filename( ).string( );
+        }
 
         zip_source_t* source = zip_source_file( m_archive, file.string( ).c_str( ), 0, 0 );
         if ( source == nullptr ) {
             SPDLOG_ERROR( "Failed to create source for: {}", file.filename( ).string( ).c_str( ) );
             failed_files.push_back( file.filename( ).string( ).c_str( ) );
         } else {
-            if ( zip_file_add( m_archive, file.filename( ).string( ).c_str( ), source, ZIP_FL_OVERWRITE ) < 0 ) {
+            if ( zip_file_add( m_archive, entry_name.c_str( ), source, ZIP_FL_OVERWRITE ) < 0 ) {
                 SPDLOG_ERROR( "Failed to add file: {}", zip_strerror( m_archive ) );
                 failed_files.push_back( file.filename( ).string( ) );
                 zip_source_free( source );
             } else {
-                m_save_files.emplace_back( file, file.filename( ) );
+                m_save_files.emplace_back( file, entry_name );
             }
         }
     }
@@ -39,12 +46,19 @@ bool CZipArchive::add_to_archive( const fs::path& file ) {
             } else {
                 auto file_path = fs::relative( entry.path( ), file );
 
-                if ( zip_file_add( m_archive, file_path.string( ).c_str( ), source, ZIP_FL_OVERWRITE ) < 0 ) {
+                std::string zip_name = { };
+                if ( parent.has_value( ) ) {
+                    zip_name = ( fs::path( parent.value( ) ) / file_path ).string( );
+                } else {
+                    zip_name = file_path.string( );
+                }
+
+                if ( zip_file_add( m_archive, zip_name.c_str( ), source, ZIP_FL_OVERWRITE ) < 0 ) {
                     SPDLOG_ERROR( "Failed to add file: {}", zip_strerror( m_archive ) );
                     failed_files.push_back( entry.path( ).filename( ).string( ) );
                     zip_source_free( source );
                 } else {
-                    m_save_files.emplace_back( entry.path( ), file_path );
+                    m_save_files.emplace_back( entry.path( ), zip_name );
                 }
             }
         }
@@ -85,9 +99,13 @@ bool CZipArchive::finalize_add( ) {
 // Manifest not being able to be parsed is fine, it might not exist
 // which is the case for old backups created before this was added
 bool CZipArchive::extract_archive(
-    const fs::path& save_path, std::vector<std::pair<fs::path, fs::path>>& conflicts,
+    const std::vector<fs::path>& save_paths, std::vector<std::pair<fs::path, fs::path>>& conflicts,
     std::unordered_set<std::string> exclusions ) {
     if ( m_archive == nullptr ) return false;
+    if ( save_paths.empty( ) ) {
+        SPDLOG_ERROR( "No save paths found to extract !" );
+        return false;
+    }
 
     auto manifest = read_manifest_from_zip( m_archive );
 
@@ -103,7 +121,6 @@ bool CZipArchive::extract_archive(
         }
     }
 
-    auto safe_base = fs::weakly_canonical( save_path );
     for ( int i = 0; i < file_count; i++ ) {
         struct zip_stat fileInfo;
         zip_stat_init( &fileInfo );
@@ -112,122 +129,150 @@ bool CZipArchive::extract_archive(
                 SPDLOG_WARN( "Failed to get filename, skipping this file" );
                 continue;
             }
-
             if ( std::string( fileInfo.name ) == "manifest.json" ) continue;
             if ( exclusions.contains( fileInfo.name ) ) continue;
+            try {
+                std::string name = fileInfo.name;
+                auto slash_pos = name.find( '/' );
+                std::string index_str = { };
+                std::string relative_name = { };
 
-            zip_file* file = zip_fopen_index( m_archive, i, 0 );
-            if ( file == nullptr ) {
-                SPDLOG_WARN( "Failed to open file in archive: {}", fileInfo.name );
-                failed_files.push_back( fileInfo.name );
-                continue;
-            }
+                if ( slash_pos != std::string::npos ) {
+                    index_str = name.substr( 0, slash_pos );
+                    relative_name = name.substr( slash_pos + 1 );
+                } else {
+                    relative_name = name;
+                    index_str = { };
+                }
 
-            auto resolved = fs::weakly_canonical( safe_base / fileInfo.name );
-            if ( fs::relative( resolved, safe_base ).string( ).starts_with( ".." ) ) {
-                SPDLOG_WARN( "zip-slip attempt: {}", fileInfo.name );
-                zip_fclose( file );
-                continue;
-            }
-            auto resolved_tmp = resolved.string( ) + ".tmp";
-
-            char buffer[1024];
-            zip_int64_t bytes_read;
-            fs::create_directories( resolved.parent_path( ) );
-
-            if ( fs::exists( resolved_tmp ) ) {
-                fs::remove( resolved_tmp );
-            }
-
-            fs::path conflict_path = { };
-            if ( fs::exists( resolved ) ) {
-                SPDLOG_WARN( "{} already exists in your game directory!", resolved.filename( ).string( ) );
-
-                auto save_time =
-                    std::chrono::system_clock::to_time_t( file_time_to_sys( fs::last_write_time( resolved ) ) );
-
-                auto conflict_dest = resolved.parent_path( ) /
-                                     std::format( "{}.savemgr-conflict-{}", resolved.filename( ).string( ), save_time );
-
-                if ( save_time > fileInfo.mtime ) {
-                    SPDLOG_WARN( "{} is newer than {}!", resolved.filename( ).string( ), fileInfo.name );
-                    std::error_code ec;
-                    fs::rename( resolved, conflict_dest, ec );
-                    if ( ec ) {
-                        SPDLOG_ERROR( "rename failed: {}", ec.message( ) );
-                        continue;
+                fs::path safe_base = { };
+                if ( !index_str.empty( ) ) {
+                    size_t idx = std::stoul( index_str );
+                    if ( idx < save_paths.size( ) ) {
+                        safe_base = fs::weakly_canonical( save_paths[idx] );
+                    } else {
+                        safe_base = fs::weakly_canonical( save_paths[0] );
                     }
-                    conflict_path = conflict_dest;
+                } else {
+                    safe_base = fs::weakly_canonical( save_paths[0] );
                 }
-            }
 
-            auto restore_conflict = [&] {
-                if ( !conflict_path.empty( ) ) {
-                    std::error_code ec;
-                    fs::rename( conflict_path, resolved, ec );
-                    if ( ec ) {
-                        SPDLOG_WARN(
-                            "Rename from {} to {} failed: {}", conflict_path.string( ), resolved.string( ),
-                            ec.message( ) );
-                    }
+                zip_file* file = zip_fopen_index( m_archive, i, 0 );
+                if ( file == nullptr ) {
+                    SPDLOG_WARN( "Failed to open file in archive: {}", fileInfo.name );
+                    failed_files.push_back( fileInfo.name );
+                    continue;
                 }
-            };
 
-            std::ofstream save_file( resolved_tmp, std::ios::binary );
-            if ( !save_file.is_open( ) ) {
-                SPDLOG_ERROR( "Failed to open save file for writing: {}", resolved.filename( ).string( ) );
-                failed_files.push_back( fileInfo.name );
-                zip_fclose( file );
-                continue;
-            }
-
-            bool write_failed = false;
-            while ( ( bytes_read = zip_fread( file, buffer, sizeof( buffer ) ) ) > 0 ) {
-                if ( !save_file.write( buffer, bytes_read ) ) {
-                    write_failed = true;
-                    break;
+                auto resolved = fs::weakly_canonical( safe_base / relative_name );
+                if ( fs::relative( resolved, safe_base ).string( ).starts_with( ".." ) ) {
+                    SPDLOG_WARN( "zip-slip attempt: {}", fileInfo.name );
+                    zip_fclose( file );
+                    continue;
                 }
-            }
-            if ( write_failed ) {
-                zip_fclose( file );
-                failed_files.push_back( fileInfo.name );
-                fs::remove( resolved_tmp );
-                restore_conflict( );
+                auto resolved_tmp = resolved.string( ) + ".tmp";
 
-                continue;
-            }
-            if ( bytes_read == -1 ) {
-                SPDLOG_ERROR( "Failed to read file in archive: {}", fileInfo.name );
-                failed_files.push_back( fileInfo.name );
-                fs::remove( resolved_tmp );
-                restore_conflict( );
-                continue;
-            }
-            zip_fclose( file );
-            save_file.close( );
+                char buffer[1024];
+                zip_int64_t bytes_read;
+                fs::create_directories( resolved.parent_path( ) );
 
-            if ( manifest_json.contains( fileInfo.name ) ) {
-                auto& entry = manifest_json[fileInfo.name];
-                if ( ( hash_file( resolved_tmp ).compare( entry["hash"].get<std::string>( ) ) ) != 0 ) {
-                    SPDLOG_WARN(
-                        "{}'s hash does not match {}'s hash, aborting restore operation!",
-                        resolved.filename( ).string( ), entry["hash"].get<std::string>( ) );
-
-                    failed_files.emplace_back( fileInfo.name );
+                if ( fs::exists( resolved_tmp ) ) {
                     fs::remove( resolved_tmp );
+                }
 
+                fs::path conflict_path = { };
+                if ( fs::exists( resolved ) ) {
+                    SPDLOG_WARN( "{} already exists in your game directory!", resolved.filename( ).string( ) );
+
+                    auto save_time =
+                        std::chrono::system_clock::to_time_t( file_time_to_sys( fs::last_write_time( resolved ) ) );
+
+                    auto conflict_dest =
+                        resolved.parent_path( ) /
+                        std::format( "{}.savemgr-conflict-{}", resolved.filename( ).string( ), save_time );
+
+                    if ( save_time > fileInfo.mtime ) {
+                        SPDLOG_WARN( "{} is newer than {}!", resolved.filename( ).string( ), fileInfo.name );
+                        std::error_code ec;
+                        fs::rename( resolved, conflict_dest, ec );
+                        if ( ec ) {
+                            SPDLOG_ERROR( "rename failed: {}", ec.message( ) );
+                            continue;
+                        }
+                        conflict_path = conflict_dest;
+                    }
+                }
+
+                auto restore_conflict = [&] {
+                    if ( !conflict_path.empty( ) ) {
+                        std::error_code ec;
+                        fs::rename( conflict_path, resolved, ec );
+                        if ( ec ) {
+                            SPDLOG_WARN(
+                                "Rename from {} to {} failed: {}", conflict_path.string( ), resolved.string( ),
+                                ec.message( ) );
+                        }
+                    }
+                };
+
+                std::ofstream save_file( resolved_tmp, std::ios::binary );
+                if ( !save_file.is_open( ) ) {
+                    SPDLOG_ERROR( "Failed to open save file for writing: {}", resolved.filename( ).string( ) );
+                    failed_files.push_back( fileInfo.name );
+                    zip_fclose( file );
+                    continue;
+                }
+
+                bool write_failed = false;
+                while ( ( bytes_read = zip_fread( file, buffer, sizeof( buffer ) ) ) > 0 ) {
+                    if ( !save_file.write( buffer, bytes_read ) ) {
+                        write_failed = true;
+                        break;
+                    }
+                }
+                if ( write_failed ) {
+                    zip_fclose( file );
+                    failed_files.push_back( fileInfo.name );
+                    fs::remove( resolved_tmp );
+                    restore_conflict( );
+
+                    continue;
+                }
+                if ( bytes_read == -1 ) {
+                    SPDLOG_ERROR( "Failed to read file in archive: {}", fileInfo.name );
+                    failed_files.push_back( fileInfo.name );
+                    fs::remove( resolved_tmp );
                     restore_conflict( );
                     continue;
                 }
-                fs::rename( resolved_tmp, resolved );
+                zip_fclose( file );
+                save_file.close( );
 
-                if ( entry.contains( "mtime" ) ) {
-                    auto mtime =
-                        sys_to_file_time( std::chrono::system_clock::from_time_t( entry["mtime"].get<time_t>( ) ) );
-                    fs::last_write_time( resolved, mtime );
+                if ( manifest_json.contains( fileInfo.name ) ) {
+                    auto& entry = manifest_json[fileInfo.name];
+                    if ( ( hash_file( resolved_tmp ).compare( entry["hash"].get<std::string>( ) ) ) != 0 ) {
+                        SPDLOG_WARN(
+                            "{}'s hash does not match {}'s hash, aborting restore operation!",
+                            resolved.filename( ).string( ), entry["hash"].get<std::string>( ) );
+
+                        failed_files.emplace_back( fileInfo.name );
+                        fs::remove( resolved_tmp );
+
+                        restore_conflict( );
+                        continue;
+                    }
+                    fs::rename( resolved_tmp, resolved );
+
+                    if ( entry.contains( "mtime" ) ) {
+                        auto mtime =
+                            sys_to_file_time( std::chrono::system_clock::from_time_t( entry["mtime"].get<time_t>( ) ) );
+                        fs::last_write_time( resolved, mtime );
+                    }
+                } else {
+                    fs::rename( resolved_tmp, resolved );
                 }
-            } else {
-                fs::rename( resolved_tmp, resolved );
+            } catch ( std::exception& ex ) {
+                SPDLOG_WARN( "Error on '{}': {}", fileInfo.name, ex.what( ) );
             }
         }
     }
@@ -238,10 +283,8 @@ bool CZipArchive::extract_archive(
             SPDLOG_ERROR( "  - {}", f );
         }
         return false;
-    } else {
-        SPDLOG_INFO( "backup for: {} has been restored", save_path.filename( ).string( ) );
-        return true;
     }
+    return true;
 }
 
 void CZipArchive::set_comment( const std::string& str ) {

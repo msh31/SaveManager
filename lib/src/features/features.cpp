@@ -90,7 +90,13 @@ bool Features::backup_game_files( const Game& game, std::vector<std::pair<fs::pa
     {
         CZipArchive za( MODE_CREATE_ARCHIVE, zip_name );
         for ( const auto& entry : files ) {
-            if ( !za.add_to_archive( entry.first ) ) failed_to_add = true;
+            for ( size_t i = { }; i < game.save_paths.size( ); i++ ) {
+                fs::path result = fs::relative( entry.first, game.save_paths[i] );
+                if ( !result.string( ).starts_with( ".." ) ) {
+                    if ( !za.add_to_archive( entry.first, std::to_string( i ) ) ) failed_to_add = true;
+                    break;
+                }
+            }
         }
         if ( !za.finalize_add( ) ) {
             failed_to_add = true;
@@ -159,30 +165,26 @@ std::vector<fs::path> Features::get_backups( const std::string& game ) {
 }
 
 bool Features::restore_backup(
-    const fs::path& name, const fs::path& save_path, std::vector<std::pair<fs::path, fs::path>>& conflicts,
-    std::unordered_set<std::string> exclusions ) {
+    const fs::path& name, const std::vector<fs::path>& save_paths,
+    std::vector<std::pair<fs::path, fs::path>>& conflicts, std::unordered_set<std::string> exclusions ) {
     CZipArchive archive( MODE_EXTRACT_ARCHIVE, name.u8string( ) );
 
-    fs::path restore_path;
     std::string comment = archive.get_comment( );
     if ( !comment.empty( ) ) {
+        fs::path restore_path;
         restore_path = comment;
+        auto entries = archive.get_entry_names( );
+        fs::path undo_source = ( entries.size( ) == 1 ) ? restore_path / entries[0] : restore_path;
         fs::create_directories( restore_path );
-    } else {
-        restore_path = save_path;
-    }
 
-    auto entries = archive.get_entry_names( );
-    fs::path undo_source = ( entries.size( ) == 1 ) ? restore_path / entries[0] : restore_path;
-
-    if ( fs::exists( undo_source ) && !fs::is_empty( undo_source ) ) {
-        if ( !backup_to_path( undo_source, name.parent_path( ) / "undo.zip" ) ) {
-            SPDLOG_ERROR( "Failed to create backup before overwriting newer savefile, aborting.." );
-            return false;
+        if ( fs::exists( undo_source ) && !fs::is_empty( undo_source ) ) {
+            if ( !backup_to_path( undo_source, name.parent_path( ) / "undo.zip" ) ) {
+                SPDLOG_ERROR( "Failed to create backup before overwriting newer savefile, aborting.." );
+                return false;
+            }
         }
     }
-
-    if ( !archive.extract_archive( restore_path, conflicts, exclusions ) ) {
+    if ( !archive.extract_archive( save_paths, conflicts, exclusions ) ) {
         SPDLOG_ERROR( "failed to restore backup: {}", name.filename( ).string( ) );
         return false;
     }

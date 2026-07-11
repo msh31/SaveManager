@@ -35,8 +35,8 @@ void CDashboardView::render( ) {
         m_refresh_future.get( );
     }
 
-    bool backup_done = m_backup_future.valid( ) &&
-                       m_backup_future.wait_for( std::chrono::seconds( 0 ) ) == std::future_status::ready;
+    bool backup_done =
+        m_backup_future.valid( ) && m_backup_future.wait_for( std::chrono::seconds( 0 ) ) == std::future_status::ready;
     if ( backup_done ) {
         m_backup_future.get( );
         if ( !m_pending_invalidate.empty( ) ) {
@@ -291,14 +291,11 @@ void CDashboardView::render_game_content(
     if ( is_backing_up || is_refreshing ) ImGui::BeginDisabled( true );
     if ( has_undo ) {
         if ( ImGui::Button( "Undo last restore" ) ) {
-            for ( const auto& sp : game.save_paths ) {
-                if ( Features::restore_backup( undo_dir, sp, m_pending_conflicts ) ) {
-                    fs::remove( undo_dir );
-                } else {
-                    SPDLOG_ERROR( "Failed to restore backup, kept undo zip!" );
-                    Notify::show_notification( "Undo Last Restore", "Failed to restore backup, kept undo zip!", 2000 );
-                    continue;
-                }
+            if ( Features::restore_backup( undo_dir, game.save_paths, m_pending_conflicts ) ) {
+                fs::remove( undo_dir );
+            } else {
+                SPDLOG_ERROR( "Failed to restore backup, kept undo zip!" );
+                Notify::show_notification( "Undo Last Restore", "Failed to restore backup, kept undo zip!", 2000 );
             }
             invalidate_cache( { game } );
         }
@@ -654,17 +651,15 @@ void CDashboardView::render_modals( ) {
                 }
             }
 
-            for ( const auto& entry : m_game_exclusions_restore.save_paths ) {
-                if ( Features::restore_backup(
-                         m_pending_restore_backup, entry, m_pending_conflicts, m_pending_exclusions ) ) {
-                    if ( !m_pending_conflicts.empty( ) ) {
-                        m_open_conflict_modal = true;
-                    }
-                } else {
-                    Notify::show_notification( "Restore", "Failed to restore backup!", 2000 );
-                    ImGui::CloseCurrentPopup( );
-                    break;
+            if ( Features::restore_backup(
+                     m_pending_restore_backup, m_game_exclusions_restore.save_paths, m_pending_conflicts,
+                     m_pending_exclusions ) ) {
+                if ( !m_pending_conflicts.empty( ) ) {
+                    m_open_conflict_modal = true;
                 }
+            } else {
+                Notify::show_notification( "Restore", "Failed to restore backup!", 2000 );
+                ImGui::CloseCurrentPopup( );
             }
             invalidate_cache( { m_game_exclusions_restore } );
         }
@@ -759,8 +754,10 @@ void CDashboardView::invalidate_cache( const std::vector<Game>& games, std::func
             }
         },
         [this, temp, temp_modified, on_done]( ) {
-            for ( auto& [key, cache] : *temp ) m_game_cache[key] = std::move( cache );
-            for ( auto& [name, t] : *temp_modified ) m_game_last_modified[name] = t;
+            for ( auto& [key, cache] : *temp )
+                m_game_cache[key] = std::move( cache );
+            for ( auto& [name, t] : *temp_modified )
+                m_game_last_modified[name] = t;
             if ( on_done ) on_done( );
         },
         []( const std::exception& ex ) { Notify::show_notification( "Cache Invalidation Error", ex.what( ), 3000 ); } );

@@ -10,8 +10,8 @@ namespace Features {
     bool backup_game_files( const Game& game, std::vector<std::pair<fs::path, const Game*>> files );
 
     bool restore_backup(
-        const fs::path& name, const fs::path& save_path, std::vector<std::pair<fs::path, fs::path>>& conflicts,
-        std::unordered_set<std::string> exclusions = { } );
+        const fs::path& name, const std::vector<fs::path>& save_paths,
+        std::vector<std::pair<fs::path, fs::path>>& conflicts, std::unordered_set<std::string> exclusions = { } );
     std::vector<fs::path> get_backups( const std::string& game );
 
     std::string construct_backup_name( const std::string& game, const std::string& custom_name = "" );
