@@ -24,12 +24,18 @@ namespace paths {
     }
 
     inline fs::path default_config_dir( ) {
+        std::string folder_name = "savemanager";
+
+#ifndef NDEBUG
+        folder_name = folder_name + "-dev";
+#endif // NDEBUG
+
 #if defined( __linux__ )
-        return home_dir( ) / ".config" / "savemanager";
+        return home_dir( ) / ".config" / folder_name;
 #elif defined( __APPLE__ )
-        return home_dir( ) / "Library" / "Application Support" / "savemanager";
+        return home_dir( ) / "Library" / "Application Support" / folder_name;
 #elif defined( _WIN32 )
-        return home_dir( ) / "savemanager";
+        return home_dir( ) / folder_name;
 #endif
     }
 
