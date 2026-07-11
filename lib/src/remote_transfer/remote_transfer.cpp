@@ -54,7 +54,11 @@ bool CRemoteTransfer::connect(
         return fail( );
     }
 
-    m_fingerprint = libssh2_hostkey_hash( m_session, LIBSSH2_HOSTKEY_HASH_SHA1 );
+    m_fingerprint = libssh2_hostkey_hash( m_session, LIBSSH2_HOSTKEY_HASH_SHA256 );
+    if ( m_fingerprint == nullptr ) {
+        SPDLOG_ERROR( "Failed to obtain fingerprint from host!" );
+        return fail( );
+    }
 
     if ( auth_pw ) {
         if ( libssh2_userauth_password( m_session, config.sftp.username.c_str( ), config.sftp.password.c_str( ) ) ) {
