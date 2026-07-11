@@ -93,17 +93,24 @@ bool SanAndreas::open( fs::path path ) {
     }
 
     data = std::vector<uint8_t>( std::istreambuf_iterator<char>( file ), { } );
+    if ( data.empty( ) ) {
+        SPDLOG_ERROR( "Failed to load data from savegame!" );
+        file.close( );
+        return false;
+    }
 
     find_block_offsets( );
     if ( validate_file( ) ) {
         SPDLOG_DEBUG( "file validated!" );
     } else {
         SPDLOG_DEBUG( "file failed to validate!" );
+        file.close( );
         return false;
     }
     SPDLOG_INFO( "parsing savefile: {}", path.filename( ).string( ) );
     if ( !parse_block_zero( ) ) {
         SPDLOG_ERROR( "Failed to parse BLOCK0, aborting!" );
+        file.close( );
         return false;
     }
     parse_block_two( );
