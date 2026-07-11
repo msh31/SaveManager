@@ -58,6 +58,11 @@ CConfig::~CConfig( ) {
 bool CConfig::init( ) {
     bool success = true;
 
+    if ( !fs::exists( paths::config_dir( ) ) ) {
+        SPDLOG_WARN( "Failed to find config path!" );
+        return false;
+    }
+
     if ( !fs::exists( paths::ubi_translations( ) ) ) {
         std::ofstream f( paths::ubi_translations( ), std::ios::binary );
         if ( f.is_open( ) ) {
@@ -102,9 +107,9 @@ void CConfig::save( ) {
     data["dark_mode"] = settings.dark_mode;
     data["animated_background"] = settings.animated_background;
 
-    data["watch_paths"] = settings.watch_paths |
-                          std::views::transform( []( const fs::path& p ) { return p.string( ); } ) |
-                          std::ranges::to<std::vector>( );
+    // data["watch_paths"] = settings.watch_paths |
+    //                       std::views::transform( []( const fs::path& p ) { return p.string( ); } ) |
+    //                       std::ranges::to<std::vector>( );
 
     data["dest_addr"] = sftp.dest_addr;
     data["username"] = sftp.username;
@@ -146,11 +151,11 @@ void CConfig::load( ) {
         settings.dark_mode = data.value( "dark_mode", true );
         settings.animated_background = data.value( "animated_background", false );
 
-        if ( data.contains( "watch_paths" ) ) {
-            settings.watch_paths = data["watch_paths"] |
-                                   std::views::transform( []( const std::string& p ) { return fs::path( p ); } ) |
-                                   std::ranges::to<std::vector>( );
-        }
+        // if ( data.contains( "watch_paths" ) ) {
+        //     settings.watch_paths = data["watch_paths"] |
+        //                            std::views::transform( []( const std::string& p ) { return fs::path( p ); } ) |
+        //                            std::ranges::to<std::vector>( );
+        // }
 
         // TODO: improve this by using a keychain on the OS
         sftp.dest_addr = data.value( "dest_addr", std::string( "" ) );
