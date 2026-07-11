@@ -27,12 +27,14 @@ void CTaskRunner::update( ) {
     } );
 }
 
+// COMMENT: work runs on a background thread and may outlive the owning object on shutdown
+// NEVER capture `this` or references to view/owner state, only owned/copied data..
 void CTaskRunner::shutdown( ) {
     for ( auto& task : m_tasks ) {
-        bool is_valid_and_ready =
+        bool is_future_busy =
             task.future.valid( ) && task.future.wait_for( std::chrono::seconds( 0 ) ) != std::future_status::ready;
 
-        if ( is_valid_and_ready ) {
+        if ( is_future_busy ) {
             std::thread thread( [f = std::move( task.future )] { f.wait( ); } );
             thread.detach( );
         }
