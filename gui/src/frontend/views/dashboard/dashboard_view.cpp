@@ -743,5 +743,6 @@ void CDashboardView::on_result_changed( ) {
             m_game_last_modified = std::move( *temp_modified );
             m_detection_duration =
                 std::chrono::duration<double>( std::chrono::steady_clock::now( ) - m_detection_start_time ).count( );
-        } );
+        },
+        []( const std::exception& ex ) { Notify::show_notification( "Error", ex.what( ), 5000 ); } );
 }
