@@ -38,8 +38,7 @@ class CRemoteTransfer {
         CRemoteTransfer( );
         ~CRemoteTransfer( ) { disconnect( ); }
 
-        bool
-        connect( const std::string& dest_addr, const CConfig& config, bool auth_pw, const std::string& key_passphrase );
+        bool connect( const std::string& dest_addr, CConfig& config, bool auth_pw, const std::string& key_passphrase );
         bool disconnect( );
         bool upload_file( const fs::path& backup_path, const std::string& remote_path, const CConfig& config );
         bool download_file( const fs::path& backup_path, const CConfig& config );
@@ -56,8 +55,19 @@ class CRemoteTransfer {
         uint32_t m_hostaddr;
         libssh2_socket_t m_sock = LIBSSH2_INVALID_SOCKET;
         struct sockaddr_in m_sin;
-        const char* m_fingerprint;
+        std::string m_fingerprint;
         LIBSSH2_SESSION* m_session = nullptr;
         LIBSSH2_SFTP_HANDLE* m_sftp_handle = nullptr;
         LIBSSH2_SFTP* m_sftp_session = nullptr;
+
+        std::string hex_encode( const unsigned char* data, size_t len ) {
+            static constexpr char digits[] = "0123456789abcdef";
+            std::string out;
+            out.reserve( len * 2 );
+            for ( size_t i = 0; i < len; i++ ) {
+                out.push_back( digits[data[i] >> 4] );
+                out.push_back( digits[data[i] & 0x0F] );
+            }
+            return out;
+        }
 };

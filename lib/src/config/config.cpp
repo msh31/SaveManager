@@ -119,6 +119,7 @@ void CConfig::save( ) {
     data["remote_path"] = sftp.remote_path;
     data["key_passphrase"] = sftp.key_passphrase; // plaintext....
     data["auth_pw"] = sftp.auth_pw;
+    data["known_hosts"] = sftp.known_hosts;
 
     data["x"] = win_props.x;
     data["y"] = win_props.y;
@@ -166,6 +167,7 @@ void CConfig::load( ) {
         sftp.privkey = data.value( "privkey", fs::path( "" ) );
         sftp.key_passphrase = data.value( "key_passphrase", std::string( "" ) );
         sftp.auth_pw = data.value( "auth_pw", false );
+        sftp.known_hosts = data.value<std::unordered_map<std::string, std::string>>( "known_hosts", { } );
 
         win_props.x = data.value( "x", -1 );
         win_props.y = data.value( "y", -1 );

@@ -28,15 +28,15 @@ class CTransferView : public CBaseView {
         bool m_was_transferring = false;
         bool m_use_password_auth = true;
 
-        std::string m_dest_addr;
-        std::string m_username;
-        std::string m_password;
-        std::string m_pubkey;
-        std::string m_privkey;
-        std::string m_key_passphrase;
-        std::string m_current_remote_path;
+        std::string m_dest_addr = { };
+        std::string m_username = { };
+        std::string m_password = { };
+        std::string m_pubkey = { };
+        std::string m_privkey = { };
+        std::string m_key_passphrase = { };
+        std::string m_current_remote_path{ };
 
-        std::vector<RemoteEntry> m_remote_entries;
+        std::vector<RemoteEntry> m_remote_entries = { };
 
         std::unique_ptr<CRemoteTransfer> m_remote;
 

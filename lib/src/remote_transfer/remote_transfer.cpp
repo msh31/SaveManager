@@ -5,7 +5,7 @@
 CRemoteTransfer::CRemoteTransfer( ) {}
 
 bool CRemoteTransfer::connect(
-    const std::string& dest_addr, const CConfig& config, bool auth_pw, const std::string& key_passphrase ) {
+    const std::string& dest_addr, CConfig& config, bool auth_pw, const std::string& key_passphrase ) {
 #ifdef _WIN32
     WSADATA wsadata;
     WSAStartup( MAKEWORD( 2, 2 ), &wsadata );
@@ -54,9 +54,23 @@ bool CRemoteTransfer::connect(
         return fail( );
     }
 
-    m_fingerprint = libssh2_hostkey_hash( m_session, LIBSSH2_HOSTKEY_HASH_SHA256 );
-    if ( m_fingerprint == nullptr ) {
+    const char* raw_fingerprint = libssh2_hostkey_hash( m_session, LIBSSH2_HOSTKEY_HASH_SHA256 );
+    if ( raw_fingerprint == nullptr ) {
         SPDLOG_ERROR( "Failed to obtain fingerprint from host!" );
+        return fail( );
+    }
+    m_fingerprint = hex_encode( reinterpret_cast<const unsigned char*>( raw_fingerprint ), 32 );
+
+    auto it = config.sftp.known_hosts.find( dest_addr );
+    if ( it == config.sftp.known_hosts.end( ) ) {
+        SPDLOG_INFO( "Adding new host {} to known hosts (fingerprint: {})", dest_addr, m_fingerprint );
+        config.sftp.known_hosts[dest_addr] = m_fingerprint;
+        config.save( );
+    } else if ( it->second != m_fingerprint ) {
+        SPDLOG_ERROR(
+            "Host key verification failed for {}! Expected {}, got {}. The remote host key may have "
+            "changed, or this may be a man-in-the-middle attack.",
+            dest_addr, it->second, m_fingerprint );
         return fail( );
     }
 

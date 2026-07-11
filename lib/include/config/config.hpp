@@ -31,6 +31,7 @@ class CConfig {
                 fs::path privkey;
                 std::string key_passphrase;
                 bool auth_pw = true;
+                std::unordered_map<std::string, std::string> known_hosts = { }; // addr, fingerprint
         };
 
         AppConfig settings;
