@@ -35,6 +35,16 @@ void CDashboardView::render( ) {
         m_refresh_future.get( );
     }
 
+    bool backup_done = m_backup_future.valid( ) &&
+                       m_backup_future.wait_for( std::chrono::seconds( 0 ) ) == std::future_status::ready;
+    if ( backup_done ) {
+        m_backup_future.get( );
+        if ( !m_pending_invalidate.empty( ) ) {
+            invalidate_cache( m_pending_invalidate );
+            m_pending_invalidate.clear( );
+        }
+    }
+
     if ( m_games_snapshot.size( ) != m_last_game_count ) {
         m_last_game_count = m_games_snapshot.size( );
         on_result_changed( );
@@ -143,6 +153,7 @@ void CDashboardView::render_toolbar( ) {
     ImGui::SameLine( );
     if ( is_refreshing || is_backing_up ) ImGui::BeginDisabled( true );
     if ( ImGui::Button( "Mass Backup" ) ) {
+        m_pending_invalidate = m_games_snapshot;
         m_backup_future = std::async( std::launch::async, [this]( ) {
             std::vector<Game> snapshot = { };
             {
@@ -244,6 +255,7 @@ void CDashboardView::render_game_content(
     if ( is_backing_up || is_refreshing ) ImGui::BeginDisabled( true );
     if ( ImGui::Button( "Backup All" ) ) {
         SPDLOG_INFO( "creating backup of: {}", game.game_name );
+        m_pending_invalidate = { game };
         m_backup_future = std::async( std::launch::async, [this, game, files]( ) {
             if ( Features::backup_game_files( game, files ) ) {
                 Notify::show_notification( "Backup Created", "A backup has been for all saves!", 1500 );
@@ -260,6 +272,7 @@ void CDashboardView::render_game_content(
     if ( has_conflicts ) {
         if ( ImGui::Button( "Resolve Conflict(s)" ) ) {
             m_pending_conflicts.clear( );
+            m_pending_conflict_game = game;
             for ( const auto& sp : game.save_paths ) {
                 for ( const auto& f : fs::recursive_directory_iterator( sp ) ) {
                     auto full = f.path( ).string( );
@@ -287,6 +300,7 @@ void CDashboardView::render_game_content(
                     continue;
                 }
             }
+            invalidate_cache( { game } );
         }
     }
     if ( is_backing_up || is_refreshing ) ImGui::EndDisabled( );
@@ -398,6 +412,7 @@ void CDashboardView::render_save_row( const fs::path& save_file, const Game& gam
     ImGui::PushStyleVar( ImGuiStyleVar_FramePadding, ImVec2( 3.0f, 3.0f ) );
     if ( is_backing_up ) ImGui::BeginDisabled( true );
     if ( ImGui::Button( "Backup", ImVec2( 80.0f, 0 ) ) ) {
+        m_pending_invalidate = { game };
         m_backup_future = std::async( std::launch::async, [this, game, save_file, &config = m_config]( ) {
             if ( !Features::backup_game( game, save_file, config ) ) {
                 auto str = std::format( "Failed to create backup for: {}", game.game_name );
@@ -479,6 +494,7 @@ void CDashboardView::render_backup_row(
             } else {
                 Notify::show_notification( "Backup Deletion", "Backup could not be deleted!", 1500 );
             }
+            invalidate_cache( { game } );
         } else {
             Notify::show_notification( "Backup Deletion", "Backup could not be deleted!", 1500 );
         }
@@ -599,6 +615,8 @@ void CDashboardView::render_modals( ) {
             m_pending_conflicts.erase( m_pending_conflicts.begin( ) + to_remove[i] );
         }
 
+        if ( !to_remove.empty( ) ) invalidate_cache( { m_pending_conflict_game } );
+
         if ( m_pending_conflicts.empty( ) ) {
             ImGui::CloseCurrentPopup( );
         }
@@ -648,6 +666,7 @@ void CDashboardView::render_modals( ) {
                     break;
                 }
             }
+            invalidate_cache( { m_game_exclusions_restore } );
         }
         ImGui::SameLine( );
         if ( ImGui::Button( "Cancel" ) ) ImGui::CloseCurrentPopup( );
@@ -656,18 +675,21 @@ void CDashboardView::render_modals( ) {
 }
 
 void CDashboardView::on_result_changed( ) {
-    {
-        std::vector<Game> games;
-        games = m_games_snapshot;
-        m_grouped_games = get_grouped( games );
-    }
+    m_grouped_games = get_grouped( m_games_snapshot );
     m_game_cache.clear( );
 
+    invalidate_cache( m_games_snapshot, [this]( ) {
+        m_detection_duration =
+            std::chrono::duration<double>( std::chrono::steady_clock::now( ) - m_detection_start_time ).count( );
+    } );
+}
+
+void CDashboardView::invalidate_cache( const std::vector<Game>& games, std::function<void( )> on_done ) {
     auto temp = std::make_shared<std::unordered_map<std::string, GameCache>>( );
     auto temp_modified = std::make_shared<std::unordered_map<std::string, fs::file_time_type>>( );
 
     m_task_runner.run(
-        [games = m_games_snapshot, temp, temp_modified]( ) {
+        [games, temp, temp_modified]( ) {
             for ( const auto& game : games ) {
                 GameCache cache;
                 for ( const auto& save_path : game.save_paths ) {
@@ -711,8 +733,6 @@ void CDashboardView::on_result_changed( ) {
                     try {
                         for ( const auto& f : fs::directory_iterator( save_path ) ) {
                             if ( f.path( ).string( ).find( ".savemgr-conflict-" ) != std::string::npos ) {
-                                // SPDLOG_INFO("writing conflict cache for key: {}", key);
-                                // SPDLOG_INFO("path: {}", game.save_path.string());
                                 ( *temp )[key].has_conflicts = true;
                                 break;
                             }
@@ -738,11 +758,10 @@ void CDashboardView::on_result_changed( ) {
                 ( *temp_modified ).insert( { entry.game_name, current_max } );
             }
         },
-        [this, temp, temp_modified]( ) {
-            m_game_cache = std::move( *temp );
-            m_game_last_modified = std::move( *temp_modified );
-            m_detection_duration =
-                std::chrono::duration<double>( std::chrono::steady_clock::now( ) - m_detection_start_time ).count( );
+        [this, temp, temp_modified, on_done]( ) {
+            for ( auto& [key, cache] : *temp ) m_game_cache[key] = std::move( cache );
+            for ( auto& [name, t] : *temp_modified ) m_game_last_modified[name] = t;
+            if ( on_done ) on_done( );
         },
-        []( const std::exception& ex ) { Notify::show_notification( "Error", ex.what( ), 5000 ); } );
+        []( const std::exception& ex ) { Notify::show_notification( "Cache Invalidation Error", ex.what( ), 3000 ); } );
 }

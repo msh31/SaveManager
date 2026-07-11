@@ -19,6 +19,8 @@ class CDashboardView : public CBaseView {
 
     private:
         void on_result_changed( );
+        void invalidate_cache( const std::vector<Game>& games, std::function<void( )> on_done = nullptr );
+
         void render_toolbar( );
         void render_game_list( );
         void render_game_content(
@@ -86,6 +88,7 @@ class CDashboardView : public CBaseView {
         fs::path m_pending_rename_backup;
         bool m_open_conflict_modal = false;
         std::vector<std::pair<fs::path, fs::path>> m_pending_conflicts;
+        Game m_pending_conflict_game{ };
 
         bool m_open_restore_modal = false;
         std::unordered_set<std::string> m_pending_exclusions = { };
@@ -97,4 +100,5 @@ class CDashboardView : public CBaseView {
         // Futures
         std::future<void> m_refresh_future;
         std::future<void> m_backup_future;
+        std::vector<Game> m_pending_invalidate;
 };
