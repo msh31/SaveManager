@@ -172,7 +172,9 @@ void CConfig::load( ) {
         win_props.width = data.value( "width", -1 );
         win_props.height = data.value( "height", -1 );
     } catch ( json::exception& ex ) {
-        auto er = std::format( "config parsing error: {}", ex.what( ) );
-        throw std::runtime_error( er );
+        auto er = std::format( "config parsing error, prevering config and generating a new one: {}", ex.what( ) );
+        SPDLOG_CRITICAL( er );
+        fs::rename( config_file, config_file.string( ) + ".bak" );
+        load( );
     }
 }
