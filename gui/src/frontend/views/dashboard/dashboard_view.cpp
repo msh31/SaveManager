@@ -458,12 +458,12 @@ void CDashboardView::render_backup_row(
     if ( ImGui::Button( "Restore", ImVec2( 80.0f, 0 ) ) ) {
         m_game_exclusions_restore = game;
         m_pending_restore_backup = backup;
-        m_open_restore_modal = true;
         auto res_entries = Features::get_backup_entries( backup );
         if ( res_entries.empty( ) ) {
             Notify::show_notification( "Restore Failed", "Found no entries in backup, odd.", 2000 );
             return;
         }
+        m_open_restore_modal = true;
         m_restore_entries = res_entries;
         m_restore_checked.clear( );
         for ( const auto& e : m_restore_entries ) {
