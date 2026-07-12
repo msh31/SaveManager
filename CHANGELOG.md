@@ -1,3 +1,43 @@
+## [1.8.1] - 2026-07-27
+
+### Core
+#### Added
+- (Optional) Telemetry collection to help improve SaveManager
+    - This feature is disabled by default but enabling it allows me to get some information like:
+    - **Random UUID** - To keep track of user count
+    - **Migration of labels to tags** - To get rid of legacy code when it's no longer needed
+    - **Detection count / game names** - Check detection quality
+    - **OS name** - To make sure I focus on the right platform as I use Linux myself
+- Crash reporter
+    - Sends the latest log file to me to identify area's with lacking code quality
+- A snapshot is now taken before editing a save file so changes can be reverted
+
+#### Fixed
+- Uncaught exceptions from background worker threads (detection, backup) could unwind into the render loop and crash the app
+- Zip filetime not accounting for timezones
+- Conflict detection on backups without a manifest could false-flag files as newer due to sub-second / zip timestamp rounding, added tolerance for this
+- Possible race condition between the connect worker thread and the GUI thread both touching config at the same time
+
+#### Changes
+- Improved logging throughout the application
+
+### GUI
+#### Added
+- Button to delete a savegame
+    - Has a confirm dialog
+- Button to duplicate a savegame
+- Bug reporter - Send a basic form with a log to me describing your issue
+
+#### Fixed
+- Regression of waiting for the save scan to complete instead of games popping.
+
+#### Changes
+- Restore modal now groups entries by parent directory, files with the same name in different folders (Minecraft's region/poi/entities for example) are distinguishable without relying on the tooltip
+- Restore modal now sizes to the number of entries instead of a fixed 700x500 window
+- Restore modal now centers itself on open
+
+---
+
 ## [1.8.0] - 2026-07-12
 *Rewrote the GUI using a custom ImGui framework, improving code quality and maintainability.*
 
