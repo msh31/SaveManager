@@ -100,7 +100,7 @@ bool CZipArchive::finalize_add( ) {
 // which is the case for old backups created before this was added
 bool CZipArchive::extract_archive(
     const std::vector<fs::path>& save_paths, std::vector<std::pair<fs::path, fs::path>>& conflicts,
-    std::unordered_set<std::string> exclusions ) {
+    bool has_index_prefixes, std::unordered_set<std::string> exclusions ) {
     if ( m_archive == nullptr ) return false;
     if ( save_paths.empty( ) ) {
         SPDLOG_ERROR( "No save paths found to extract !" );
@@ -131,29 +131,35 @@ bool CZipArchive::extract_archive(
             }
             if ( std::string( fileInfo.name ) == "manifest.json" ) continue;
             if ( exclusions.contains( fileInfo.name ) ) continue;
+
+            fs::path safe_base = { };
             try {
                 std::string name = fileInfo.name;
                 auto slash_pos = name.find( '/' );
                 std::string index_str = { };
                 std::string relative_name = { };
 
-                if ( slash_pos != std::string::npos ) {
-                    index_str = name.substr( 0, slash_pos );
-                    relative_name = name.substr( slash_pos + 1 );
-                } else {
-                    relative_name = name;
-                    index_str = { };
-                }
+                if ( has_index_prefixes ) {
+                    if ( slash_pos != std::string::npos ) {
+                        index_str = name.substr( 0, slash_pos );
+                        relative_name = name.substr( slash_pos + 1 );
+                    } else {
+                        relative_name = name;
+                        index_str = { };
+                    }
 
-                fs::path safe_base = { };
-                if ( !index_str.empty( ) ) {
-                    size_t idx = std::stoul( index_str );
-                    if ( idx < save_paths.size( ) ) {
-                        safe_base = fs::weakly_canonical( save_paths[idx] );
+                    if ( !index_str.empty( ) ) {
+                        size_t idx = std::stoul( index_str );
+                        if ( idx < save_paths.size( ) ) {
+                            safe_base = fs::weakly_canonical( save_paths[idx] );
+                        } else {
+                            safe_base = fs::weakly_canonical( save_paths[0] );
+                        }
                     } else {
                         safe_base = fs::weakly_canonical( save_paths[0] );
                     }
                 } else {
+                    relative_name = name;
                     safe_base = fs::weakly_canonical( save_paths[0] );
                 }
 

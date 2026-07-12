@@ -184,7 +184,7 @@ bool Features::restore_backup(
             }
         }
     }
-    if ( !archive.extract_archive( save_paths, conflicts, exclusions ) ) {
+    if ( !archive.extract_archive( save_paths, conflicts, comment.empty( ), exclusions ) ) {
         SPDLOG_ERROR( "failed to restore backup: {}", name.filename( ).string( ) );
         return false;
     }
