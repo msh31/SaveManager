@@ -625,8 +625,6 @@ void CDashboardView::render_modals( ) {
         }
         ImGui::EndPopup( );
     }
-
-    ImGui::SetNextWindowSize( ImVec2( 700, 500 ), ImGuiCond_Always );
     if ( ImGui::BeginPopupModal( "Restore backup", nullptr, ImGuiWindowFlags_AlwaysAutoResize ) ) {
         ImGui::TextWrapped(
             "Select all files you would like to restore from %s",
@@ -635,6 +633,8 @@ void CDashboardView::render_modals( ) {
         // if ( ImGui::Button( "Select All" ) ) {
         //     m_restore_checked[entry] = !m_restore_checked[entry];
         // }
+        auto height = std::min( m_restore_entries.size( ) * ImGui::GetFrameHeightWithSpacing( ) + 1.5f, 400.0f );
+        ImGui::BeginChild( "##Restore entries", ImVec2( 650, height ) );
         for ( const auto& entry : m_restore_entries ) {
             ImGui::PushID( entry.c_str( ) );
             std::string text = std::format( "Include '{}'?", fs::path( entry ).filename( ).string( ) );
@@ -643,6 +643,7 @@ void CDashboardView::render_modals( ) {
             ImGui::Separator( );
             ImGui::PopID( );
         }
+        ImGui::EndChild( );
 
         ImGui::Separator( );
 
