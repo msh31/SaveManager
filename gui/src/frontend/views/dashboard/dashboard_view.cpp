@@ -442,7 +442,10 @@ void CDashboardView::render_backup_row(
 
     float total_width = date_width + size_width + 80.0f * 3 + 4.0f * 5;
 
-    std::string tag_text = ( tag_cache && !tag_cache->tags.empty( ) ) ? tag_cache->display : std::string( );
+    std::string tag_text = backup.filename( ).string( );
+    if ( tag_cache && !tag_cache->tags.empty( ) ) {
+        tag_text = tag_cache->display;
+    }
     ImGui::TextDisabled( "%s", tag_text.c_str( ) );
     ImGui::SameLine( ImGui::GetContentRegionMax( ).x - total_width );
 
