@@ -1,4 +1,4 @@
-## [1.8.0] - 2026-07-11
+## [1.8.0] - 2026-07-12
 *Rewrote the GUI using a custom ImGui framework, improving code quality and maintainability.*
 
 #### Information
@@ -10,6 +10,7 @@ This will be fixed in the next release on 20-07-2026
 - Manual restoration of select files within a backup (Using a modal in the GUI)
 - Multi-value tags on snapshots 
     - Labels are automatically converted to tags however; **tags are empty by default!**
+- Known-hosts verification for SFTP transfers: on first connect, the host's SHA256 key fingerprint is trusted and stored; on later connects it's compared and the connection is refused if it doesn't match (protects against MITM / a swapped host key)
 
 #### Fixed
 - Downloading a save from an SFTP server places the save in the ``path/to/savemanager/backups/`` instead of it's corresponding game folder
@@ -38,14 +39,18 @@ This will be fixed in the next release on 20-07-2026
 - Undo backup used wrong comment path for directory saves
     - Caused an issue with minecraft worlds because 'backup_to_path' always assumed it was a regular file, which is not the case for minecraft.
 - GTA:SA save editor did not close the file after saving
-- Incorrectly file size used in the remote transfer's file download view
+- Incorrect file size used in the remote transfer's file download view
 - Not catching an SFTP read error during file download
+- Prevent some all around file corruption by writing to tmp files first
+- Close save file in the editor on all failure paths, no longer causing leaks
 
 #### Changed
+- Config load failures no longer kill the app, a new config is generated instead preserving the old one.
 - Plugin loading errors are now caught per-plugin; remaining plugins continue loading
 - Plugins returning entries with missing `game_name` or `save_path` are now skipped with a warning
 - Game detection groupings now use a unified identity key system for better merge accuracy
 - Restoring backups without a manifest now allowed (instead of failing silently)
+- Improved error handling 
 
 #### Performance
 - Detection runs independent platform scans in parallel for faster startup
@@ -83,15 +88,18 @@ This will be fixed in the next release on 20-07-2026
 - Settings view constantly writing to the blacklist json file when not doing anything
 - Missing EndDisabled() before early return in the transfer view's download button
 - Some missing EndChild calls in the transfer view in failure paths
+- Disable per game buttons whilst scanning or backing up
+- GTA:SA save editor now correctly saves the tag and stunt jump statuses
+- Notifications pushed from a background thread could race with rendering; notifications are now queued behind a mutex and drained on the render thread
 
 #### Changed
 - Empty files no longer shown as save entries in the dashboard
-- Notifications now use a queue instead of direct rendering, eliminating overlap and ordering issues
 - Remote file browser entries in the transfer tab are now disabled while a transfer is in progress (previously still interactable during fast transfers)
 
 #### Performance
 - Cache rebuilds after detection now run asynchronously, eliminating frame stalls on large game libraries
 - Deduplication of game entries is now O(n) instead of O(n²)
+- Backup, delete, restore, and conflict-resolution actions now invalidate the cache for just that game directly, instead of relying on the game-count changing to trigger a full cache rebuild
 
 #### Development
 - GUI has been re-written using a custom ImGui framework I have been cooking up
