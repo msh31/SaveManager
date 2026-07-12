@@ -5,17 +5,22 @@
 
 using json = nlohmann::json;
 
-bool CZipArchive::add_to_archive( const fs::path& file, std::optional<std::string> parent ) {
+bool CZipArchive::add_to_archive(
+    const fs::path& file, std::optional<std::string> parent, std::optional<std::string> entry_name_override ) {
     std::vector<std::string> failed_files;
 
     if ( fs::is_regular_file( file ) ) {
         if ( m_archive == nullptr ) return false;
 
         std::string entry_name;
-        if ( parent.has_value( ) ) {
-            entry_name = ( fs::path( parent.value( ) ) / file.filename( ) ).string( );
+        if ( entry_name_override.has_value( ) ) {
+            entry_name = entry_name_override.value( );
         } else {
-            entry_name = file.filename( ).string( );
+            if ( parent.has_value( ) ) {
+                entry_name = ( fs::path( parent.value( ) ) / file.filename( ) ).string( );
+            } else {
+                entry_name = file.filename( ).string( );
+            }
         }
 
         zip_source_t* source = zip_source_file( m_archive, file.string( ).c_str( ), 0, 0 );
