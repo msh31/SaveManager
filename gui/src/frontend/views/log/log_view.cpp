@@ -1,8 +1,8 @@
 #include "log_view.hpp"
-#include <frontend/ui/notifications/notification.hpp>
+#include <frontend/notification/notification.hpp>
 
-void LogTab::render( const Fonts &fonts ) {
-    auto *sink = get_ringbuffer_sink( );
+void CLogView::render( ) {
+    auto* sink = get_ringbuffer_sink( );
     if ( !sink ) {
         ImGui::TextDisabled( "Log sink not initialised." );
         return;
@@ -17,7 +17,7 @@ void LogTab::render( const Fonts &fonts ) {
     if ( ImGui::Button( "Copy to clipboard" ) ) {
         if ( !messages.empty( ) ) {
             std::string all;
-            for ( const auto &m : messages ) {
+            for ( const auto& m : messages ) {
                 all += m;
                 all += '\n';
             }
@@ -29,7 +29,7 @@ void LogTab::render( const Fonts &fonts ) {
 
     ImGui::BeginChild( "##log_scroll", { 0.f, 0.f }, ImGuiChildFlags_None, ImGuiWindowFlags_HorizontalScrollbar );
 
-    for ( const auto &msg : messages ) {
+    for ( const auto& msg : messages ) {
         ImVec4 col = ImGui::GetStyleColorVec4( ImGuiCol_Text );
         if ( msg.find( "[error]" ) != std::string::npos || msg.find( "[critical]" ) != std::string::npos )
             col = ImColor( 255, 80, 80 ).Value;

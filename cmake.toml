@@ -5,12 +5,13 @@ cmkr-include = "cmkr.cmake"
 [project]
 name = "SaveManager"
 description = "The swiss army knife of save management."
-version = "1.7.1"
+version = "1.8.0"
 languages = ["C", "CXX"]
 msvc-runtime = "dynamic"
 
 [variables]
 CMAKE_EXPORT_COMPILE_COMMANDS = true
+APP_VERSION = "1.8.0"
 
 [find-package.CURL]
 required = true
@@ -34,12 +35,17 @@ required = true
 required = true
 [find-package.spdlog]
 required = true
+[find-package.yaml-cpp]
+required = true
+[find-package.CLI11]
+required = true
+
 
 [target.savemanager-core]
 type = "static"
 sources = ["lib/src/**.cpp"]
 include-directories = ["lib/include"]
-link-libraries = ["CURL::libcurl", "libzip::zip", "Libssh2::libssh2", "OpenSSL::Crypto", "nlohmann_json::nlohmann_json", "stb::stb", "sol2::sol2", "spdlog::spdlog"]
+link-libraries = ["CURL::libcurl", "libzip::zip", "Libssh2::libssh2", "OpenSSL::Crypto", "nlohmann_json::nlohmann_json", "stb::stb", "sol2::sol2", "spdlog::spdlog", "yaml-cpp::yaml-cpp"]
 compile-features = ["cxx_std_23"]
 precompile-headers = ["lib/include/pch.hpp"]
 cmake-after = """
@@ -77,11 +83,11 @@ target_sources(savemanager PRIVATE
 )
 
 configure_file(
-    ${CMAKE_CURRENT_SOURCE_DIR}/gui/src/version.cpp.in
-    ${CMAKE_CURRENT_BINARY_DIR}/version.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/lib/include/version.cpp.in
+    ${CMAKE_CURRENT_BINARY_DIR}/lib/include/version.cpp
     @ONLY
 )
-target_sources(savemanager PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/version.cpp)
+target_sources(savemanager PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/lib/include/version.cpp)
 
 if(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
     configure_file(
@@ -106,7 +112,7 @@ link-libraries = ["shell32"]
 type = "executable"
 sources = ["cli/src/**.cpp"]
 include-directories = ["cli/src"]
-link-libraries = ["savemanager-core"]
+link-libraries = ["savemanager-core", "CLI11::CLI11"]
 compile-features = ["cxx_std_23"]
 precompile-headers = ["lib/include/pch.hpp"]
 

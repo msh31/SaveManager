@@ -52,7 +52,9 @@
     "13504": "Assassin's Creed Valhalla",
     "19000": "Discovery Tour: Viking Age by Ubisoft",
     "1081": "Assassin's Creed Shadows (Steam)",
-    "8006": "Assassin's Creed Shadows"
+    "8006": "Assassin's Creed Shadows",
+    "65043": "Assassin's Creed Black Flag Resynced",
+    "66088": "Assassin's Creed Black Flag Resynced (Steam)"
   },
   "FAR CRY Franchise": {
     "46": "Far Cry 3",
@@ -128,7 +130,9 @@
     "113": "Prince of Persia: The Two Thrones",
     "121": "Prince of Persia: Warrior Within",
     "277": "Prince of Persia (2008)",
-    "6145": "Prince of Persia: The Lost Crown"
+    "276": "Prince of Persia",
+    "6145": "Prince of Persia: The Lost Crown",
+    "8005": "The Rogue Prince of Persia"
   },
   "Anno Franchise": {
     "22": "Anno 2070",
@@ -146,7 +150,8 @@
     "16232": "Anno 1404 - History Edition",
     "16234": "Anno 1503 - History Edition",
     "16236": "Anno 1602 - History Edition",
-    "16238": "Anno 1701 - History Edition"
+    "16238": "Anno 1701 - History Edition",
+    "2052": "Anno 2205 (unknown Version)"
   },
   "The Crew Franchise": {
     "413": "The Crew (Worldwide)",
@@ -315,6 +320,7 @@
     "61515": "Lake",
     "61517": "A Normal Lost Phone",
     "62326": "Immortals Fenyx Rising (Steam)",
-    "64181": "Star Wars: Outlaws (Steam)"
+    "64181": "Star Wars: Outlaws (Steam)",
+    "65601": "Star Wars Outlaws (Demo)"
   }
 }

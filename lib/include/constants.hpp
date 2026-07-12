@@ -1,8 +1,8 @@
 #pragma once
 
-#define APP_NAME "SaveManager"
-#define APP_AUTHOR "marco007"
-#define APP_VERSION "v1.7.1"
+constexpr std::string_view APP_NAME = "SaveManager";
+constexpr std::string_view APP_AUTHOR = "marco007";
+constexpr std::string_view APP_VERSION = "v1.8.0";
 
 #define MODE_CREATE_ARCHIVE ( ZIP_CREATE | ZIP_TRUNCATE )
 #define MODE_EXTRACT_ARCHIVE 0
@@ -15,8 +15,13 @@ constexpr int MAX_RES_H = 2880;
 constexpr int DEF_RES_W = 1600;
 constexpr int DEF_RES_H = 900;
 
-constexpr std::array<std::string_view, 17> extension_blocklist{ ".dat",  ".bin",  ".upload", ".bak", ".cfg",    ".log",
-                                                                ".tmp",  ".ini",  ".set",    ".txt", ".lock",   ".lck",
-                                                                ".part", ".temp", ".swp",    ".swo", ".journal" };
+constexpr std::string_view ubi_translation_url =
+    "https://raw.githubusercontent.com/msh31/SaveManager/refs/heads/dev/data/ubi_translations.json";
+constexpr std::string_view steam_translation_url =
+    "https://raw.githubusercontent.com/msh31/SaveManager/refs/heads/dev/data/steamids.json";
 
-constexpr std::array<std::string_view, 5> g_extension_blocklist{ ".png", ".jpg", ".jpeg", ".webp", ".bmp" };
+static const std::unordered_set<std::string_view> extension_blocklist{
+    ".dat", ".bin",  ".upload", ".bak",  ".cfg",  ".log", ".tmp", ".ini",    ".set",
+    ".txt", ".lock", ".lck",    ".part", ".temp", ".swp", ".swo", ".journal" };
+
+static const std::unordered_set<std::string_view> g_extension_blocklist{ ".png", ".jpg", ".jpeg", ".webp", ".bmp" };

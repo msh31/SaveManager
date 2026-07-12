@@ -16,7 +16,7 @@ Contributions are welcome. If you want to report a bug, suggest a feature, or su
 
 SaveManager supports Lua plugins for community-contributed game definitions. If you want to add support for a game without modifying the core codebase, write a plugin instead.
 
-See [SCRIPTING.md](docs/SCRIPTING.md) for the full API reference, and submit your plugin to the [savemanager-plugins](https://github.com/msh31/savemanager-plugins) repository.
+See [SCRIPTING.md](SCRIPTING.md) for the full API reference, and submit your plugin to the [savemanager-plugins](https://github.com/msh31/savemanager-plugins) repository.
 
 ---
 

@@ -1,6 +1,7 @@
 savemanager
 vcpkg_installed/
 test_data/
+gui/tmp/
 
 # cmkr
 build*/
@@ -18,5 +19,6 @@ CMakeLists.txt
 .idea/
 *.mp4
 
-# wip
-ROADMAP.md
+# some of my plans
+VISION.md
+.todo.toml

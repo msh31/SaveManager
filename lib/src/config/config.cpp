@@ -1,93 +1,115 @@
 #include "config/config.hpp"
+#include "../utils/translations/steamids.hpp"
+#include "../utils/translations/ubi_translations.hpp"
+
 #include "utils/paths.hpp"
-#include "utils/translations/steamids.hpp"
-#include "utils/translations/ubi_translations.hpp"
 #include <nlohmann/json.hpp>
 
 using json = nlohmann::json;
 
-Config::Config( fs::path config_dir ) : config_file( config_dir / "config.json" ) {
+CConfig::CConfig( fs::path config_dir ) : config_file( config_dir / "config.json" ) {
     try {
         if ( !fs::exists( config_dir ) ) {
             if ( !fs::create_directories( config_dir ) ) {
-                SPDLOG_ERROR( "Failed to create config directory" );
+                throw std::runtime_error( "Failed to create config directory" );
             }
         }
 
         if ( !fs::exists( paths::log_dir( ) ) ) {
             if ( !fs::create_directories( paths::log_dir( ) ) ) {
-                SPDLOG_ERROR( "Failed to create log directory" );
+                throw std::runtime_error( "Failed to create log directory" );
             }
         }
 
         if ( !fs::exists( paths::backup_dir( ) ) ) {
             if ( !fs::create_directories( paths::backup_dir( ) ) ) {
-                SPDLOG_ERROR( "Failed to create backup directory" );
+                throw std::runtime_error( "Failed to create backup directory" );
             }
         }
 
         if ( !fs::exists( paths::plugin_dir( ) ) ) {
             if ( !fs::create_directories( paths::plugin_dir( ) ) ) {
-                SPDLOG_ERROR( "Failed to create plugins directory" );
+                throw std::runtime_error( "Failed to create plugins directory" );
             }
         }
 
-        // if(!fs::exists(paths::cache_dir())) {
-        //     if(!fs::create_directories(paths::cache_dir())) {
-        //         SPDLOG_ERROR("Failed to create cache directory");
-        //     }
-        // }
+        if ( !fs::exists( paths::cache_dir( ) ) ) {
+            if ( !fs::create_directories( paths::cache_dir( ) ) ) {
+                throw std::runtime_error( "Failed to create cache directory" );
+            }
+        }
 
         load( );
-    } catch ( const std::exception &err ) {
-        SPDLOG_ERROR( "config constructor: {}", err.what( ) );
+    } catch ( const std::exception& err ) {
+        auto er = std::format( "config constructor: {}", err.what( ) );
+        throw std::runtime_error( er );
     }
 }
 
-Config::~Config( ) {
+CConfig::~CConfig( ) {
     try {
         save( );
-    } catch ( const std::exception &err ) {
-        SPDLOG_ERROR( "config destructor: {}", err.what( ) );
+    } catch ( const std::exception& err ) {
+        auto er = std::format( "config destructor: {}", err.what( ) );
+        SPDLOG_CRITICAL( er );
     }
 }
 
-bool Config::init( ) {
+bool CConfig::init( ) {
+    bool success = true;
+
+    if ( !fs::exists( paths::config_dir( ) ) ) {
+        SPDLOG_WARN( "Failed to find config path!" );
+        return false;
+    }
+
     if ( !fs::exists( paths::ubi_translations( ) ) ) {
         std::ofstream f( paths::ubi_translations( ), std::ios::binary );
-        f.write( reinterpret_cast<const char *>( ubi_translations_json ), ubi_translations_json_len );
+        if ( f.is_open( ) ) {
+            f.write( reinterpret_cast<const char*>( ubi_translations_json ), ubi_translations_json_len );
+            success = success && f.good( );
+            f.close( );
+        } else {
+            SPDLOG_WARN( "Failed to open ubisoft translations for writing!" );
+            success = false;
+        }
     }
 
     if ( !fs::exists( paths::steam_appids( ) ) ) {
         std::ofstream f( paths::steam_appids( ), std::ios::binary );
-        f.write( reinterpret_cast<const char *>( steamids_json ), steamids_json_len );
+        if ( f.is_open( ) ) {
+            f.write( reinterpret_cast<const char*>( steamids_json ), steamids_json_len );
+            success = success && f.good( );
+            f.close( );
+        } else {
+            SPDLOG_WARN( "Failed to open steamids for writing" );
+            success = false;
+        }
     }
 
     if ( !fs::exists( paths::blacklist( ) ) ) {
         std::ofstream f( paths::blacklist( ) );
-        f << R"(["The Crew Motorfest"])"; // kinda sucks
+        if ( f.is_open( ) ) {
+            f << R"(["The Crew Motorfest", "Skull and Bones"])"; // kinda sucks
+            success = success && f.good( );
+            f.close( );
+        } else {
+            SPDLOG_WARN( "Failed to open blacklist for writing" );
+            success = false;
+        }
     }
 
-    // if(!fs::exists(paths::custom_games())) {
-    //     std::ofstream f(paths::custom_games());
-    //     f << "[]";
-    // }
-
-    return true;
+    return success;
 }
 
-void Config::save( ) {
+void CConfig::save( ) {
     json data;
-    data["ubi_enabled"] = settings.ubi_enabled;
-    data["rsg_enabled"] = settings.rsg_enabled;
-    data["unreal_enabled"] = settings.unreal_enabled;
-
     data["dark_mode"] = settings.dark_mode;
     data["animated_background"] = settings.animated_background;
 
-    data["watch_paths"] = settings.watch_paths |
-                          std::views::transform( []( const fs::path &p ) { return p.string( ); } ) |
-                          std::ranges::to<std::vector>( );
+    // data["watch_paths"] = settings.watch_paths |
+    //                       std::views::transform( []( const fs::path& p ) { return p.string( ); } ) |
+    //                       std::ranges::to<std::vector>( );
 
     data["dest_addr"] = sftp.dest_addr;
     data["username"] = sftp.username;
@@ -95,6 +117,9 @@ void Config::save( ) {
     data["pubkey"] = sftp.pubkey.string( );
     data["privkey"] = sftp.privkey.string( );
     data["remote_path"] = sftp.remote_path;
+    data["key_passphrase"] = sftp.key_passphrase; // plaintext....
+    data["auth_pw"] = sftp.auth_pw;
+    data["known_hosts"] = sftp.known_hosts;
 
     data["x"] = win_props.x;
     data["y"] = win_props.y;
@@ -102,10 +127,14 @@ void Config::save( ) {
     data["height"] = win_props.height;
 
     std::ofstream file( config_file );
+    if ( !file.is_open( ) ) {
+        throw std::runtime_error( "Failed to open config!" );
+    }
     file << data.dump( 4 );
+    if ( !file.good( ) ) throw std::runtime_error( "Failed to save config, disk might be full!" );
 }
 
-void Config::load( ) {
+void CConfig::load( ) {
     json data;
 
     if ( !fs::exists( config_file ) ) {
@@ -114,37 +143,40 @@ void Config::load( ) {
 
     std::ifstream file( config_file.c_str( ) );
     if ( !file.is_open( ) ) {
-        SPDLOG_ERROR( "Failed to open config!" );
-        return;
+        throw std::runtime_error( "Failed to open config!" );
     }
 
     try {
         data = json::parse( file );
-        settings.ubi_enabled = data.value( "ubi_enabled", true );
-        settings.rsg_enabled = data.value( "rsg_enabled", true );
-        settings.unreal_enabled = data.value( "unreal_enabled", true );
 
         settings.dark_mode = data.value( "dark_mode", true );
         settings.animated_background = data.value( "animated_background", false );
 
-        if ( data.contains( "watch_paths" ) ) {
-            settings.watch_paths = data["watch_paths"] |
-                                   std::views::transform( []( const std::string &p ) { return fs::path( p ); } ) |
-                                   std::ranges::to<std::vector>( );
-        }
+        // if ( data.contains( "watch_paths" ) ) {
+        //     settings.watch_paths = data["watch_paths"] |
+        //                            std::views::transform( []( const std::string& p ) { return fs::path( p ); } ) |
+        //                            std::ranges::to<std::vector>( );
+        // }
 
+        // TODO: improve this by using a keychain on the OS
         sftp.dest_addr = data.value( "dest_addr", std::string( "" ) );
         sftp.username = data.value( "username", std::string( "" ) );
         sftp.password = data.value( "password", std::string( "" ) );
         sftp.remote_path = data.value( "remote_path", std::string( "" ) );
         sftp.pubkey = data.value( "pubkey", fs::path( "" ) );
         sftp.privkey = data.value( "privkey", fs::path( "" ) );
+        sftp.key_passphrase = data.value( "key_passphrase", std::string( "" ) );
+        sftp.auth_pw = data.value( "auth_pw", false );
+        sftp.known_hosts = data.value<std::unordered_map<std::string, std::string>>( "known_hosts", { } );
 
         win_props.x = data.value( "x", -1 );
         win_props.y = data.value( "y", -1 );
         win_props.width = data.value( "width", -1 );
         win_props.height = data.value( "height", -1 );
-    } catch ( json::exception &ex ) {
-        SPDLOG_ERROR( "config parsing error: {}", ex.what( ) );
+    } catch ( json::exception& ex ) {
+        auto er = std::format( "config parsing error, prevering config and generating a new one: {}", ex.what( ) );
+        SPDLOG_CRITICAL( er );
+        fs::rename( config_file, config_file.string( ) + ".bak" );
+        load( );
     }
 }

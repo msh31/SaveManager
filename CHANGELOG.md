@@ -1,4 +1,141 @@
-# Changelog
+## [1.8.0] - 2026-07-12
+*Rewrote the GUI using a custom ImGui framework, improving code quality and maintainability.*
+
+#### Information
+Games no longer pop in due to an oversight when rewriting parts of the detection system,
+This will be fixed in the next release 
+
+### Core
+#### Added
+- Manual restoration of select files within a backup (Using a modal in the GUI)
+- Multi-value tags on snapshots 
+    - Labels are automatically converted to tags however; **tags are empty by default!**
+- Known-hosts verification for SFTP transfers: on first connect, the host's SHA256 key fingerprint is trusted and stored; on later connects it's compared and the connection is refused if it doesn't match (protects against MITM / a swapped host key)
+
+#### Fixed
+- Downloading a save from an SFTP server places the save in the ``path/to/savemanager/backups/`` instead of it's corresponding game folder
+- Possible race condition during parsing of the steam app manifest files
+- Zip Slip vulnerability during backup extraction due to not resolving the output path in a safe manner
+- Backup extraction now aborts if a restored file's SHA-256 hash doesn't match the manifest
+- Manifest could reference files not actually in the archive
+- Detection crash on permission-denied dirs (ubi / rsg)
+- Backup creation could silently produce a corrupted archive if writing finalized (closing) the zip file failed
+- Backup rename failure no longer logged as a successful backup
+- Restored file's modification time is no longer set before its hash is verified, so a failed/corrupted restore can't leave a mismatched file with the original timestamp
+- Backup restore no longer aborts entirely when a single file fails to write or fails its hash check; remaining files are still restored and failures are reported individually
+- Fixed an incorrect file path being reported for a failed file when adding a directory to a backup archive
+- GTA:SA save editor no longer loads a save with garbage data when BLOCK0 fails to parse
+- GTA:SA save editor no longer reads past a truncated version ID
+- Directory backups (Minecraft, other folder-based saves) stored an incorrect manifest key
+  - Caused the backup to silently fail to finalize and leaving a stray .tmp file behind
+- An unhandled exception when reading a file's last-modified time during backup finalization
+  - Could crash the app mid-backup with no error logged
+- Handle NULL case for fileInfo.name in backup extraction
+    - Skips the file instead of trying to extract it from the archive, edge case
+- Write to temp file before overwriting live save during extraction
+- Config not saving the SSH keyphrase and auth method
+    - This is obviously not handled very well as its just plaintext but I plan to improve this by using the OS keyring in a future release.
+- Original save not being placed back upon restore from backup failure
+- Undo backup used wrong comment path for directory saves
+    - Caused an issue with minecraft worlds because 'backup_to_path' always assumed it was a regular file, which is not the case for minecraft.
+- GTA:SA save editor did not close the file after saving
+- Incorrect file size used in the remote transfer's file download view
+- Not catching an SFTP read error during file download
+- Prevent some all around file corruption by writing to tmp files first
+- Close save file in the editor on all failure paths, no longer causing leaks
+- Opening a folder in the file manager on linux crashes the main application
+- False detection of conflict files during extraction of a backup
+
+#### Changed
+- Config load failures no longer kill the app, a new config is generated instead preserving the old one.
+- Plugin loading errors are now caught per-plugin; remaining plugins continue loading
+- Plugins returning entries with missing `game_name` or `save_path` are now skipped with a warning
+- Game detection groupings now use a unified identity key system for better merge accuracy
+- Restoring backups without a manifest now allowed (instead of failing silently)
+- Improved error handling 
+
+#### Performance
+- Detection runs independent platform scans in parallel for faster startup
+
+#### Removed
+- Launcher support configuration (All are on by default now)
+
+#### Development
+- Blacklist and Translations moved from global state to instance-owned objects, injected by reference
+- Private headers moved from ``lib/include/`` to ``lib/src/``
+
+
+### GUI
+#### Added
+- Auto scroll in the log tab
+- Minecraft filter in dashboard
+- Total games found in dashboard
+- Total detection time in dashboard
+
+#### Fixed
+- Displayed file time in the save / backup rows
+- Possible deletion of a 'real' save during conflict resolution
+- Crash when shader had not fully initialized on startup
+- Upload worker race condition in transfer tab
+- Opening the config or a directory does no longer exit the app on failure
+- Uploading/downloading a file in the transfer tab now shows a success/failure notification instead of failing silently
+- Grouping issues with unknown / partially supported games (improved since [#2](https://github.com/msh31/SaveManager/issues/2)
+    - This was a known issue for a long time but some great effort has gone into making sure all games are reportedly uniquely even if there are multiple versions installed on the system, i.e. for Ubisoft games
+    - All games that are known just simply show up as "N/A" under their own cards.
+- Removal of undo backup if backup fails to be restored
+- Prevent possible UB when downloading / uploading files through SFTP
+- Disable save config button when connecting in Transfer tab
+- Disable backup button when backing up already
+- Pressing Q would exit the app (Could happen when inputting text anywhere, now gated to just be in debug builds)
+- Settings view constantly writing to the blacklist json file when not doing anything
+- Missing EndDisabled() before early return in the transfer view's download button
+- Some missing EndChild calls in the transfer view in failure paths
+- Disable per game buttons whilst scanning or backing up
+- GTA:SA save editor now correctly saves the tag and stunt jump statuses
+- Notifications pushed from a background thread could race with rendering; notifications are now queued behind a mutex and drained on the render thread
+- Translations and Blacklist not being fully initialized before using them
+
+#### Changed
+- Empty files no longer shown as save entries in the dashboard
+- Remote file browser entries in the transfer tab are now disabled while a transfer is in progress (previously still interactable during fast transfers)
+
+#### Performance
+- Cache rebuilds after detection now run asynchronously, eliminating frame stalls on large game libraries
+- Deduplication of game entries is now O(n) instead of O(n²)
+- Backup, delete, restore, and conflict-resolution actions now invalidate the cache for just that game directly, instead of relying on the game-count changing to trigger a full cache rebuild
+
+#### Development
+- GUI has been re-written using a custom ImGui framework I have been cooking up
+- Lib's detection systems have undergone an overhaul which now allows for better future addons
+- `hash_file` moved into `CZipArchive`; no longer compiled into every translation unit
+
+
+#### Known Issues / Limitations
+- Original Anno editions not supported due to install path limitations (a plugin can be written for this)
+
+---
+
+
+## [1.7.1] - 2026-06-06
+This release is mainly bug fixes ported back from the in development 1.8.0 version whilst I go through the code and 
+refactor it to improve some pain points when it comes to adding new features
+
+#### Core
+### Fixed
+- Backup extraction now aborts if a restored file's SHA-256 hash doesn't match the manifest (was silently ignored)
+- `list_dir` plugin API no longer crashes on permission-denied paths
+- Opening a path in the file manager does not cause zombie processes to be created anymore on linux
+
+#### GUI
+### Fixed
+- Config `win_props` keys falling back to defaults instead of aborting the full parse on missing keys
+- MacOS version no longer show a separate terminal window
+
+### Changed
+- Refresh and mass backup buttons are now disabled during active operations instead of hidden
+- Improved log view with color-coded levels
+
+---
 
 ## [1.7.1] - 2026-06-06
 This release is mainly bug fixes ported back from the in development 1.8.0 version whilst I go through the code and 

@@ -1,10 +1,15 @@
 #pragma once
-#include "features/save_editor/save_editor.hpp"
-#include "utils/utils.hpp"
+#include "save_editor/save_editor.hpp"
+#include <frontend/views/base_view.hpp>
 
-struct EditorTab {
-    void render( const Fonts &fonts );
-    std::string file_path;
+class CEditorView : public CBaseView {
+    public:
+        ~CEditorView( ) override = default;
+        void render( ) override;
+        void on_enter( ) override {}
+        void on_exit( ) override {}
 
-    SanAndreas san_andreas;
+    private:
+        SanAndreas m_san_andreas;
+        std::string file_path;
 };

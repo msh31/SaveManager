@@ -4,34 +4,59 @@
 
 using json = nlohmann::json;
 
-void Blacklist::init( ) {
+bool Blacklist::init( ) {
     json data;
     std::ifstream file( paths::blacklist( ).string( ).c_str( ) );
 
     if ( file.is_open( ) ) {
         try {
             data = json::parse( file );
-            SPDLOG_INFO( "Loaded blacklist JSON" );
+            SPDLOG_INFO( "Loaded blacklist!" );
 
-            for ( const auto &entry : data ) {
-                blacklisted_games.insert( entry.get<std::string>( ) );
+            for ( const auto& entry : data ) {
+                m_blacklisted_games.insert( entry.get<std::string>( ) );
             }
-        } catch ( json::exception &ex ) {
+            file.close( );
+        } catch ( json::exception& ex ) {
             SPDLOG_ERROR( "blacklist parsing error: {}", ex.what( ) );
+            return false;
         }
     } else {
         SPDLOG_ERROR( "Failed to open blacklist to load it!" );
+        return false;
     }
+    return true;
 }
 
+// NOTE: this function does not lock itself and any caller MUST lock the interal mutex
 void Blacklist::save( ) {
     json data;
-    for ( const auto &entry : blacklisted_games ) {
+    for ( const auto& entry : m_blacklisted_games ) {
         data.emplace_back( entry );
     }
 
     std::ofstream file( paths::blacklist( ).string( ).c_str( ) );
     file << data.dump( 4 );
+    if ( file.good( ) ) file.close( );
 }
 
-bool Blacklist::is_blacklisted( const std::string &game_name ) { return blacklisted_games.count( game_name ) > 0; }
+bool Blacklist::is_blacklisted( const std::string& game_name ) const {
+    std::lock_guard<std::mutex> lock( m_blacklist_mutex );
+    return m_blacklisted_games.count( game_name ) > 0;
+}
+
+const std::unordered_set<std::string> Blacklist::games( ) const {
+    std::lock_guard<std::mutex> lock( m_blacklist_mutex );
+    return m_blacklisted_games;
+}
+
+void Blacklist::add( const std::string& name ) {
+    std::lock_guard<std::mutex> lock( m_blacklist_mutex );
+    m_blacklisted_games.insert( name );
+    save( );
+}
+void Blacklist::remove( const std::string& name ) {
+    std::lock_guard<std::mutex> lock( m_blacklist_mutex );
+    m_blacklisted_games.erase( name );
+    save( );
+}

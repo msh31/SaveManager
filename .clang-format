@@ -5,3 +5,17 @@ AllowShortIfStatementsOnASingleLine: Always
 IndentWidth: 4
 ColumnLimit: 120
 AccessModifierOffset: 0
+IndentAccessModifiers: true
+AlignAfterOpenBracket: AlwaysBreak
+ContinuationIndentWidth: 4 # default
+NamespaceIndentation: All
+PointerAlignment: Left
+SpacesInContainerLiterals: true
+AllowShortFunctionsOnASingleLine: All
+AllowShortLambdasOnASingleLine: All
+SortIncludes: CaseSensitive
+IncludeBlocks: Preserve
+BreakBeforeBraces: Attach
+IndentPPDirectives: BeforeHash
+# AlignConsecutiveAssignments: Consecutive
+# AlignConsecutiveDeclarations: Consecutive

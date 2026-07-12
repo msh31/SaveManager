@@ -5,18 +5,18 @@
 #include <nlohmann/json.hpp>
 using json = nlohmann::json;
 
-size_t Network::write_callback( void *ptr, size_t size, size_t nmemb, FILE *stream ) {
+size_t Network::write_callback( void* ptr, size_t size, size_t nmemb, FILE* stream ) {
     return fwrite( ptr, size, nmemb, stream ) * size;
 }
 
-size_t Network::stream_callback( void *ptr, size_t size, size_t nmemb, FILE *stream ) {
-    ( (std::string *)stream )->append( (char *)ptr, size * nmemb );
+size_t Network::stream_callback( void* ptr, size_t size, size_t nmemb, FILE* stream ) {
+    ( (std::string*)stream )->append( (char*)ptr, size * nmemb );
 
     return size * nmemb;
 }
 
 std::string Network::download_to_string( std::string_view url ) {
-    CURL *curl = curl_easy_init( );
+    CURL* curl = curl_easy_init( );
     if ( !curl ) {
         SPDLOG_ERROR( "Failed to initialize CURL" );
         return { };
@@ -40,16 +40,17 @@ std::string Network::download_to_string( std::string_view url ) {
     return data;
 }
 
-bool Network::download_file( std::string_view url, const std::string &output_path ) {
-    CURL *curl = curl_easy_init( );
+bool Network::download_file( std::string_view url, const std::string& output_path ) {
+    CURL* curl = curl_easy_init( );
     if ( !curl ) {
         SPDLOG_ERROR( "Failed to initialize CURL" );
         return false;
     }
 
-    FILE *fp = fopen( output_path.c_str( ), "wb" );
+    std::string tmp_path = output_path + ".tmp";
+    FILE* fp = fopen( tmp_path.c_str( ), "wb" );
     if ( !fp ) {
-        SPDLOG_ERROR( "Failed to open file for writing: {}", output_path );
+        SPDLOG_ERROR( "Failed to open file for writing: {}", tmp_path );
         curl_easy_cleanup( curl );
         return false;
     }
@@ -67,23 +68,19 @@ bool Network::download_file( std::string_view url, const std::string &output_pat
 
     if ( res != CURLE_OK ) {
         SPDLOG_ERROR( "Failed to download file: {}", curl_easy_strerror( res ) );
+        fs::remove( tmp_path );
+        return false;
+    }
+
+    std::error_code ec;
+    fs::rename( tmp_path, output_path, ec );
+    if ( ec ) {
+        SPDLOG_ERROR( "Failed to move downloaded file into place: {}", ec.message( ) );
+        fs::remove( tmp_path );
         return false;
     }
 
     return true;
-}
-
-void Network::download_game_image( std::string_view appid ) {
-    fs::path img_path = paths::cache_dir( ) / std::format( "{}.jpg", appid );
-    if ( fs::exists( img_path ) && fs::file_size( img_path ) > 0 ) {
-        return;
-    }
-
-    auto url = std::format( "https://cdn.cloudflare.steamstatic.com/steam/apps/{}/header.jpg", appid );
-    // auto url = std::format("https://cdn.cloudflare.steamstatic.com/steam/apps/{}/library_600x900.jpg", appid);
-    if ( !Network::download_file( url, img_path.string( ) ) ) {
-        SPDLOG_ERROR( "Could not download {}", img_path.string( ) );
-    }
 }
 
 bool Network::is_update_available( ) {
@@ -97,14 +94,12 @@ bool Network::is_update_available( ) {
 
     try {
         data = json::parse( upstream );
-    } catch ( json::exception &ex ) {
+    } catch ( json::exception& ex ) {
         SPDLOG_ERROR( "JSON parsing error: {}", ex.what( ) );
         return false;
     }
 
     std::string latest = data.value( "tag_name", std::string( "" ) );
-    // SPDLOG_INFO("Latest: " + latest + " Current: " + std::string(APP_VERSION));
-
     auto [maj, min, pat] = parse_version( APP_VERSION );
     auto [l_maj, l_min, l_pat] = parse_version( latest );
 

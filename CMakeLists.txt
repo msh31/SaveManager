@@ -33,13 +33,14 @@ endif()
 
 # Variables
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+set(APP_VERSION 1.8.0)
 
 project(SaveManager
 	LANGUAGES
 		C
 		CXX
 	VERSION
-		1.7.1
+		1.8.0
 	DESCRIPTION
 		"The swiss army knife of save management."
 )
@@ -67,6 +68,10 @@ find_package(sol2 REQUIRED)
 
 find_package(spdlog REQUIRED)
 
+find_package(yaml-cpp REQUIRED)
+
+find_package(CLI11 REQUIRED)
+
 # Target: savemanager-core
 set(savemanager-core_SOURCES
 	cmake.toml
@@ -76,12 +81,12 @@ set(savemanager-core_SOURCES
 	"lib/src/detection/rsg/rsg.cpp"
 	"lib/src/detection/ubi/ubi.cpp"
 	"lib/src/detection/unreal/unreal.cpp"
-	"lib/src/features/backup/backup.cpp"
-	"lib/src/features/remote_transfer/remote_transfer.cpp"
-	"lib/src/features/save_editor/save_editor.cpp"
-	"lib/src/features/scheduler/scheduler.cpp"
+	"lib/src/detection/wine/wine.cpp"
+	"lib/src/features/features.cpp"
 	"lib/src/network/network.cpp"
 	"lib/src/plugin/plugin.cpp"
+	"lib/src/remote_transfer/remote_transfer.cpp"
+	"lib/src/save_editor/save_editor.cpp"
 	"lib/src/utils/blacklist/blacklist.cpp"
 	"lib/src/utils/steam/steam.cpp"
 	"lib/src/utils/translations/translations.cpp"
@@ -110,6 +115,7 @@ target_link_libraries(savemanager-core PUBLIC
 	stb::stb
 	sol2::sol2
 	spdlog::spdlog
+	yaml-cpp::yaml-cpp
 )
 
 if(WIN32) # windows
@@ -140,16 +146,24 @@ string(TIMESTAMP BUILD_DATE "%Y-%m-%d %H:%M UTC")
 set(savemanager_SOURCES
 	cmake.toml
 	"gui/src/app/app.cpp"
-	"gui/src/frontend/ui/notifications/notification.cpp"
-	"gui/src/frontend/ui/themes/themes.cpp"
-	"gui/src/frontend/ui/widgets.cpp"
-	"gui/src/frontend/views/about/about.cpp"
+	"gui/src/backend/font_manager/font_manager.cpp"
+	"gui/src/backend/shader/shader.cpp"
+	"gui/src/backend/task_runner/task_runner.cpp"
+	"gui/src/backend/ui_manager/ui_manager.cpp"
+	"gui/src/backend/window/window_manager.cpp"
+	"gui/src/frontend/components/menubar/menubar.cpp"
+	"gui/src/frontend/components/statusbar/statusbar.cpp"
+	"gui/src/frontend/dialogs/confirm/confirm_dialog.cpp"
+	"gui/src/frontend/layout/tabbar/tabbar.cpp"
+	"gui/src/frontend/notification/notification.cpp"
+	"gui/src/frontend/theme/theme.cpp"
+	"gui/src/frontend/views/about/about_view.cpp"
 	"gui/src/frontend/views/backups/backup_view.cpp"
-	"gui/src/frontend/views/dashboard/dashboard.cpp"
+	"gui/src/frontend/views/dashboard/dashboard_view.cpp"
 	"gui/src/frontend/views/editor/editor_view.cpp"
 	"gui/src/frontend/views/log/log_view.cpp"
-	"gui/src/frontend/views/settings/settings.cpp"
-	"gui/src/frontend/views/transfer/transfer.cpp"
+	"gui/src/frontend/views/settings/settings_view.cpp"
+	"gui/src/frontend/views/transfer/transfer_view.cpp"
 	"gui/src/main.cpp"
 	"gui/vendor/imgui/imgui_stdlib.cpp"
 )
@@ -200,11 +214,11 @@ target_sources(savemanager PRIVATE
 )
 
 configure_file(
-    ${CMAKE_CURRENT_SOURCE_DIR}/gui/src/version.cpp.in
-    ${CMAKE_CURRENT_BINARY_DIR}/version.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/lib/include/version.cpp.in
+    ${CMAKE_CURRENT_BINARY_DIR}/lib/include/version.cpp
     @ONLY
 )
-target_sources(savemanager PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/version.cpp)
+target_sources(savemanager PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/lib/include/version.cpp)
 
 if(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
     configure_file(
@@ -242,6 +256,7 @@ target_include_directories(savemgr PRIVATE
 
 target_link_libraries(savemgr PRIVATE
 	savemanager-core
+	CLI11::CLI11
 )
 
 target_precompile_headers(savemgr PRIVATE
@@ -257,7 +272,8 @@ endif()
 set(savemanager-daemon_SOURCES
 	cmake.toml
 	"daemon/src/main.cpp"
-	"daemon/src/watcher.cpp"
+	"daemon/src/server/server.cpp"
+	"daemon/src/watcher/watcher.cpp"
 )
 
 add_executable(savemanager-daemon)

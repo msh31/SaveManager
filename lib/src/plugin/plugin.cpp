@@ -1,93 +1,113 @@
-#include "plugin/plugin.hpp"
+#include "plugin.hpp"
 #include "utils/paths.hpp"
 #include "utils/steam/steam.hpp"
 
-Plugin::Plugin( std::filesystem::path path ) {
-    SPDLOG_INFO( "Loaded plugin: {}", path.filename( ).string( ) );
-    lua.open_libraries( sol::lib::base, sol::lib::string, sol::lib::table ); // allow print, type, tostring etc
+CPlugin::CPlugin( std::filesystem::path path ) {
+    m_name = path.filename( ).string( );
+    SPDLOG_INFO( "Loaded plugin: {}", m_name );
+    m_lua.open_libraries( sol::lib::base, sol::lib::string, sol::lib::table ); // allow print, type, tostring etc
 
-    lua["print"] = []( std::string msg ) { SPDLOG_INFO( "[lua] {}", msg ); };
+    m_lua["print"] = []( std::string msg ) { SPDLOG_INFO( "[lua] {}", msg ); };
 
-    lua.set_function( "is_linux", []( ) {
+    m_lua.set_function( "is_linux", []( ) {
 #if defined( __linux__ )
         return true;
 #endif
         return false;
     } );
 
-    lua.set_function( "is_macos", []( ) {
+    m_lua.set_function( "is_macos", []( ) {
 #if defined( __APPLE__ )
         return true;
 #endif
         return false;
     } );
 
-    lua.set_function( "is_windows", []( ) {
+    m_lua.set_function( "is_windows", []( ) {
 #if defined( _WIN32 )
         return true;
 #endif
         return false;
     } );
 
-    lua.set_function( "path_exists", []( const std::string &p ) { return fs::exists( p ); } );
+    m_lua.set_function( "path_exists", []( const std::string& p ) { return fs::exists( p ); } );
 
-    lua.set_function( "steam_library_paths", []( ) {
+    m_lua.set_function( "steam_library_paths", []( ) {
         auto libs = SteamHelper::get_library_folders( );
         std::vector<std::string> result;
-        for ( const auto &p : libs )
+        for ( const auto& p : libs )
             result.push_back( p.string( ) );
         return result;
     } );
 
-    lua.set_function( "home_dir", []( ) { return paths::home_dir( ).string( ); } );
+    m_lua.set_function( "home_dir", []( ) { return paths::home_dir( ).string( ); } );
 
-    lua.set_function( "documents_dir", []( ) { return paths::documents_dir( ).string( ); } );
+    m_lua.set_function( "documents_dir", []( ) { return paths::documents_dir( ).string( ); } );
 
-    lua.set_function( "list_dir", [this]( const std::string &path ) {
+    m_lua.set_function( "list_dir", [this]( const std::string& path ) {
         if ( !fs::is_directory( path ) ) return sol::table( );
 
-        sol::table table = lua.create_table( );
+        sol::table table = m_lua.create_table( );
         int index = 1;
 
         try {
-            for ( const auto &entry : fs::directory_iterator( path ) ) {
+            for ( const auto& entry : fs::directory_iterator( path ) ) {
                 table[index++] = entry.path( ).string( );
             }
-        } catch ( const fs::filesystem_error &e ) {
+        } catch ( const fs::filesystem_error& e ) {
             SPDLOG_WARN( "list_dir: {}", e.what( ) );
         }
         return table;
     } );
 
-    lua.script_file( path.string( ) ); // load and run the script
-
-    if ( lua["config"].valid( ) ) {
-        show_parent_path = lua["config"]["show_parent_path"].get_or( false );
+    try {
+        m_lua.script_file( path.string( ) ); // load and run the script
+    } catch ( sol::error& ex ) {
+        SPDLOG_ERROR( "LUA error: failed to load script '{}': {}", path.string( ), ex.what( ) );
+        return;
     }
-    // SPDLOG_DEBUG("config valid: {}", lua["config"].valid());
-    // SPDLOG_DEBUG("show_parent_path valid: {}", lua["config"]["show_parent_path"].valid());
+
+    if ( m_lua["config"].valid( ) ) {
+        m_show_parent_path = m_lua["config"]["show_parent_path"].get_or( false );
+    }
+    // SPDLOG_DEBUG("config valid: {}", m_lua["config"].valid());
+    // SPDLOG_DEBUG("show_parent_path valid: {}", m_lua["config"]["show_parent_path"].valid());
 }
 
-std::vector<Game> Plugin::find_saves( ) {
-    sol::protected_function fn = lua["find_saves"];
-    auto result = fn( );
+std::expected<std::vector<Game>, SMError> CPlugin::find( ) {
     std::vector<Game> games;
 
+    sol::protected_function fn = m_lua["find_saves"];
+    if ( !fn.valid( ) ) {
+        SPDLOG_ERROR( "Lua plugin missing find_saves function" );
+        return std::unexpected( SMError::PLUGIN_LOAD_ERROR );
+    }
+
+    auto result = fn( );
     if ( !result.valid( ) ) {
         sol::error err = result;
         SPDLOG_ERROR( "Lua error: {}", err.what( ) );
-        return { };
+        return std::unexpected( SMError::PLUGIN_LOAD_ERROR );
     }
 
     sol::table table = result.get<sol::table>( );
-    for ( auto &[key, val] : table ) {
+    for ( auto& [key, val] : table ) {
         sol::table entry = val.as<sol::table>( );
+        std::string game_name = entry["game_name"].get_or<std::string>( "" );
+        std::string appid = entry["appid"].get_or<std::string>( "" );
+        std::string save_path = entry["save_path"].get_or<std::string>( "" );
+
+        if ( game_name.empty( ) || save_path.empty( ) ) {
+            SPDLOG_WARN( "Lua plugin returned entry missing game_name or save_path, skipping" );
+            continue;
+        }
+
         Game g;
         g.type = PlatformType::CUSTOM;
-        g.game_name = entry["game_name"].get<std::string>( );
-        g.appid = entry["appid"].get<std::string>( );
-        g.save_path = entry["save_path"].get<std::string>( );
-        g.show_parent_path = show_parent_path;
+        g.game_name = std::move( game_name );
+        g.appid = std::move( appid );
+        g.save_paths.push_back( save_path ); //?
+        g.show_parent_path = m_show_parent_path;
         games.emplace_back( g );
     }
     return games;
