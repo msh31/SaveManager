@@ -98,8 +98,9 @@ bool Features::backup_game_files( const Game& game, std::vector<std::pair<fs::pa
             for ( size_t i = { }; i < game.save_paths.size( ); i++ ) {
                 fs::path result = fs::relative( entry.first, game.save_paths[i] );
                 if ( !result.string( ).starts_with( ".." ) ) {
-                    fs::path prefixed = fs::path( std::to_string( i ) ) / result;
-                    if ( !za.add_to_archive( entry.first, std::nullopt, prefixed.string( ) ) ) failed_to_add = true;
+                    fs::path entry_path = ( game.save_paths.size( ) > 1 ) ? fs::path( std::to_string( i ) ) / result
+                                                                           : result;
+                    if ( !za.add_to_archive( entry.first, std::nullopt, entry_path.string( ) ) ) failed_to_add = true;
                     break;
                 }
             }
@@ -190,7 +191,8 @@ bool Features::restore_backup(
             }
         }
     }
-    if ( !archive.extract_archive( save_paths, conflicts, comment.empty( ), exclusions ) ) {
+    bool has_index_prefixes = comment.empty( ) ? ( save_paths.size( ) > 1 ) : false;
+    if ( !archive.extract_archive( save_paths, conflicts, has_index_prefixes, exclusions ) ) {
         SPDLOG_ERROR( "failed to restore backup: {}", name.filename( ).string( ) );
         return false;
     }
