@@ -657,8 +657,16 @@ void CDashboardView::render_modals( ) {
             if ( Features::restore_backup(
                      m_pending_restore_backup, m_game_exclusions_restore.save_paths, m_pending_conflicts,
                      m_pending_exclusions ) ) {
-                if ( !m_pending_conflicts.empty( ) ) {
+                if ( m_pending_conflicts.empty( ) ) {
+                    auto str = std::format(
+                        "Successfully restored a backup for: {}", m_pending_restore_backup.filename( ).string( ) );
+                    Notify::show_notification( "Backup Restored!", str, 2000 );
+                    ImGui::CloseCurrentPopup( );
+                } else {
+                    ImGui::CloseCurrentPopup( );
                     m_open_conflict_modal = true;
+                    Notify::show_notification(
+                        "Backup Restore Failed!", "Failed to restore backup due to conflicts, resolve them!", 2000 );
                 }
             } else {
                 Notify::show_notification( "Restore", "Failed to restore backup!", 2000 );
