@@ -193,16 +193,22 @@ bool CZipArchive::extract_archive(
 
                 fs::path conflict_path = { };
                 if ( fs::exists( resolved ) ) {
-                    SPDLOG_WARN( "{} already exists in your game directory!", resolved.filename( ).string( ) );
+                    // SPDLOG_WARN( "{} already exists in your game directory!", resolved.filename( ).string( ) );
 
-                    auto save_time =
-                        std::chrono::system_clock::to_time_t( file_time_to_sys( fs::last_write_time( resolved ) ) );
+                    auto save_time = std::chrono::system_clock::to_time_t(
+                        std::chrono::time_point_cast<std::chrono::seconds>(
+                            file_time_to_sys( fs::last_write_time( resolved ) ) ) );
+
+                    time_t ref = fileInfo.mtime;
+                    if ( manifest_json.contains( fileInfo.name ) ) {
+                        auto& entry = manifest_json[fileInfo.name];
+                        ref = entry["mtime"].get<time_t>( );
+                    }
 
                     auto conflict_dest =
                         resolved.parent_path( ) /
                         std::format( "{}.savemgr-conflict-{}", resolved.filename( ).string( ), save_time );
-
-                    if ( save_time > fileInfo.mtime ) {
+                    if ( save_time > ref ) {
                         SPDLOG_WARN( "{} is newer than {}!", resolved.filename( ).string( ), fileInfo.name );
                         std::error_code ec;
                         fs::rename( resolved, conflict_dest, ec );
