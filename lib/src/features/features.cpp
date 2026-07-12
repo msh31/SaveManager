@@ -58,21 +58,26 @@ std::vector<std::string> Features::backup_all_games( const std::vector<Game>& sn
     std::vector<std::string> failures = { };
 
     for ( const auto& entry : snapshot ) {
+        std::vector<std::pair<fs::path, const Game*>> files;
+
         for ( const auto& save : entry.save_paths ) {
             if ( !fs::is_directory( save ) ) continue;
-
             for ( const auto& file :
                   fs::recursive_directory_iterator( save, fs::directory_options::skip_permission_denied ) ) {
                 if ( !fs::is_regular_file( file ) ) continue;
 
                 auto ext = file.path( ).extension( ).string( );
                 if ( extension_blocklist.contains( ext ) ) continue;
-                if ( !backup_game( entry, file.path( ), config ) ) {
-                    SPDLOG_WARN( "Failed to create backup for: {}", entry.game_name );
-                    failures.emplace_back( entry.game_name );
-                    continue;
-                }
+
+                files.push_back( { file.path( ), &entry } );
             }
+        }
+        if ( files.empty( ) ) continue;
+
+        if ( !backup_game_files( entry, files ) ) {
+            SPDLOG_WARN( "Failed to create backup for: {}", entry.game_name );
+            failures.emplace_back( entry.game_name );
+            continue;
         }
     }
     return failures;
