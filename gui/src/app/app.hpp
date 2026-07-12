@@ -13,8 +13,6 @@
 
 class CApp {
     public:
-        CApp( Blacklist& blacklist, const Translations& translations )
-            : m_blacklist( blacklist ), m_translations( translations ) {};
         ~CApp( );
         void init( );
         void render( );
@@ -24,8 +22,8 @@ class CApp {
         CConfig m_config;
 
         CUIManager m_ui_manager{ std::make_unique<CTabbarShell>( ) };
-        Blacklist& m_blacklist; // injected
-        const Translations& m_translations;
+        Blacklist m_blacklist;
+        Translations m_translations;
 
         CTaskRunner m_task_runner;
         std::optional<CShader> m_shader;

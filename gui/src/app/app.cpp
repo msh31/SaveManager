@@ -30,6 +30,12 @@ void CApp::init( ) {
     if ( !m_config.init( ) ) {
         throw std::runtime_error( "Config is missing and could not be generated!" );
     }
+    if ( !m_translations.init( ) ) {
+        SPDLOG_WARN( "Failed to initialize translations! Expect missing games!" );
+    }
+    if ( !m_blacklist.init( ) ) {
+        SPDLOG_WARN( "Failed to initialize blacklist!" );
+    }
 
     // TODO: remove this in the future
     Features::migrate_labels_to_tags( );
