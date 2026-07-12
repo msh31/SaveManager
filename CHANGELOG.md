@@ -3,7 +3,7 @@
 
 #### Information
 Games no longer pop in due to an oversight when rewriting parts of the detection system,
-This will be fixed in the next release on 20-07-2026
+This will be fixed in the next release 
 
 ### Core
 #### Added
@@ -43,6 +43,8 @@ This will be fixed in the next release on 20-07-2026
 - Not catching an SFTP read error during file download
 - Prevent some all around file corruption by writing to tmp files first
 - Close save file in the editor on all failure paths, no longer causing leaks
+- Opening a folder in the file manager on linux crashes the main application
+- False detection of conflict files during extraction of a backup
 
 #### Changed
 - Config load failures no longer kill the app, a new config is generated instead preserving the old one.
@@ -79,7 +81,7 @@ This will be fixed in the next release on 20-07-2026
 - Uploading/downloading a file in the transfer tab now shows a success/failure notification instead of failing silently
 - Grouping issues with unknown / partially supported games (improved since [#2](https://github.com/msh31/SaveManager/issues/2)
     - This was a known issue for a long time but some great effort has gone into making sure all games are reportedly uniquely even if there are multiple versions installed on the system, i.e. for Ubisoft games
-    - All games thar enot known just simply show up as "N/A" under their own cards.
+    - All games that are known just simply show up as "N/A" under their own cards.
 - Removal of undo backup if backup fails to be restored
 - Prevent possible UB when downloading / uploading files through SFTP
 - Disable save config button when connecting in Transfer tab
@@ -91,6 +93,7 @@ This will be fixed in the next release on 20-07-2026
 - Disable per game buttons whilst scanning or backing up
 - GTA:SA save editor now correctly saves the tag and stunt jump statuses
 - Notifications pushed from a background thread could race with rendering; notifications are now queued behind a mutex and drained on the render thread
+- Translations and Blacklist not being fully initialized before using them
 
 #### Changed
 - Empty files no longer shown as save entries in the dashboard

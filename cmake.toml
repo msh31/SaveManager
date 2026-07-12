@@ -11,7 +11,7 @@ msvc-runtime = "dynamic"
 
 [variables]
 CMAKE_EXPORT_COMPILE_COMMANDS = true
-APP_VERSION = "1.8.0-dev"
+APP_VERSION = "1.8.0"
 
 [find-package.CURL]
 required = true
