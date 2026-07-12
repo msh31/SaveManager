@@ -626,7 +626,7 @@ void CDashboardView::render_modals( ) {
         ImGui::EndPopup( );
     }
 
-    ImGui::SetNextWindowSize( ImVec2( 500, 0 ), ImGuiCond_Always );
+    ImGui::SetNextWindowSize( ImVec2( 700, 500 ), ImGuiCond_Always );
     if ( ImGui::BeginPopupModal( "Restore backup", nullptr, ImGuiWindowFlags_AlwaysAutoResize ) ) {
         ImGui::TextWrapped(
             "Select all files you would like to restore from %s",
@@ -637,10 +637,10 @@ void CDashboardView::render_modals( ) {
         // }
         for ( const auto& entry : m_restore_entries ) {
             ImGui::PushID( entry.c_str( ) );
+            std::string text = std::format( "Include '{}'?", fs::path( entry ).filename( ).string( ) );
+            ImGui::Checkbox( text.c_str( ), &m_restore_checked[entry] );
+            ImGui::SetItemTooltip( "%s", entry.c_str( ) );
             ImGui::Separator( );
-            ImGui::Checkbox( "Include ", &m_restore_checked[entry] );
-            ImGui::SameLine( );
-            ImGui::TextWrapped( " %s", entry.c_str( ) );
             ImGui::PopID( );
         }
 
