@@ -95,10 +95,4 @@ GPLv3 see [LICENSE](LICENSE.md).
 
 ## Star History
 
-<a href="https://www.star-history.com/?repos=marco007%2FSaveManager&type=date&legend=top-left">
- <picture>
-   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/image?repos=msh31/SaveManager&type=date&theme=dark&legend=top-left" />
-   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/image?repos=msh31/SaveManager&type=date&legend=top-left" />
-   <img alt="Star History Chart" src="https://api.star-history.com/image?repos=msh31/SaveManager&type=date&legend=top-left" />
- </picture>
-</a>
+[![Star History Chart](https://api.star-history.com/chart?repos=msh31/SaveManager&type=date&legend=top-left&sealed_token=zwvsFlaiThXfXZT4cr76r594q8v3uETEceXmNTQ1B3baSzonxatsb6bBtH6grMuCdPWWF_bJwfsVlPXBlx_4Hhxi5T3_aby-ppb4iTQLilIkGtv3-S4W_4l_1F8u_jgHP0e9AV6yyaC9wazdERQ4HkmVlL4to14hurvXC42ff5r-qVZXRhCg02f5NME6)](https://www.star-history.com/?repos=msh31%2FSaveManager&type=date&legend=top-left)
