@@ -54,14 +54,18 @@ std::string_view CMinecraftDetector::name( ) const { return "Minecraft"; }
 // private
 
 std::vector<Game> CMinecraftDetector::scan_modrinth( ) const {
+    std::vector<fs::path> modrinth_paths = { };
 #if defined( __linux__ )
-    fs::path modrinth_path = paths::home_dir( ) / ".local" / "share" / "ModrinthApp" / "profiles";
+    auto mp1 = paths::home_dir( ) / ".local" / "share" / "ModrinthApp" / "profiles";
+    auto mp2 = paths::home_dir( ) / ".var" / "app" / "com.modrinth.ModrinthApp" / "data" / "ModrinthApp" / "profiles";
+    modrinth_paths.emplace_back( mp1 );
+    modrinth_paths.emplace_back( mp2 );
 #elif defined( __APPLE__ )
-    fs::path modrinth_path = paths::home_dir( ) / "Library" / "Application Support" / "ModrinthApp" / "profiles";
+    modrinth_paths.emplace_back( paths::home_dir( ) / "Library" / "Application Support" / "ModrinthApp" / "profiles" );
 #elif defined( _WIN32 )
-    fs::path modrinth_path = paths::home_dir( ) / "AppData" / "Roaming" / "ModrinthApp" / "profiles";
+    modrinth_paths.emplace_back( paths::home_dir( ) / "AppData" / "Roaming" / "ModrinthApp" / "profiles" );
 #endif
-    if ( !fs::exists( modrinth_path ) ) return { };
+    if ( modrinth_paths.empty( ) ) return { }; // failure
 
     Game entry;
     entry.type = PlatformType::MINECRAFT;
@@ -69,19 +73,21 @@ std::vector<Game> CMinecraftDetector::scan_modrinth( ) const {
     entry.appid = "N/A";
     entry.launcher = LauncherType::MODRINTH;
 
-    for ( const auto& game :
-          fs::directory_iterator( modrinth_path, std::filesystem::directory_options::skip_permission_denied ) ) {
-        fs::path game_folder = game.path( );
-        if ( !fs::is_directory( game_folder ) ) continue;
+    for ( const auto& path : modrinth_paths ) {
+        if ( !fs::exists( path ) ) continue;
+        for ( const auto& game :
+              fs::directory_iterator( path, std::filesystem::directory_options::skip_permission_denied ) ) {
+            fs::path game_folder = game.path( );
+            if ( !fs::is_directory( game_folder ) ) continue;
 
-        for ( const auto& profile :
-              fs::directory_iterator( game_folder, std::filesystem::directory_options::skip_permission_denied ) ) {
-            if ( profile.path( ).filename( ).string( ) != "saves" ) continue;
-
-            for ( const auto& world : fs::directory_iterator(
-                      profile.path( ), std::filesystem::directory_options::skip_permission_denied ) ) {
-                if ( world.path( ).empty( ) ) continue;
-                entry.save_paths.push_back( world.path( ) );
+            for ( const auto& profile :
+                  fs::directory_iterator( game_folder, std::filesystem::directory_options::skip_permission_denied ) ) {
+                if ( profile.path( ).filename( ).string( ) != "saves" ) continue;
+                for ( const auto& world : fs::directory_iterator(
+                          profile.path( ), std::filesystem::directory_options::skip_permission_denied ) ) {
+                    if ( world.path( ).empty( ) ) continue;
+                    entry.save_paths.push_back( world.path( ) );
+                }
             }
         }
     }
