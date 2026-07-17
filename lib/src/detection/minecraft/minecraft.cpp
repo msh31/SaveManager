@@ -2,7 +2,7 @@
 #include "utils/paths.hpp"
 
 std::expected<std::vector<Game>, SMError> CMinecraftDetector::find( ) {
-    std::vector<Game> games;
+    std::vector<Game> games = { };
 
     auto append = [&]( std::vector<Game> result ) { games.insert( games.end( ), result.begin( ), result.end( ) ); };
 
@@ -26,6 +26,7 @@ std::vector<Game> CMinecraftDetector::scan_official( ) const {
 #endif
     if ( !fs::exists( game_path ) ) return { };
     if ( !fs::is_directory( game_path ) ) return { };
+    SPDLOG_INFO( "[Minecraft Official] searching: {}", game_path.string( ) );
 
     Game entry;
     entry.type = PlatformType::MINECRAFT;
@@ -41,6 +42,7 @@ std::vector<Game> CMinecraftDetector::scan_official( ) const {
         for ( const auto& world :
               fs::directory_iterator( saves_folder, std::filesystem::directory_options::skip_permission_denied ) ) {
             if ( world.path( ).empty( ) ) continue;
+            SPDLOG_INFO( "[Minecraft Official] found a world: {}", world.path( ).string( ) );
             entry.save_paths.push_back( world.path( ) );
         }
     }
@@ -67,6 +69,7 @@ std::vector<Game> CMinecraftDetector::scan_modrinth( ) const {
 #endif
     if ( modrinth_paths.empty( ) ) return { }; // failure
 
+
     Game entry;
     entry.type = PlatformType::MINECRAFT;
     entry.game_name = "Minecraft (Modrinth)";
@@ -75,6 +78,7 @@ std::vector<Game> CMinecraftDetector::scan_modrinth( ) const {
 
     for ( const auto& path : modrinth_paths ) {
         if ( !fs::exists( path ) ) continue;
+        SPDLOG_INFO( "[Minecraft Modrinth] searching: {}", path.string( ) );
         for ( const auto& game :
               fs::directory_iterator( path, std::filesystem::directory_options::skip_permission_denied ) ) {
             fs::path game_folder = game.path( );
@@ -86,6 +90,7 @@ std::vector<Game> CMinecraftDetector::scan_modrinth( ) const {
                 for ( const auto& world : fs::directory_iterator(
                           profile.path( ), std::filesystem::directory_options::skip_permission_denied ) ) {
                     if ( world.path( ).empty( ) ) continue;
+                    SPDLOG_INFO( "[Minecraft Modrinth] found world '{}' in profile: {}", world.path( ).string( ), profile.path().string() );
                     entry.save_paths.push_back( world.path( ) );
                 }
             }
@@ -104,6 +109,7 @@ std::vector<Game> CMinecraftDetector::scan_curseforge( ) const {
 #endif
     if ( !fs::exists( curse_path ) ) return { };
     if ( !fs::is_directory( curse_path ) ) return { };
+    SPDLOG_INFO( "[Minecraft Curseforge] searching: {}", curse_path.string( ) );
 
     Game entry;
     entry.type = PlatformType::MINECRAFT;
@@ -123,6 +129,9 @@ std::vector<Game> CMinecraftDetector::scan_curseforge( ) const {
             for ( const auto& world : fs::directory_iterator(
                       profile.path( ), std::filesystem::directory_options::skip_permission_denied ) ) {
                 if ( world.path( ).empty( ) ) continue;
+                SPDLOG_INFO(
+                    "[Minecraft Curseforge] found world '{}' in profile: {}", world.path( ).string( ),
+                    profile.path( ).string( ) );
                 entry.save_paths.push_back( world.path( ) );
             }
         }
@@ -142,6 +151,7 @@ std::vector<Game> CMinecraftDetector::scan_prism( ) const {
     fs::path prism_path = paths::home_dir( ) / "AppData" / "Roaming" / "PrismLauncher" / "instances";
 #endif
     if ( !fs::exists( prism_path ) ) return { };
+    SPDLOG_INFO( "[Minecraft PrismLauncher] searching: {}", prism_path.string( ) );
 
     Game entry;
     entry.type = PlatformType::MINECRAFT;
@@ -167,6 +177,9 @@ std::vector<Game> CMinecraftDetector::scan_prism( ) const {
                 for ( const auto& world : fs::directory_iterator(
                           profile.path( ), std::filesystem::directory_options::skip_permission_denied ) ) {
                     if ( world.path( ).empty( ) ) continue;
+                    SPDLOG_INFO(
+                        "[Minecraft PrismLauncher] found world '{}' in instance: {}", world.path( ).string( ),
+                        profile.path( ).string( ) );
                     entry.save_paths.push_back( world.path( ) );
                 }
             }
@@ -181,6 +194,7 @@ std::vector<Game> CMinecraftDetector::scan_multimc( ) const {
     fs::path multimc_path = paths::home_dir( ) / ".local" / "share" / "multimc" / "instances";
 
     if ( !fs::exists( multimc_path ) ) return { };
+    SPDLOG_INFO( "[Minecraft MultiMC] searching: {}", multimc_path.string( ) );
 
     Game entry;
     entry.type = PlatformType::MINECRAFT;
@@ -200,6 +214,9 @@ std::vector<Game> CMinecraftDetector::scan_multimc( ) const {
             for ( const auto& world : fs::directory_iterator(
                       profile.path( ), std::filesystem::directory_options::skip_permission_denied ) ) {
                 if ( world.path( ).empty( ) ) continue;
+                SPDLOG_INFO(
+                    "[Minecraft MultiMC] found world '{}' in instance: {}", world.path( ).string( ),
+                    profile.path( ).string( ) );
                 entry.save_paths.push_back( world.path( ) );
             }
         }
