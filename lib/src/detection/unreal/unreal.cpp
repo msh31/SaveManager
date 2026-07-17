@@ -91,7 +91,10 @@ std::vector<Game> CUnrealDetector::scan_recursive( const fs::path& path, const T
         if ( save.gcount( ) != 4 ) continue;
 
         if ( !std::ranges::equal( buffer, header ) ) {
-            SPDLOG_WARN( "[Unreal] {} does not contain a 'GVAS' header at the first 4 bytes, it might be custom. skipping..", entry.path( ).string( ) );
+#if defined _WIN32 // whatever, it spams on linux
+            SPDLOG_WARN( "[Unreal] {} does not contain a 'GVAS' header at the first 4 bytes, it might be custom.
+            skipping..", entry.path( ).string( ) );
+#endif
             continue;
         }
 
@@ -155,7 +158,7 @@ std::vector<Game> CUnrealDetector::scan_recursive( const fs::path& path, const T
             game.game_name = found_name;
             game.appid = "N/A";
         }
-        
+
         SPDLOG_INFO( "[Unreal] found: {}", game.game_name );
         games.push_back( game );
     }

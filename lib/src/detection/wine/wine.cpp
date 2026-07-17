@@ -51,7 +51,8 @@ std::expected<std::vector<Game>, SMError> CWinePrefixDetector::find( ) {
                 std::ranges::move( unreal, std::back_inserter( games ) );
             }
         } catch ( const fs::filesystem_error& fse ) {
-            SPDLOG_WARN( "filesystem error occured, skipping {}: {}", entry.path( ).string( ), fse.what( ) );
+            // TODO: do something with this, logging is spammy on linux
+            //  SPDLOG_WARN( "filesystem error occured, skipping {}: {}", entry.path( ).string( ), fse.what( ) );
         }
     }
 
