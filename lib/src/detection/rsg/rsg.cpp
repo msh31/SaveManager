@@ -12,6 +12,8 @@ std::expected<std::vector<Game>, SMError> CRockstarDetector::find( ) {
     std::vector<Game> games = { };
     for ( const auto& prefix : prefixes ) {
         if ( !fs::exists( prefix ) ) continue;
+        SPDLOG_INFO( "[Rockstar] searching prefix: {}", prefix.string( ) );
+
         auto found_games = scan( prefix, m_translations );
         std::ranges::move( found_games, std::back_inserter( games ) );
     }
@@ -44,6 +46,7 @@ std::vector<Game> CRockstarDetector::scan( fs::path path, const Translations& tr
             l_game.appid = translations.get_steam_id( game_name ).value_or( "N/A" );
             l_game.save_paths.push_back( game.path( ) );
 
+            SPDLOG_INFO( "[Rockstar] found legacy title: {}", game_name );
             games.push_back( l_game );
         }
 
@@ -53,6 +56,7 @@ std::vector<Game> CRockstarDetector::scan( fs::path path, const Translations& tr
         }
 
         if ( !fs::exists( profiles_folder ) ) {
+            /*SPDLOG_WARN( "[Rockstar] unable to find any profiles: {}", profiles_folder.string() );*/
             continue;
         }
 
@@ -65,6 +69,7 @@ std::vector<Game> CRockstarDetector::scan( fs::path path, const Translations& tr
             game.appid = translations.get_steam_id( game.game_name ).value_or( "N/A" );
             game.save_paths.push_back( uuid_folder );
 
+            SPDLOG_INFO( "[Rockstar] found: {}", game.game_name );
             games.push_back( game );
         }
     }

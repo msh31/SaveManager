@@ -1,3 +1,18 @@
+## 1.8.1 - 2026-07-17
+This update addresses some critical issues (Most of them for Windows)
+
+### New game support
+- Minecraft through Modrinth under Flatpak
+- Assassin's Creed Black Flag Resynced (Steam / Uplay)
+
+### Core
+- Fixed an issue with Ubisoft detection aborting the entire save scan on failure ([#15](https://github.com/msh31/SaveManager/issues/15))
+- Fixed an issue with Unreal detection accuracy by increasing it's depth ([#10](https://github.com/msh31/SaveManager/issues/10))
+- Fixed backup feature not handling UTF8 encoded zip paths such as 'Grand Theft Auto_ Vice City � The Definitive Edition' ([#9](https://github.com/msh31/SaveManager/issues/9))
+    - In the log it will show like this but the issue of not being able to back up such games has been fixed
+
+---
+
 ## [1.8.0] - 2026-07-12
 *Rewrote the GUI using a custom ImGui framework, improving code quality and maintainability.*
 

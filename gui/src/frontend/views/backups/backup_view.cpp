@@ -37,11 +37,12 @@ void CBackupsView::add_new_entry( std::vector<Game> snapshot ) {
         if ( !entry.is_directory( ) ) continue;
 
         BackupEntry bentry;
-        bentry.name = entry.path( ).filename( ).string( );
+        bentry.name = entry.path( ).filename( );
 
-        labels_cache[bentry.name.string( )] = load_tag_cache( bentry.name.string( ) );
+        std::string name_utf8 = path_to_utf8( bentry.name );
+        labels_cache[name_utf8] = load_tag_cache( name_utf8 );
 
-        if ( auto it = save_path_lookup.find( bentry.name.string( ) ); it != save_path_lookup.end( ) )
+        if ( auto it = save_path_lookup.find( name_utf8 ); it != save_path_lookup.end( ) )
             bentry.save_path = it->second;
 
         for ( const auto& entry_b : fs::directory_iterator( entry ) ) {
@@ -104,9 +105,10 @@ void CBackupsView::render( const std::vector<Game>& games_snapshot ) {
 void CBackupsView::render_game_row(
     const BackupEntry& bentry,
     const std::unordered_map<std::string, std::unordered_map<std::string, TagCache>>& labels_cache ) {
-    bool& not_collapsed = m_card_collapsed[bentry.name.string( )];
+    std::string name_utf8 = path_to_utf8( bentry.name );
+    bool& not_collapsed = m_card_collapsed[name_utf8];
 
-    auto selectable_id = std::format( "##backup_game_{}", bentry.name.string( ) );
+    auto selectable_id = std::format( "##backup_game_{}", name_utf8 );
     std::string right_text = std::format( "{} backups", bentry.entries.size( ) );
 
     ImGui::PushStyleColor( ImGuiCol_Border, ImVec4( 198 / 255.f, 97 / 255.f, 63 / 255.f, 1.f ) );
@@ -124,7 +126,7 @@ void CBackupsView::render_game_row(
     ImGui::SameLine( );
 
     ImGui::PushFont( CFontManager::get( ).get_font( "jbm_med" ).value_or( nullptr ) );
-    ImGui::Text( "%s", bentry.name.string( ).c_str( ) );
+    ImGui::Text( "%s", name_utf8.c_str( ) );
     ImGui::PopFont( );
 
     ImGui::SameLine( ImGui::GetContentRegionMax( ).x - ImGui::CalcTextSize( right_text.c_str( ) ).x );
@@ -132,10 +134,10 @@ void CBackupsView::render_game_row(
 
     if ( not_collapsed ) {
         static const std::unordered_map<std::string, TagCache> empty_labels;
-        auto it = labels_cache.find( bentry.name.string( ) );
+        auto it = labels_cache.find( name_utf8 );
         const auto& labels = ( it != labels_cache.end( ) ) ? it->second : empty_labels;
         for ( const auto& entry : bentry.entries )
-            render_backup_row( entry, bentry.save_path, labels, bentry.name.string( ) );
+            render_backup_row( entry, bentry.save_path, labels, name_utf8 );
     }
 
     ImGui::EndChild( );
@@ -148,22 +150,32 @@ void CBackupsView::render_backup_row(
     if ( path.filename( ) == "undo.zip" ) return;
     ImGui::PushID( path.string( ).c_str( ) );
     if ( !fs::exists( path ) ) {
+        SPDLOG_WARN( "backup row skipped, fs::exists() returned false for: {}", path_to_utf8( path ) );
         ImGui::PopID( );
         return;
     }
 
-    auto it = labels.find( path.filename( ).string( ) );
+    auto it = labels.find( path_to_utf8( path.filename( ) ) );
     const TagCache* tag_cache = ( it != labels.end( ) ) ? &it->second : nullptr;
 
-    std::string date_text = std::format( "{:%d/%m/%y %H:%M} | ", fs::last_write_time( path ) );
+    std::string date_text = "failed to set";
+    std::string size_text = "failed to set";
+    try {
+        date_text = std::format( "{:%d/%m/%y %H:%M} | ", fs::last_write_time( path ) );
+        auto b_size = fs::file_size( path ) / 1024;
+        size_text = std::format( "{}KB  ", b_size );
+    } catch ( const fs::filesystem_error& ex ) {
+        SPDLOG_ERROR( "backup row failed to stat {}: {}", path_to_utf8( path ), ex.what( ) );
+        ImGui::PopID( );
+        return;
+    }
     float date_width = ImGui::CalcTextSize( date_text.c_str( ) ).x;
-    auto b_size = fs::file_size( path ) / 1024;
-    std::string size_text = std::format( "{}KB  ", b_size );
     float size_width = ImGui::CalcTextSize( size_text.c_str( ) ).x;
     float spacing = ImGui::GetStyle( ).ItemSpacing.x;
     float total_width = date_width + size_width + 80.0f * 3 + spacing * 5;
 
-    std::string tag_text = ( tag_cache && !tag_cache->tags.empty( ) ) ? tag_cache->display : std::string( );
+    std::string tag_text =
+        ( tag_cache && !tag_cache->tags.empty( ) ) ? tag_cache->display : path_to_utf8( path.filename( ) );
     ImGui::TextDisabled( "%s", tag_text.c_str( ) );
     ImGui::SameLine( ImGui::GetContentRegionMax( ).x - total_width );
 
@@ -199,7 +211,7 @@ void CBackupsView::render_backup_row(
     ImGui::PushStyleColor( ImGuiCol_ButtonHovered, ImVec4( 0.9f, 0.3f, 0.3f, 1.0f ) );
     if ( ImGui::Button( "Delete", ImVec2( 80.0f, 0 ) ) ) {
         if ( fs::remove( path ) ) {
-            Features::delete_tags( game_name, path.filename( ).string( ) );
+            Features::delete_tags( game_name, path_to_utf8( path.filename( ) ) );
             m_reload_backups = true;
             Notify::show_notification( "Backup Deletion", "Backup deleted!", 1500 );
         } else {
@@ -220,7 +232,7 @@ void CBackupsView::render_modals( ) {
     }
 
     if ( ImGui::BeginPopupModal( "Manage Tags", nullptr, ImGuiWindowFlags_AlwaysAutoResize ) ) {
-        ImGui::Text( "%s", m_pending_rename_backup.filename( ).string( ).c_str( ) );
+        ImGui::Text( "%s", path_to_utf8( m_pending_rename_backup.filename( ) ).c_str( ) );
         ImGui::Separator( );
 
         int remove_index = -1;
@@ -248,19 +260,19 @@ void CBackupsView::render_modals( ) {
 
         ImGui::Dummy( ImVec2( 0, 5.0f ) );
         if ( ImGui::Button( "Save" ) ) {
-            auto result = Features::save_tags(
-                m_pending_rename_game, m_pending_rename_backup.filename( ).string( ), m_pending_tags );
+            std::string backup_filename_utf8 = path_to_utf8( m_pending_rename_backup.filename( ) );
+            auto result = Features::save_tags( m_pending_rename_game, backup_filename_utf8, m_pending_tags );
             if ( result.has_value( ) && *result ) {
                 std::lock_guard lock( m_mutex );
                 auto& game_tags = m_labels_cache[m_pending_rename_game];
                 if ( m_pending_tags.empty( ) ) {
-                    game_tags.erase( m_pending_rename_backup.filename( ).string( ) );
+                    game_tags.erase( backup_filename_utf8 );
                 } else {
                     TagCache tcache;
                     tcache.tags = m_pending_tags;
                     tcache.display = m_pending_tags | std::ranges::views::join_with( std::string_view( ", " ) ) |
                                      std::ranges::to<std::string>( );
-                    game_tags[m_pending_rename_backup.filename( ).string( )] = std::move( tcache );
+                    game_tags[backup_filename_utf8] = std::move( tcache );
                 }
             } else {
                 Notify::show_notification( "Tags", "Failed to save tags!", 1500 );

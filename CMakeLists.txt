@@ -33,14 +33,14 @@ endif()
 
 # Variables
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
-set(APP_VERSION 1.8.0)
+set(APP_VERSION 1.8.1-dev)
 
 project(SaveManager
 	LANGUAGES
 		C
 		CXX
 	VERSION
-		1.8.0
+		1.8.1
 	DESCRIPTION
 		"The swiss army knife of save management."
 )
