@@ -110,7 +110,7 @@ std::vector<Game> Detection::find_saves( const Blacklist& blacklist, const Trans
     for ( size_t i = 0; i < game_count; i++ ) {
         auto& game = games[i];
         auto key = utils::get_game_identity_key( game );
-        SPDLOG_INFO(
+        SPDLOG_INFO( //TODO: remove this
             "[Detection]: Game '{}' resolved to kind={}, value='{}'", game.game_name, std::to_underlying( key.kind ),
             key.value );
         if ( key.kind == GameKeyKind::INVALID ) continue;
