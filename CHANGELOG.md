@@ -1,3 +1,58 @@
+## 1.9.0 - 2026-??-??
+This update focuses on extending game support and reachability
+
+#### Information
+Due to the lack of downloads of the MacOS version I will pause development there for the forseeable future..
+
+### New game support
+- Electronic Arts (EA)
+    - Need for Speed franchise
+    - Battlefield franchise
+    - Star Wars Battlefront 2
+    - Star Wars Squadrons
+- Playstation Studios (PS ports on PC)
+    - The Last of Us Part I
+    - The Last of Us Part II
+    - Ratchet & Clank - Rift Apart
+    - God of War (2018)
+    - God of Ragnarök
+    - Uncharted Legacy of Thieves Collection
+- CD Projekt Red
+    - Cyberpunk 2077
+    - The Witcher 3
+- Battle.NET
+    - TODO
+- Minecraft Bedrock
+
+### Core
+- Added safety guards around the Save Editor by taking a snapshot of the savegame before editing it
+- Added an option to include tags during SFTP transfers ([#12](https://github.com/msh31/savemanager/issues/12))
+- Added optional opt-in telemetry collection
+
+- Fixed an issue where Minecraft saves from any launcher did not restore properly ([#13](https://github.com/msh31/SaveManager/issues/13))
+- Fixed an issue where some Minecraft saves were not being detected properly ([#14](https://github.com/msh31/savemanager/issues/14))
+- Fixed an issue with loading/deleting/adding tags not getting properly sanitized
+- Fixed a race condition with the Config when connecting to an SFTP server
+
+- Improved logging even further to help identify issues more clearly
+- Expanded save blocklist to combat false positive detections as mentioned in ([#16](https://github.com/msh31/savemanager/issues/16))
+
+### GUI
+- Added a 'Delete' button to list of savefiles (Has a confirm dialog)
+- Added a 'Duplicate' button to the list of savefiles and backups
+- Added a 'Preview' button to the list of savefiles and backups
+
+- Fixed the dashboard pop-in to loading regression due to 1.8.0's internal overhaul 
+- Fixed an issue where the Windows titlebar did not respect the dark mode setting ([#11](https://github.com/msh31/savemanager/issues/11))
+
+#### Development
+- Removed some dead code in the GUI such as; ``CMenuBar``, ``CStatusBar`` etc.. non user facing
+- Created a ``CDetectionService`` class to unify detection for consumers such as the GUI
+- Cleaned up the Dashboard in the GUI by moving filesystem calls out entirely
+
+---
+
+
 ## 1.8.1 - 2026-07-17
 This update addresses some critical issues (Most of them for Windows)
 
