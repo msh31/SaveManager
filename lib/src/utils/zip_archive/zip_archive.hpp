@@ -1,15 +1,17 @@
 #pragma once
 #include <types.hpp>
 #include <zip.h>
+#include <utils/utils.hpp>
 
 class CZipArchive {
     public:
         CZipArchive( int mode, fs::path name ) {
             int zip_error;
-            m_archive = zip_open( name.string( ).c_str( ), mode, &zip_error );
+            std::string zip_name = path_to_utf8( name );
+            m_archive = zip_open( zip_name.c_str( ), mode, &zip_error );
 
             if ( !m_archive ) {
-                SPDLOG_ERROR( "Failed to open archive: {}", name.string( ) );
+                SPDLOG_ERROR( "Failed to open archive: {}", zip_name );
             }
         }
 

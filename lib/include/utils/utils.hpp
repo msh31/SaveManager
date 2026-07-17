@@ -46,6 +46,20 @@ inline std::string sanitize_filename( std::string text ) {
     return text;
 }
 
+//i hate windows and special characters
+inline fs::path utf8_to_path( const std::string& utf8 ) {
+    return fs::path(
+        reinterpret_cast<const char8_t*>( utf8.data( ) ),
+        reinterpret_cast<const char8_t*>( utf8.data( ) + utf8.size( ) ) );
+}
+
+inline std::string path_to_utf8( const fs::path& p ) {
+    auto u8 = p.u8string( );
+    return std::string( reinterpret_cast<const char*>( u8.data( ) ), u8.size( ) );
+}
+
+//inline fs::path operator/( const fs::path& lhs, const std::string& utf8_rhs ) { return lhs / utf8_to_path( utf8_rhs ); }
+
 static std::string_view get_platform_label( PlatformType t ) {
     switch ( t ) {
     case PlatformType::UBISOFT:
