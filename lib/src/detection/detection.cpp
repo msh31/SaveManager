@@ -7,21 +7,24 @@
 
 #include <utils/steam/steam.hpp>
 
-//TODO: clean ts up
 #include "minecraft/minecraft.hpp"
-#if defined __APPLE__ || defined __linux__
+#if defined __APPLE__ 
     #include "wine/wine.hpp"
-#endif
+#include "unreal/unreal.hpp"
+#elif defined  __linux__
+    #include "wine/wine.hpp"
+#else //assuming windows
 #include "rsg/rsg.hpp"
 #include "ubi/ubi.hpp"
 #include "unreal/unreal.hpp"
+#endif
 // clang-format on
 
 std::vector<Game> Detection::find_saves( const Blacklist& blacklist, const Translations& translations ) {
     std::vector<std::unique_ptr<IDetector>> detectors;
     std::vector<std::future<std::expected<std::vector<Game>, SMError>>> detection_futures;
 
-    std::vector<Game> games;
+    std::vector<Game> games = { };
 
 #ifdef _WIN32
     detectors.emplace_back( std::make_unique<CUbisoftDetector>( translations ) );
@@ -104,14 +107,16 @@ std::vector<Game> Detection::find_saves( const Blacklist& blacklist, const Trans
         SPDLOG_ERROR( "No savegames found!" );
     }
 
-    std::map<GameKey, size_t> seen;
-    std::vector<Game> deduped;
-    for ( size_t i = 0; i < games.size( ); i++ ) {
+    std::map<GameKey, size_t> seen{ };
+    std::vector<Game> deduped = { };
+    size_t game_count = games.size( );
+    for ( size_t i = 0; i < game_count; i++ ) {
         auto& game = games[i];
         auto key = utils::get_game_identity_key( game );
         if ( key.kind == GameKeyKind::INVALID ) continue;
 
         if ( seen.contains( key ) ) {
+            SPDLOG_INFO( "[Detection] {} has been seen already! removing duplicate.", key.value );
             deduped[seen[key]].save_paths.insert(
                 deduped[seen[key]].save_paths.end( ), game.save_paths.begin( ), game.save_paths.end( ) );
         } else {
@@ -121,10 +126,20 @@ std::vector<Game> Detection::find_saves( const Blacklist& blacklist, const Trans
     }
     games = std::move( deduped );
 
-    std::erase_if( games, [&blacklist]( const Game& game ) { return blacklist.is_blacklisted( game.game_name ); } );
+    std::erase_if( games, [&blacklist]( const Game& game ) {
+        bool blacklisted = blacklist.is_blacklisted( game.game_name );
+        if ( blacklisted ) SPDLOG_INFO( "[Detection] {} is blacklisted, removing.", game.game_name );
+        return blacklisted;
+    } );
+
     std::erase_if( games, []( const Game& game ) {
-        return std::ranges::none_of(
+        bool has_valid_path = std::ranges::any_of(
             game.save_paths, []( const fs::path& p ) { return fs::is_directory( p ) && !fs::is_empty( p ); } );
+        if ( !has_valid_path )
+            SPDLOG_INFO(
+                "[Detection] {} has no valid save paths ({} checked), removing.", game.game_name,
+                game.save_paths.size( ) );
+        return !has_valid_path;
     } );
 
     return games;

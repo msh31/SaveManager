@@ -19,6 +19,7 @@ std::expected<std::vector<Game>, SMError> CUnrealDetector::find( ) {
 
     for ( const auto& prefix : prefixes ) {
         if ( !fs::exists( prefix ) ) continue;
+        SPDLOG_INFO( "[Unreal] searching prefix: {}", prefix.string( ) );
 
         auto found_games = scan( prefix, m_translations );
         std::ranges::move( found_games, std::back_inserter( games ) );
@@ -29,54 +30,45 @@ std::expected<std::vector<Game>, SMError> CUnrealDetector::find( ) {
 
 // private
 std::vector<Game> CUnrealDetector::scan( fs::path path, const Translations& translations ) {
-    if ( !fs::exists( path ) ) return { };
     std::vector<Game> games;
 
-    for ( const auto& folder : fs::directory_iterator( path, fs::directory_options::skip_permission_denied ) ) {
-        if ( !fs::is_directory( folder ) ) continue;
+    try {
+        if ( !fs::exists( path ) ) return { };
+        for ( const auto& folder : fs::directory_iterator( path, fs::directory_options::skip_permission_denied ) ) {
+            if ( !fs::is_directory( folder ) ) continue;
 
-        fs::path save_games = folder.path( ) / "Saved" / "SaveGames";
-        fs::path save_games_alt = folder.path( ) / "SaveGames";
-        fs::path target;
-
-        if ( fs::exists( save_games ) ) {
-            target = save_games;
-        } else if ( fs::exists( save_games_alt ) ) {
-            target = save_games_alt;
-        } else {
-            try {
+            auto target = resolve_save_games( folder );
+            if ( !target.has_value( ) ) {
                 for ( const auto& subfolder :
                       fs::directory_iterator( folder, fs::directory_options::skip_permission_denied ) ) {
-                    if ( !fs::is_directory( subfolder ) ) {
-                        continue;
-                    }
-                    fs::path sub_save_games = subfolder.path( ) / "Saved" / "SaveGames";
-                    fs::path sub_save_games_alt = subfolder.path( ) / "SaveGames";
-                    fs::path target_two;
+                    if ( !fs::is_directory( subfolder ) ) continue;
 
-                    if ( fs::exists( sub_save_games ) ) {
-                        target_two = sub_save_games;
-                    } else if ( fs::exists( sub_save_games_alt ) ) {
-                        target_two = sub_save_games_alt;
+                    auto target2 = resolve_save_games( subfolder );
+                    if ( !target2.has_value( ) ) {
+                        for ( const auto& subsubfolder :
+                              fs::directory_iterator( subfolder, fs::directory_options::skip_permission_denied ) ) {
+                            if ( !fs::is_directory( subsubfolder ) ) continue;
+
+                            auto target3 = resolve_save_games( subsubfolder );
+                            if ( !target3.has_value( ) ) continue; // whatever
+                            SPDLOG_INFO( "[Unreal] scanning target: {}", target3.value( ).string( ) );
+                            auto found_games = scan_recursive( target3.value( ), translations );
+                            std::ranges::move( found_games, std::back_inserter( games ) );
+                        }
                     } else {
-                        continue;
+                        SPDLOG_INFO( "[Unreal] scanning target: {}", target2.value( ).string( ) );
+                        auto found_games = scan_recursive( target2.value( ), translations );
+                        std::ranges::move( found_games, std::back_inserter( games ) );
                     }
-
-                    auto found_games = scan_recursive( target_two, translations );
-                    std::ranges::move( found_games, std::back_inserter( games ) );
                 }
-            } catch ( const fs::filesystem_error& ) {
-                continue;
+            } else {
+                SPDLOG_INFO( "[Unreal] scanning target: {}", target.value( ).string( ) );
+                auto found_games = scan_recursive( target.value( ), translations );
+                std::ranges::move( found_games, std::back_inserter( games ) );
             }
-            continue;
         }
-
-        try {
-            auto found_games = scan_recursive( target, translations );
-            std::ranges::move( found_games, std::back_inserter( games ) );
-        } catch ( const fs::filesystem_error& ) {
-            continue;
-        }
+    } catch ( const fs::filesystem_error& ex ) {
+        SPDLOG_ERROR( "[Unreal] failed in {} because: {}", ex.path1( ).string( ), ex.code( ).message( ) );
     }
 
     return games;
@@ -98,7 +90,10 @@ std::vector<Game> CUnrealDetector::scan_recursive( const fs::path& path, const T
         save.read( buffer, 4 );
         if ( save.gcount( ) != 4 ) continue;
 
-        if ( !std::ranges::equal( buffer, header ) ) continue;
+        if ( !std::ranges::equal( buffer, header ) ) {
+            SPDLOG_WARN( "[Unreal] {} does not contain a 'GVAS' header at the first 4 bytes, it might be custom. skipping..", entry.path( ).string( ) );
+            continue;
+        }
 
         // cursed skip method, could just remove them
         std::string path_str = entry.path( ).parent_path( ).string( );
@@ -160,8 +155,24 @@ std::vector<Game> CUnrealDetector::scan_recursive( const fs::path& path, const T
             game.game_name = found_name;
             game.appid = "N/A";
         }
+        
+        SPDLOG_INFO( "[Unreal] found: {}", game.game_name );
         games.push_back( game );
     }
 
     return games;
+}
+
+std::optional<fs::path> CUnrealDetector::resolve_save_games( const fs::path& folder ) {
+    fs::path save_games = folder / "Saved" / "SaveGames";
+    fs::path save_games_alt = folder / "SaveGames";
+    std::optional<fs::path> target = std::nullopt;
+
+    if ( fs::exists( save_games ) ) {
+        target = save_games;
+    } else if ( fs::exists( save_games_alt ) ) {
+        target = save_games_alt;
+    }
+
+    return target;
 }

@@ -6,7 +6,7 @@ inline std::unordered_map<std::string, TagCache> load_tag_cache( const std::stri
     std::unordered_map<std::string, TagCache> cache;
 
     auto loaded_tags = Features::load_tags( game_name );
-    std::string file_name = ( paths::backup_dir( ) / sanitize_filename( game_name ) / "tags.json" ).string( );
+    std::string file_name = ( paths::backup_dir( ) / sanitize_filename_path( game_name ) / "tags.json" ).string( );
 
     if ( loaded_tags.empty( ) ) {
         if ( fs::exists( file_name ) ) SPDLOG_WARN( "Failed to load tags for: {}", game_name );

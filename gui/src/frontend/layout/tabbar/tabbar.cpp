@@ -5,6 +5,10 @@ void CTabbarShell::add_nav_item( CBaseView::ViewItem item ) { m_items.push_back(
 CBaseView* CTabbarShell::render( CBaseView* active ) {
     CBaseView* result = nullptr;
 
+#ifndef NDEBUG
+    ImGui::TextColored( ImColor( 220, 40, 30, 255 ), "DEBUG" );
+#endif // NDEBUG
+
     if ( ImGui::BeginTabBar( "##navtabs" ) ) {
         for ( auto& item : m_items ) {
             ImGuiTabItemFlags flags = ( item.view == active ) ? ImGuiTabItemFlags_SetSelected : 0;

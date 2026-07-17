@@ -10,7 +10,7 @@ using json = nlohmann::json;
 
 bool Features::backup_game( const Game& game, const fs::path& file, CConfig& config ) {
     SPDLOG_INFO( "creating backup of: {}", game.game_name );
-    fs::path game_backup_dir = paths::backup_dir( ) / sanitize_filename( game.game_name );
+    fs::path game_backup_dir = paths::backup_dir( ) / sanitize_filename_path( game.game_name );
 
     auto ext = file.extension( ).string( );
     if ( ( game.type == PlatformType::MINECRAFT || game.type == PlatformType::GENERIC ) &&
@@ -24,8 +24,8 @@ bool Features::backup_game( const Game& game, const fs::path& file, CConfig& con
 
     if ( !fs::exists( game_backup_dir ) ) fs::create_directories( game_backup_dir );
 
-    fs::path final_path = game_backup_dir / construct_backup_name( game.game_name );
-    fs::path zip_name = final_path.parent_path( ) / ( final_path.filename( ).string( ) + ".tmp" );
+    fs::path final_path = game_backup_dir / utf8_to_path(construct_backup_name( game.game_name ));
+    fs::path zip_name = final_path.parent_path( ) / ( path_to_utf8( final_path.filename( ) ) + ".tmp" );
 
     // writing happens on the destructor so we scope it to do it immediatly, needs a refactor
     bool success = false;
@@ -84,12 +84,11 @@ std::vector<std::string> Features::backup_all_games( const std::vector<Game>& sn
 }
 
 bool Features::backup_game_files( const Game& game, std::vector<std::pair<fs::path, const Game*>> files ) {
-    fs::path game_backup_dir = paths::backup_dir( ) / sanitize_filename( game.game_name );
-
+    fs::path game_backup_dir = paths::backup_dir( ) / sanitize_filename_path( game.game_name );
     if ( !fs::exists( game_backup_dir ) ) fs::create_directories( game_backup_dir );
 
-    fs::path final_path = game_backup_dir / Features::construct_backup_name( game.game_name );
-    fs::path zip_name = final_path.parent_path( ) / ( final_path.filename( ).string( ) + ".tmp" );
+    fs::path final_path = game_backup_dir / utf8_to_path(construct_backup_name( game.game_name ));
+    fs::path zip_name = final_path.parent_path( ) / ( path_to_utf8( final_path.filename( ) ) + ".tmp" );
 
     bool failed_to_add = false;
     {
@@ -157,7 +156,7 @@ bool Features::backup_to_path( fs::path source, fs::path dest ) {
 }
 
 std::vector<fs::path> Features::get_backups( const std::string& game ) {
-    fs::path game_backup_dir = paths::backup_dir( ) / sanitize_filename( game );
+    fs::path game_backup_dir = paths::backup_dir( ) / sanitize_filename_path( game );
 
     if ( !fs::exists( game_backup_dir ) ) {
         return { };
@@ -271,7 +270,7 @@ void Features::migrate_labels_to_tags( ) {
 
 std::unordered_map<std::string, std::vector<std::string>> Features::load_tags( const std::string& game ) {
     std::unordered_map<std::string, std::vector<std::string>> tags;
-    std::string file_name = ( paths::backup_dir( ) / sanitize_filename( game ) / "tags.json" ).string( );
+    std::string file_name = ( paths::backup_dir( ) / sanitize_filename_path( game ) / "tags.json" ).string( );
     if ( !fs::exists( file_name ) ) return { };
 
     std::ifstream in( file_name );
@@ -296,7 +295,7 @@ std::unordered_map<std::string, std::vector<std::string>> Features::load_tags( c
 
 std::expected<bool, SMError>
 Features::save_tags( const std::string& game, const std::string& filename, const std::vector<std::string>& tags ) {
-    std::string file_name = ( paths::backup_dir( ) / sanitize_filename( game ) / "tags.json" ).string( );
+    std::string file_name = ( paths::backup_dir( ) / sanitize_filename_path( game ) / "tags.json" ).string( );
     std::string tmp_name = file_name + ".tmp";
 
     json data = load_tags( game );
@@ -336,7 +335,7 @@ Features::save_tags( const std::string& game, const std::string& filename, const
 }
 
 bool Features::delete_tags( const std::string& game, const std::string& filename ) {
-    std::string file_name = ( paths::backup_dir( ) / sanitize_filename( game ) / "tags.json" ).string( );
+    std::string file_name = ( paths::backup_dir( ) / sanitize_filename_path( game ) / "tags.json" ).string( );
 
     json data = load_tags( game );
     data.erase( filename );

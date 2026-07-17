@@ -2,7 +2,7 @@
 
 constexpr std::string_view APP_NAME = "SaveManager";
 constexpr std::string_view APP_AUTHOR = "marco007";
-constexpr std::string_view APP_VERSION = "v1.8.0";
+constexpr std::string_view APP_VERSION = "v1.8.1";
 
 #define MODE_CREATE_ARCHIVE ( ZIP_CREATE | ZIP_TRUNCATE )
 #define MODE_EXTRACT_ARCHIVE 0

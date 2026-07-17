@@ -17,4 +17,5 @@ class CUnrealDetector : public IDetector {
 
         // uses the gvas header to identify saves
         static std::vector<Game> scan_recursive( const fs::path& path, const Translations& translations );
+        static std::optional<fs::path> resolve_save_games( const fs::path& folder ); // windows only
 };
