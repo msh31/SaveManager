@@ -150,6 +150,7 @@ void CBackupsView::render_backup_row(
     if ( path.filename( ) == "undo.zip" ) return;
     ImGui::PushID( path.string( ).c_str( ) );
     if ( !fs::exists( path ) ) {
+        SPDLOG_WARN( "backup row skipped, fs::exists() returned false for: {}", path_to_utf8( path ) );
         ImGui::PopID( );
         return;
     }
@@ -157,15 +158,24 @@ void CBackupsView::render_backup_row(
     auto it = labels.find( path_to_utf8( path.filename( ) ) );
     const TagCache* tag_cache = ( it != labels.end( ) ) ? &it->second : nullptr;
 
-    std::string date_text = std::format( "{:%d/%m/%y %H:%M} | ", fs::last_write_time( path ) );
+    std::string date_text = "failed to set";
+    std::string size_text = "failed to set";
+    try {
+        date_text = std::format( "{:%d/%m/%y %H:%M} | ", fs::last_write_time( path ) );
+        auto b_size = fs::file_size( path ) / 1024;
+        size_text = std::format( "{}KB  ", b_size );
+    } catch ( const fs::filesystem_error& ex ) {
+        SPDLOG_ERROR( "backup row failed to stat {}: {}", path_to_utf8( path ), ex.what( ) );
+        ImGui::PopID( );
+        return;
+    }
     float date_width = ImGui::CalcTextSize( date_text.c_str( ) ).x;
-    auto b_size = fs::file_size( path ) / 1024;
-    std::string size_text = std::format( "{}KB  ", b_size );
     float size_width = ImGui::CalcTextSize( size_text.c_str( ) ).x;
     float spacing = ImGui::GetStyle( ).ItemSpacing.x;
     float total_width = date_width + size_width + 80.0f * 3 + spacing * 5;
 
-    std::string tag_text = ( tag_cache && !tag_cache->tags.empty( ) ) ? tag_cache->display : std::string( );
+    std::string tag_text =
+        ( tag_cache && !tag_cache->tags.empty( ) ) ? tag_cache->display : path_to_utf8( path.filename( ) );
     ImGui::TextDisabled( "%s", tag_text.c_str( ) );
     ImGui::SameLine( ImGui::GetContentRegionMax( ).x - total_width );
 

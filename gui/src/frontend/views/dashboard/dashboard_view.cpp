@@ -427,7 +427,10 @@ void CDashboardView::render_save_row( const fs::path& save_file, const Game& gam
 void CDashboardView::render_backup_row(
     const fs::path& backup, const Game& game, const std::unordered_map<std::string, TagCache>& labels ) {
 
-    if ( !fs::exists( backup ) ) return;
+    if ( !fs::exists( backup ) ) {
+        SPDLOG_WARN( "backup row skipped, fs::exists() returned false for: {}", path_to_utf8( backup ) );
+        return;
+    }
     if ( backup.filename( ) == "undo.zip" ) return;
 
     ImGui::PushID( backup.string( ).c_str( ) );
@@ -435,11 +438,18 @@ void CDashboardView::render_backup_row(
     auto it = labels.find( backup_filename_utf8 );
     const TagCache* tag_cache = ( it != labels.end( ) ) ? &it->second : nullptr;
 
-    std::string date_text = std::format( "{} | ", format_file_time( fs::last_write_time( backup ) ) );
+    std::string date_text;
+    std::string size_text;
+    try {
+        date_text = std::format( "{} | ", format_file_time( fs::last_write_time( backup ) ) );
+        auto b_size = fs::file_size( backup ) / 1024;
+        size_text = std::format( "{}KB  ", b_size );
+    } catch ( const fs::filesystem_error& ex ) {
+        SPDLOG_ERROR( "backup row failed to stat {}: {}", path_to_utf8( backup ), ex.what( ) );
+        ImGui::PopID( );
+        return;
+    }
     float date_width = ImGui::CalcTextSize( date_text.c_str( ) ).x;
-    auto b_size = fs::file_size( backup ) / 1024;
-
-    std::string size_text = std::format( "{}KB  ", b_size );
     float size_width = ImGui::CalcTextSize( size_text.c_str( ) ).x;
 
     float total_width = date_width + size_width + 80.0f * 3 + 4.0f * 5;
