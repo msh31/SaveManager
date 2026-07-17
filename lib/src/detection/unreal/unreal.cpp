@@ -50,19 +50,19 @@ std::vector<Game> CUnrealDetector::scan( fs::path path, const Translations& tran
                             if ( !fs::is_directory( subsubfolder ) ) continue;
 
                             auto target3 = resolve_save_games( subsubfolder );
-                            if ( !target3.has_value( ) ) continue; //whatever
+                            if ( !target3.has_value( ) ) continue; // whatever
                             SPDLOG_INFO( "[Unreal] scanning target: {}", target3.value( ).string( ) );
                             auto found_games = scan_recursive( target3.value( ), translations );
                             std::ranges::move( found_games, std::back_inserter( games ) );
                         }
                     } else {
-                        SPDLOG_INFO( "[Unreal] scanning target: {}", target.value( ).string( ) );
+                        SPDLOG_INFO( "[Unreal] scanning target: {}", target2.value( ).string( ) );
                         auto found_games = scan_recursive( target2.value( ), translations );
                         std::ranges::move( found_games, std::back_inserter( games ) );
                     }
                 }
             } else {
-                SPDLOG_INFO( "[Unreal] scanning target: {}", target.value( ).string() );
+                SPDLOG_INFO( "[Unreal] scanning target: {}", target.value( ).string( ) );
                 auto found_games = scan_recursive( target.value( ), translations );
                 std::ranges::move( found_games, std::back_inserter( games ) );
             }

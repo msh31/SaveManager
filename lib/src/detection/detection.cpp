@@ -7,14 +7,17 @@
 
 #include <utils/steam/steam.hpp>
 
-//TODO: clean ts up
 #include "minecraft/minecraft.hpp"
-#if defined __APPLE__ || defined __linux__
+#if defined __APPLE__ 
     #include "wine/wine.hpp"
-#endif
+#include "unreal/unreal.hpp"
+#elif defined  __linux__
+    #include "wine/wine.hpp"
+#else //assuming windows
 #include "rsg/rsg.hpp"
 #include "ubi/ubi.hpp"
 #include "unreal/unreal.hpp"
+#endif
 // clang-format on
 
 std::vector<Game> Detection::find_saves( const Blacklist& blacklist, const Translations& translations ) {
@@ -110,9 +113,6 @@ std::vector<Game> Detection::find_saves( const Blacklist& blacklist, const Trans
     for ( size_t i = 0; i < game_count; i++ ) {
         auto& game = games[i];
         auto key = utils::get_game_identity_key( game );
-        SPDLOG_INFO( //TODO: remove this
-            "[Detection]: Game '{}' resolved to kind={}, value='{}'", game.game_name, std::to_underlying( key.kind ),
-            key.value );
         if ( key.kind == GameKeyKind::INVALID ) continue;
 
         if ( seen.contains( key ) ) {
@@ -127,10 +127,10 @@ std::vector<Game> Detection::find_saves( const Blacklist& blacklist, const Trans
     games = std::move( deduped );
 
     std::erase_if( games, [&blacklist]( const Game& game ) {
-            bool blacklisted = blacklist.is_blacklisted( game.game_name );
-            if ( blacklisted ) SPDLOG_INFO( "[Detection] {} is blacklisted, removing.", game.game_name );
-            return blacklisted;
-        } );
+        bool blacklisted = blacklist.is_blacklisted( game.game_name );
+        if ( blacklisted ) SPDLOG_INFO( "[Detection] {} is blacklisted, removing.", game.game_name );
+        return blacklisted;
+    } );
 
     std::erase_if( games, []( const Game& game ) {
         bool has_valid_path = std::ranges::any_of(
