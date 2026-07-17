@@ -94,8 +94,10 @@ std::vector<Game> CUnrealDetector::scan_recursive( const fs::path& path, const T
 #if defined _WIN32 // whatever, it spams on linux
             SPDLOG_WARN( "[Unreal] {} does not contain a 'GVAS' header at the first 4 bytes, it might be custom. skipping..", entry.path( ).string( ) );
 #endif
+            if ( save.is_open( ) ) save.close( );
             continue;
         }
+
 
         // cursed skip method, could just remove them
         std::string path_str = entry.path( ).parent_path( ).string( );
