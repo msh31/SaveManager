@@ -17,6 +17,7 @@
 #include "rsg/rsg.hpp"
 #include "ubi/ubi.hpp"
 #include "unreal/unreal.hpp"
+#include "ea/ea.hpp"
 #endif
 // clang-format on
 
@@ -29,7 +30,8 @@ std::vector<Game> Detection::find_saves( const Blacklist& blacklist, const Trans
 #ifdef _WIN32
     detectors.emplace_back( std::make_unique<CUbisoftDetector>( translations ) );
     detectors.emplace_back( std::make_unique<CRockstarDetector>( translations ) );
-    detectors.emplace_back( std::make_unique<CUnrealDetector>( translations ) );
+    detectors.emplace_back( std::make_unique<CUnrealDetector>( translations ) ); // UE4/5 only
+    detectors.emplace_back( std::make_unique<CElectronicArtsDetector>( translations ) );
 #endif
 
 #ifdef __linux__

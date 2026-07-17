@@ -5,13 +5,13 @@ cmkr-include = "cmkr.cmake"
 [project]
 name = "SaveManager"
 description = "The swiss army knife of save management."
-version = "1.8.1"
+version = "1.9.0"
 languages = ["C", "CXX"]
 msvc-runtime = "dynamic"
 
 [variables]
 CMAKE_EXPORT_COMPILE_COMMANDS = true
-APP_VERSION = "1.8.1"
+APP_VERSION = "1.9.0-dev"
 
 [find-package.CURL]
 required = true

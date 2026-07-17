@@ -16,7 +16,16 @@ enum class SMError {
     PLUGIN_LOAD_ERROR,
 };
 
-enum class PlatformType { UBISOFT = 1, ROCKSTAR, UNREAL, MINECRAFT, CUSTOM, GENERIC = 69 };
+enum class PlatformType {
+    UBISOFT = 1,
+    ROCKSTAR,
+    UNREAL,
+    MINECRAFT,
+    CUSTOM,
+    GENERIC = 69,
+    EA,
+    PLAYSTATION,
+};
 
 enum class LauncherType {
     OFFICIAL = 1,

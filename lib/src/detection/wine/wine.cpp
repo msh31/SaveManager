@@ -3,6 +3,7 @@
 #include "../ubi/ubi.hpp"
 #include "../rsg/rsg.hpp"
 #include "../unreal/unreal.hpp"
+#include "../ea/ea.hpp"
 // clang-format on
 
 std::string_view CWinePrefixDetector::name( ) const { return "Wine"; }
@@ -49,6 +50,12 @@ std::expected<std::vector<Game>, SMError> CWinePrefixDetector::find( ) {
                 // unreal - TODO: expand beyond this hardcoded path.
                 auto unreal = CUnrealDetector::scan_recursive( user.path( ), m_translations );
                 std::ranges::move( unreal, std::back_inserter( games ) );
+
+                // ea
+                auto ea_documents = CElectronicArtsDetector::scan( user.path( ) / "Documents", m_translations );
+                auto ea_appdata = CElectronicArtsDetector::scan( user.path( ) / "AppData", m_translations );
+                auto ea_programdata =
+                    CElectronicArtsDetector::scan( user.path( ) / "ProgramData" / "Electronic Arts", m_translations );
             }
         } catch ( const fs::filesystem_error& fse ) {
             // TODO: do something with this, logging is spammy on linux

@@ -33,14 +33,14 @@ endif()
 
 # Variables
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
-set(APP_VERSION 1.8.1-dev)
+set(APP_VERSION 1.9.0-dev)
 
 project(SaveManager
 	LANGUAGES
 		C
 		CXX
 	VERSION
-		1.8.1
+		1.9.0
 	DESCRIPTION
 		"The swiss army knife of save management."
 )
@@ -77,6 +77,7 @@ set(savemanager-core_SOURCES
 	cmake.toml
 	"lib/src/config/config.cpp"
 	"lib/src/detection/detection.cpp"
+	"lib/src/detection/ea/ea.cpp"
 	"lib/src/detection/minecraft/minecraft.cpp"
 	"lib/src/detection/rsg/rsg.cpp"
 	"lib/src/detection/ubi/ubi.cpp"
