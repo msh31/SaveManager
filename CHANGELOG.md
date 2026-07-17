@@ -1,39 +1,15 @@
-## [1.8.1] - 2026-07-27
+## 1.8.1 - 2026-07-17
+This update addresses some critical issues (Most of them for Windows)
 
 ### New game support
 - Minecraft through Modrinth under Flatpak
+- Assassin's Creed Black Flag Resynced (Steam / Uplay)
 
 ### Core
-#### Added
-- A snapshot is now taken before editing a save file so changes can be reverted
-
-#### Fixed
-- Unreal Engine 4 games not getting detected on Windows
-- Uncaught exceptions from background worker threads (detection, backup) could unwind into the render loop and crash the app
-- Zip filetime not accounting for timezones
-- Conflict detection on backups without a manifest could false-flag files as newer due to sub-second / zip timestamp rounding, added tolerance for this
-- Possible race condition between the connect worker thread and the GUI thread both touching config at the same time
-
-#### Changes
-- Improved logging throughout the application
-
-### GUI
-#### Added
-- Button to delete a savegame
-    - Has a confirm dialog
-- Button to duplicate a savegame
-- Bug reporter - Send a basic form with a log to me describing your issue
-
-#### Fixed
-- Regression of waiting for the save scan to complete instead of games popping.
-
-#### Changes
-- Restore modal now groups entries by parent directory, files with the same name in different folders (Minecraft's region/poi/entities for example) are distinguishable without relying on the tooltip
-- Restore modal now sizes to the number of entries instead of a fixed 700x500 window
-- Restore modal now centers itself on open
-
-### Known Issues / Limitations
-- Original Anno editions not supported due to install path limitations (a plugin can be written for this)
+- Fixed an issue with Ubisoft detection aborting the entire save scan on failure ([#15](https://github.com/msh31/SaveManager/issues/15))
+- Fixed an issue with Unreal detection accuracy by increasing it's depth ([#10](https://github.com/msh31/SaveManager/issues/10))
+- Fixed backup feature not handling UTF8 encoded zip paths such as 'Grand Theft Auto_ Vice City � The Definitive Edition' ([#9](https://github.com/msh31/SaveManager/issues/9))
+    - In the log it will show like this but the issue of not being able to back up such games has been fixed
 
 ---
 
