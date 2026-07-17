@@ -92,8 +92,7 @@ std::vector<Game> CUnrealDetector::scan_recursive( const fs::path& path, const T
 
         if ( !std::ranges::equal( buffer, header ) ) {
 #if defined _WIN32 // whatever, it spams on linux
-            SPDLOG_WARN( "[Unreal] {} does not contain a 'GVAS' header at the first 4 bytes, it might be custom.
-            skipping..", entry.path( ).string( ) );
+            SPDLOG_WARN( "[Unreal] {} does not contain a 'GVAS' header at the first 4 bytes, it might be custom. skipping..", entry.path( ).string( ) );
 #endif
             continue;
         }
