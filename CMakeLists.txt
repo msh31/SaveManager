@@ -89,6 +89,7 @@ set(savemanager-core_SOURCES
 	"lib/src/remote_transfer/remote_transfer.cpp"
 	"lib/src/save_editor/save_editor.cpp"
 	"lib/src/utils/blacklist/blacklist.cpp"
+	"lib/src/utils/save_helper/save_helper.cpp"
 	"lib/src/utils/steam/steam.cpp"
 	"lib/src/utils/translations/translations.cpp"
 	"lib/src/utils/zip_archive/zip_archive.cpp"

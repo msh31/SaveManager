@@ -63,23 +63,30 @@ namespace paths {
     inline fs::path lutris_dir( ) { return home_dir( ) / "Games"; }
 #endif
 
+    // TODO: make this not ifdef'd
 #if defined( __linux__ ) || defined( __APPLE__ )
     inline fs::path heroic_dir( ) { return home_dir( ) / "Games" / "Heroic"; }
 #endif
 
-    inline fs::path documents_dir( ) {
 #if defined( _WIN32 )
+    inline fs::path get_known_folder_path( const KNOWNFOLDERID& folder_id ) {
         PWSTR path = NULL;
-        HRESULT h_res = SHGetKnownFolderPath( FOLDERID_Documents, 0, NULL, &path );
+        HRESULT h_res = SHGetKnownFolderPath( folder_id, 0, NULL, &path );
         if ( SUCCEEDED( h_res ) ) {
             fs::path result( path );
             CoTaskMemFree( path );
             return result;
         } else {
-            throw std::runtime_error( "USERPROFILE not set, how did you manage to do this?" );
+            auto str = std::format( "Failed to find known folder {}, how did you manage this?", folder_id );
+            throw std::runtime_error( str );
         }
+    }
 #endif
 
+    inline fs::path documents_dir( ) {
+#if defined( _WIN32 )
+        return get_known_folder_path( FOLDERID_Documents );
+#endif
         return home_dir( ) / "Documents";
     }
 
