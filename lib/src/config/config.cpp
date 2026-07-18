@@ -1,8 +1,6 @@
 #include "config/config.hpp"
-#include "../utils/translations/steamids.hpp"
-#include "../utils/translations/ubi_translations.hpp"
-
 #include "utils/paths.hpp"
+#include <network/network.hpp>
 #include <nlohmann/json.hpp>
 
 using json = nlohmann::json;
@@ -64,27 +62,8 @@ bool CConfig::init( ) {
     }
 
     if ( !fs::exists( paths::ubi_translations( ) ) ) {
-        std::ofstream f( paths::ubi_translations( ), std::ios::binary );
-        if ( f.is_open( ) ) {
-            f.write( reinterpret_cast<const char*>( ubi_translations_json ), ubi_translations_json_len );
-            success = success && f.good( );
-            f.close( );
-        } else {
-            SPDLOG_WARN( "Failed to open ubisoft translations for writing!" );
-            success = false;
-        }
-    }
-
-    if ( !fs::exists( paths::steam_appids( ) ) ) {
-        std::ofstream f( paths::steam_appids( ), std::ios::binary );
-        if ( f.is_open( ) ) {
-            f.write( reinterpret_cast<const char*>( steamids_json ), steamids_json_len );
-            success = success && f.good( );
-            f.close( );
-        } else {
-            SPDLOG_WARN( "Failed to open steamids for writing" );
-            success = false;
-        }
+        auto res = Network::download_file( ubi_translation_url, paths::ubi_translations( ).string( ) );
+        if ( res == false ) SPDLOG_ERROR( "[Translations] Failed to download Ubisoft Translations!" );
     }
 
     if ( !fs::exists( paths::blacklist( ) ) ) {

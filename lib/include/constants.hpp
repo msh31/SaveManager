@@ -9,7 +9,7 @@ constexpr std::string_view APP_VERSION = "v1.8.1";
 
 constexpr int MIN_RES_W = 1024;
 constexpr int MIN_RES_H = 576;
-constexpr int MAX_RES_W = 5120; //TODO: determine this in a better way - i think i already did but noting it down
+constexpr int MAX_RES_W = 5120; // TODO: determine this in a better way - i think i already did but noting it down
 constexpr int MAX_RES_H = 2880;
 
 constexpr int DEF_RES_W = 1600;

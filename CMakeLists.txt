@@ -116,9 +116,7 @@ set(savemanager-core_SOURCES
 	"lib/src/utils/save_helper/save_helper.cpp"
 	"lib/src/utils/save_helper/save_helper.hpp"
 	"lib/src/utils/steam/steam.cpp"
-	"lib/src/utils/translations/steamids.hpp"
 	"lib/src/utils/translations/translations.cpp"
-	"lib/src/utils/translations/ubi_translations.hpp"
 	"lib/src/utils/zip_archive/zip_archive.cpp"
 	"lib/src/utils/zip_archive/zip_archive.hpp"
 )
