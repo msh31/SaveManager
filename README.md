@@ -5,7 +5,7 @@ SaveManager is a cross-platform game save manager with automatic save detection,
 [![Version](https://img.shields.io/github/v/release/msh31/SaveManager)](https://github.com/msh31/SaveManager/releases)
 ---
 
-![Pretend there is an app screenshot here](/assets/screenshots/version190.png)
+![Pretend there is an app screenshot here](/assets/version190.png)
 
 ## Features
 - **Save Editor** - Edit your save data (only supports GTA San Andreas (classic PC))
