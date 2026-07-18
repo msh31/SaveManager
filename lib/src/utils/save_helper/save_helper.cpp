@@ -1,11 +1,7 @@
 #include "save_helper.hpp"
 
-//Windows only
+#if defined( _WIN32 )
 fs::path save::resolve_root( SaveRoot sr ) {
-#if not defined( _WIN32 )
-    throw std::runtime_error( "resolve_root was called on a non Windows platform, this should not happen!" );
-#endif
-
     switch ( sr ) {
     case SaveRoot::DOCUMENTS:
         return paths::get_known_folder_path( FOLDERID_Documents );
@@ -25,3 +21,4 @@ fs::path save::resolve_root( SaveRoot sr ) {
 
     return { };
 }
+#endif
