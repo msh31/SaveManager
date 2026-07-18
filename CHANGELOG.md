@@ -25,25 +25,34 @@ Due to the lack of downloads of the MacOS version I will pause development there
 - Minecraft Bedrock
 
 ### Core
-- Added safety guards around the Save Editor by taking a snapshot of the savegame before editing it
-- Added an option to include tags during SFTP transfers ([#12](https://github.com/msh31/savemanager/issues/12))
-- Added optional opt-in telemetry collection
+- Added
+    - Safety guards around the Save Editor by taking a snapshot of the savegame before editing it
+    - Option to include tags during SFTP transfers ([#12](https://github.com/msh31/savemanager/issues/12))
+    - Automatic periodic update checks (configurable)
 
-- Fixed an issue where Minecraft saves from any launcher did not restore properly ([#13](https://github.com/msh31/SaveManager/issues/13))
-- Fixed an issue where some Minecraft saves were not being detected properly ([#14](https://github.com/msh31/savemanager/issues/14))
-- Fixed an issue with loading/deleting/adding tags not getting properly sanitized
-- Fixed a race condition with the Config when connecting to an SFTP server
+- Fixed
+    - Fixed an issue where Minecraft saves from any launcher did not restore properly ([#13](https://github.com/msh31/SaveManager/issues/13))
+    - Fixed an issue where some Minecraft saves were not being detected properly ([#14](https://github.com/msh31/savemanager/issues/14))
+    - Fixed an issue with loading/deleting/adding tags not getting properly sanitized
+    - Fixed a race condition with the Config when connecting to an SFTP server
 
-- Improved logging even further to help identify issues more clearly
-- Expanded save blocklist to combat false positive detections as mentioned in ([#16](https://github.com/msh31/savemanager/issues/16))
+- Changes
+    - Improved logging even further to help identify issues more clearly
+    - Expanded interal save blocklist to combat false positive detections as mentioned in ([#16](https://github.com/msh31/savemanager/issues/16))
 
 ### GUI
-- Added a 'Delete' button to list of savefiles (Has a confirm dialog)
-- Added a 'Duplicate' button to the list of savefiles and backups
-- Added a 'Preview' button to the list of savefiles and backups
+- Added 
+    - 'Delete' button on the list of savefiles (Has a confirm dialog)
+    - 'Duplicate' button on the list of savefiles and backups
+    - 'Preview' button on the list of savefiles and backups
 
-- Fixed the dashboard pop-in to loading regression due to 1.8.0's internal overhaul 
-- Fixed an issue where the Windows titlebar did not respect the dark mode setting ([#11](https://github.com/msh31/savemanager/issues/11))
+- Fixed 
+    - Fixed the dashboard pop-in to loading regression due to 1.8.0's internal overhaul 
+    - Fixed an issue where the Windows titlebar did not respect the dark mode setting ([#11](https://github.com/msh31/savemanager/issues/11))
+    - Fixed an issue where the application window did not respect the last position and size of the window
+
+- Changed
+    - Lowered the minimum resolution from ``1280x720`` to ``1024x576``
 
 #### Development
 - Removed some dead code in the GUI such as; ``CMenuBar``, ``CStatusBar`` etc.. non user facing
