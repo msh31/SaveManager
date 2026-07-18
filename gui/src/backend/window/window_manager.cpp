@@ -14,6 +14,27 @@ std::pair<int, int> CWindowManager::get_size( ) {
     return { width, height };
 }
 
+std::pair<int, int> CWindowManager::get_pos( ) {
+    int x = 0, y = 0;
+    glfwGetWindowPos( m_window, &x, &y );
+    return { x, y };
+}
+
+std::pair<int, int> CWindowManager::get_window_size( ) {
+    int width = 0, height = 0;
+    glfwGetWindowSize( m_window, &width, &height );
+    return { width, height };
+}
+
+void CWindowManager::restore_state( int x, int y, int width, int height ) {
+    if ( x == -1 ) return;
+
+    glfwSetWindowPos( m_window, x, y );
+    glfwSetWindowSize( m_window, width, height );
+}
+
+void CWindowManager::show( ) { glfwShowWindow( m_window ); }
+
 bool CWindowManager::should_continue( ) {
     bool window_open = glfwWindowShouldClose( m_window ) == 0;
 #ifndef NDEBUG
@@ -60,6 +81,7 @@ void CWindowManager::setup_opengl( ) {
     glfwWindowHint( GLFW_CONTEXT_VERSION_MAJOR, 3 );
     glfwWindowHint( GLFW_CONTEXT_VERSION_MINOR, 3 );
     glfwWindowHint( GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE ); // no old OpenGL
+    glfwWindowHint( GLFW_VISIBLE, GLFW_FALSE );
 
     m_window = glfwCreateWindow( DEF_RES_W, DEF_RES_H, APP_NAME.data( ), nullptr, nullptr );
     if ( m_window == nullptr ) {

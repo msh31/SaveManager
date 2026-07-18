@@ -60,6 +60,11 @@ void CApp::render( ) {
     ConfirmDialog::render( );
 }
 
+void CApp::save_window_props( int x, int y, int width, int height ) {
+    m_config.win_props = { x, y, width, height };
+    m_config.save( );
+}
+
 // called from main before render so the shader actually displays
 void CApp::render_shader( std::pair<int, int> window_size ) {
     if ( m_config.settings.dark_mode ) {

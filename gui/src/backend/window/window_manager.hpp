@@ -22,6 +22,12 @@ class CWindowManager {
 
         std::pair<int, int> get_size( );
 
+        std::pair<int, int> get_pos( );
+        std::pair<int, int> get_window_size( );
+
+        void restore_state( int x, int y, int width, int height );
+        void show( );
+
     private:
         GLFWwindow* m_window = nullptr;
 

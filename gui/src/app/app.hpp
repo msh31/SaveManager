@@ -18,6 +18,9 @@ class CApp {
         void render( );
         void render_shader( std::pair<int, int> window_size );
 
+        const CConfig::WindowProperties& window_props( ) const { return m_config.win_props; }
+        void save_window_props( int x, int y, int width, int height );
+
     private:
         CConfig m_config;
 
