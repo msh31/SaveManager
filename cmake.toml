@@ -43,7 +43,7 @@ required = true
 
 [target.savemanager-core]
 type = "static"
-sources = ["lib/src/**.cpp"]
+sources = ["lib/src/**.cpp", "lib/**.hpp"]
 include-directories = ["lib/include"]
 link-libraries = ["CURL::libcurl", "libzip::zip", "Libssh2::libssh2", "OpenSSL::Crypto", "nlohmann_json::nlohmann_json", "stb::stb", "sol2::sol2", "spdlog::spdlog", "yaml-cpp::yaml-cpp"]
 compile-features = ["cxx_std_23"]
