@@ -47,8 +47,6 @@ namespace paths {
         return default_config_dir( );
     }
 
-    inline fs::path schedule_file( ) { return default_config_dir( ) / "schedule.json"; }
-
     inline fs::path redirect_file( ) { return default_config_dir( ) / "cfg.redirect"; }
 
     inline fs::path backup_dir( ) { return config_dir( ) / "backups"; }

@@ -1,5 +1,12 @@
 #pragma once
-#include <types.hpp>
+#include <utils/paths.hpp>
+
+struct SteamManifest {
+        uint32_t appid;
+        std::string name;
+        std::string install_dir;
+        fs::path library_dir;
+};
 
 namespace SteamHelper {
     std::vector<std::string> get_platform_steam_paths( );

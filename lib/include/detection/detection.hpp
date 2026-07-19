@@ -1,5 +1,5 @@
 #pragma once
-#include <types.hpp>
+#include <detection/game.hpp>
 
 #include <utils/blacklist/blacklist.hpp>
 #include <utils/steam/steam.hpp>

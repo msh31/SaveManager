@@ -1,6 +1,8 @@
 #pragma once
 #include <sol/sol.hpp>
-#include <types.hpp>
+
+#include <detection/game.hpp>
+#include <sm_error.hpp>
 
 #include "../detection/idetector.hpp"
 

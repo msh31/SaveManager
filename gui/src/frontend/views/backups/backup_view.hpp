@@ -1,6 +1,7 @@
 #pragma once
 #include <config/config.hpp>
 #include <detection/detection.hpp>
+#include <features/features.hpp>
 #include <utils/utils.hpp>
 
 class CBackupsView {

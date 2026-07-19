@@ -2,7 +2,6 @@
 #include "../utils/zip_archive/zip_archive.hpp"
 #include "config/config.hpp"
 #include "constants.hpp"
-#include "types.hpp"
 #include "utils/utils.hpp"
 
 #include <nlohmann/json.hpp>

@@ -1,5 +1,6 @@
 #pragma once
-#include <types.hpp>
+#include <detection/game.hpp>
+#include <sm_error.hpp>
 
 class IDetector {
     public:

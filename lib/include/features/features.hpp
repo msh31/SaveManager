@@ -1,7 +1,21 @@
 #pragma once
+#include <sm_error.hpp>
+
 #include "detection/detection.hpp"
 
 class CConfig;
+
+struct BackupEntry {
+        fs::path name;
+        fs::path save_path;
+        std::vector<fs::path> entries;
+        size_t size = 0;
+};
+
+struct TagCache {
+        std::vector<std::string> tags;
+        std::string display;
+};
 
 namespace Features {
     bool backup_game( const Game& game, const fs::path& file, CConfig& config );

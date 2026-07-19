@@ -1,5 +1,5 @@
 #pragma once
-#include <types.hpp>
+#include <detection/game.hpp>
 
 enum class SaveRoot { DOCUMENTS, LOCAL_APPDATA, LOCAL_APPDATA_LOW, PROGRAM_DATA, SAVED_GAMES };
 struct SaveLocation {

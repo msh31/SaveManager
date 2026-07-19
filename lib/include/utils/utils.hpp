@@ -1,5 +1,5 @@
 #pragma once
-#include <types.hpp>
+#include <detection/game.hpp>
 
 #include <openssl/evp.h>
 #include <openssl/sha.h>

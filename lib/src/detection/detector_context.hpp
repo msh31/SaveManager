@@ -1,5 +1,5 @@
 #pragma once
-#include <types.hpp>
+#include <detection/game.hpp>
 
 #include <utils/steam/steam.hpp>
 #include <utils/translations/translations.hpp>

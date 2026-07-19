@@ -2,9 +2,12 @@
 #include <libssh2.h>
 #include <libssh2_sftp.h>
 
-#include <types.hpp>
-
 namespace fs = std::filesystem;
+
+struct RemoteEntry {
+        std::string name;
+        bool is_directory;
+};
 
 class CConfig;
 
