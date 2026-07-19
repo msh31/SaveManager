@@ -63,17 +63,14 @@ class CDashboardView : public CBaseView {
         enum class SortMode { Recent, Alphabetical };
 
         std::string m_search_query;
-        std::optional<PlatformType> m_platform_filter;
+        std::optional<std::string> m_platform_filter;
+        std::vector<std::string> m_available_platform_labels; // distinct Game::platform_label values currently detected
         SortMode m_sort_mode = SortMode::Alphabetical;
         bool m_focus_search = false;
         size_t m_filtered_game_count = 0;
 
         std::unordered_map<std::string, bool> m_card_collapsed;
         std::unordered_map<std::string, bool> m_backups_expanded;
-
-        static constexpr PlatformType filter_cycle[] = {
-            PlatformType::UBISOFT, PlatformType::ROCKSTAR, PlatformType::UNREAL, PlatformType::MINECRAFT,
-            PlatformType::CUSTOM };
 
         float m_detection_duration = 0.0f;
         bool m_backups_tab_was_active = false;

@@ -104,6 +104,7 @@ std::expected<std::vector<Game>, SMError> CPlugin::find( ) {
 
         Game g;
         g.type = PlatformType::CUSTOM;
+        g.platform_label = m_name;
         g.game_name = std::move( game_name );
         g.appid = std::move( appid );
         g.save_paths.push_back( save_path ); //?

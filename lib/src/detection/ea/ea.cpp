@@ -62,4 +62,4 @@ std::vector<Game> CElectronicArtsDetector::scan( fs::path path, const Translatio
     return games;
 }
 
-std::string_view CElectronicArtsDetector::name( ) const { return "EA"; }
+std::string_view CElectronicArtsDetector::name( ) const { return PLATFORM_LABEL; }

@@ -118,14 +118,14 @@ void CDashboardView::render_toolbar( ) {
     }
     ImGui::SameLine( );
     std::string filter_label = m_platform_filter.has_value( )
-                                   ? std::format( "{} {}", ICON_FILTER, get_platform_label( *m_platform_filter ) )
+                                   ? std::format( "{} {}", ICON_FILTER, *m_platform_filter )
                                    : std::format( "{} All", ICON_FILTER );
-    if ( ImGui::Button( filter_label.c_str( ) ) ) {
+    if ( ImGui::Button( filter_label.c_str( ) ) && !m_available_platform_labels.empty( ) ) {
         if ( !m_platform_filter.has_value( ) ) {
-            m_platform_filter = PlatformType::UBISOFT;
+            m_platform_filter = m_available_platform_labels.front( );
         } else {
-            auto it = std::find( std::begin( filter_cycle ), std::end( filter_cycle ), *m_platform_filter );
-            if ( it + 1 == std::end( filter_cycle ) ) {
+            auto it = std::ranges::find( m_available_platform_labels, *m_platform_filter );
+            if ( it == m_available_platform_labels.end( ) || it + 1 == m_available_platform_labels.end( ) ) {
                 m_platform_filter = std::nullopt;
             } else {
                 m_platform_filter = *( it + 1 );
@@ -203,7 +203,8 @@ void CDashboardView::render_game_list( ) {
     enumerate( sorted, [&]( int gi, auto& group ) {
         m_filtered_game_count++;
 
-        if ( m_platform_filter.has_value( ) && m_games_snapshot[group[0]].type != *m_platform_filter ) return;
+        if ( m_platform_filter.has_value( ) && m_games_snapshot[group[0]].platform_label != *m_platform_filter )
+            return;
 
         const Game& primary = m_games_snapshot[group[0]];
         std::string game_name = primary.game_name;
@@ -339,7 +340,7 @@ void CDashboardView::render_game_row( const std::vector<int>& group, int gi ) {
     auto selectable_id = std::format( "gamename_{}", gi );
 
     std::string right_text =
-        std::format( "{} | {} saves | {} backups", get_platform_label( primary.type ), save_count, backup_count );
+        std::format( "{} | {} saves | {} backups", primary.platform_label, save_count, backup_count );
     Card::draw( selectable_id, primary.game_name, not_collapsed, right_text, [&]( ) {
         render_game_content( { save_count, backup_count }, primary, has_conflicts, files );
 
@@ -698,6 +699,12 @@ void CDashboardView::render_modals( ) {
 void CDashboardView::on_result_changed( ) {
     m_grouped_games = get_grouped( m_games_snapshot );
     m_game_cache.clear( );
+
+    std::set<std::string> labels = { };
+    for ( const auto& game : m_games_snapshot )
+        if ( !game.platform_label.empty( ) ) labels.insert( game.platform_label );
+    m_available_platform_labels.assign( labels.begin( ), labels.end( ) );
+    if ( m_platform_filter.has_value( ) && !labels.contains( *m_platform_filter ) ) m_platform_filter = std::nullopt;
 
     invalidate_cache( m_games_snapshot, [this]( ) {
         m_detection_duration =

@@ -4,6 +4,8 @@
 
 class CRockstarDetector : public IDetector {
     public:
+        static constexpr std::string_view PLATFORM_LABEL = "Rockstar";
+
         CRockstarDetector( const Translations& translations ) : m_translations( translations ) {}
 
         std::expected<std::vector<Game>, SMError> find( ) override;

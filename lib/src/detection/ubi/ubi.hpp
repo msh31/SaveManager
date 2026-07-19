@@ -4,6 +4,8 @@
 
 class CUbisoftDetector : public IDetector {
     public:
+        static constexpr std::string_view PLATFORM_LABEL = "Ubisoft";
+
         CUbisoftDetector( const Translations& translations ) : m_translations( translations ) {}
 
         std::expected<std::vector<Game>, SMError> find( ) override;

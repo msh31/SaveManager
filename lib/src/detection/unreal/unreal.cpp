@@ -1,7 +1,7 @@
 #include "unreal.hpp"
 #include "utils/translations/translations.hpp"
 
-std::string_view CUnrealDetector::name( ) const { return "Unreal"; };
+std::string_view CUnrealDetector::name( ) const { return PLATFORM_LABEL; };
 
 std::expected<std::vector<Game>, SMError> CUnrealDetector::find( ) {
     std::vector<fs::path> prefixes = { };
@@ -113,6 +113,7 @@ std::vector<Game> CUnrealDetector::scan_recursive( const fs::path& path, const T
         auto it = entry.begin( );
         Game game;
         game.type = PlatformType::UNREAL;
+        game.platform_label = std::string( PLATFORM_LABEL );
         game.save_paths.push_back( entry );
         std::string found_name;
 

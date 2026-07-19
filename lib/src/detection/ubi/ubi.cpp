@@ -1,6 +1,6 @@
 #include "ubi.hpp"
 
-std::string_view CUbisoftDetector::name( ) const { return "Ubisoft"; }
+std::string_view CUbisoftDetector::name( ) const { return PLATFORM_LABEL; }
 
 std::expected<std::vector<Game>, SMError> CUbisoftDetector::find( ) {
     std::vector<fs::path> prefixes = { };
@@ -49,6 +49,7 @@ std::vector<Game> CUbisoftDetector::scan( fs::path path, const Translations& tra
 
             Game anno;
             anno.type = PlatformType::UBISOFT;
+            anno.platform_label = std::string( PLATFORM_LABEL );
             anno.game_name = anno_data.game_name;
             anno.show_parent_path = true;
 
@@ -92,6 +93,7 @@ std::vector<Game> CUbisoftDetector::scan( fs::path path, const Translations& tra
 
             Game game;
             game.type = PlatformType::UBISOFT;
+            game.platform_label = std::string( PLATFORM_LABEL );
             game.game_id = game_id_folder.filename( ).string( );
             game.game_name = name.value( );
             game.save_paths.push_back( game_id_folder );

@@ -3,6 +3,8 @@
 
 class CMinecraftDetector : public IDetector {
     public:
+        static constexpr std::string_view PLATFORM_LABEL = "Minecraft";
+
         std::expected<std::vector<Game>, SMError> find( ) override;
 
         std::string_view name( ) const override;

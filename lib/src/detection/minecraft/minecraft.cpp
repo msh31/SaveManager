@@ -30,6 +30,7 @@ std::vector<Game> CMinecraftDetector::scan_official( ) const {
 
     Game entry;
     entry.type = PlatformType::MINECRAFT;
+    entry.platform_label = std::string( PLATFORM_LABEL );
     entry.game_name = "Minecraft (Official)";
     entry.appid = "N/A";
     entry.launcher = LauncherType::OFFICIAL;
@@ -51,7 +52,7 @@ std::vector<Game> CMinecraftDetector::scan_official( ) const {
     return { entry };
 }
 
-std::string_view CMinecraftDetector::name( ) const { return "Minecraft"; }
+std::string_view CMinecraftDetector::name( ) const { return PLATFORM_LABEL; }
 
 // private
 
@@ -72,6 +73,7 @@ std::vector<Game> CMinecraftDetector::scan_modrinth( ) const {
 
     Game entry;
     entry.type = PlatformType::MINECRAFT;
+    entry.platform_label = std::string( PLATFORM_LABEL );
     entry.game_name = "Minecraft (Modrinth)";
     entry.appid = "N/A";
     entry.launcher = LauncherType::MODRINTH;
@@ -113,6 +115,7 @@ std::vector<Game> CMinecraftDetector::scan_curseforge( ) const {
 
     Game entry;
     entry.type = PlatformType::MINECRAFT;
+    entry.platform_label = std::string( PLATFORM_LABEL );
     entry.game_name = "Minecraft (CurseForge)";
     entry.appid = "N/A";
     entry.launcher = LauncherType::CURSEFORGE;
@@ -155,6 +158,7 @@ std::vector<Game> CMinecraftDetector::scan_prism( ) const {
 
     Game entry;
     entry.type = PlatformType::MINECRAFT;
+    entry.platform_label = std::string( PLATFORM_LABEL );
     entry.game_name = "Minecraft (Prism)";
     entry.appid = "N/A";
     entry.launcher = LauncherType::PRISM;
@@ -198,6 +202,7 @@ std::vector<Game> CMinecraftDetector::scan_multimc( ) const {
 
     Game entry;
     entry.type = PlatformType::MINECRAFT;
+    entry.platform_label = std::string( PLATFORM_LABEL );
     entry.game_name = "Minecraft (MultiMC)";
     entry.appid = "N/A";
     entry.launcher = LauncherType::MULTIMC;

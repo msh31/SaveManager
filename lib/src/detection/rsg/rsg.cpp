@@ -42,6 +42,7 @@ std::vector<Game> CRockstarDetector::scan( fs::path path, const Translations& tr
             auto& [key, game_name] = *it;
             Game l_game;
             l_game.type = PlatformType::ROCKSTAR;
+            l_game.platform_label = std::string( PLATFORM_LABEL );
             l_game.game_name = game_name;
             l_game.save_paths.push_back( game.path( ) );
 
@@ -64,6 +65,7 @@ std::vector<Game> CRockstarDetector::scan( fs::path path, const Translations& tr
 
             Game game;
             game.type = PlatformType::ROCKSTAR;
+            game.platform_label = std::string( PLATFORM_LABEL );
             game.game_name = translations.get_game_name_rsg( folder_name ).value_or( folder_name );
             game.save_paths.push_back( uuid_folder );
 
@@ -75,4 +77,4 @@ std::vector<Game> CRockstarDetector::scan( fs::path path, const Translations& tr
     return games;
 }
 
-std::string_view CRockstarDetector::name( ) const { return "Rockstar"; }
+std::string_view CRockstarDetector::name( ) const { return PLATFORM_LABEL; }

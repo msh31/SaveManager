@@ -63,24 +63,6 @@ inline fs::path sanitize_filename_path( const std::string& text ) { return utf8_
 // inline fs::path operator/( const fs::path& lhs, const std::string& utf8_rhs ) { return lhs / utf8_to_path( utf8_rhs
 // ); }
 
-static std::string_view get_platform_label( PlatformType t ) {
-    switch ( t ) {
-    case PlatformType::UBISOFT:
-        return "Ubisoft";
-    case PlatformType::ROCKSTAR:
-        return "Rockstar";
-    case PlatformType::UNREAL:
-        return "Unreal";
-    case PlatformType::MINECRAFT:
-        return "Minecraft"; // change to launcher?
-    case PlatformType::CUSTOM:
-        return "CUSTOM";
-    case PlatformType::GENERIC:
-        return "??";
-    }
-    return "";
-}
-
 inline void open_in_file_manager( const char* path ) {
 #ifdef __linux__
     pid_t pid = fork( );
