@@ -122,9 +122,22 @@ std::vector<Game> CUnrealDetector::scan_recursive(
 
             if ( *comp_it != "Saved" && *comp_it != "Steam" && *comp_it != "Epic" && !is_numeric ) {
                 found_name = *comp_it;
+                break;
+            }
+        }
+
+        if ( !found_name.empty( ) ) {
+            if ( auto manifest = manifest_cache.find_by_install_subfolder( found_name ) ) {
+                game.game_name = manifest->name;
+                game.appid = std::to_string( manifest->appid );
+                name_cache.remember( manifest->appid, manifest->name );
+                name_cache.remember_by_folder( found_name, manifest->name );
+            } else if ( auto cached = name_cache.get_by_folder( found_name ) ) {
+                game.game_name = *cached;
+                game.appid = "N/A";
+            } else {
                 game.game_name = found_name;
                 game.appid = "N/A";
-                break;
             }
         }
 

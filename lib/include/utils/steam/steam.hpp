@@ -14,6 +14,7 @@ struct SteamManifestCache {
     public:
         bool init( );
         const std::unordered_map<uint32_t, SteamManifest>& get_app_manifests( ) const;
+        std::optional<SteamManifest> find_by_install_subfolder( std::string_view folder_name ) const;
 
     private:
         std::unordered_map<uint32_t, SteamManifest> m_cache = { };

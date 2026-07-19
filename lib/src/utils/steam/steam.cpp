@@ -189,3 +189,29 @@ bool SteamManifestCache::init( ) {
 }
 
 const std::unordered_map<uint32_t, SteamManifest>& SteamManifestCache::get_app_manifests( ) const { return m_cache; }
+
+std::optional<SteamManifest> SteamManifestCache::find_by_install_subfolder( std::string_view folder_name ) const {
+    auto lower = []( std::string s ) {
+        std::ranges::transform( s, s.begin( ), []( unsigned char c ) { return std::tolower( c ); } );
+        return s;
+    };
+    auto target = lower( std::string( folder_name ) );
+
+    for ( const auto& [appid, manifest] : m_cache ) {
+        if ( lower( manifest.install_dir ) == target ) return manifest;
+
+        fs::path common_dir = manifest.library_dir / "steamapps" / "common" / manifest.install_dir;
+        if ( !fs::exists( common_dir ) ) continue;
+
+        try {
+            for ( const auto& entry :
+                  fs::directory_iterator( common_dir, fs::directory_options::skip_permission_denied ) ) {
+                if ( !entry.is_directory( ) ) continue;
+                if ( lower( entry.path( ).filename( ).string( ) ) == target ) return manifest;
+            }
+        } catch ( const fs::filesystem_error& ex ) {
+            SPDLOG_WARN( "Failed to scan {}: {}", common_dir.string( ), ex.what( ) );
+        }
+    }
+    return std::nullopt;
+}
