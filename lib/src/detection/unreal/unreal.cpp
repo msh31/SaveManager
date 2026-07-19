@@ -1,4 +1,5 @@
 #include "unreal.hpp"
+#include "../detector_utils.hpp"
 
 std::string_view CUnrealDetector::name( ) const { return PLATFORM_LABEL; };
 
@@ -14,22 +15,17 @@ std::expected<std::vector<Game>, SMError> CUnrealDetector::find( ) {
     prefixes.emplace_back( paths::home_dir( ) / "Library" / "Application Support" );
 #endif
 
-    std::vector<Game> games;
+    return scan_prefixes(
+        PLATFORM_LABEL, prefixes, [this]( const fs::path& p ) { return scan( p, m_manifest_cache, m_name_cache ); } );
+}
 
-    for ( const auto& prefix : prefixes ) {
-        if ( !fs::exists( prefix ) ) continue;
-        SPDLOG_INFO( "[Unreal] searching prefix: {}", prefix.string( ) );
-
-        auto found_games = scan( prefix, m_manifest_cache, m_name_cache );
-        std::ranges::move( found_games, std::back_inserter( games ) );
-    }
-
-    return games;
+std::vector<Game> CUnrealDetector::scan_wine_user( const fs::path& user_home, const DetectorContext& ctx ) {
+    return scan_recursive( user_home, ctx.manifest_cache, ctx.name_cache );
 }
 
 // private
-std::vector<Game> CUnrealDetector::scan(
-    fs::path path, const SteamManifestCache& manifest_cache, UnrealNameCache& name_cache ) {
+std::vector<Game>
+CUnrealDetector::scan( fs::path path, const SteamManifestCache& manifest_cache, UnrealNameCache& name_cache ) {
     std::vector<Game> games;
 
     try {
@@ -92,13 +88,9 @@ std::vector<Game> CUnrealDetector::scan_recursive(
         if ( save.gcount( ) != 4 ) continue;
 
         if ( !std::ranges::equal( buffer, header ) ) {
-#if defined _WIN32 // whatever, it spams on linux
-            SPDLOG_WARN( "[Unreal] {} does not contain a 'GVAS' header at the first 4 bytes, it might be custom. skipping..", entry.path( ).string( ) );
-#endif
-            if ( save.is_open( ) ) save.close( );
+            save.close( );
             continue;
         }
-
 
         // cursed skip method, could just remove them
         std::string path_str = entry.path( ).parent_path( ).string( );
@@ -108,6 +100,7 @@ std::vector<Game> CUnrealDetector::scan_recursive(
         }
 
         directories.insert( entry.path( ).parent_path( ) );
+        save.close( );
     }
 
     for ( const auto& entry : directories ) {

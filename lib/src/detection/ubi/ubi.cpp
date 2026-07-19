@@ -1,4 +1,5 @@
 #include "ubi.hpp"
+#include "../detector_utils.hpp"
 
 std::string_view CUbisoftDetector::name( ) const { return PLATFORM_LABEL; }
 
@@ -12,16 +13,21 @@ std::expected<std::vector<Game>, SMError> CUbisoftDetector::find( ) {
     prefixes.emplace_back( paths::documents_dir( ) );                    // anno - very broad search
 #endif
 
-    std::vector<Game> games = { };
+    return scan_prefixes( PLATFORM_LABEL, prefixes, [this]( const fs::path& p ) { return scan( p, m_translations ); } );
+}
 
-    for ( const auto& prefix : prefixes ) {
-        if ( !fs::exists( prefix ) ) continue;
-        SPDLOG_INFO( "[Ubisoft] searching prefix: {}", prefix.string( ) );
-
-        auto found_games = scan( prefix, m_translations );
-        std::ranges::move( found_games, std::back_inserter( games ) );
-    }
+std::vector<Game> CUbisoftDetector::scan_wine_user( const fs::path& user_home, const DetectorContext& ctx ) {
+    std::vector<Game> games;
+    auto documents = scan( user_home / "Documents", ctx.translations );
+    auto anno_alt = scan( user_home / "AppData" / "Roaming", ctx.translations );
+    std::ranges::move( documents, std::back_inserter( games ) );
+    std::ranges::move( anno_alt, std::back_inserter( games ) );
     return games;
+}
+
+std::vector<Game> CUbisoftDetector::scan_wine_prefix( const fs::path& drive_c, const DetectorContext& ctx ) {
+    fs::path launcher_path = drive_c / "Program Files (x86)" / "Ubisoft" / "Ubisoft Game Launcher" / "savegames";
+    return scan( launcher_path, ctx.translations );
 }
 
 std::vector<Game> CUbisoftDetector::scan( fs::path path, const Translations& translations ) {

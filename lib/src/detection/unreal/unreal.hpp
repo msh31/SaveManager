@@ -1,4 +1,5 @@
 #pragma once
+#include "../detector_context.hpp"
 #include "../idetector.hpp"
 #include <utils/steam/steam.hpp>
 #include <utils/unreal_name_cache/unreal_name_cache.hpp>
@@ -13,16 +14,16 @@ class CUnrealDetector : public IDetector {
 
         std::string_view name( ) const override;
 
-    private:
-        friend class CWinePrefixDetector;
+        static std::vector<Game> scan_wine_user( const fs::path& user_home, const DetectorContext& ctx );
 
-        static std::vector<Game> scan(
-            fs::path, const SteamManifestCache& manifest_cache, UnrealNameCache& name_cache );
+    private:
+        static std::vector<Game>
+        scan( fs::path, const SteamManifestCache& manifest_cache, UnrealNameCache& name_cache );
         const SteamManifestCache& m_manifest_cache;
         UnrealNameCache& m_name_cache;
 
         // uses the gvas header to identify saves
-        static std::vector<Game> scan_recursive(
-            const fs::path& path, const SteamManifestCache& manifest_cache, UnrealNameCache& name_cache );
+        static std::vector<Game>
+        scan_recursive( const fs::path& path, const SteamManifestCache& manifest_cache, UnrealNameCache& name_cache );
         static std::optional<fs::path> resolve_save_games( const fs::path& folder ); // windows only
 };

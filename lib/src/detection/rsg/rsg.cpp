@@ -1,4 +1,5 @@
 #include "rsg.hpp"
+#include "../detector_utils.hpp"
 #include "utils/translations/translations.hpp"
 
 std::expected<std::vector<Game>, SMError> CRockstarDetector::find( ) {
@@ -9,14 +10,18 @@ std::expected<std::vector<Game>, SMError> CRockstarDetector::find( ) {
     prefixes.emplace_back( paths::home_dir( ) / "AppData" / "Local" / "Rockstar Games" ); // legacy
 #endif
 
-    std::vector<Game> games = { };
-    for ( const auto& prefix : prefixes ) {
-        if ( !fs::exists( prefix ) ) continue;
-        SPDLOG_INFO( "[Rockstar] searching prefix: {}", prefix.string( ) );
+    return scan_prefixes(
+        PLATFORM_LABEL, prefixes, [this]( const fs::path& p ) { return scan( p, m_translations ); } );
+}
 
-        auto found_games = scan( prefix, m_translations );
-        std::ranges::move( found_games, std::back_inserter( games ) );
-    }
+std::vector<Game> CRockstarDetector::scan_wine_user( const fs::path& user_home, const DetectorContext& ctx ) {
+    std::vector<Game> games;
+    auto documents = scan( user_home / "Documents" / "Rockstar Games", ctx.translations );
+    auto legacy_documents = scan( user_home / "Documents", ctx.translations );
+    auto legacy_appdata = scan( user_home / "AppData" / "Local" / "Rockstar Games", ctx.translations );
+    std::ranges::move( documents, std::back_inserter( games ) );
+    std::ranges::move( legacy_documents, std::back_inserter( games ) );
+    std::ranges::move( legacy_appdata, std::back_inserter( games ) );
     return games;
 }
 

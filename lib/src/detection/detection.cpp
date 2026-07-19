@@ -1,25 +1,21 @@
-// clang-format off
-#include <detection/detection.hpp>
 #include "../plugin/plugin.hpp"
+#include "detector_context.hpp"
+#include <detection/detection.hpp>
 
 #include "utils/paths.hpp"
 #include <utils/utils.hpp>
 
 #include <utils/steam/steam.hpp>
 
+#include "ea/ea.hpp"
 #include "minecraft/minecraft.hpp"
-#if defined __APPLE__ 
-    #include "wine/wine.hpp"
-#include "unreal/unreal.hpp"
-#elif defined  __linux__
-    #include "wine/wine.hpp"
-#else //assuming windows
 #include "rsg/rsg.hpp"
 #include "ubi/ubi.hpp"
 #include "unreal/unreal.hpp"
-#include "ea/ea.hpp"
+
+#if defined( __linux__ ) || defined( __APPLE__ )
+    #include "wine/wine.hpp"
 #endif
-// clang-format on
 
 std::vector<Game> Detection::find_saves(
     const Blacklist& blacklist, const Translations& translations, const SteamManifestCache& manifest_cache,
@@ -29,6 +25,8 @@ std::vector<Game> Detection::find_saves(
 
     std::vector<Game> games = { };
 
+    DetectorContext ctx{ translations, manifest_cache, name_cache };
+
 #ifdef _WIN32
     detectors.emplace_back( std::make_unique<CUbisoftDetector>( translations ) );
     detectors.emplace_back( std::make_unique<CRockstarDetector>( translations ) );
@@ -36,26 +34,42 @@ std::vector<Game> Detection::find_saves(
     detectors.emplace_back( std::make_unique<CElectronicArtsDetector>( translations ) );
 #endif
 
+#if defined( __linux__ ) || defined( __APPLE__ )
+    // add a detector's scan_wine_user/scan_wine_prefix here to reuse it under wine, MUST BE IMPLEMENTED
+    std::vector<WineScanHook> wine_prefix_hooks = {
+        CUbisoftDetector::scan_wine_prefix,
+        CElectronicArtsDetector::scan_wine_prefix,
+    };
+    std::vector<WineScanHook> wine_user_hooks = {
+        CUbisoftDetector::scan_wine_user,
+        CRockstarDetector::scan_wine_user,
+        CUnrealDetector::scan_wine_user,
+        CElectronicArtsDetector::scan_wine_user,
+    };
+#endif
+
 #ifdef __linux__
     auto prefixes = SteamHelper::get_library_folders( );
 
     // steam
     for ( const auto& prefix : prefixes ) {
-        detectors.emplace_back( std::make_unique<CWinePrefixDetector>(
-            prefix / "steamapps/compatdata", translations, manifest_cache, name_cache ) );
+        detectors.emplace_back(
+            std::make_unique<CWinePrefixDetector>(
+                prefix / "steamapps/compatdata", ctx, wine_prefix_hooks, wine_user_hooks ) );
     }
 
     // TODO: improve resolved paths for heroic and lutris
     // heroic
     if ( fs::exists( paths::heroic_dir( ) ) ) {
-        detectors.emplace_back( std::make_unique<CWinePrefixDetector>(
-            paths::heroic_dir( ) / "Prefixes/default", translations, manifest_cache, name_cache ) );
+        detectors.emplace_back(
+            std::make_unique<CWinePrefixDetector>(
+                paths::heroic_dir( ) / "Prefixes/default", ctx, wine_prefix_hooks, wine_user_hooks ) );
     }
 
     // lutris
     if ( fs::exists( paths::lutris_dir( ) ) ) {
-        detectors.emplace_back( std::make_unique<CWinePrefixDetector>(
-            paths::lutris_dir( ), translations, manifest_cache, name_cache ) );
+        detectors.emplace_back(
+            std::make_unique<CWinePrefixDetector>( paths::lutris_dir( ), ctx, wine_prefix_hooks, wine_user_hooks ) );
     }
 #endif
 
@@ -68,7 +82,7 @@ std::vector<Game> Detection::find_saves(
 
     for ( const auto& prefix : prefixes ) {
         detectors.emplace_back(
-            std::make_unique<CWinePrefixDetector>( prefix, translations, manifest_cache, name_cache ) );
+            std::make_unique<CWinePrefixDetector>( prefix, ctx, wine_prefix_hooks, wine_user_hooks ) );
     }
 #endif
 

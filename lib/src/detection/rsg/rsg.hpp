@@ -1,4 +1,5 @@
 #pragma once
+#include "../detector_context.hpp"
 #include "../idetector.hpp"
 #include <utils/translations/translations.hpp>
 
@@ -12,9 +13,9 @@ class CRockstarDetector : public IDetector {
 
         std::string_view name( ) const override;
 
-    private:
-        friend class CWinePrefixDetector; // a friend wants to use this function
+        static std::vector<Game> scan_wine_user( const fs::path& user_home, const DetectorContext& ctx );
 
+    private:
         static std::vector<Game> scan( fs::path, const Translations& translations );
         const Translations& m_translations;
 };

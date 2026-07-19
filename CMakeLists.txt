@@ -94,6 +94,8 @@ set(savemanager-core_SOURCES
 	"lib/include/version.hpp"
 	"lib/src/config/config.cpp"
 	"lib/src/detection/detection.cpp"
+	"lib/src/detection/detector_context.hpp"
+	"lib/src/detection/detector_utils.hpp"
 	"lib/src/detection/ea/ea.cpp"
 	"lib/src/detection/ea/ea.hpp"
 	"lib/src/detection/idetector.hpp"
