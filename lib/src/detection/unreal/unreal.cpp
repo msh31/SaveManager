@@ -103,14 +103,22 @@ std::vector<Game> CUnrealDetector::scan_recursive(
         save.close( );
     }
 
+    auto resolve_by_folder = [&]( const std::string& folder ) -> std::optional<SteamManifest> {
+        if ( auto manifest = manifest_cache.find_by_install_subfolder( folder ) ) {
+            name_cache.remember( manifest->appid, manifest->name );
+            name_cache.remember_by_folder( folder, manifest->name );
+            return manifest;
+        }
+        return std::nullopt;
+    };
+
     for ( const auto& entry : directories ) {
-        auto it = entry.begin( );
         Game game;
         game.type = PlatformType::UNREAL;
         game.platform_label = std::string( PLATFORM_LABEL );
         game.save_paths.push_back( entry );
-        std::string found_name;
 
+        std::string found_name;
         std::vector<std::string> path_comps;
         std::ranges::transform(
             entry, std::back_inserter( path_comps ), []( const auto& part ) { return part.string( ); } );
@@ -126,12 +134,52 @@ std::vector<Game> CUnrealDetector::scan_recursive(
             }
         }
 
-        if ( !found_name.empty( ) ) {
-            if ( auto manifest = manifest_cache.find_by_install_subfolder( found_name ) ) {
+        std::optional<uint32_t> compat_appid;
+        std::optional<std::string> default_name;
+        for ( auto it = entry.begin( ); it != entry.end( ); ++it ) {
+            if ( *it == "compatdata" ) {
+                if ( ++it == entry.end( ) ) break;
+                try {
+                    compat_appid = static_cast<uint32_t>( std::stoul( it->string( ) ) );
+                } catch ( const std::exception& ex ) {
+                    SPDLOG_WARN( "[Unreal] failed to parse appid '{}': {}", it->string( ), ex.what( ) );
+                }
+                break;
+            }
+            if ( *it == "default" ) {
+                if ( ++it != entry.end( ) ) default_name = it->string( );
+                break;
+            }
+        }
+
+        if ( compat_appid ) {
+            game.appid = std::to_string( *compat_appid );
+
+            const auto& manifests = manifest_cache.get_app_manifests( );
+            if ( auto mit = manifests.find( *compat_appid ); mit != manifests.end( ) ) {
+                game.game_name = mit->second.name;
+                name_cache.remember( *compat_appid, game.game_name );
+            } else if ( auto cached = name_cache.get( *compat_appid ) ) {
+                game.game_name = *cached;
+            } else if ( !found_name.empty( ) ) {
+                if ( auto manifest = resolve_by_folder( found_name ) ) {
+                    game.game_name = manifest->name;
+                    name_cache.remember( *compat_appid, manifest->name ); // this appid may differ from manifest->appid
+                } else if ( auto cached = name_cache.get_by_folder( found_name ) ) {
+                    game.game_name = *cached;
+                } else {
+                    game.game_name = found_name;
+                }
+            } else {
+                game.game_name = "N/A";
+            }
+        } else if ( default_name ) {
+            game.game_name = *default_name;
+            game.appid = "N/A";
+        } else if ( !found_name.empty( ) ) {
+            if ( auto manifest = resolve_by_folder( found_name ) ) {
                 game.game_name = manifest->name;
                 game.appid = std::to_string( manifest->appid );
-                name_cache.remember( manifest->appid, manifest->name );
-                name_cache.remember_by_folder( found_name, manifest->name );
             } else if ( auto cached = name_cache.get_by_folder( found_name ) ) {
                 game.game_name = *cached;
                 game.appid = "N/A";
@@ -139,44 +187,8 @@ std::vector<Game> CUnrealDetector::scan_recursive(
                 game.game_name = found_name;
                 game.appid = "N/A";
             }
-        }
-
-        for ( ; it != entry.end( ); ++it ) {
-            if ( *it == "compatdata" ) {
-                ++it; // next component is the appid
-                if ( it != entry.end( ) ) {
-                    std::string appid = it->string( );
-                    game.appid = appid;
-                    game.game_name = "N/A";
-
-                    try {
-                        auto appid_num = static_cast<uint32_t>( std::stoul( appid ) );
-                        const auto& manifests = manifest_cache.get_app_manifests( );
-                        if ( auto mit = manifests.find( appid_num ); mit != manifests.end( ) ) {
-                            game.game_name = mit->second.name;
-                            name_cache.remember( appid_num, game.game_name );
-                        } else if ( auto cached = name_cache.get( appid_num ) ) {
-                            game.game_name = *cached; // no longer installed, but we remembered its name
-                        }
-                    } catch ( const std::exception& ex ) {
-                        SPDLOG_WARN( "[Unreal] failed to parse appid '{}': {}", appid, ex.what( ) );
-                    }
-                    break;
-                }
-            } else if ( *it == "default" ) {
-                ++it;
-                if ( it != entry.end( ) ) {
-                    std::string name = it->string( );
-
-                    game.game_name = name;
-                    game.appid = "N/A";
-                    break;
-                }
-            }
-        }
-
-        if ( game.game_name.empty( ) && !found_name.empty( ) ) {
-            game.game_name = found_name;
+        } else {
+            game.game_name = "N/A";
             game.appid = "N/A";
         }
 
