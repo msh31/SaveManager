@@ -1,13 +1,11 @@
 #pragma once
+#include "../../utils/save_helper/save_helper.hpp"
 #include "../detector_context.hpp"
 #include "../idetector.hpp"
-#include <utils/translations/translations.hpp>
 
 class CElectronicArtsDetector : public IDetector {
     public:
         static constexpr std::string_view PLATFORM_LABEL = "EA";
-
-        CElectronicArtsDetector( const Translations& translations ) : m_translations( translations ) {}
 
         std::expected<std::vector<Game>, SMError> find( ) override;
 
@@ -17,6 +15,6 @@ class CElectronicArtsDetector : public IDetector {
         static std::vector<Game> scan_wine_prefix( const fs::path& drive_c, const DetectorContext& ctx );
 
     private:
-        static std::vector<Game> scan( fs::path, const Translations& translations );
-        const Translations& m_translations;
+        static std::vector<Game> scan( const std::unordered_map<SaveRoot, fs::path>& roots );
+        static std::vector<Game> scan_legacy( const std::unordered_map<SaveRoot, fs::path>& roots );
 };

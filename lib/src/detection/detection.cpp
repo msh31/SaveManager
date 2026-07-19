@@ -31,7 +31,7 @@ std::vector<Game> Detection::find_saves(
     detectors.emplace_back( std::make_unique<CUbisoftDetector>( translations ) );
     detectors.emplace_back( std::make_unique<CRockstarDetector>( translations ) );
     detectors.emplace_back( std::make_unique<CUnrealDetector>( manifest_cache, name_cache ) ); // UE4/5 only
-    detectors.emplace_back( std::make_unique<CElectronicArtsDetector>( translations ) );
+    detectors.emplace_back( std::make_unique<CElectronicArtsDetector>( ) );
 #endif
 
 #if defined( __linux__ ) || defined( __APPLE__ )
