@@ -1,6 +1,17 @@
 #include "unreal.hpp"
 #include "../detector_utils.hpp"
 
+namespace {
+    // these are Unreal games too, but they have their own dedicated detector with a proper table entry -
+    // exclude them here so they don't show up twice
+    const std::unordered_set<std::string> handled_elsewhere = {
+        "Days Gone",
+        "Sackboy™: A Big Adventure",
+        "SpongeBob SquarePants: Battle for Bikini Bottom - Rehydrated",
+        "SpongeBob SquarePants: Titans of the Tide",
+    };
+} // namespace
+
 std::string_view CUnrealDetector::name( ) const { return PLATFORM_LABEL; };
 
 std::expected<std::vector<Game>, SMError> CUnrealDetector::find( ) {
@@ -191,6 +202,8 @@ std::vector<Game> CUnrealDetector::scan_recursive(
             game.game_name = "N/A";
             game.appid = "N/A";
         }
+
+        if ( handled_elsewhere.contains( game.game_name ) ) continue;
 
         SPDLOG_INFO( "[Unreal] found: {}", game.game_name );
         games.push_back( game );
