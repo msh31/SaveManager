@@ -5,7 +5,8 @@ std::string_view CUbisoftDetector::name( ) const { return PLATFORM_LABEL; }
 std::expected<std::vector<Game>, SMError> CUbisoftDetector::find( ) {
     std::vector<fs::path> prefixes = { };
 #ifdef _WIN32
-    prefixes.emplace_back( "C:\\Program Files (x86)\\Ubisoft\\Ubisoft Game Launcher\\savegames" ); // TODO: improve this (edit: how? wtf)
+    prefixes.emplace_back(
+        "C:\\Program Files (x86)\\Ubisoft\\Ubisoft Game Launcher\\savegames" ); // TODO: improve this (edit: how? wtf)
 
     prefixes.emplace_back( paths::home_dir( ) / "AppData" / "Roaming" ); // anno - very broad search
     prefixes.emplace_back( paths::documents_dir( ) );                    // anno - very broad search
@@ -15,7 +16,7 @@ std::expected<std::vector<Game>, SMError> CUbisoftDetector::find( ) {
 
     for ( const auto& prefix : prefixes ) {
         if ( !fs::exists( prefix ) ) continue;
-        SPDLOG_INFO( "[Ubisoft] searching prefix: {}", prefix.string() );
+        SPDLOG_INFO( "[Ubisoft] searching prefix: {}", prefix.string( ) );
 
         auto found_games = scan( prefix, m_translations );
         std::ranges::move( found_games, std::back_inserter( games ) );
@@ -41,8 +42,8 @@ std::vector<Game> CUbisoftDetector::scan( fs::path path, const Translations& tra
 
     for ( const auto& uuid : fs::directory_iterator( path, fs::directory_options::skip_permission_denied ) ) {
         fs::path uuid_folder = uuid.path( );
-        std::string folder_name = uuid_folder.string( );
-        //SPDLOG_INFO( "[Ubisoft] looking for saves in {}", folder_name );
+        std::string folder_name = uuid_folder.filename( ).string( );
+        // SPDLOG_INFO( "[Ubisoft] looking for saves in {}", folder_name );
 
         if ( auto it = anno_paths.find( folder_name ); it != anno_paths.end( ) ) {
             auto& [key, anno_data] = *it;
@@ -54,11 +55,11 @@ std::vector<Game> CUbisoftDetector::scan( fs::path path, const Translations& tra
             anno.show_parent_path = true;
 
             fs::path expected_path = uuid.path( ) / "accounts";
-            if ( fs::exists(expected_path ) ) {
-                SPDLOG_INFO( "[Ubisoft] found account ID: {}", uuid.path( ).string() ); //??
+            if ( fs::exists( expected_path ) ) {
+                SPDLOG_INFO( "[Ubisoft] found account ID: {}", uuid.path( ).string( ) ); //??
                 for ( const auto& entry : fs::directory_iterator(
                           uuid.path( ) / "accounts", fs::directory_options::skip_permission_denied ) ) {
-                    
+
                     anno.save_paths.push_back( entry ); // a fallback
                     break;
                 }
@@ -82,12 +83,12 @@ std::vector<Game> CUbisoftDetector::scan( fs::path path, const Translations& tra
             if ( !fs::is_directory( game_id_folder ) ) {
                 continue;
             }
-            //SPDLOG_INFO( "[Ubisoft] scanning: {}", game_id_folder.string() );
+            // SPDLOG_INFO( "[Ubisoft] scanning: {}", game_id_folder.string() );
 
             auto gid = game_id_folder.filename( ).string( );
             auto name = translations.get_game_name_ubi( gid );
             if ( !name.has_value( ) ) {
-                //SPDLOG_ERROR( "[Ubisoft] failed to find name for {}, skipping..", gid );
+                // SPDLOG_ERROR( "[Ubisoft] failed to find name for {}, skipping..", gid );
                 continue;
             }
 
