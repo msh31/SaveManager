@@ -6,7 +6,9 @@ namespace {
         // TODO: add TW1/2, wtf else did this company make
         static const std::vector<SaveLocation> table = {
             { "Cyberpunk 2077", SaveRoot::SAVED_GAMES, "CD Projekt Red/Cyberpunk 2077", std::nullopt, true },
-            { "The Witcher 3", SaveRoot::DOCUMENTS, "The Witcher 3/gamesaves", std::nullopt, true },
+            { "The Witcher 3: Wild Hunt", SaveRoot::DOCUMENTS, "The Witcher 3/gamesaves", std::nullopt, true },
+            { "The Witcher 2: Assassins of Kings", SaveRoot::DOCUMENTS, "Witcher 2/gamesaves", std::nullopt, true },
+            { "The Witcher", SaveRoot::DOCUMENTS, "The Witcher/saves", std::nullopt, true },
         };
         return table;
     }
