@@ -1,7 +1,7 @@
 #include "save_helper.hpp"
 
-#if defined( _WIN32 )
 fs::path save::resolve_root( SaveRoot sr ) {
+#if defined( _WIN32 )
     switch ( sr ) {
     case SaveRoot::DOCUMENTS:
         return paths::get_known_folder_path( FOLDERID_Documents );
@@ -18,10 +18,19 @@ fs::path save::resolve_root( SaveRoot sr ) {
         return paths::get_known_folder_path( FOLDERID_SavedGames );
         break;
     }
+#endif
+#if defined( __linux__ )
+    switch ( sr ) {
+    case SaveRoot::XDG_DATA_HOME:
+        return paths::xdg_data_home( );
+        break;
+    default:
+        return { };
+    }
+#endif
 
     return { };
 }
-#endif
 
 namespace {
     bool folder_contains_header( const fs::path& path, const std::array<char, 4>& header ) {

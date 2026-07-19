@@ -3,11 +3,12 @@
 
 namespace {
     const std::vector<SaveLocation>& table( ) {
-        // TODO: add TW1/2, wtf else did this company make
         static const std::vector<SaveLocation> table = {
             { "Cyberpunk 2077", SaveRoot::SAVED_GAMES, "CD Projekt Red/Cyberpunk 2077", std::nullopt, true },
             { "The Witcher 3: Wild Hunt", SaveRoot::DOCUMENTS, "The Witcher 3/gamesaves", std::nullopt, true },
             { "The Witcher 2: Assassins of Kings", SaveRoot::DOCUMENTS, "Witcher 2/gamesaves", std::nullopt, true },
+            { "The Witcher 2: Assassins of Kings", SaveRoot::XDG_DATA_HOME,
+              "cdprojektred/witcher2/GameDocuments/Witcher 2/gamesaves", std::nullopt, true },
             { "The Witcher", SaveRoot::DOCUMENTS, "The Witcher/saves", std::nullopt, true },
         };
         return table;
@@ -32,6 +33,9 @@ std::expected<std::vector<Game>, SMError> CCDPRDetector::find( ) {
 #ifdef _WIN32
     roots[SaveRoot::DOCUMENTS] = save::resolve_root( SaveRoot::DOCUMENTS );
     roots[SaveRoot::SAVED_GAMES] = save::resolve_root( SaveRoot::SAVED_GAMES );
+#endif
+#ifdef __linux__
+    roots[SaveRoot::XDG_DATA_HOME] = save::resolve_root( SaveRoot::XDG_DATA_HOME );
 #endif
 
     auto games = save::scan_locations( roots, table( ), PlatformType::CDPROJEKTRED, PLATFORM_LABEL );

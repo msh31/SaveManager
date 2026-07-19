@@ -23,6 +23,18 @@ namespace paths {
         return fs::path( home );
     }
 
+#if defined( __linux__ )
+    inline fs::path xdg_data_home( ) {
+        const char* path = std::getenv( "XDG_DATA_HOME" );
+        if ( path ) {
+            return fs::path( path );
+        } else {
+            return home_dir( ) / ".local" / "share"; // default spec when the env is not set
+        }
+        return { };
+    }
+#endif
+
     inline fs::path default_config_dir( ) {
         std::string folder_name = "savemanager";
 
@@ -72,8 +84,8 @@ namespace paths {
             CoTaskMemFree( path );
             return result;
         } else {
-            //what is logged here is the GUID of a known folder like FOLDERID_Documents or whatever, 
-            // this is a stupid windows type so we're printing this shit raw
+            // what is logged here is the GUID of a known folder like FOLDERID_Documents or whatever,
+            //  this is a stupid windows type so we're printing this shit raw
             auto str = std::format(
                 "Failed to find known folder {:08X}-{:04X}-{:04X}-{:02X}{:02X}-{:02X}{:02X}{:02X}{:02X}{:02X}{:02X}, "
                 "how did you manage this?",
@@ -85,7 +97,7 @@ namespace paths {
     }
 #endif
 
-    //TODO: dont call this in detectors anymore - its the literal host documetns folder
+    // TODO: dont call this in detectors anymore - its the literal host documetns folder
     inline fs::path documents_dir( ) {
 #if defined( _WIN32 )
         return get_known_folder_path( FOLDERID_Documents );

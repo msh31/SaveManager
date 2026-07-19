@@ -48,8 +48,10 @@ std::vector<Game> Detection::find_saves(
 #endif
 
 #ifdef __linux__
-    auto prefixes = SteamHelper::get_library_folders( );
+    // native
+    detectors.emplace_back( std::make_unique<CCDPRDetector>( ) ); // TW2 has a native port
 
+    auto prefixes = SteamHelper::get_library_folders( );
     // steam
     for ( const auto& prefix : prefixes ) {
         detectors.emplace_back(
