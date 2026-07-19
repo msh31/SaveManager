@@ -22,3 +22,57 @@ fs::path save::resolve_root( SaveRoot sr ) {
     return { };
 }
 #endif
+
+namespace {
+    bool folder_contains_header( const fs::path& path, const std::array<char, 4>& header ) {
+        try {
+            for ( const auto& entry :
+                  fs::recursive_directory_iterator( path, fs::directory_options::skip_permission_denied ) ) {
+                if ( !fs::is_regular_file( entry ) ) continue;
+
+                std::ifstream file( entry.path( ), std::ifstream::binary );
+                if ( !file.is_open( ) ) continue;
+
+                std::array<char, 4> buffer{ };
+                file.read( buffer.data( ), 4 );
+                if ( file.gcount( ) == 4 && buffer == header ) return true;
+            }
+        } catch ( const fs::filesystem_error& ex ) {
+            SPDLOG_WARN( "failed to scan {}: {}", path.string( ), ex.what( ) );
+        }
+        return false;
+    }
+} // namespace
+
+std::vector<Game> save::scan_locations(
+    const std::unordered_map<SaveRoot, fs::path>& roots, const std::vector<SaveLocation>& table, PlatformType type,
+    std::string_view platform_label ) {
+    std::vector<Game> games;
+
+    for ( const auto& loc : table ) {
+        auto root_it = roots.find( loc.root_path );
+        if ( root_it == roots.end( ) ) continue;
+
+        fs::path path = root_it->second / loc.relative_path;
+        if ( !fs::exists( path ) ) continue;
+
+        if ( loc.header_bytes ) {
+            if ( !folder_contains_header( path, *loc.header_bytes ) ) continue;
+        } else if ( fs::is_empty( path ) ) {
+            continue;
+        }
+
+        SPDLOG_INFO( "[{}] found: {}", platform_label, loc.game_name );
+
+        Game game;
+        game.type = type;
+        game.platform_label = std::string( platform_label );
+        game.game_name = loc.game_name;
+        game.appid = "N/A";
+        game.save_paths.push_back( path );
+        game.show_parent_path = loc.show_parent_path;
+        games.push_back( std::move( game ) );
+    }
+
+    return games;
+}

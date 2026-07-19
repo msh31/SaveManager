@@ -15,6 +15,5 @@ class CElectronicArtsDetector : public IDetector {
         static std::vector<Game> scan_wine_prefix( const fs::path& drive_c, const DetectorContext& ctx );
 
     private:
-        static std::vector<Game> scan( const std::unordered_map<SaveRoot, fs::path>& roots );
         static std::vector<Game> scan_legacy( const std::unordered_map<SaveRoot, fs::path>& roots );
 };

@@ -4,23 +4,18 @@ namespace {
     constexpr std::array<char, 4> NFS_HEADER = { 'N', 'F', 'S', 'S' };
     constexpr std::array<char, 4> HPR_HEADER = { '\x00', '\x00', '\x04', '\x00' };
 
-    bool folder_contains_header( const fs::path& path, const std::array<char, 4>& header ) {
-        try {
-            for ( const auto& entry :
-                  fs::recursive_directory_iterator( path, fs::directory_options::skip_permission_denied ) ) {
-                if ( !fs::is_regular_file( entry ) ) continue;
-
-                std::ifstream file( entry.path( ), std::ifstream::binary );
-                if ( !file.is_open( ) ) continue;
-
-                std::array<char, 4> buffer{ };
-                file.read( buffer.data( ), 4 );
-                if ( file.gcount( ) == 4 && buffer == header ) return true;
-            }
-        } catch ( const fs::filesystem_error& ex ) {
-            SPDLOG_WARN( "[EA] failed to scan {}: {}", path.string( ), ex.what( ) );
-        }
-        return false;
+    const std::vector<SaveLocation>& table( ) {
+        static const std::vector<SaveLocation> table = {
+            { "Need for Speed Payback", SaveRoot::DOCUMENTS, "Need for Speed(TM) Payback/SaveGame", NFS_HEADER, true },
+            { "Need for Speed Heat", SaveRoot::DOCUMENTS, "Need for Speed Heat/SaveGame", NFS_HEADER, true },
+            { "Need for Speed Unbound", SaveRoot::DOCUMENTS, "Need for Speed(TM) Unbound/SaveGame", NFS_HEADER, true },
+            { "Need for Speed Hot Pursuit Remastered", SaveRoot::DOCUMENTS,
+              "Criterion Games/Need for Speed(TM) Hot Pursuit Remastered/Save", HPR_HEADER, true },
+            // no readable header (encrypted), so existence + non-empty is the best we can do
+            { "Need for Speed Rivals", SaveRoot::DOCUMENTS, "Ghost Games/Need for Speed(TM) Rivals/settings",
+              std::nullopt, true },
+        };
+        return table;
     }
 
     Game make_game( std::string name, fs::path save_path ) {
@@ -30,7 +25,7 @@ namespace {
         game.game_name = std::move( name );
         game.appid = "N/A";
         game.save_paths.push_back( std::move( save_path ) );
-        game.show_parent_path = true; // save folders hold generically-named files (e.g. "savegame/1", "wraps/...")
+        game.show_parent_path = true;
         return game;
     }
 } // namespace
@@ -45,7 +40,7 @@ std::expected<std::vector<Game>, SMError> CElectronicArtsDetector::find( ) {
     roots[SaveRoot::PROGRAM_DATA] = save::resolve_root( SaveRoot::PROGRAM_DATA );
 #endif
 
-    auto games = scan( roots );
+    auto games = save::scan_locations( roots, table( ), PlatformType::EA, PLATFORM_LABEL );
     auto legacy = scan_legacy( roots );
     std::ranges::move( legacy, std::back_inserter( games ) );
     return games;
@@ -57,7 +52,7 @@ std::vector<Game> CElectronicArtsDetector::scan_wine_user( const fs::path& user_
         { SaveRoot::LOCAL_APPDATA, user_home / "AppData" / "Local" },
     };
 
-    auto games = scan( roots );
+    auto games = save::scan_locations( roots, table( ), PlatformType::EA, PLATFORM_LABEL );
     auto legacy = scan_legacy( roots );
     std::ranges::move( legacy, std::back_inserter( games ) );
     return games;
@@ -66,44 +61,9 @@ std::vector<Game> CElectronicArtsDetector::scan_wine_user( const fs::path& user_
 std::vector<Game> CElectronicArtsDetector::scan_wine_prefix( const fs::path& drive_c, const DetectorContext& ctx ) {
     std::unordered_map<SaveRoot, fs::path> roots = { { SaveRoot::PROGRAM_DATA, drive_c / "ProgramData" } };
 
-    auto games = scan( roots );
+    auto games = save::scan_locations( roots, table( ), PlatformType::EA, PLATFORM_LABEL );
     auto legacy = scan_legacy( roots );
     std::ranges::move( legacy, std::back_inserter( games ) );
-    return games;
-}
-
-std::vector<Game> CElectronicArtsDetector::scan( const std::unordered_map<SaveRoot, fs::path>& roots ) {
-    static const std::vector<SaveLocation> table = {
-        { "Need for Speed Payback", SaveRoot::DOCUMENTS, "Need for Speed(TM) Payback/SaveGame", NFS_HEADER },
-        { "Need for Speed Heat", SaveRoot::DOCUMENTS, "Need for Speed Heat/SaveGame", NFS_HEADER },
-        { "Need for Speed Unbound", SaveRoot::DOCUMENTS, "Need for Speed(TM) Unbound/SaveGame", NFS_HEADER },
-        { "Need for Speed Hot Pursuit Remastered", SaveRoot::DOCUMENTS,
-          "Criterion Games/Need for Speed(TM) Hot Pursuit Remastered/Save", HPR_HEADER },
-        { "Need for Speed Rivals", SaveRoot::DOCUMENTS,
-          "Ghost Games/Need for Speed(TM) Rivals/settings", // no readable header, so existence +
-                                                            // non-empty is the best we can do
-
-          std::nullopt },
-    };
-
-    std::vector<Game> games;
-    for ( const auto& loc : table ) {
-        auto root_it = roots.find( loc.root_path );
-        if ( root_it == roots.end( ) ) continue;
-
-        fs::path path = root_it->second / loc.relative_path;
-        if ( !fs::exists( path ) ) continue;
-
-        if ( loc.header_bytes ) {
-            if ( !folder_contains_header( path, *loc.header_bytes ) ) continue;
-        } else if ( fs::is_empty( path ) ) {
-            continue;
-        }
-
-        SPDLOG_INFO( "[EA] found: {}", loc.game_name );
-        games.push_back( make_game( loc.game_name, path ) );
-    }
-
     return games;
 }
 
