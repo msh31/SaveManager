@@ -25,6 +25,7 @@ enum class PlatformType {
     GENERIC = 69,
     EA,
     PLAYSTATION,
+    CDPROJEKTRED,
 };
 
 enum class LauncherType {
@@ -36,7 +37,7 @@ enum class LauncherType {
 };
 
 struct Game {
-        PlatformType type; // display
+        PlatformType type;          // display
         std::string platform_label; // detector-provided display name, see IDetector::name()
         std::string appid;
         std::optional<std::string> game_id; // ubi only

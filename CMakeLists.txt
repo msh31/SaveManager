@@ -93,6 +93,8 @@ set(savemanager-core_SOURCES
 	"lib/include/utils/utils.hpp"
 	"lib/include/version.hpp"
 	"lib/src/config/config.cpp"
+	"lib/src/detection/cdpr/cdpr.cpp"
+	"lib/src/detection/cdpr/cdpr.hpp"
 	"lib/src/detection/detection.cpp"
 	"lib/src/detection/detector_context.hpp"
 	"lib/src/detection/detector_utils.hpp"

@@ -7,6 +7,7 @@
 
 #include <utils/steam/steam.hpp>
 
+#include "cdpr/cdpr.hpp"
 #include "ea/ea.hpp"
 #include "minecraft/minecraft.hpp"
 #include "rsg/rsg.hpp"
@@ -32,19 +33,17 @@ std::vector<Game> Detection::find_saves(
     detectors.emplace_back( std::make_unique<CRockstarDetector>( translations ) );
     detectors.emplace_back( std::make_unique<CUnrealDetector>( manifest_cache, name_cache ) ); // UE4/5 only
     detectors.emplace_back( std::make_unique<CElectronicArtsDetector>( ) );
+    detectors.emplace_back( std::make_unique<CCDPRDetector>( ) );
 #endif
 
 #if defined( __linux__ ) || defined( __APPLE__ )
-    // add a detector's scan_wine_user/scan_wine_prefix here to reuse it under wine, MUST BE IMPLEMENTED
     std::vector<WineScanHook> wine_prefix_hooks = {
         CUbisoftDetector::scan_wine_prefix,
         CElectronicArtsDetector::scan_wine_prefix,
     };
     std::vector<WineScanHook> wine_user_hooks = {
-        CUbisoftDetector::scan_wine_user,
-        CRockstarDetector::scan_wine_user,
-        CUnrealDetector::scan_wine_user,
-        CElectronicArtsDetector::scan_wine_user,
+        CUbisoftDetector::scan_wine_user,        CRockstarDetector::scan_wine_user, CUnrealDetector::scan_wine_user,
+        CElectronicArtsDetector::scan_wine_user, CCDPRDetector::scan_wine_user,
     };
 #endif
 
