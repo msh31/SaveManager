@@ -50,7 +50,6 @@ std::vector<Game> CUbisoftDetector::scan( fs::path path, const Translations& tra
             Game anno;
             anno.type = PlatformType::UBISOFT;
             anno.game_name = anno_data.game_name;
-            anno.appid = translations.get_steam_id( anno_data.game_name ).value_or( "N/A" );
             anno.show_parent_path = true;
 
             fs::path expected_path = uuid.path( ) / "accounts";
@@ -95,7 +94,6 @@ std::vector<Game> CUbisoftDetector::scan( fs::path path, const Translations& tra
             game.type = PlatformType::UBISOFT;
             game.game_id = game_id_folder.filename( ).string( );
             game.game_name = name.value( );
-            game.appid = translations.get_steam_id( game.game_name ).value_or( "N/A" );
             game.save_paths.push_back( game_id_folder );
 
             SPDLOG_INFO( "[Ubisoft] found: {}", name.value( ) );

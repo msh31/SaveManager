@@ -46,7 +46,6 @@ bool Translations::init( ) {
                 for ( const auto& game : games ) {
                     std::string name = game["name"].get<std::string>( );
                     std::string appid = std::to_string( game["appid"].get<int>( ) );
-                    m_steam_n2i_translation[name] = appid;
                     m_steam_i2n_translation[appid] = name;
                 }
             }
@@ -66,15 +65,6 @@ std::optional<std::string> Translations::get_game_name_ubi( const std::string& g
     if ( auto it = m_ubi_translations.find( game_id ); it != m_ubi_translations.end( ) ) {
         return it->second;
     }
-    return std::nullopt;
-}
-
-std::optional<std::string> Translations::get_steam_id( const std::string& game_name ) const {
-    std::lock_guard<std::mutex> lock( m_translations_mutex );
-    if ( auto it = m_steam_n2i_translation.find( game_name ); it != m_steam_n2i_translation.end( ) ) {
-        return it->second;
-    }
-
     return std::nullopt;
 }
 

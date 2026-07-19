@@ -43,7 +43,6 @@ std::vector<Game> CRockstarDetector::scan( fs::path path, const Translations& tr
             Game l_game;
             l_game.type = PlatformType::ROCKSTAR;
             l_game.game_name = game_name;
-            l_game.appid = translations.get_steam_id( game_name ).value_or( "N/A" );
             l_game.save_paths.push_back( game.path( ) );
 
             SPDLOG_INFO( "[Rockstar] found legacy title: {}", game_name );
@@ -66,7 +65,6 @@ std::vector<Game> CRockstarDetector::scan( fs::path path, const Translations& tr
             Game game;
             game.type = PlatformType::ROCKSTAR;
             game.game_name = translations.get_game_name_rsg( folder_name ).value_or( folder_name );
-            game.appid = translations.get_steam_id( game.game_name ).value_or( "N/A" );
             game.save_paths.push_back( uuid_folder );
 
             SPDLOG_INFO( "[Rockstar] found: {}", game.game_name );
