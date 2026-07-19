@@ -56,6 +56,9 @@ std::expected<std::vector<Game>, SMError> CWinePrefixDetector::find( ) {
                 auto ea_appdata = CElectronicArtsDetector::scan( user.path( ) / "AppData", m_translations );
                 auto ea_programdata =
                     CElectronicArtsDetector::scan( user.path( ) / "ProgramData" / "Electronic Arts", m_translations );
+                std::ranges::move( ea_documents, std::back_inserter( games ) );
+                std::ranges::move( ea_appdata, std::back_inserter( games ) );
+                std::ranges::move( ea_programdata, std::back_inserter( games ) );
             }
         } catch ( const fs::filesystem_error& fse ) {
             // TODO: do something with this, logging is spammy on linux
