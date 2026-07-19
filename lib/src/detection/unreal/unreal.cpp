@@ -1,5 +1,4 @@
 #include "unreal.hpp"
-#include "utils/translations/translations.hpp"
 
 std::string_view CUnrealDetector::name( ) const { return PLATFORM_LABEL; };
 
@@ -21,7 +20,7 @@ std::expected<std::vector<Game>, SMError> CUnrealDetector::find( ) {
         if ( !fs::exists( prefix ) ) continue;
         SPDLOG_INFO( "[Unreal] searching prefix: {}", prefix.string( ) );
 
-        auto found_games = scan( prefix, m_translations );
+        auto found_games = scan( prefix, m_manifest_cache, m_name_cache );
         std::ranges::move( found_games, std::back_inserter( games ) );
     }
 
@@ -29,7 +28,8 @@ std::expected<std::vector<Game>, SMError> CUnrealDetector::find( ) {
 }
 
 // private
-std::vector<Game> CUnrealDetector::scan( fs::path path, const Translations& translations ) {
+std::vector<Game> CUnrealDetector::scan(
+    fs::path path, const SteamManifestCache& manifest_cache, UnrealNameCache& name_cache ) {
     std::vector<Game> games;
 
     try {
@@ -52,18 +52,18 @@ std::vector<Game> CUnrealDetector::scan( fs::path path, const Translations& tran
                             auto target3 = resolve_save_games( subsubfolder );
                             if ( !target3.has_value( ) ) continue; // whatever
                             SPDLOG_INFO( "[Unreal] scanning target: {}", target3.value( ).string( ) );
-                            auto found_games = scan_recursive( target3.value( ), translations );
+                            auto found_games = scan_recursive( target3.value( ), manifest_cache, name_cache );
                             std::ranges::move( found_games, std::back_inserter( games ) );
                         }
                     } else {
                         SPDLOG_INFO( "[Unreal] scanning target: {}", target2.value( ).string( ) );
-                        auto found_games = scan_recursive( target2.value( ), translations );
+                        auto found_games = scan_recursive( target2.value( ), manifest_cache, name_cache );
                         std::ranges::move( found_games, std::back_inserter( games ) );
                     }
                 }
             } else {
                 SPDLOG_INFO( "[Unreal] scanning target: {}", target.value( ).string( ) );
-                auto found_games = scan_recursive( target.value( ), translations );
+                auto found_games = scan_recursive( target.value( ), manifest_cache, name_cache );
                 std::ranges::move( found_games, std::back_inserter( games ) );
             }
         }
@@ -74,7 +74,8 @@ std::vector<Game> CUnrealDetector::scan( fs::path path, const Translations& tran
     return games;
 }
 
-std::vector<Game> CUnrealDetector::scan_recursive( const fs::path& path, const Translations& translations ) {
+std::vector<Game> CUnrealDetector::scan_recursive(
+    const fs::path& path, const SteamManifestCache& manifest_cache, UnrealNameCache& name_cache ) {
     static char header[4] = { 'G', 'V', 'A', 'S' };
     std::vector<Game> games;
     std::set<fs::path> directories;
@@ -139,9 +140,21 @@ std::vector<Game> CUnrealDetector::scan_recursive( const fs::path& path, const T
                 ++it; // next component is the appid
                 if ( it != entry.end( ) ) {
                     std::string appid = it->string( );
-
-                    game.game_name = translations.get_steam_name( appid ).value_or( "N/A" );
                     game.appid = appid;
+                    game.game_name = "N/A";
+
+                    try {
+                        auto appid_num = static_cast<uint32_t>( std::stoul( appid ) );
+                        const auto& manifests = manifest_cache.get_app_manifests( );
+                        if ( auto mit = manifests.find( appid_num ); mit != manifests.end( ) ) {
+                            game.game_name = mit->second.name;
+                            name_cache.remember( appid_num, game.game_name );
+                        } else if ( auto cached = name_cache.get( appid_num ) ) {
+                            game.game_name = *cached; // no longer installed, but we remembered its name
+                        }
+                    } catch ( const std::exception& ex ) {
+                        SPDLOG_WARN( "[Unreal] failed to parse appid '{}': {}", appid, ex.what( ) );
+                    }
                     break;
                 }
             } else if ( *it == "default" ) {

@@ -3,11 +3,16 @@
 #include <detection/detection.hpp>
 #include <frontend/views/base_view.hpp>
 #include <remote_transfer/remote_transfer.hpp>
+#include <utils/steam/steam.hpp>
+#include <utils/unreal_name_cache/unreal_name_cache.hpp>
 
 class CTransferView : public CBaseView {
     public:
-        CTransferView( CConfig& config, const Blacklist& blacklist, const Translations& translations )
-            : m_config( config ), m_blacklist( blacklist ), m_translations( translations ) {};
+        CTransferView(
+            CConfig& config, const Blacklist& blacklist, const Translations& translations,
+            const SteamManifestCache& manifest_cache, UnrealNameCache& name_cache )
+            : m_config( config ), m_blacklist( blacklist ), m_translations( translations ),
+              m_manifest_cache( manifest_cache ), m_name_cache( name_cache ) {};
         ~CTransferView( ) override = default;
         void render( ) override;
         void on_enter( ) override;
@@ -18,6 +23,8 @@ class CTransferView : public CBaseView {
         std::vector<Game> m_result;
         const Blacklist& m_blacklist;
         const Translations& m_translations;
+        const SteamManifestCache& m_manifest_cache;
+        UnrealNameCache& m_name_cache;
 
         std::vector<Game> m_games_snapshot;
         std::future<void> m_detection_future;

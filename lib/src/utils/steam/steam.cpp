@@ -133,7 +133,11 @@ std::optional<SteamManifest> SteamHelper::parse_app_manifest( const fs::path& ac
 
             std::string value = str.substr( last_open + 1, last_close - last_open - 1 );
 
-            appid = std::stoul( value );
+            try {
+                appid = std::stoul( value );
+            } catch ( const std::exception& ex ) {
+                SPDLOG_WARN( "Failed to parse appid in {}: {}", acf_path.string( ), ex.what( ) );
+            }
         }
         if ( str.find( "\"name\"" ) != std::string::npos ) {
             auto last_close = str.rfind( '"' );
@@ -157,25 +161,31 @@ std::optional<SteamManifest> SteamHelper::parse_app_manifest( const fs::path& ac
     return SteamManifest{ appid, name, install_dir };
 }
 
-// // SteamManifestCache
-// bool SteamManifestCache::init( ) {
-//     auto libraries = SteamHelper::get_library_folders( );
-//     if ( libraries.empty( ) ) return false;
-//
-//     for ( const auto& library : libraries ) {
-//         for ( const auto& entry :
-//               fs::directory_iterator( library / "steamapps", fs::directory_options::skip_permission_denied ) ) {
-//             if ( entry.is_directory( ) ) continue;
-//             if ( entry.path( ).extension( ) != ".acf" ) continue;
-//
-//             if ( auto manifest = SteamHelper::parse_app_manifest( entry.path( ) ) ) {
-//                 manifest->library_dir = library;
-//                 m_cache.emplace( manifest->appid, *manifest );
-//             }
-//         }
-//     }
-//     if ( m_cache.empty( ) ) return false;
-//     return true;
-// }
-//
-// const std::unordered_map<uint32_t, SteamManifest>& SteamManifestCache::get_app_manifests( ) { return m_cache; }
+bool SteamManifestCache::init( ) {
+    auto libraries = SteamHelper::get_library_folders( );
+    if ( libraries.empty( ) ) return false;
+
+    for ( const auto& library : libraries ) {
+        fs::path steamapps = library / "steamapps";
+        if ( !fs::exists( steamapps ) ) continue;
+
+        try {
+            for ( const auto& entry :
+                  fs::directory_iterator( steamapps, fs::directory_options::skip_permission_denied ) ) {
+                if ( entry.is_directory( ) ) continue;
+                if ( entry.path( ).extension( ) != ".acf" ) continue;
+
+                if ( auto manifest = SteamHelper::parse_app_manifest( entry.path( ) ) ) {
+                    manifest->library_dir = library;
+                    m_cache.emplace( manifest->appid, *manifest );
+                }
+            }
+        } catch ( const fs::filesystem_error& ex ) {
+            SPDLOG_WARN( "Failed to scan Steam library {}: {}", steamapps.string( ), ex.what( ) );
+        }
+    }
+    if ( m_cache.empty( ) ) return false;
+    return true;
+}
+
+const std::unordered_map<uint32_t, SteamManifest>& SteamManifestCache::get_app_manifests( ) const { return m_cache; }

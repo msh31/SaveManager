@@ -48,7 +48,7 @@ std::expected<std::vector<Game>, SMError> CWinePrefixDetector::find( ) {
                 std::ranges::move( rsg_leg_appdata, std::back_inserter( games ) );
 
                 // unreal - TODO: expand beyond this hardcoded path.
-                auto unreal = CUnrealDetector::scan_recursive( user.path( ), m_translations );
+                auto unreal = CUnrealDetector::scan_recursive( user.path( ), m_manifest_cache, m_name_cache );
                 std::ranges::move( unreal, std::back_inserter( games ) );
 
                 // ea

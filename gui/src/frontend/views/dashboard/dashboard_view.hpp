@@ -7,11 +7,16 @@
 #include <frontend/views/base_view.hpp>
 
 #include <backend/task_runner/task_runner.hpp>
+#include <utils/steam/steam.hpp>
+#include <utils/unreal_name_cache/unreal_name_cache.hpp>
 
 class CDashboardView : public CBaseView {
     public:
-        CDashboardView( CConfig& config, const Blacklist& blacklist, const Translations& translations )
-            : m_config( config ), m_backups_view( config ), m_blacklist( blacklist ), m_translations( translations ) {};
+        CDashboardView(
+            CConfig& config, const Blacklist& blacklist, const Translations& translations,
+            const SteamManifestCache& manifest_cache, UnrealNameCache& name_cache )
+            : m_config( config ), m_backups_view( config ), m_blacklist( blacklist ), m_translations( translations ),
+              m_manifest_cache( manifest_cache ), m_name_cache( name_cache ) {};
         ~CDashboardView( ) override;
         void render( ) override;
         void on_enter( ) override;
@@ -37,6 +42,8 @@ class CDashboardView : public CBaseView {
         CBackupsView m_backups_view;
         const Blacklist& m_blacklist;
         const Translations& m_translations;
+        const SteamManifestCache& m_manifest_cache;
+        UnrealNameCache& m_name_cache;
 
         CTaskRunner m_task_runner;
 

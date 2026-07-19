@@ -89,6 +89,7 @@ set(savemanager-core_SOURCES
 	"lib/include/utils/paths.hpp"
 	"lib/include/utils/steam/steam.hpp"
 	"lib/include/utils/translations/translations.hpp"
+	"lib/include/utils/unreal_name_cache/unreal_name_cache.hpp"
 	"lib/include/utils/utils.hpp"
 	"lib/include/version.hpp"
 	"lib/src/config/config.cpp"
@@ -117,6 +118,7 @@ set(savemanager-core_SOURCES
 	"lib/src/utils/save_helper/save_helper.hpp"
 	"lib/src/utils/steam/steam.cpp"
 	"lib/src/utils/translations/translations.cpp"
+	"lib/src/utils/unreal_name_cache/unreal_name_cache.cpp"
 	"lib/src/utils/zip_archive/zip_archive.cpp"
 	"lib/src/utils/zip_archive/zip_archive.hpp"
 )

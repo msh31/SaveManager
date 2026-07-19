@@ -7,7 +7,9 @@
 #include <utils/paths.hpp>
 
 #include <utils/blacklist/blacklist.hpp>
+#include <utils/steam/steam.hpp>
 #include <utils/translations/translations.hpp>
+#include <utils/unreal_name_cache/unreal_name_cache.hpp>
 
 #include <frontend/layout/tabbar/tabbar.hpp>
 
@@ -27,6 +29,8 @@ class CApp {
         CUIManager m_ui_manager{ std::make_unique<CTabbarShell>( ) };
         Blacklist m_blacklist;
         Translations m_translations;
+        SteamManifestCache m_manifest_cache;
+        UnrealNameCache m_unreal_name_cache;
 
         CTaskRunner m_task_runner;
         std::optional<CShader> m_shader;

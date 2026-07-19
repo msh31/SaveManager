@@ -15,9 +15,8 @@ static const std::unordered_map<std::string_view, std::string> rsg_translations 
 };
 
 bool Translations::init( ) {
-    json ubi_data, steam_data;
+    json ubi_data;
     std::ifstream ubi_file( paths::ubi_translations( ).c_str( ) );
-    std::ifstream steam_file( paths::steam_appids( ).c_str( ) );
 
     try {
         if ( ubi_file.is_open( ) && fs::file_size( paths::ubi_translations( ) ) > 0 ) {
@@ -37,26 +36,6 @@ bool Translations::init( ) {
         SPDLOG_ERROR( "Translation error: {}", ex.what( ) );
         return false;
     }
-
-    try {
-        if ( steam_file.is_open( ) && fs::file_size( paths::steam_appids( ) ) > 0 ) {
-            steam_data = json::parse( steam_file );
-            SPDLOG_INFO( "Loaded steamid translations" );
-            for ( const auto& [platform, games] : steam_data.items( ) ) {
-                for ( const auto& game : games ) {
-                    std::string name = game["name"].get<std::string>( );
-                    std::string appid = std::to_string( game["appid"].get<int>( ) );
-                    m_steam_i2n_translation[appid] = name;
-                }
-            }
-        } else {
-            SPDLOG_ERROR( "Failed to open steamids file!" );
-            return false;
-        }
-    } catch ( json::exception& ex ) {
-        SPDLOG_ERROR( "Translation error: {}", ex.what( ) );
-        return false;
-    }
     return true;
 }
 
@@ -65,15 +44,6 @@ std::optional<std::string> Translations::get_game_name_ubi( const std::string& g
     if ( auto it = m_ubi_translations.find( game_id ); it != m_ubi_translations.end( ) ) {
         return it->second;
     }
-    return std::nullopt;
-}
-
-std::optional<std::string> Translations::get_steam_name( const std::string& appid ) const {
-    std::lock_guard<std::mutex> lock( m_translations_mutex );
-    if ( auto it = m_steam_i2n_translation.find( appid ); it != m_steam_i2n_translation.end( ) ) {
-        return it->second;
-    }
-
     return std::nullopt;
 }
 

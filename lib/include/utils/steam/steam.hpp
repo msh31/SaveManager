@@ -8,14 +8,12 @@ namespace SteamHelper {
 
     std::optional<std::string> parse_steam_userid( );
     std::optional<SteamManifest> parse_app_manifest( const fs::path& acf_path );
-
-    const std::unordered_map<uint32_t, SteamManifest>& get_app_manifests( );
 } // namespace SteamHelper
 
 struct SteamManifestCache {
     public:
         bool init( );
-        const std::unordered_map<uint32_t, SteamManifest>& get_app_manifests( );
+        const std::unordered_map<uint32_t, SteamManifest>& get_app_manifests( ) const;
 
     private:
         std::unordered_map<uint32_t, SteamManifest> m_cache = { };

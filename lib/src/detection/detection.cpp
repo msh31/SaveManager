@@ -21,7 +21,9 @@
 #endif
 // clang-format on
 
-std::vector<Game> Detection::find_saves( const Blacklist& blacklist, const Translations& translations ) {
+std::vector<Game> Detection::find_saves(
+    const Blacklist& blacklist, const Translations& translations, const SteamManifestCache& manifest_cache,
+    UnrealNameCache& name_cache ) {
     std::vector<std::unique_ptr<IDetector>> detectors;
     std::vector<std::future<std::expected<std::vector<Game>, SMError>>> detection_futures;
 
@@ -30,7 +32,7 @@ std::vector<Game> Detection::find_saves( const Blacklist& blacklist, const Trans
 #ifdef _WIN32
     detectors.emplace_back( std::make_unique<CUbisoftDetector>( translations ) );
     detectors.emplace_back( std::make_unique<CRockstarDetector>( translations ) );
-    detectors.emplace_back( std::make_unique<CUnrealDetector>( translations ) ); // UE4/5 only
+    detectors.emplace_back( std::make_unique<CUnrealDetector>( manifest_cache, name_cache ) ); // UE4/5 only
     detectors.emplace_back( std::make_unique<CElectronicArtsDetector>( translations ) );
 #endif
 
@@ -39,32 +41,34 @@ std::vector<Game> Detection::find_saves( const Blacklist& blacklist, const Trans
 
     // steam
     for ( const auto& prefix : prefixes ) {
-        detectors.emplace_back(
-            std::make_unique<CWinePrefixDetector>( prefix / "steamapps/compatdata", translations ) );
+        detectors.emplace_back( std::make_unique<CWinePrefixDetector>(
+            prefix / "steamapps/compatdata", translations, manifest_cache, name_cache ) );
     }
 
     // TODO: improve resolved paths for heroic and lutris
     // heroic
     if ( fs::exists( paths::heroic_dir( ) ) ) {
-        detectors.emplace_back(
-            std::make_unique<CWinePrefixDetector>( paths::heroic_dir( ) / "Prefixes/default", translations ) );
+        detectors.emplace_back( std::make_unique<CWinePrefixDetector>(
+            paths::heroic_dir( ) / "Prefixes/default", translations, manifest_cache, name_cache ) );
     }
 
     // lutris
     if ( fs::exists( paths::lutris_dir( ) ) ) {
-        detectors.emplace_back( std::make_unique<CWinePrefixDetector>( paths::lutris_dir( ), translations ) );
+        detectors.emplace_back( std::make_unique<CWinePrefixDetector>(
+            paths::lutris_dir( ), translations, manifest_cache, name_cache ) );
     }
 #endif
 
 #ifdef __APPLE__
     // native
-    detectors.emplace_back( std::make_unique<CUnrealDetector>( translations ) );
+    detectors.emplace_back( std::make_unique<CUnrealDetector>( manifest_cache, name_cache ) );
 
     // non-native
     auto prefixes = SteamHelper::get_library_folders( );
 
     for ( const auto& prefix : prefixes ) {
-        detectors.emplace_back( std::make_unique<CWinePrefixDetector>( prefix, translations ) );
+        detectors.emplace_back(
+            std::make_unique<CWinePrefixDetector>( prefix, translations, manifest_cache, name_cache ) );
     }
 #endif
 

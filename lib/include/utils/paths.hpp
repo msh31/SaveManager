@@ -98,6 +98,7 @@ namespace paths {
     inline fs::path ubi_translations( ) { return config_dir( ) / "ubi_translations.json"; }
     inline fs::path steam_appids( ) { return config_dir( ) / "steamids.json"; }
     inline fs::path blacklist( ) { return config_dir( ) / "game_blacklist.json"; }
+    inline fs::path unreal_name_cache( ) { return cache_dir( ) / "unreal_names.json"; }
 
     inline fs::path socket( ) { return fs::temp_directory_path( ) / "savemanager.sock"; }
 }; // namespace paths
