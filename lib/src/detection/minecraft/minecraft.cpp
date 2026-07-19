@@ -43,7 +43,7 @@ std::vector<Game> CMinecraftDetector::scan_official( ) const {
         for ( const auto& world :
               fs::directory_iterator( saves_folder, std::filesystem::directory_options::skip_permission_denied ) ) {
             if ( world.path( ).empty( ) ) continue;
-            SPDLOG_INFO( "[Minecraft Official] found a world: {}", world.path( ).string( ) );
+            SPDLOG_INFO( "[Minecraft Official] found a world: {}", world.path( ).filename( ).string( ) );
             entry.save_paths.push_back( world.path( ) );
         }
     }
@@ -70,7 +70,6 @@ std::vector<Game> CMinecraftDetector::scan_modrinth( ) const {
 #endif
     if ( modrinth_paths.empty( ) ) return { }; // failure
 
-
     Game entry;
     entry.type = PlatformType::MINECRAFT;
     entry.platform_label = std::string( PLATFORM_LABEL );
@@ -92,7 +91,9 @@ std::vector<Game> CMinecraftDetector::scan_modrinth( ) const {
                 for ( const auto& world : fs::directory_iterator(
                           profile.path( ), std::filesystem::directory_options::skip_permission_denied ) ) {
                     if ( world.path( ).empty( ) ) continue;
-                    SPDLOG_INFO( "[Minecraft Modrinth] found world '{}' in profile: {}", world.path( ).string( ), profile.path().string() );
+                    SPDLOG_INFO(
+                        "[Minecraft Modrinth] found world '{}' in profile: {}", world.path( ).filename( ).string( ),
+                        profile.path( ).parent_path( ).filename( ).string( ) );
                     entry.save_paths.push_back( world.path( ) );
                 }
             }
@@ -133,8 +134,8 @@ std::vector<Game> CMinecraftDetector::scan_curseforge( ) const {
                       profile.path( ), std::filesystem::directory_options::skip_permission_denied ) ) {
                 if ( world.path( ).empty( ) ) continue;
                 SPDLOG_INFO(
-                    "[Minecraft Curseforge] found world '{}' in profile: {}", world.path( ).string( ),
-                    profile.path( ).string( ) );
+                    "[Minecraft Curseforge] found world '{}' in profile: {}", world.path( ).filename( ).string( ),
+                    profile.path( ).parent_path( ).filename( ).string( ) );
                 entry.save_paths.push_back( world.path( ) );
             }
         }
@@ -182,8 +183,8 @@ std::vector<Game> CMinecraftDetector::scan_prism( ) const {
                           profile.path( ), std::filesystem::directory_options::skip_permission_denied ) ) {
                     if ( world.path( ).empty( ) ) continue;
                     SPDLOG_INFO(
-                        "[Minecraft PrismLauncher] found world '{}' in instance: {}", world.path( ).string( ),
-                        profile.path( ).string( ) );
+                        "[Minecraft PrismLauncher] found world '{}' in instance: {}",
+                        world.path( ).filename( ).string( ), profile.path( ).parent_path( ).filename( ).string( ) );
                     entry.save_paths.push_back( world.path( ) );
                 }
             }
@@ -220,8 +221,8 @@ std::vector<Game> CMinecraftDetector::scan_multimc( ) const {
                       profile.path( ), std::filesystem::directory_options::skip_permission_denied ) ) {
                 if ( world.path( ).empty( ) ) continue;
                 SPDLOG_INFO(
-                    "[Minecraft MultiMC] found world '{}' in instance: {}", world.path( ).string( ),
-                    profile.path( ).string( ) );
+                    "[Minecraft MultiMC] found world '{}' in instance: {}", world.path( ).filename( ).string( ),
+                    profile.path( ).parent_path( ).filename( ).string( ) );
                 entry.save_paths.push_back( world.path( ) );
             }
         }
