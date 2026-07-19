@@ -10,6 +10,7 @@
 #include "cdpr/cdpr.hpp"
 #include "ea/ea.hpp"
 #include "minecraft/minecraft.hpp"
+#include "psstudios/psstudios.hpp"
 #include "rsg/rsg.hpp"
 #include "ubi/ubi.hpp"
 #include "unreal/unreal.hpp"
@@ -34,6 +35,7 @@ std::vector<Game> Detection::find_saves(
     detectors.emplace_back( std::make_unique<CUnrealDetector>( manifest_cache, name_cache ) ); // UE4/5 only
     detectors.emplace_back( std::make_unique<CElectronicArtsDetector>( ) );
     detectors.emplace_back( std::make_unique<CCDPRDetector>( ) );
+    detectors.emplace_back( std::make_unique<CPlaystationStudiosDetector>( ) );
 #endif
 
 #if defined( __linux__ ) || defined( __APPLE__ )
@@ -42,9 +44,9 @@ std::vector<Game> Detection::find_saves(
         CElectronicArtsDetector::scan_wine_prefix,
     };
     std::vector<WineScanHook> wine_user_hooks = {
-        CUbisoftDetector::scan_wine_user,        CRockstarDetector::scan_wine_user, CUnrealDetector::scan_wine_user,
-        CElectronicArtsDetector::scan_wine_user, CCDPRDetector::scan_wine_user,
-    };
+        CUbisoftDetector::scan_wine_user, CRockstarDetector::scan_wine_user,
+        CUnrealDetector::scan_wine_user,  CElectronicArtsDetector::scan_wine_user,
+        CCDPRDetector::scan_wine_user,    CPlaystationStudiosDetector::scan_wine_user };
 #endif
 
 #ifdef __linux__
