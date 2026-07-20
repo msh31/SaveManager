@@ -7,10 +7,7 @@
 
 #include <utils/steam/steam.hpp>
 
-#include "cdpr/cdpr.hpp"
-#include "ea/ea.hpp"
 #include "minecraft/minecraft.hpp"
-#include "psstudios/psstudios.hpp"
 #include "rsg/rsg.hpp"
 #include "ubi/ubi.hpp"
 #include "unreal/unreal.hpp"
@@ -33,26 +30,17 @@ std::vector<Game> Detection::find_saves(
     detectors.emplace_back( std::make_unique<CUbisoftDetector>( translations ) );
     detectors.emplace_back( std::make_unique<CRockstarDetector>( translations ) );
     detectors.emplace_back( std::make_unique<CUnrealDetector>( manifest_cache, name_cache ) ); // UE4/5 only
-    detectors.emplace_back( std::make_unique<CElectronicArtsDetector>( ) );
-    detectors.emplace_back( std::make_unique<CCDPRDetector>( ) );
-    detectors.emplace_back( std::make_unique<CPlaystationStudiosDetector>( ) );
 #endif
 
 #if defined( __linux__ ) || defined( __APPLE__ )
     std::vector<WineScanHook> wine_prefix_hooks = {
         CUbisoftDetector::scan_wine_prefix,
-        CElectronicArtsDetector::scan_wine_prefix,
     };
     std::vector<WineScanHook> wine_user_hooks = {
-        CUbisoftDetector::scan_wine_user, CRockstarDetector::scan_wine_user,
-        CUnrealDetector::scan_wine_user,  CElectronicArtsDetector::scan_wine_user,
-        CCDPRDetector::scan_wine_user,    CPlaystationStudiosDetector::scan_wine_user };
+        CUbisoftDetector::scan_wine_user, CRockstarDetector::scan_wine_user, CUnrealDetector::scan_wine_user };
 #endif
 
 #ifdef __linux__
-    // native
-    detectors.emplace_back( std::make_unique<CCDPRDetector>( ) ); // TW2 has a native port
-
     auto prefixes = SteamHelper::get_library_folders( );
     // steam
     for ( const auto& prefix : prefixes ) {
