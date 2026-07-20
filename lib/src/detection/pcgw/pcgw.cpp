@@ -31,6 +31,22 @@ namespace {
 
     constexpr std::string_view WINE_OS = "Windows";
 
+    // Steam names each compatdata subfolder after the appid it belongs to, e.g.
+    // steamapps/compatdata/<appid>/pfx/drive_c/users/<user>. Recover that appid from a
+    // user_home passed to a wine-user hook, so scan_wine_user only resolves the one game
+    // this prefix actually is, instead of every manifest entry on every prefix.
+    std::optional<uint32_t> resolve_prefix_appid( const fs::path& user_home ) {
+        fs::path drive_c = user_home.parent_path( ).parent_path( );
+        fs::path prefix = drive_c.parent_path( );
+        if ( prefix.filename( ) == "pfx" ) prefix = prefix.parent_path( );
+
+        try {
+            return static_cast<uint32_t>( std::stoul( prefix.filename( ).string( ) ) );
+        } catch ( const std::exception& ) {
+            return std::nullopt;
+        }
+    }
+
     fs::path resolve_wine_root( SaveRoot sr, const WineRootCtx& wine ) {
         switch ( sr ) {
         case SaveRoot::USER_PROFILE:
@@ -177,29 +193,36 @@ std::vector<Game> CPCGamingWikiDetector::scan_wine_user( const fs::path& user_ho
     static const auto entries = load_manifest( );
 
     std::vector<Game> games;
+
+    auto appid = resolve_prefix_appid( user_home );
+    if ( !appid ) return games;
+
+    auto it = entries.find( *appid );
+    if ( it == entries.end( ) ) return games;
+
+    const auto& manifests = ctx.manifest_cache.get_app_manifests( );
+    auto manifest_it = manifests.find( *appid );
+    if ( manifest_it == manifests.end( ) ) return games;
+
+    const SteamManifest& manifest = manifest_it->second;
     WineRootCtx wine{ user_home, user_home.parent_path( ).parent_path( ) };
 
-    for ( const auto& [appid, manifest] : ctx.manifest_cache.get_app_manifests( ) ) {
-        auto it = entries.find( appid );
-        if ( it == entries.end( ) ) continue;
+    for ( const auto& entry : it->second ) {
+        if ( entry.os != WINE_OS ) continue;
 
-        for ( const auto& entry : it->second ) {
-            if ( entry.os != WINE_OS ) continue;
+        auto resolved = resolve( entry.raw_path, manifest, &wine );
+        if ( !resolved || !fs::exists( *resolved ) ) continue;
 
-            auto resolved = resolve( entry.raw_path, manifest, &wine );
-            if ( !resolved || !fs::exists( *resolved ) ) continue;
+        Game game;
+        game.type = PlatformType::PCGAMINGWIKI;
+        game.platform_label = std::string( CPCGamingWikiDetector::PLATFORM_LABEL );
+        game.game_name = manifest.name;
+        game.appid = std::to_string( *appid );
+        game.save_paths.push_back( *resolved );
+        game.show_parent_path = true;
 
-            Game game;
-            game.type = PlatformType::PCGAMINGWIKI;
-            game.platform_label = std::string( CPCGamingWikiDetector::PLATFORM_LABEL );
-            game.game_name = manifest.name;
-            game.appid = std::to_string( appid );
-            game.save_paths.push_back( *resolved );
-            game.show_parent_path = true;
-
-            SPDLOG_INFO( "[PCGamingWiki] found (wine): {}", game.game_name );
-            games.push_back( std::move( game ) );
-        }
+        SPDLOG_INFO( "[PCGamingWiki] found (wine): {}", game.game_name );
+        games.push_back( std::move( game ) );
     }
 
     return games;

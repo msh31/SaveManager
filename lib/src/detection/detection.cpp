@@ -128,8 +128,10 @@ std::vector<Game> Detection::find_saves(
 
         if ( seen.contains( key ) ) {
             SPDLOG_INFO( "[Detection] {} has been seen already! removing duplicate.", key.value );
-            deduped[seen[key]].save_paths.insert(
-                deduped[seen[key]].save_paths.end( ), game.save_paths.begin( ), game.save_paths.end( ) );
+            auto& target_paths = deduped[seen[key]].save_paths;
+            for ( auto& path : game.save_paths ) {
+                if ( std::ranges::find( target_paths, path ) == target_paths.end( ) ) target_paths.push_back( path );
+            }
         } else {
             deduped.push_back( game );
             seen[key] = deduped.size( ) - 1;
