@@ -35,8 +35,6 @@ required = true
 required = true
 [find-package.spdlog]
 required = true
-[find-package.yaml-cpp]
-required = true
 [find-package.CLI11]
 required = true
 
@@ -45,7 +43,7 @@ required = true
 type = "static"
 sources = ["lib/src/**.cpp", "lib/**.hpp"]
 include-directories = ["lib/include"]
-link-libraries = ["CURL::libcurl", "libzip::zip", "Libssh2::libssh2", "OpenSSL::Crypto", "nlohmann_json::nlohmann_json", "stb::stb", "sol2::sol2", "spdlog::spdlog", "yaml-cpp::yaml-cpp"]
+link-libraries = ["CURL::libcurl", "libzip::zip", "Libssh2::libssh2", "OpenSSL::Crypto", "nlohmann_json::nlohmann_json", "stb::stb", "sol2::sol2", "spdlog::spdlog"]
 compile-features = ["cxx_std_23"]
 precompile-headers = ["lib/include/pch.hpp"]
 cmake-after = """

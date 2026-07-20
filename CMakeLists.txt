@@ -68,8 +68,6 @@ find_package(sol2 REQUIRED)
 
 find_package(spdlog REQUIRED)
 
-find_package(yaml-cpp REQUIRED)
-
 find_package(CLI11 REQUIRED)
 
 # Target: savemanager-core
@@ -146,7 +144,6 @@ target_link_libraries(savemanager-core PUBLIC
 	stb::stb
 	sol2::sol2
 	spdlog::spdlog
-	yaml-cpp::yaml-cpp
 )
 
 if(WIN32) # windows
