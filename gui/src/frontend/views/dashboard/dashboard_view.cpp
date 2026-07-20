@@ -9,30 +9,14 @@
 #include <frontend/icons.hpp>
 #include <frontend/notification/notification.hpp>
 
-void CDashboardView::on_enter( ) {
-    std::lock_guard<std::mutex> lock( m_result_mutex );
-    if ( m_result.empty( ) ) {
-        m_last_game_count = 0;
-        m_grouped_games.clear( );
-        m_game_cache.clear( );
-        m_detection_start_time = std::chrono::steady_clock::now( );
-        m_refresh_future = std::async( std::launch::async, [this] {
-            auto result = Detection::find_saves( m_blacklist, m_translations, m_manifest_cache, m_name_cache );
-            std::lock_guard lock( m_result_mutex );
-            m_result = std::move( result );
-        } );
-    }
-};
+void CDashboardView::on_enter( ) { m_detection.ensure_started( ); };
 
 void CDashboardView::render( ) {
     m_task_runner.update( );
 
-    bool refresh_done = m_refresh_future.valid( ) &&
-                        m_refresh_future.wait_for( std::chrono::seconds( 0 ) ) == std::future_status::ready;
-
-    if ( refresh_done ) {
-        m_games_snapshot = m_result;
-        m_refresh_future.get( );
+    if ( m_detection.generation( ) != m_seen_generation ) {
+        m_seen_generation = m_detection.generation( );
+        m_games_snapshot = m_detection.snapshot( );
     }
 
     bool backup_done =
@@ -76,8 +60,7 @@ CDashboardView::~CDashboardView( ) { m_task_runner.shutdown( ); }
 
 // private
 void CDashboardView::render_toolbar( ) {
-    bool is_refreshing = m_refresh_future.valid( ) &&
-                         m_refresh_future.wait_for( std::chrono::seconds( 0 ) ) != std::future_status::ready;
+    bool is_refreshing = m_detection.is_refreshing( );
     bool is_backing_up =
         m_backup_future.valid( ) && m_backup_future.wait_for( std::chrono::seconds( 0 ) ) != std::future_status::ready;
 
@@ -93,7 +76,7 @@ void CDashboardView::render_toolbar( ) {
 
     ImGui::TextDisabled(
         "found %zu games in %s seconds", m_filtered_game_count,
-        std::format( "{:.2f}s", m_detection_duration ).c_str( ) );
+        std::format( "{:.2f}s", m_detection.last_duration( ) ).c_str( ) );
 
     ImGui::SetNextItemWidth(
         ImGui::GetContentRegionAvail( ).x - sort_width - refresh_width - backup_width - filter_width - spacing );
@@ -137,16 +120,10 @@ void CDashboardView::render_toolbar( ) {
     if ( is_refreshing ) ImGui::BeginDisabled( true );
     bool is_refresh_keybind_pressed = ( ImGui::GetIO( ).KeyCtrl && ImGui::IsKeyPressed( ImGuiKey_R ) );
     if ( ( ImGui::Button( "Refresh" ) || is_refresh_keybind_pressed ) && !is_refreshing ) {
-        m_result.clear( );
         m_last_game_count = 0;
         m_grouped_games.clear( );
         m_game_cache.clear( );
-        m_detection_start_time = std::chrono::steady_clock::now( );
-        m_refresh_future = std::async( std::launch::async, [this] {
-            auto result = Detection::find_saves( m_blacklist, m_translations, m_manifest_cache, m_name_cache );
-            std::lock_guard lock( m_result_mutex );
-            m_result = std::move( result );
-        } );
+        m_detection.refresh( );
     }
     if ( is_refreshing ) ImGui::EndDisabled( );
     ImGui::SetItemTooltip( "Re-runs the detection logic to find new saves" );
@@ -154,12 +131,8 @@ void CDashboardView::render_toolbar( ) {
     if ( is_refreshing || is_backing_up ) ImGui::BeginDisabled( true );
     if ( ImGui::Button( "Mass Backup" ) ) {
         m_pending_invalidate = m_games_snapshot;
-        m_backup_future = std::async( std::launch::async, [this]( ) {
-            std::vector<Game> snapshot = { };
-            {
-                std::lock_guard lock( m_result_mutex );
-                snapshot = m_result;
-            }
+        auto snapshot = m_detection.snapshot( );
+        m_backup_future = std::async( std::launch::async, [this, snapshot]( ) {
             if ( snapshot.empty( ) ) {
                 Notify::show_notification( "Mass Backup", "Failed to create snapshot of all saves!", 2000 );
                 return;
@@ -224,8 +197,7 @@ void CDashboardView::render_game_content(
     std::pair<int, int> sb_count, const Game& game, bool has_conflicts,
     std::vector<std::pair<fs::path, const Game*>> files ) {
 
-    bool is_refreshing = m_refresh_future.valid( ) &&
-                         m_refresh_future.wait_for( std::chrono::seconds( 0 ) ) != std::future_status::ready;
+    bool is_refreshing = m_detection.is_refreshing( );
     bool is_backing_up =
         m_backup_future.valid( ) && m_backup_future.wait_for( std::chrono::seconds( 0 ) ) != std::future_status::ready;
 
@@ -706,10 +678,7 @@ void CDashboardView::on_result_changed( ) {
     m_available_platform_labels.assign( labels.begin( ), labels.end( ) );
     if ( m_platform_filter.has_value( ) && !labels.contains( *m_platform_filter ) ) m_platform_filter = std::nullopt;
 
-    invalidate_cache( m_games_snapshot, [this]( ) {
-        m_detection_duration =
-            std::chrono::duration<double>( std::chrono::steady_clock::now( ) - m_detection_start_time ).count( );
-    } );
+    invalidate_cache( m_games_snapshot );
 }
 
 void CDashboardView::invalidate_cache( const std::vector<Game>& games, std::function<void( )> on_done ) {

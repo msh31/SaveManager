@@ -9,22 +9,12 @@
 #include <frontend/components/spinner.hpp>
 #include <frontend/notification/notification.hpp>
 
-void CTransferView::on_enter( ) {
-    if ( m_result.empty( ) )
-        m_detection_future = std::async( std::launch::async, [this] {
-            auto result = Detection::find_saves( m_blacklist, m_translations, m_manifest_cache, m_name_cache );
-            std::lock_guard lock( m_result_mutex );
-            m_result = std::move( result );
-        } );
-}
+void CTransferView::on_enter( ) { m_detection.ensure_started( ); }
 
 void CTransferView::render( ) {
-    bool detection_done = m_detection_future.valid( ) &&
-                          m_detection_future.wait_for( std::chrono::seconds( 0 ) ) == std::future_status::ready;
-
-    if ( detection_done ) {
-        m_games_snapshot = m_result;
-        m_detection_future.get( );
+    if ( m_detection.generation( ) != m_seen_generation ) {
+        m_seen_generation = m_detection.generation( );
+        m_games_snapshot = m_detection.snapshot( );
     }
 
     if ( !m_initialized ) {

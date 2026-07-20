@@ -6,17 +6,13 @@
 #include <frontend/views/backups/backup_view.hpp>
 #include <frontend/views/base_view.hpp>
 
+#include <backend/detection_service/detection_service.hpp>
 #include <backend/task_runner/task_runner.hpp>
-#include <utils/steam/steam.hpp>
-#include <utils/unreal_name_cache/unreal_name_cache.hpp>
 
 class CDashboardView : public CBaseView {
     public:
-        CDashboardView(
-            CConfig& config, const Blacklist& blacklist, const Translations& translations,
-            const SteamManifestCache& manifest_cache, UnrealNameCache& name_cache )
-            : m_config( config ), m_backups_view( config ), m_blacklist( blacklist ), m_translations( translations ),
-              m_manifest_cache( manifest_cache ), m_name_cache( name_cache ) {};
+        CDashboardView( CConfig& config, CDetectionService& detection )
+            : m_config( config ), m_backups_view( config ), m_detection( detection ) {};
         ~CDashboardView( ) override;
         void render( ) override;
         void on_enter( ) override;
@@ -38,12 +34,9 @@ class CDashboardView : public CBaseView {
         void render_modals( );
 
         CConfig& m_config;
-        std::vector<Game> m_result;
         CBackupsView m_backups_view;
-        const Blacklist& m_blacklist;
-        const Translations& m_translations;
-        const SteamManifestCache& m_manifest_cache;
-        UnrealNameCache& m_name_cache;
+        CDetectionService& m_detection;
+        uint64_t m_seen_generation = 0;
 
         CTaskRunner m_task_runner;
 
@@ -57,7 +50,6 @@ class CDashboardView : public CBaseView {
                 std::unordered_map<std::string, TagCache> tags;
         };
 
-        std::mutex m_result_mutex;
         std::vector<Game> m_games_snapshot;
         std::vector<std::vector<int>> m_grouped_games;
 
@@ -79,10 +71,7 @@ class CDashboardView : public CBaseView {
         std::unordered_map<std::string, bool> m_card_collapsed;
         std::unordered_map<std::string, bool> m_backups_expanded;
 
-        float m_detection_duration = 0.0f;
         bool m_backups_tab_was_active = false;
-
-        std::chrono::time_point<std::chrono::steady_clock> m_detection_start_time;
 
         // Model state
         bool m_open_tags_modal = false;
@@ -102,7 +91,6 @@ class CDashboardView : public CBaseView {
         std::unordered_map<std::string, bool> m_restore_checked = { };
 
         // Futures
-        std::future<void> m_refresh_future;
         std::future<void> m_backup_future;
         std::vector<Game> m_pending_invalidate;
 };

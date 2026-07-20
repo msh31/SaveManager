@@ -47,14 +47,10 @@ void CApp::init( ) {
     Features::migrate_labels_to_tags( );
 
     m_ui_manager.add_view(
-        { std::make_unique<CDashboardView>(
-              m_config, m_blacklist, m_translations, m_manifest_cache, m_unreal_name_cache ),
-          ICON_HOME, "Dashboard" } );
+        { std::make_unique<CDashboardView>( m_config, m_detection ), ICON_HOME, "Dashboard" } );
     m_ui_manager.add_view( { std::make_unique<CEditorView>( ), ICON_EDIT, "Save Editor" } );
     m_ui_manager.add_view(
-        { std::make_unique<CTransferView>(
-              m_config, m_blacklist, m_translations, m_manifest_cache, m_unreal_name_cache ),
-          ICON_TRANSFER, "Transfer" } );
+        { std::make_unique<CTransferView>( m_config, m_detection ), ICON_TRANSFER, "Transfer" } );
     m_ui_manager.add_view( { std::make_unique<CAboutView>( ), ICON_INFO, "About" } );
     m_ui_manager.add_view( { std::make_unique<CLogView>( ), ICON_SCROLL, "Log" } );
     m_ui_manager.set_settings_view(

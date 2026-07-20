@@ -1,6 +1,7 @@
 #pragma once
 #include <config/config.hpp>
 
+#include <backend/detection_service/detection_service.hpp>
 #include <backend/shader/shader.hpp>
 #include <backend/task_runner/task_runner.hpp>
 #include <backend/ui_manager/ui_manager.hpp>
@@ -31,6 +32,7 @@ class CApp {
         Translations m_translations;
         SteamManifestCache m_manifest_cache;
         UnrealNameCache m_unreal_name_cache;
+        CDetectionService m_detection{ m_blacklist, m_translations, m_manifest_cache, m_unreal_name_cache };
 
         CTaskRunner m_task_runner;
         std::optional<CShader> m_shader;
