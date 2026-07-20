@@ -98,6 +98,8 @@ set(savemanager-core_SOURCES
 	"lib/src/detection/idetector.hpp"
 	"lib/src/detection/minecraft/minecraft.cpp"
 	"lib/src/detection/minecraft/minecraft.hpp"
+	"lib/src/detection/pcgw/pcgw.cpp"
+	"lib/src/detection/pcgw/pcgw.hpp"
 	"lib/src/detection/rsg/rsg.cpp"
 	"lib/src/detection/rsg/rsg.hpp"
 	"lib/src/detection/ubi/ubi.cpp"

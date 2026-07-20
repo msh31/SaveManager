@@ -8,6 +8,7 @@
 #include <utils/steam/steam.hpp>
 
 #include "minecraft/minecraft.hpp"
+#include "pcgw/pcgw.hpp"
 #include "rsg/rsg.hpp"
 #include "ubi/ubi.hpp"
 #include "unreal/unreal.hpp"
@@ -23,7 +24,6 @@ std::vector<Game> Detection::find_saves(
     std::vector<std::future<std::expected<std::vector<Game>, SMError>>> detection_futures;
 
     std::vector<Game> games = { };
-
     DetectorContext ctx{ translations, manifest_cache, name_cache };
 
 #ifdef _WIN32
@@ -33,11 +33,10 @@ std::vector<Game> Detection::find_saves(
 #endif
 
 #if defined( __linux__ ) || defined( __APPLE__ )
-    std::vector<WineScanHook> wine_prefix_hooks = {
-        CUbisoftDetector::scan_wine_prefix,
-    };
+    std::vector<WineScanHook> wine_prefix_hooks = { CUbisoftDetector::scan_wine_prefix };
     std::vector<WineScanHook> wine_user_hooks = {
-        CUbisoftDetector::scan_wine_user, CRockstarDetector::scan_wine_user, CUnrealDetector::scan_wine_user };
+        CUbisoftDetector::scan_wine_user, CRockstarDetector::scan_wine_user, CUnrealDetector::scan_wine_user,
+        CPCGamingWikiDetector::scan_wine_user };
 #endif
 
 #ifdef __linux__
@@ -77,6 +76,7 @@ std::vector<Game> Detection::find_saves(
     }
 #endif
 
+    detectors.emplace_back( std::make_unique<CPCGamingWikiDetector>( manifest_cache ) );
     detectors.emplace_back( std::make_unique<CMinecraftDetector>( ) );
 
     // cool lua support

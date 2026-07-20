@@ -11,6 +11,7 @@ enum class PlatformType {
     EA,
     PLAYSTATION,
     CDPROJEKTRED,
+    PCGAMINGWIKI,
 };
 
 enum class LauncherType {

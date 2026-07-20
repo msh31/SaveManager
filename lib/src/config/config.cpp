@@ -66,6 +66,11 @@ bool CConfig::init( ) {
         if ( res == false ) SPDLOG_ERROR( "[Translations] Failed to download Ubisoft Translations!" );
     }
 
+    // if ( !fs::exists( paths::pcgw_manifest( ) ) ) {
+    //     auto res = Network::download_file( pcgw_translation_url, paths::pcgw_manifest( ).string( ) );
+    //     if ( res == false ) SPDLOG_ERROR( "[Translations] Failed to download PCGamingWiki manifest!" );
+    // }
+
     if ( !fs::exists( paths::blacklist( ) ) ) {
         std::ofstream f( paths::blacklist( ) );
         if ( f.is_open( ) ) {
