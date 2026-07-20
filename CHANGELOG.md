@@ -5,24 +5,7 @@ This update focuses on extending game support and reachability
 Due to the lack of downloads of the MacOS version I will pause development there for the forseeable future..
 
 ### New game support
-- Electronic Arts (EA)
-    - Need for Speed franchise
-    - Battlefield franchise
-    - Star Wars Battlefront 2
-    - Star Wars Squadrons
-- Playstation Studios (PS ports on PC)
-    - The Last of Us Part I
-    - The Last of Us Part II
-    - Ratchet & Clank - Rift Apart
-    - God of War (2018)
-    - God of Ragnarök
-    - Uncharted Legacy of Thieves Collection
-- CD Projekt Red
-    - Cyberpunk 2077
-    - The Witcher 3
-- Battle.NET
-    - TODO
-- Minecraft Bedrock
+With [savemanager-manifest](https://github.com/msh31/savemanager-manifest) the detection system will now, like other tools be able to find ~10000+ games on your system.
 
 ### Core
 - Added
@@ -33,6 +16,7 @@ Due to the lack of downloads of the MacOS version I will pause development there
 - Fixed
     - Fixed an issue where Minecraft saves from any launcher did not restore properly ([#13](https://github.com/msh31/SaveManager/issues/13))
     - Fixed an issue where some Minecraft saves were not being detected properly ([#14](https://github.com/msh31/savemanager/issues/14))
+    - Fixed an issue where Anno save games were no longer being detected properly ([#17](https://github.com/msh31/savemanager/issues/17))
     - Fixed an issue with loading/deleting/adding tags not getting properly sanitized
     - Fixed a race condition with the Config when connecting to an SFTP server
 
@@ -50,14 +34,20 @@ Due to the lack of downloads of the MacOS version I will pause development there
     - Fixed the dashboard pop-in to loading regression due to 1.8.0's internal overhaul 
     - Fixed an issue where the Windows titlebar did not respect the dark mode setting ([#11](https://github.com/msh31/savemanager/issues/11))
     - Fixed an issue where the application window did not respect the last position and size of the window
+    - Fixed an issue with the detection time display text
 
 - Changed
     - Lowered the minimum resolution from ``1280x720`` to ``1024x576``
 
+### Other
+#### General
+- SaveManager now has an Icon!
+
 #### Development
-- Removed some dead code in the GUI such as; ``CMenuBar``, ``CStatusBar`` etc.. non user facing
+- Removed some dead code in the GUI such as; ``CMenuBar``, ``CStatusBar`` etc.. non user facing changes
 - Created a ``CDetectionService`` class to unify detection for consumers such as the GUI
-- Cleaned up the Dashboard in the GUI by moving filesystem calls out entirely
+- Refactored a lot of the internals of the detection system for better maintainability 
+
 
 ---
 
