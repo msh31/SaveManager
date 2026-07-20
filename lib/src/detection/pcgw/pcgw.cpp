@@ -163,6 +163,7 @@ std::expected<std::vector<Game>, SMError> CPCGamingWikiDetector::find( ) {
             game.game_name = manifest.name;
             game.appid = std::to_string( appid );
             game.save_paths.push_back( *resolved );
+            game.show_parent_path = true;
 
             SPDLOG_INFO( "[PCGamingWiki] found: {}", game.game_name );
             games.push_back( std::move( game ) );
@@ -194,6 +195,7 @@ std::vector<Game> CPCGamingWikiDetector::scan_wine_user( const fs::path& user_ho
             game.game_name = manifest.name;
             game.appid = std::to_string( appid );
             game.save_paths.push_back( *resolved );
+            game.show_parent_path = true;
 
             SPDLOG_INFO( "[PCGamingWiki] found (wine): {}", game.game_name );
             games.push_back( std::move( game ) );
