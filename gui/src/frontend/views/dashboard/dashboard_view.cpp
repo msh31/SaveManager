@@ -75,8 +75,8 @@ void CDashboardView::render_toolbar( ) {
     float spacing = ImGui::GetStyle( ).ItemSpacing.x * 3;
 
     ImGui::TextDisabled(
-        "found %zu games in %s seconds", m_filtered_game_count,
-        std::format( "{:.2f}s", m_detection.last_duration( ) ).c_str( ) );
+        "found %zu games in %s", m_filtered_game_count,
+        std::format( "{:.2f} seconds", m_detection.last_duration( ) ).c_str( ) );
 
     ImGui::SetNextItemWidth(
         ImGui::GetContentRegionAvail( ).x - sort_width - refresh_width - backup_width - filter_width - spacing );
@@ -100,9 +100,8 @@ void CDashboardView::render_toolbar( ) {
         m_sort_mode = m_sort_mode == SortMode::Alphabetical ? SortMode::Recent : SortMode::Alphabetical;
     }
     ImGui::SameLine( );
-    std::string filter_label = m_platform_filter.has_value( )
-                                   ? std::format( "{} {}", ICON_FILTER, *m_platform_filter )
-                                   : std::format( "{} All", ICON_FILTER );
+    std::string filter_label = m_platform_filter.has_value( ) ? std::format( "{} {}", ICON_FILTER, *m_platform_filter )
+                                                              : std::format( "{} All", ICON_FILTER );
     if ( ImGui::Button( filter_label.c_str( ) ) && !m_available_platform_labels.empty( ) ) {
         if ( !m_platform_filter.has_value( ) ) {
             m_platform_filter = m_available_platform_labels.front( );
@@ -176,8 +175,7 @@ void CDashboardView::render_game_list( ) {
     enumerate( sorted, [&]( int gi, auto& group ) {
         m_filtered_game_count++;
 
-        if ( m_platform_filter.has_value( ) && m_games_snapshot[group[0]].platform_label != *m_platform_filter )
-            return;
+        if ( m_platform_filter.has_value( ) && m_games_snapshot[group[0]].platform_label != *m_platform_filter ) return;
 
         const Game& primary = m_games_snapshot[group[0]];
         std::string game_name = primary.game_name;
@@ -367,8 +365,7 @@ void CDashboardView::render_save_row( const fs::path& save_file, const Game& gam
     float total_width = date_width + size_width + 80.0f * 1 + 4.0f * 5;
 
     if ( game.show_parent_path ) {
-        ImGui::Text(
-            "%s", path_to_utf8( save_file.parent_path( ).filename( ) / save_file.filename( ) ).c_str( ) );
+        ImGui::Text( "%s", path_to_utf8( save_file.parent_path( ).filename( ) / save_file.filename( ) ).c_str( ) );
     } else {
         ImGui::Text( "%s", path_to_utf8( save_file.filename( ) ).c_str( ) );
     }
@@ -446,6 +443,7 @@ void CDashboardView::render_backup_row(
         auto res_entries = Features::get_backup_entries( backup );
         if ( res_entries.empty( ) ) {
             Notify::show_notification( "Restore Failed", "Found no entries in backup, odd.", 2000 );
+            ImGui::PopID( );
             return;
         }
         m_open_restore_modal = true;
@@ -455,7 +453,6 @@ void CDashboardView::render_backup_row(
             m_restore_checked[e] = true;
         }
     }
-    ImGui::CloseCurrentPopup( );
 
     ImGui::SetItemTooltip( "Restore save from backup" );
     ImGui::SameLine( 0.0f, 4.0f );
@@ -537,8 +534,7 @@ void CDashboardView::render_modals( ) {
         ImGui::Dummy( ImVec2( 0, 5.0f ) );
         if ( ImGui::Button( "Save" ) ) {
             std::string backup_filename_utf8 = path_to_utf8( m_pending_rename_backup.filename( ) );
-            auto result =
-                Features::save_tags( m_pending_rename_game.game_name, backup_filename_utf8, m_pending_tags );
+            auto result = Features::save_tags( m_pending_rename_game.game_name, backup_filename_utf8, m_pending_tags );
             if ( result.has_value( ) && *result ) {
                 auto key = utils::get_game_identity_key( m_pending_rename_game ).value;
                 auto& game_tags = m_game_cache[key].tags;
