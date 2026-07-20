@@ -1,4 +1,5 @@
 #include "save_helper.hpp"
+#include <utils/steam/steam.hpp>
 
 fs::path save::resolve_root( SaveRoot sr ) {
 #if defined( _WIN32 )
@@ -17,12 +18,47 @@ fs::path save::resolve_root( SaveRoot sr ) {
     case SaveRoot::SAVED_GAMES:
         return paths::get_known_folder_path( FOLDERID_SavedGames );
         break;
+    case SaveRoot::APPDATA:
+        return paths::get_known_folder_path( FOLDERID_RoamingAppData );
+        break;
+    case SaveRoot::USER_PROFILE:
+        return paths::get_known_folder_path( FOLDERID_Profile );
+        break;
+    case SaveRoot::PROGRAM_FILES:
+        return paths::get_known_folder_path( FOLDERID_ProgramFiles );
+        break;
+    case SaveRoot::STEAM_DIR:
+        return SteamHelper::get_steam_location( ).value_or( fs::path{ } );
+        break;
+    default:
+        return { };
     }
 #endif
 #if defined( __linux__ )
     switch ( sr ) {
     case SaveRoot::XDG_DATA_HOME:
         return paths::xdg_data_home( );
+        break;
+    case SaveRoot::XDG_CONFIG_HOME:
+        return paths::xdg_config_home( );
+        break;
+    case SaveRoot::LINUX_HOME:
+        return paths::home_dir( );
+        break;
+    case SaveRoot::STEAM_DIR:
+        return SteamHelper::get_steam_location( ).value_or( fs::path{ } );
+        break;
+    default:
+        return { };
+    }
+#endif
+#if defined( __APPLE__ )
+    switch ( sr ) {
+    case SaveRoot::OSX_HOME:
+        return paths::home_dir( );
+        break;
+    case SaveRoot::STEAM_DIR:
+        return SteamHelper::get_steam_location( ).value_or( fs::path{ } );
         break;
     default:
         return { };

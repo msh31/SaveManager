@@ -1,7 +1,21 @@
 #pragma once
 #include <detection/game.hpp>
 
-enum class SaveRoot { DOCUMENTS, LOCAL_APPDATA, LOCAL_APPDATA_LOW, PROGRAM_DATA, SAVED_GAMES, XDG_DATA_HOME };
+enum class SaveRoot {
+    DOCUMENTS,
+    LOCAL_APPDATA,
+    LOCAL_APPDATA_LOW,
+    PROGRAM_DATA,
+    SAVED_GAMES,
+    XDG_DATA_HOME,
+    APPDATA,
+    USER_PROFILE,
+    PROGRAM_FILES,
+    OSX_HOME,
+    LINUX_HOME,
+    XDG_CONFIG_HOME,
+    STEAM_DIR,
+};
 struct SaveLocation {
         std::string game_name;
         SaveRoot root_path;

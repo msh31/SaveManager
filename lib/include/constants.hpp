@@ -17,8 +17,8 @@ constexpr int DEF_RES_H = 900;
 
 constexpr std::string_view ubi_translation_url =
     "https://raw.githubusercontent.com/msh31/SaveManager/refs/heads/dev/data/ubi_translations.json";
-constexpr std::string_view steam_translation_url =
-    "https://raw.githubusercontent.com/msh31/SaveManager/refs/heads/dev/data/steamids.json";
+constexpr std::string_view pcgw_translation_url =
+    "https://raw.githubusercontent.com/msh31/savemanager-manifest/refs/heads/dev/data/pcgw_manifest.json";
 
 static const std::unordered_set<std::string_view> extension_blocklist{
     ".dat", ".bin",  ".upload", ".bak",  ".cfg",  ".log", ".tmp", ".ini",    ".set",

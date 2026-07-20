@@ -33,6 +33,15 @@ namespace paths {
         }
         return { };
     }
+
+    inline fs::path xdg_config_home( ) {
+        const char* path = std::getenv( "XDG_CONFIG_HOME" );
+        if ( path ) {
+            return fs::path( path );
+        } else {
+            return home_dir( ) / ".config"; // default spec when the env is not set
+        }
+    }
 #endif
 
     inline fs::path default_config_dir( ) {
@@ -106,7 +115,7 @@ namespace paths {
     }
 
     inline fs::path ubi_translations( ) { return config_dir( ) / "ubi_translations.json"; }
-    inline fs::path steam_appids( ) { return config_dir( ) / "steamids.json"; }
+    inline fs::path pcgw_manifest( ) { return config_dir( ) / "pcgw_manifest.json"; }
     inline fs::path blacklist( ) { return config_dir( ) / "game_blacklist.json"; }
     inline fs::path unreal_name_cache( ) { return cache_dir( ) / "unreal_names.json"; }
 
