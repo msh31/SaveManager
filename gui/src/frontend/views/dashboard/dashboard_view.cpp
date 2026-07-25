@@ -205,9 +205,25 @@ void CDashboardView::render_game_content(
         return;
     }
 
-    if ( game.type != PlatformType::MINECRAFT ) ImGui::TextDisabled( "SAVE FILES" );
-    else
-        ImGui::TextDisabled( "WORLDS" );
+    std::string str = "SAVE FILES";
+    if ( game.type == PlatformType::MINECRAFT ) str = "WORLDS";
+
+    auto game_key = utils::get_game_identity_key( game ).value;
+    if ( !m_saves_expanded.contains( game_key ) ) {
+        m_saves_expanded[game_key] = true;
+    }
+    bool& saves_expanded = m_saves_expanded[game_key];
+
+    Card::draw( "##test", str.data( ), saves_expanded, std::nullopt, [&]( ) {
+        for ( auto& save : files ) {
+            if ( !fs::exists( save.first ) ) continue;
+            if ( save.first.string( ).contains( ".savemgr-conflict-" ) ) continue;
+
+            ImGui::Separator( );
+            render_save_row( save.first, *save.second );
+            ImGui::Separator( );
+        }
+    } );
 
     // TODO: cache this
     fs::path undo_dir = paths::backup_dir( ) / sanitize_filename_path( game.game_name ) / "undo.zip";
@@ -272,15 +288,6 @@ void CDashboardView::render_game_content(
         }
     }
     if ( is_backing_up || is_refreshing ) ImGui::EndDisabled( );
-
-    for ( auto& save : files ) {
-        if ( !fs::exists( save.first ) ) continue;
-        if ( save.first.string( ).contains( ".savemgr-conflict-" ) ) continue;
-
-        ImGui::Separator( );
-        render_save_row( save.first, *save.second );
-        ImGui::Separator( );
-    }
 }
 
 void CDashboardView::render_game_row( const std::vector<int>& group, int gi ) {

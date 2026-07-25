@@ -70,6 +70,7 @@ class CDashboardView : public CBaseView {
 
         std::unordered_map<std::string, bool> m_card_collapsed;
         std::unordered_map<std::string, bool> m_backups_expanded;
+        std::unordered_map<std::string, bool> m_saves_expanded;
 
         bool m_backups_tab_was_active = false;
 
