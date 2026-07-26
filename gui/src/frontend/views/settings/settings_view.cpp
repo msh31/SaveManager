@@ -84,6 +84,12 @@ void CSettingsView::render( ) {
         open_in_file_manager( paths::config_dir( ).string( ).c_str( ) );
     }
     ImGui::SetItemTooltip( "Opens your file manager to the config directory." );
+    ImGui::SameLine( );
+    if ( ImGui::Button( "Save" ) ) {
+        m_config.save( );
+        Notify::show_notification( "Config", "Saved app settings!", 2000 );
+    }
+
     ImGui::EndChild( );
 
     ImGui::SameLine( 0.0f, 10.0f );
