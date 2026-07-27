@@ -285,10 +285,7 @@ void CDashboardView::render_game_content(
             if ( !m_config.d_settings.show_conflicts ) {
                 if ( save.first.string( ).contains( ".savemgr-conflict-" ) ) continue;
             }
-
-            ImGui::Separator( );
             render_save_row( save.first, *save.second );
-            ImGui::Separator( );
         }
     } );
 }
@@ -348,12 +345,6 @@ void CDashboardView::render_game_row( const std::vector<int>& group, int gi ) {
             ImGui::EndPopup( );
         }
     } );
-
-    // if ( not_collapsed )
-
-    // Widgets::end_game_card( );
-    // ImGui::EndChild( );
-    // ImGui::PopStyleVar( );
 }
 
 void CDashboardView::render_save_row( const fs::path& save_file, const Game& game ) {
@@ -363,6 +354,7 @@ void CDashboardView::render_save_row( const fs::path& save_file, const Game& gam
         if ( m_config.d_settings.skip_empty_files && b_size <= 0 ) return;
     }
     ImGui::PushID( save_file.string( ).c_str( ) );
+    ImGui::Separator( );
 
     bool is_backing_up =
         m_backup_future.valid( ) && m_backup_future.wait_for( std::chrono::seconds( 0 ) ) != std::future_status::ready;
