@@ -152,12 +152,9 @@ void CBackupsView::render_backup_row(
     fs::path path, const fs::path& save_path, const std::unordered_map<std::string, TagCache>& labels,
     const std::string& game_name ) {
     if ( path.filename( ) == "undo.zip" ) return;
+    if ( !fs::exists( path ) ) return;
+
     ImGui::PushID( path.string( ).c_str( ) );
-    if ( !fs::exists( path ) ) {
-        SPDLOG_WARN( "backup row skipped, fs::exists() returned false for: {}", path_to_utf8( path ) );
-        ImGui::PopID( );
-        return;
-    }
 
     auto it = labels.find( path_to_utf8( path.filename( ) ) );
     const TagCache* tag_cache = ( it != labels.end( ) ) ? &it->second : nullptr;
