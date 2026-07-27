@@ -19,7 +19,13 @@ class CConfig {
                 bool dark_mode = true;
                 bool animated_background = false;
 
-                std::vector<fs::path> watch_paths;
+                // std::vector<fs::path> watch_paths;
+        };
+
+        struct DetectionSettings {
+                bool show_conflicts = false;
+                bool use_savemgr_ignore = false; // TODO
+                bool skip_empty_files = true;
         };
 
         struct SFTPConfig {
@@ -35,6 +41,7 @@ class CConfig {
         };
 
         AppConfig settings;
+        DetectionSettings d_settings;
         SFTPConfig sftp;
         WindowProperties win_props;
 

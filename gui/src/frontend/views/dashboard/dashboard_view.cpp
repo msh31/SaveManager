@@ -281,7 +281,10 @@ void CDashboardView::render_game_content(
     Card::draw( save_files_id, str.data( ), saves_expanded, std::nullopt, [&]( ) {
         for ( auto& save : files ) {
             if ( !fs::exists( save.first ) ) continue;
-            if ( save.first.string( ).contains( ".savemgr-conflict-" ) ) continue;
+            // ugly
+            if ( !m_config.d_settings.show_conflicts ) {
+                if ( save.first.string( ).contains( ".savemgr-conflict-" ) ) continue;
+            }
 
             ImGui::Separator( );
             render_save_row( save.first, *save.second );
@@ -354,6 +357,9 @@ void CDashboardView::render_game_row( const std::vector<int>& group, int gi ) {
 }
 
 void CDashboardView::render_save_row( const fs::path& save_file, const Game& game ) {
+    auto b_size = fs::file_size( save_file ) / 1024; // need to not be magic
+    if ( m_config.d_settings.skip_empty_files && b_size <= 0 ) return;
+
     ImGui::PushID( save_file.string( ).c_str( ) );
 
     bool is_backing_up =
@@ -362,9 +368,8 @@ void CDashboardView::render_save_row( const fs::path& save_file, const Game& gam
     std::string date_text = std::format( "{} | ", format_file_time( fs::last_write_time( save_file ) ) );
     float date_width = ImGui::CalcTextSize( date_text.c_str( ) ).x;
 
-    std::string size_text;
-    if ( game.type != PlatformType::MINECRAFT ) {
-        auto b_size = fs::file_size( save_file ) / 1024;
+    std::string size_text = "??KB";
+    if ( game.type != PlatformType::MINECRAFT ) { // needs re-thinking
         size_text = std::format( "{}KB  ", b_size );
     }
 

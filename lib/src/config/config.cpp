@@ -91,6 +91,10 @@ void CConfig::save( ) {
     data["dark_mode"] = settings.dark_mode;
     data["animated_background"] = settings.animated_background;
 
+    data["show_conflicts"] = d_settings.show_conflicts;
+    data["use_savemgr_ignore"] = d_settings.use_savemgr_ignore; // TODO
+    data["skip_empty_files"] = d_settings.skip_empty_files;
+
     // data["watch_paths"] = settings.watch_paths |
     //                       std::views::transform( []( const fs::path& p ) { return p.string( ); } ) |
     //                       std::ranges::to<std::vector>( );
@@ -135,6 +139,10 @@ void CConfig::load( ) {
 
         settings.dark_mode = data.value( "dark_mode", true );
         settings.animated_background = data.value( "animated_background", false );
+
+        d_settings.show_conflicts = data.value( "show_conflicts", false );
+        d_settings.use_savemgr_ignore = data.value( "use_savemgr_ignore", false ); // TODO
+        d_settings.skip_empty_files = data.value( "skip_empty_files", false );
 
         // if ( data.contains( "watch_paths" ) ) {
         //     settings.watch_paths = data["watch_paths"] |

@@ -121,6 +121,9 @@ std::vector<Game> Detection::find_saves(
     std::map<GameKey, size_t> seen{ };
     std::vector<Game> deduped = { };
     size_t game_count = games.size( );
+
+    // why is game count not checked?
+
     for ( size_t i = 0; i < game_count; i++ ) {
         auto& game = games[i];
         auto key = utils::get_game_identity_key( game );

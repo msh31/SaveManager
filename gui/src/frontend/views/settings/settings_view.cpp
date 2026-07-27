@@ -64,6 +64,7 @@ void CSettingsView::render( ) {
     ImGui::Checkbox( "Animated background", &m_config.settings.animated_background );
     ImGui::Separator( );
 
+    // TODO: seperate this?
     if ( is_checking ) ImGui::BeginDisabled( true );
     if ( ImGui::Button( "Check for updates" ) ) {
         m_update_future = std::async( std::launch::async, []( ) { return Network::is_update_available( ); } );
@@ -95,7 +96,7 @@ void CSettingsView::render( ) {
     ImGui::SameLine( 0.0f, 10.0f );
 
     ImGui::BeginChild(
-        "##blacklisted_games", ImVec2( 0, 250.0f ), true,
+        "##blacklisted_games", ImVec2( 300.0f, 250.0f ), true,
         ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse );
 
     ImGui::PushFont( CFontManager::get( ).get_font( "jbm_med" ).value_or( nullptr ) );
@@ -130,6 +131,22 @@ void CSettingsView::render( ) {
             m_blacklist_input.clear( );
         }
     }
+    ImGui::EndChild( );
+
+    ImGui::SameLine( 0.0f, 10.0f );
+
+    ImGui::BeginChild(
+        "##detection_settings", ImVec2( window_width, 250.0f ), true,
+        ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse );
+
+    ImGui::PushFont( CFontManager::get( ).get_font( "jbm_med" ).value_or( nullptr ) );
+    ImGui::Text( "Detection" );
+    ImGui::PopFont( );
+
+    ImGui::Checkbox( "Show conflicting files", &m_config.d_settings.show_conflicts );
+    // ImGui::Checkbox( "", &m_config.settings.dark_mode );
+    ImGui::Checkbox( "Skip empty files", &m_config.d_settings.skip_empty_files );
+
     ImGui::EndChild( );
 }
 
