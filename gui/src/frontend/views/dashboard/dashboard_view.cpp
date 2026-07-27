@@ -357,9 +357,11 @@ void CDashboardView::render_game_row( const std::vector<int>& group, int gi ) {
 }
 
 void CDashboardView::render_save_row( const fs::path& save_file, const Game& game ) {
-    auto b_size = fs::file_size( save_file ) / 1024; // need to not be magic
-    if ( m_config.d_settings.skip_empty_files && b_size <= 0 ) return;
-
+    uintmax_t b_size = 0; // big bad?
+    if ( !fs::is_directory( save_file ) ) {
+        b_size = fs::file_size( save_file ) / 1024; // need to not be magic
+        if ( m_config.d_settings.skip_empty_files && b_size <= 0 ) return;
+    }
     ImGui::PushID( save_file.string( ).c_str( ) );
 
     bool is_backing_up =
