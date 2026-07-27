@@ -205,37 +205,16 @@ void CDashboardView::render_game_content(
         return;
     }
 
-    std::string str = "SAVE FILES";
-    if ( game.type == PlatformType::MINECRAFT ) str = "WORLDS";
-
-    auto game_key = utils::get_game_identity_key( game ).value;
-    if ( !m_saves_expanded.contains( game_key ) ) {
-        m_saves_expanded[game_key] = true;
-    }
-    bool& saves_expanded = m_saves_expanded[game_key];
-
-    Card::draw( "##test", str.data( ), saves_expanded, std::nullopt, [&]( ) {
-        for ( auto& save : files ) {
-            if ( !fs::exists( save.first ) ) continue;
-            if ( save.first.string( ).contains( ".savemgr-conflict-" ) ) continue;
-
-            ImGui::Separator( );
-            render_save_row( save.first, *save.second );
-            ImGui::Separator( );
-        }
-    } );
-
     // TODO: cache this
     fs::path undo_dir = paths::backup_dir( ) / sanitize_filename_path( game.game_name ) / "undo.zip";
     bool has_undo = false;
     if ( fs::exists( undo_dir ) ) has_undo = true;
 
-    // TODO: refactor this, just disable dont hide
     float total = 110.f; // Backup All
     // total += ImGui::CalcTextSize("Create Schedule__").x + 4.f;
     if ( has_conflicts ) total += ImGui::CalcTextSize( "Resolve Conflict(s)__" ).x + 4.f;
     if ( has_undo ) total += ImGui::CalcTextSize( "Undo last restore___" ).x + 4.f;
-    ImGui::SameLine( ImGui::GetContentRegionMax( ).x - total );
+    ImGui::SetCursorPosX( ImGui::GetContentRegionMax( ).x - total );
 
     ImGui::PushStyleColor( ImGuiCol_Button, ImColor( 198, 97, 63 ).Value );
     ImGui::PushStyleColor( ImGuiCol_ButtonHovered, ImColor( 198, 97, 63 ).Value );
@@ -254,9 +233,9 @@ void CDashboardView::render_game_content(
     }
     if ( is_backing_up || is_refreshing ) ImGui::EndDisabled( );
     ImGui::PopStyleColor( 2 );
-    ImGui::SameLine( );
-    if ( is_backing_up || is_refreshing ) ImGui::BeginDisabled( true );
     if ( has_conflicts ) {
+        ImGui::SameLine( );
+        if ( is_backing_up || is_refreshing ) ImGui::BeginDisabled( true );
         if ( ImGui::Button( "Resolve Conflict(s)" ) ) {
             m_pending_conflicts.clear( );
             m_pending_conflict_game = game;
@@ -272,11 +251,11 @@ void CDashboardView::render_game_content(
                 m_open_conflict_modal = true;
             }
         }
+        if ( is_backing_up || is_refreshing ) ImGui::EndDisabled( );
     }
-    if ( is_backing_up || is_refreshing ) ImGui::EndDisabled( );
-    ImGui::SameLine( );
-    if ( is_backing_up || is_refreshing ) ImGui::BeginDisabled( true );
     if ( has_undo ) {
+        ImGui::SameLine( );
+        if ( is_backing_up || is_refreshing ) ImGui::BeginDisabled( true );
         if ( ImGui::Button( "Undo last restore" ) ) {
             if ( Features::restore_backup( undo_dir, game.save_paths, m_pending_conflicts ) ) {
                 fs::remove( undo_dir );
@@ -286,8 +265,29 @@ void CDashboardView::render_game_content(
             }
             invalidate_cache( { game } );
         }
+        if ( is_backing_up || is_refreshing ) ImGui::EndDisabled( );
     }
-    if ( is_backing_up || is_refreshing ) ImGui::EndDisabled( );
+
+    std::string str = "SAVE FILES";
+    if ( game.type == PlatformType::MINECRAFT ) str = "WORLDS";
+
+    auto game_key = utils::get_game_identity_key( game ).value;
+    if ( !m_saves_expanded.contains( game_key ) ) {
+        m_saves_expanded[game_key] = true;
+    }
+    bool& saves_expanded = m_saves_expanded[game_key];
+
+    auto save_files_id = std::format( "savefiles_{}", game_key );
+    Card::draw( save_files_id, str.data( ), saves_expanded, std::nullopt, [&]( ) {
+        for ( auto& save : files ) {
+            if ( !fs::exists( save.first ) ) continue;
+            if ( save.first.string( ).contains( ".savemgr-conflict-" ) ) continue;
+
+            ImGui::Separator( );
+            render_save_row( save.first, *save.second );
+            ImGui::Separator( );
+        }
+    } );
 }
 
 void CDashboardView::render_game_row( const std::vector<int>& group, int gi ) {
@@ -314,7 +314,7 @@ void CDashboardView::render_game_row( const std::vector<int>& group, int gi ) {
         files.emplace_back( path, &primary );
     }
 
-    auto selectable_id = std::format( "gamename_{}", gi );
+    auto selectable_id = std::format( "gamename_{}", game_key );
 
     std::string right_text =
         std::format( "{} | {} saves | {} backups", primary.platform_label, save_count, backup_count );
