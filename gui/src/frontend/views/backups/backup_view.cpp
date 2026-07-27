@@ -74,7 +74,7 @@ void CBackupsView::render( const std::vector<Game>& games_snapshot ) {
             std::async( std::launch::async, [this, games_snapshot] { add_new_entry( games_snapshot ); } );
     }
 
-    std::vector<BackupEntry> snapshot;
+    std::vector<BackupEntry> snapshot = { };
     std::unordered_map<std::string, std::unordered_map<std::string, TagCache>> labels_cache;
     {
         std::lock_guard lock( m_mutex );
@@ -92,9 +92,13 @@ void CBackupsView::render( const std::vector<Game>& games_snapshot ) {
 
         ImGui::Dummy( ImVec2( 0, 5.0f ) );
 
-        for ( const auto& entry : snapshot ) {
-            render_game_row( entry, labels_cache );
-            ImGui::Dummy( ImVec2( 0, 6.0f ) );
+        if ( snapshot.empty( ) ) {
+            ImGui::TextDisabled( "No backups have been created yet.." );
+        } else {
+            for ( const auto& entry : snapshot ) {
+                render_game_row( entry, labels_cache );
+                ImGui::Dummy( ImVec2( 0, 6.0f ) );
+            }
         }
     }
 
