@@ -173,10 +173,7 @@ void CDashboardView::render_game_list( ) {
     }
 
     enumerate( sorted, [&]( int gi, auto& group ) {
-        m_filtered_game_count++;
-
         if ( m_platform_filter.has_value( ) && m_games_snapshot[group[0]].platform_label != *m_platform_filter ) return;
-
         const Game& primary = m_games_snapshot[group[0]];
         std::string game_name = primary.game_name;
 
@@ -186,6 +183,7 @@ void CDashboardView::render_game_list( ) {
                 return;
             }
         }
+        m_filtered_game_count++;
         render_game_row( group, static_cast<int>( gi ) );
         ImGui::Dummy( ImVec2( 0, 6.0f ) );
     } );
