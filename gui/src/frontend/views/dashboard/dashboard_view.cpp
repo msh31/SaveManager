@@ -449,6 +449,7 @@ void CDashboardView::render_backup_row(
         auto res_entries = Features::get_backup_entries( backup );
         if ( res_entries.empty( ) ) {
             Notify::show_notification( "Restore Failed", "Found no entries in backup, odd.", 2000 );
+            ImGui::PopStyleVar( );
             ImGui::PopID( );
             return;
         }
