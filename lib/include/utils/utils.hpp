@@ -167,3 +167,12 @@ static std::string format_file_time( fs::file_time_type f ) {
     return std::format( "{:%d-%m-%y %H:%M:%S}", floored );
 #endif
 }
+
+static std::string format_file_size( uintmax_t size ) {
+    constexpr uintmax_t KB = 1024, MB = KB * 1024, GB = MB * 1024;
+
+    if ( size >= GB ) return std::format( "{:.2f}GB", static_cast<double>( size ) / GB );
+    if ( size >= MB ) return std::format( "{:.2f}MB", static_cast<double>( size ) / MB );
+    if ( size >= KB ) return std::format( "{:.2f}KB", static_cast<double>( size ) / KB );
+    return std::format( "{}B", size );
+}

@@ -159,12 +159,11 @@ void CBackupsView::render_backup_row(
     auto it = labels.find( path_to_utf8( path.filename( ) ) );
     const TagCache* tag_cache = ( it != labels.end( ) ) ? &it->second : nullptr;
 
-    std::string date_text = "failed to set";
-    std::string size_text = "failed to set";
+    std::string date_text = "??";
+    std::string size_text = "??";
     try {
         date_text = std::format( "{:%d/%m/%y %H:%M} | ", fs::last_write_time( path ) );
-        auto b_size = fs::file_size( path ) / 1024;
-        size_text = std::format( "{}KB  ", b_size );
+        size_text = format_file_size( fs::file_size( path ) );
     } catch ( const fs::filesystem_error& ex ) {
         SPDLOG_ERROR( "backup row failed to stat {}: {}", path_to_utf8( path ), ex.what( ) );
         ImGui::PopID( );

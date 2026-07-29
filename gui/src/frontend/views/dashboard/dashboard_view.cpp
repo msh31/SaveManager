@@ -348,9 +348,10 @@ void CDashboardView::render_game_row( const std::vector<int>& group, int gi ) {
 void CDashboardView::render_save_row( const fs::path& save_file, const Game& game ) {
     uintmax_t b_size = 0; // big bad?
     if ( !fs::is_directory( save_file ) ) {
-        b_size = fs::file_size( save_file ) / 1024; // need to not be magic
+        b_size = fs::file_size( save_file );
         if ( m_config.d_settings.skip_empty_files && b_size <= 0 ) return;
     }
+
     ImGui::PushID( save_file.string( ).c_str( ) );
     ImGui::Separator( );
 
@@ -360,9 +361,9 @@ void CDashboardView::render_save_row( const fs::path& save_file, const Game& gam
     std::string date_text = std::format( "{} | ", format_file_time( fs::last_write_time( save_file ) ) );
     float date_width = ImGui::CalcTextSize( date_text.c_str( ) ).x;
 
-    std::string size_text = "??KB";
+    std::string size_text = "??";
     if ( game.type != PlatformType::MINECRAFT ) { // needs re-thinking
-        size_text = std::format( "{}KB  ", b_size );
+        size_text = std::format( "{}  ", format_file_size( b_size ) );
     }
 
     float size_width = ImGui::CalcTextSize( size_text.c_str( ) ).x;
@@ -412,12 +413,12 @@ void CDashboardView::render_backup_row(
     auto it = labels.find( backup_filename_utf8 );
     const TagCache* tag_cache = ( it != labels.end( ) ) ? &it->second : nullptr;
 
-    std::string date_text;
-    std::string size_text;
+    std::string date_text = "??";
+    std::string size_text = "??";
     try {
         date_text = std::format( "{} | ", format_file_time( fs::last_write_time( backup ) ) );
         auto b_size = fs::file_size( backup ) / 1024;
-        size_text = std::format( "{}KB  ", b_size );
+        size_text = format_file_size( b_size );
     } catch ( const fs::filesystem_error& ex ) {
         SPDLOG_ERROR( "backup row failed to stat {}: {}", path_to_utf8( backup ), ex.what( ) );
         ImGui::PopID( );
