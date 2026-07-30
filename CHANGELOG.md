@@ -1,17 +1,20 @@
 ## 1.9.0 - 2026-??-??
 This update focuses on extending game support and reachability
 
+### New game support
+With [savemanager-manifest](https://github.com/msh31/savemanager-manifest) the detection system will now, like other tools be able to find 10000+ games on your system.
+
 #### Information
 Due to the lack of downloads of the MacOS version I will pause development there for the forseeable future..
 
-### New game support
-With [savemanager-manifest](https://github.com/msh31/savemanager-manifest) the detection system will now, like other tools be able to find ~10000+ games on your system.
 
 ### Core
 - Added
     - Safety guards around the Save Editor by taking a snapshot of the savegame before editing it
     - Option to include tags during SFTP transfers ([#12](https://github.com/msh31/savemanager/issues/12))
     - Automatic periodic update checks (configurable)
+    - Detection settings (show_conflicts & skip_empty_files)
+    - Configurable ``.savemgr-ignore`` file to exclude certain filenames, directories or extensions from detection
 
 - Fixed
     - Fixed an issue where Minecraft saves from any launcher did not restore properly ([#13](https://github.com/msh31/SaveManager/issues/13))
@@ -29,19 +32,27 @@ With [savemanager-manifest](https://github.com/msh31/savemanager-manifest) the d
     - 'Delete' button on the list of savefiles (Has a confirm dialog)
     - 'Duplicate' button on the list of savefiles and backups
     - 'Preview' button on the list of savefiles and backups
+    - 'Save' button within the settings tab
 
 - Fixed 
     - Fixed the dashboard pop-in to loading regression due to 1.8.0's internal overhaul 
     - Fixed an issue where the Windows titlebar did not respect the dark mode setting ([#11](https://github.com/msh31/savemanager/issues/11))
     - Fixed an issue where the application window did not respect the last position and size of the window
     - Fixed an issue with the detection time display text
+    - Fixed an issue with seperators showing up when not needed
+    - Fixed a log spam when a backup was deleted externally
+    - FIxed an issue where the game count was counting games that got filterered out
+    - Fixed a missing style pop before returning in the backup restore button
 
 - Changed
     - Lowered the minimum resolution from ``1280x720`` to ``1024x576``
+    - Improved the dashboard by putting the found saves in a collapsable section
+    - Added a small notice when no backups have been created yet
+    - File sizes are now shown properly as B, KB, MB and GB 
 
 ### Other
 #### General
-- SaveManager now has an Icon!
+- SaveManager now has an icon!
 
 #### Development
 - Removed some dead code in the GUI such as; ``CMenuBar``, ``CStatusBar`` etc.. non user facing changes
