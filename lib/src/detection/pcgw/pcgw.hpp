@@ -1,6 +1,7 @@
 #pragma once
 #include "../../utils/save_helper/save_helper.hpp"
 #include "../detector_context.hpp"
+#include "../detector_utils.hpp"
 #include "../idetector.hpp"
 #include <utils/steam/steam.hpp>
 
