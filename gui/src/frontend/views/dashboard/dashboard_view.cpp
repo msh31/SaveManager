@@ -417,8 +417,7 @@ void CDashboardView::render_backup_row(
     std::string size_text = "??";
     try {
         date_text = std::format( "{} | ", format_file_time( fs::last_write_time( backup ) ) );
-        auto b_size = fs::file_size( backup ) / 1024;
-        size_text = format_file_size( b_size );
+        size_text = format_file_size( fs::file_size( backup ) );
     } catch ( const fs::filesystem_error& ex ) {
         SPDLOG_ERROR( "backup row failed to stat {}: {}", path_to_utf8( backup ), ex.what( ) );
         ImGui::PopID( );
