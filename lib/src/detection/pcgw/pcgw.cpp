@@ -143,6 +143,7 @@ CPCGamingWikiDetector::resolve( const std::string& raw_path, const SteamManifest
     }
 
     std::ranges::replace( result, '\\', '/' );
+    if ( !result.empty( ) && result.back( ) == '/' ) result.pop_back( );
     return fs::path( result );
 }
 

@@ -120,10 +120,11 @@ std::vector<Game> Detection::find_saves(
     std::vector<Game> deduped = { };
     size_t game_count = games.size( );
 
-    // why is game count not checked?
+    // DE-DUPLICATION
     for ( size_t i = 0; i < game_count; i++ ) {
         auto& game = games[i];
         auto key = utils::get_game_identity_key( game );
+
         if ( key.kind == GameKeyKind::INVALID ) continue;
 
         if ( seen.contains( key ) ) {
@@ -151,12 +152,14 @@ std::vector<Game> Detection::find_saves(
     }
     games = std::move( deduped );
 
+    // BLACKLIST
     std::erase_if( games, [&blacklist]( const Game& game ) {
         bool blacklisted = blacklist.is_blacklisted( game.game_name );
         if ( blacklisted ) SPDLOG_INFO( "[Detection] {} is blacklisted, removing.", game.game_name );
         return blacklisted;
     } );
 
+    // VALID PATH CHECK
     std::erase_if( games, []( const Game& game ) {
         bool has_valid_path = std::ranges::any_of(
             game.save_paths, []( const fs::path& p ) { return fs::is_directory( p ) && !fs::is_empty( p ); } );
