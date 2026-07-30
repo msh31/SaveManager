@@ -116,16 +116,11 @@ std::vector<Game> Detection::find_saves(
         }
     }
 
-    if ( games.empty( ) ) {
-        SPDLOG_ERROR( "No savegames found!" );
-    }
-
     std::map<GameKey, size_t> seen{ };
     std::vector<Game> deduped = { };
     size_t game_count = games.size( );
 
     // why is game count not checked?
-
     for ( size_t i = 0; i < game_count; i++ ) {
         auto& game = games[i];
         auto key = utils::get_game_identity_key( game );
@@ -135,7 +130,19 @@ std::vector<Game> Detection::find_saves(
             SPDLOG_INFO( "[Detection] {} has been seen already! removing duplicate.", key.value );
             auto& target_paths = deduped[seen[key]].save_paths;
             for ( auto& path : game.save_paths ) {
-                if ( std::ranges::find( target_paths, path ) == target_paths.end( ) ) target_paths.push_back( path );
+                bool skip = false;
+                std::erase_if( target_paths, [&]( const fs::path& existing ) {
+                    auto rel = path.lexically_relative( existing );
+                    if ( !rel.empty( ) && rel.native( )[0] != '.' )
+                        return true; // existing is a parent of path, drop it
+                    auto rel2 = existing.lexically_relative( path );
+                    if ( !rel2.empty( ) && rel2.native( )[0] != '.' )
+                        skip = true; // path is a parent of existing, don't add path
+                    return false;
+                } );
+                if ( !skip && std::ranges::find( target_paths, path ) == target_paths.end( ) ) {
+                    target_paths.push_back( path );
+                }
             }
         } else {
             deduped.push_back( game );
@@ -159,6 +166,10 @@ std::vector<Game> Detection::find_saves(
                 game.save_paths.size( ) );
         return !has_valid_path;
     } );
+
+    if ( games.empty( ) ) {
+        SPDLOG_ERROR( "No savegames found!" );
+    }
 
     return games;
 }
