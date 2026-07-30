@@ -24,7 +24,9 @@ std::vector<Game> Detection::find_saves(
     std::vector<std::future<std::expected<std::vector<Game>, SMError>>> detection_futures;
 
     std::vector<Game> games = { };
-    DetectorContext ctx{ translations, manifest_cache, name_cache };
+
+    auto pcgw_entries = CPCGamingWikiDetector::load_manifest( );
+    DetectorContext ctx{ translations, manifest_cache, name_cache, pcgw_entries };
 
 #ifdef _WIN32
     detectors.emplace_back( std::make_unique<CUbisoftDetector>( translations ) );
@@ -76,7 +78,7 @@ std::vector<Game> Detection::find_saves(
     }
 #endif
 
-    detectors.emplace_back( std::make_unique<CPCGamingWikiDetector>( manifest_cache ) );
+    detectors.emplace_back( std::make_unique<CPCGamingWikiDetector>( manifest_cache, pcgw_entries ) );
     detectors.emplace_back( std::make_unique<CMinecraftDetector>( ) );
 
     // cool lua support

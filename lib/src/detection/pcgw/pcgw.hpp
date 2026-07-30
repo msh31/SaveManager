@@ -4,11 +4,6 @@
 #include "../idetector.hpp"
 #include <utils/steam/steam.hpp>
 
-struct PcgwEntry {
-        std::string os;
-        std::string raw_path;
-};
-
 // Where Wine/Proton roots resolve to, so resolve() can be shared between the native
 // and Wine paths - only the "fixed OS root" tokens differ between the two.
 struct WineRootCtx {
@@ -20,7 +15,10 @@ class CPCGamingWikiDetector : public IDetector {
     public:
         static constexpr std::string_view PLATFORM_LABEL = "PCGamingWiki";
 
-        explicit CPCGamingWikiDetector( const SteamManifestCache& manifest_cache );
+        CPCGamingWikiDetector(
+            const SteamManifestCache& manifest_cache,
+            const std::unordered_map<uint32_t, std::vector<PcgwEntry>>& entries );
+        static std::unordered_map<uint32_t, std::vector<PcgwEntry>> load_manifest( );
 
         std::expected<std::vector<Game>, SMError> find( ) override;
 
@@ -29,7 +27,6 @@ class CPCGamingWikiDetector : public IDetector {
         static std::vector<Game> scan_wine_user( const fs::path& user_home, const DetectorContext& ctx );
 
     private:
-        static std::unordered_map<uint32_t, std::vector<PcgwEntry>> load_manifest( );
         static std::optional<fs::path>
         resolve( const std::string& raw_path, const SteamManifest& manifest, const WineRootCtx* wine );
 

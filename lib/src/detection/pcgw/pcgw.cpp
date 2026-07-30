@@ -73,8 +73,9 @@ namespace {
     }
 } // namespace
 
-CPCGamingWikiDetector::CPCGamingWikiDetector( const SteamManifestCache& manifest_cache )
-    : m_manifest_cache( manifest_cache ), m_entries( load_manifest( ) ) {}
+CPCGamingWikiDetector::CPCGamingWikiDetector(
+    const SteamManifestCache& manifest_cache, const std::unordered_map<uint32_t, std::vector<PcgwEntry>>& entries )
+    : m_manifest_cache( manifest_cache ), m_entries( entries ) {}
 
 std::unordered_map<uint32_t, std::vector<PcgwEntry>> CPCGamingWikiDetector::load_manifest( ) {
     std::unordered_map<uint32_t, std::vector<PcgwEntry>> entries;
@@ -190,15 +191,13 @@ std::expected<std::vector<Game>, SMError> CPCGamingWikiDetector::find( ) {
 }
 
 std::vector<Game> CPCGamingWikiDetector::scan_wine_user( const fs::path& user_home, const DetectorContext& ctx ) {
-    static const auto entries = load_manifest( );
-
-    std::vector<Game> games;
+    std::vector<Game> games = { };
 
     auto appid = resolve_prefix_appid( user_home );
     if ( !appid ) return games;
 
-    auto it = entries.find( *appid );
-    if ( it == entries.end( ) ) return games;
+    auto it = ctx.pcgw_entries.find( *appid );
+    if ( it == ctx.pcgw_entries.end( ) ) return games;
 
     const auto& manifests = ctx.manifest_cache.get_app_manifests( );
     auto manifest_it = manifests.find( *appid );
