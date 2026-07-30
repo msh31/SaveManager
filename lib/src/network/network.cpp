@@ -60,7 +60,7 @@ bool Network::download_file( std::string_view url, const std::string& output_pat
     curl_easy_setopt( curl, CURLOPT_URL, url_str.c_str( ) );
     curl_easy_setopt( curl, CURLOPT_WRITEFUNCTION, write_callback );
     curl_easy_setopt( curl, CURLOPT_WRITEDATA, fp );
-
+    curl_easy_setopt( curl, CURLOPT_FAILONERROR, 1L ); // http respones 400+
     CURLcode res = curl_easy_perform( curl );
 
     fclose( fp );
