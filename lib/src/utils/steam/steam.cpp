@@ -52,7 +52,11 @@ std::optional<std::string> SteamHelper::parse_steam_userid( ) {
     }
 
     std::string current_id = { };
+    std::string best_id = { };
+    uint64_t best_time = 0;
+
     while ( std::getline( file, line ) ) {
+        // find a steam account
         if ( line.find( "\"7656119" ) != std::string::npos ) {
             auto last_close = line.rfind( '"' );
             auto last_open = line.rfind( '"', last_close - 1 );
@@ -62,19 +66,23 @@ std::optional<std::string> SteamHelper::parse_steam_userid( ) {
             current_id = value;
             continue;
         }
-        if ( line.find( "\"MostRecent\"" ) != std::string::npos ) {
+        // if there is more than 1, compare the timestamps and use the most recent one
+        if ( line.find( "\"Timestamp\"" ) != std::string::npos ) {
             auto last_close = line.rfind( '"' );
             auto last_open = line.rfind( '"', last_close - 1 );
 
             std::string value = line.substr( last_open + 1, last_close - last_open - 1 );
-            if ( value == "1" ) return current_id;
-            else
-                continue;
+            auto time = std::stoull( value );
+
+            if ( time > best_time ) {
+                best_time = time;
+                best_id = current_id;
+            }
         }
     }
 
     file.close( );
-    return std::nullopt;
+    return best_id.empty( ) ? std::nullopt : std::optional( best_id );
 }
 
 std::vector<fs::path> SteamHelper::get_library_folders( ) {
