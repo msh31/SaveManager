@@ -67,27 +67,45 @@ std::unordered_map<uint32_t, std::vector<PcgwEntry>> CPCGamingWikiDetector::load
 
     std::ifstream file( paths::pcgw_manifest( ) );
     if ( !file.is_open( ) ) {
-        SPDLOG_WARN( "[PCGamingWiki] no manifest found at {}", paths::pcgw_manifest( ).string( ) );
+        SPDLOG_WARN( "[PCGamingWiki] failed to open manifest at: {}", paths::pcgw_manifest( ).string( ) );
         return entries;
     }
 
     try {
         json data = json::parse( file );
         for ( const auto& entry : data ) {
-            if ( !entry.contains( "appid" ) || !entry.contains( "saves" ) ) continue;
+            if ( !entry.contains( "appid" ) || !entry.contains( "saves" ) ) {
+                // #ifndef NDEBUG
+                //                 SPDLOG_WARN( "entry has no appid or saves entry, skipping.." );
+                // #endif
+                continue;
+            }
 
             uint32_t appid;
             try {
                 appid = static_cast<uint32_t>( std::stoul( entry["appid"].get<std::string>( ) ) );
-            } catch ( const std::exception& ) {
+            } catch ( const std::exception& ex ) {
+#ifndef NDEBUG
+                SPDLOG_WARN( "failed to get appid from entry: {}", ex.what( ) );
+#endif
                 continue;
             }
 
             for ( const auto& save : entry["saves"] ) {
-                if ( !save.value( "clean", false ) ) continue;
+                if ( !save.value( "clean", false ) ) {
+                    // #ifndef NDEBUG
+                    //                     SPDLOG_WARN( "entry is not clean, skipping.." );
+                    // #endif
+                    continue;
+                }
 
                 std::string path = save.value( "path", "" );
-                if ( path.empty( ) ) continue;
+                if ( path.empty( ) ) {
+#ifndef NDEBUG
+                    SPDLOG_WARN( "{} is empty, skipping..", path );
+#endif
+                    continue;
+                }
 
                 entries[appid].push_back( { save.value( "os", "" ), path } );
             }
@@ -143,6 +161,16 @@ CPCGamingWikiDetector::resolve( const std::string& raw_path, const SteamManifest
     }
 
     std::ranges::replace( result, '\\', '/' );
+    auto pos = result.rfind( '/' ); // backwards from find
+
+    if ( pos != std::string::npos ) {
+        std::string segment = result.substr( pos + 1 );
+        auto wildcard_found = segment.find( '*' );
+        if ( wildcard_found != std::string::npos ) {
+            result = result.substr( 0, pos );
+        }
+    }
+
     if ( !result.empty( ) && result.back( ) == '/' ) result.pop_back( );
     return fs::path( result );
 }
