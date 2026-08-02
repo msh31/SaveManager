@@ -126,6 +126,7 @@ CPCGamingWikiDetector::resolve( const std::string& raw_path, const SteamManifest
     bool is_user_id_mid_filename = false;
     std::string mid_filename_dir = { };
     std::string mid_filename_pattern = { };
+    std::string user_id_parent_dir;
     size_t pass_count = 0;
 
     while ( pass_count < 2 ) {
@@ -154,6 +155,11 @@ CPCGamingWikiDetector::resolve( const std::string& raw_path, const SteamManifest
             } else if ( token == "USER_ID" ) {
                 is_user_id_mid_filename =
                     close + 1 < raw_path.size( ) && ( raw_path[close + 1] != '\\' && raw_path[close + 1] != '/' );
+
+                if ( !is_user_id_mid_filename ) {
+                    user_id_parent_dir = result;
+                    std::ranges::replace( user_id_parent_dir, '\\', '/' );
+                }
 
                 mid_filename_dir = result.substr( 0, result.rfind( '\\' ) );
                 std::ranges::replace( mid_filename_dir, '\\', '/' );
@@ -210,6 +216,19 @@ CPCGamingWikiDetector::resolve( const std::string& raw_path, const SteamManifest
         if ( !result.empty( ) && result.back( ) == '/' ) result.pop_back( );
         if ( fs::exists( result ) ) return fs::path( result );
     }
+
+    if ( !is_user_id_mid_filename && fs::exists( user_id_parent_dir ) ) {
+        SPDLOG_INFO( "[PCGW] USER_ID path-segment fallback: {}", user_id_parent_dir );
+        std::vector<fs::path> candidates = { };
+
+        for ( const auto& entry :
+              fs::directory_iterator( user_id_parent_dir, fs::directory_options::skip_permission_denied ) ) {
+
+            if ( entry.is_directory( ) ) candidates.push_back( entry.path( ) );
+        }
+
+        if ( candidates.size( ) == 1 ) return candidates.front( );
+    }
     if ( is_user_id_mid_filename && fs::exists( mid_filename_dir ) ) {
         for ( const auto& entry :
               fs::directory_iterator( mid_filename_dir, fs::directory_options::skip_permission_denied ) ) {
@@ -226,7 +245,10 @@ std::expected<std::vector<Game>, SMError> CPCGamingWikiDetector::find( ) {
 
     for ( const auto& [appid, manifest] : m_manifest_cache.get_app_manifests( ) ) {
         auto it = m_entries.find( appid );
-        if ( it == m_entries.end( ) ) continue;
+        if ( it == m_entries.end( ) ) {
+            SPDLOG_DEBUG( "Failed to find {} in manifest cache, it might not be clean.." );
+            continue;
+        }
 
         for ( const auto& entry : it->second ) {
             if ( entry.os != CURRENT_OS ) continue;
