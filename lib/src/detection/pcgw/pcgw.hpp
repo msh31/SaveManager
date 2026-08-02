@@ -1,7 +1,6 @@
 #pragma once
 #include "../../utils/save_helper/save_helper.hpp"
 #include "../detector_context.hpp"
-#include "../detector_utils.hpp"
 #include "../idetector.hpp"
 #include <utils/steam/steam.hpp>
 
@@ -29,7 +28,7 @@ class CPCGamingWikiDetector : public IDetector {
 
     private:
         static std::optional<fs::path>
-        resolve( const std::string& raw_path, const SteamManifest& manifest, const WineRootCtx* wine );
+        resolve( const std::string& raw_path, const SteamManifest* manifest, const WineRootCtx* wine );
 
         const SteamManifestCache& m_manifest_cache;
         std::unordered_map<uint32_t, std::vector<PcgwEntry>> m_entries;

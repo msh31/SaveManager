@@ -74,38 +74,40 @@ std::unordered_map<uint32_t, std::vector<PcgwEntry>> CPCGamingWikiDetector::load
         for ( const auto& entry : data ) {
             if ( !entry.contains( "appid" ) || !entry.contains( "saves" ) ) {
                 // #ifndef NDEBUG
-                //                 SPDLOG_WARN( "entry has no appid or saves entry, skipping.." );
+                //                 SPDLOG_WARN( "[PCGamingWiki] entry has no appid or saves entry, skipping.." );
                 // #endif
                 continue;
             }
+
+            std::string page = entry.value( "page", "" );
 
             uint32_t appid;
             try {
                 appid = static_cast<uint32_t>( std::stoul( entry["appid"].get<std::string>( ) ) );
             } catch ( const std::exception& ex ) {
-#ifndef NDEBUG
-                SPDLOG_WARN( "failed to get appid from entry: {}", ex.what( ) );
-#endif
+                // #ifndef NDEBUG
+                //                 SPDLOG_WARN( "[PCGamingWiki] failed to get appid from entry: {}", ex.what( ) );
+                // #endif
                 continue;
             }
 
             for ( const auto& save : entry["saves"] ) {
                 if ( !save.value( "clean", false ) ) {
                     // #ifndef NDEBUG
-                    //                     SPDLOG_WARN( "entry is not clean, skipping.." );
+                    //                     SPDLOG_WARN( "[PCGamingWiki] entry is not clean, skipping.." );
                     // #endif
                     continue;
                 }
 
                 std::string path = save.value( "path", "" );
                 if ( path.empty( ) ) {
-#ifndef NDEBUG
-                    SPDLOG_WARN( "{} is empty, skipping..", path );
-#endif
+                    // #ifndef NDEBUG
+                    //                     SPDLOG_WARN( "[PCGamingWiki] {} is empty, skipping..", path );
+                    // #endif
                     continue;
                 }
 
-                entries[appid].push_back( { save.value( "os", "" ), path } );
+                entries[appid].push_back( { save.value( "os", "" ), path, page } );
             }
         }
         SPDLOG_INFO( "[PCGamingWiki] loaded entries for {} games from manifest", entries.size( ) );
@@ -117,8 +119,8 @@ std::unordered_map<uint32_t, std::vector<PcgwEntry>> CPCGamingWikiDetector::load
 }
 
 std::optional<fs::path>
-CPCGamingWikiDetector::resolve( const std::string& raw_path, const SteamManifest& manifest, const WineRootCtx* wine ) {
-    std::string result;
+CPCGamingWikiDetector::resolve( const std::string& raw_path, const SteamManifest* manifest, const WineRootCtx* wine ) {
+    std::string result = { };
     size_t i = 0;
 
     while ( i < raw_path.size( ) ) {
@@ -135,9 +137,11 @@ CPCGamingWikiDetector::resolve( const std::string& raw_path, const SteamManifest
         fs::path resolved;
 
         if ( token == "GAME_INSTALL_DIR" ) {
-            resolved = manifest.library_dir / "steamapps" / "common" / manifest.install_dir;
+            if ( manifest == nullptr ) return { };
+            resolved = manifest->library_dir / "steamapps" / "common" / manifest->install_dir;
         } else if ( token == "STEAM_LIBRARY_DIR" ) {
-            resolved = manifest.library_dir;
+            if ( manifest == nullptr ) return { };
+            resolved = manifest->library_dir;
         } else if ( token == "USER_ID" ) {
             auto steamid64 = SteamHelper::parse_steam_userid( );
             if ( !steamid64 ) return std::nullopt;
@@ -183,7 +187,7 @@ std::expected<std::vector<Game>, SMError> CPCGamingWikiDetector::find( ) {
         for ( const auto& entry : it->second ) {
             if ( entry.os != CURRENT_OS ) continue;
 
-            auto resolved = resolve( entry.raw_path, manifest, nullptr );
+            auto resolved = resolve( entry.raw_path, &manifest, nullptr );
             if ( !resolved || !fs::exists( *resolved ) ) continue;
 
             Game game;
@@ -206,28 +210,52 @@ std::vector<Game> CPCGamingWikiDetector::scan_wine_user( const fs::path& user_ho
     std::vector<Game> games = { };
 
     auto appid = resolve_prefix_appid( user_home );
-    if ( !appid ) return games;
+    if ( !appid ) {
+#ifndef NDEBUG
+        SPDLOG_WARN( "[PCGamingWiki] Failed to get appid in: {}", user_home.string( ) );
+#endif
+        return games;
+    }
 
     auto it = ctx.pcgw_entries.find( *appid );
-    if ( it == ctx.pcgw_entries.end( ) ) return games;
+    if ( it == ctx.pcgw_entries.end( ) ) {
+#ifndef NDEBUG
+        SPDLOG_WARN( "[PCGamingWiki] Failed to find {} in: {}", *appid, user_home.string( ) );
+#endif
+        return games;
+    }
 
     const auto& manifests = ctx.manifest_cache.get_app_manifests( );
     auto manifest_it = manifests.find( *appid );
-    if ( manifest_it == manifests.end( ) ) return games;
+    const SteamManifest* manifest = nullptr;
+    if ( manifest_it != manifests.end( ) ) {
+        manifest = &manifest_it->second;
+    }
 
-    const SteamManifest& manifest = manifest_it->second;
     WineRootCtx wine{ user_home, user_home.parent_path( ).parent_path( ) };
 
     for ( const auto& entry : it->second ) {
         if ( entry.os != WINE_OS ) continue;
 
         auto resolved = resolve( entry.raw_path, manifest, &wine );
-        if ( !resolved || !fs::exists( *resolved ) ) continue;
+        if ( !resolved ) {
+#ifndef NDEBUG
+            SPDLOG_WARN( "[PCGamingWiki] Failed to resolve {}", entry.raw_path );
+#endif
+            continue;
+        }
+        if ( !fs::exists( *resolved ) ) {
+#ifndef NDEBUG
+            SPDLOG_WARN( "[PCGamingWiki] {} does not exist!", entry.raw_path );
+#endif
+            continue;
+        }
+        if ( !manifest && entry.page.empty( ) ) continue;
 
         Game game;
         game.type = PlatformType::PCGAMINGWIKI;
         game.platform_label = std::string( CPCGamingWikiDetector::PLATFORM_LABEL );
-        game.game_name = manifest.name;
+        game.game_name = manifest ? manifest->name : entry.page; // big bad ternary but cleaner here
         game.appid = std::to_string( *appid );
         game.save_paths.push_back( *resolved );
         game.show_parent_path = true;
