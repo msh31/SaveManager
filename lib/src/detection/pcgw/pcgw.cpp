@@ -51,7 +51,7 @@ namespace {
         case SaveRoot::PROGRAM_FILES:
             return wine.drive_c / "Program Files";
         case SaveRoot::STEAM_DIR:
-            return SteamHelper::get_steam_location( ).value_or( fs::path{ } );
+            return SteamHelper::get_steam_location( ).value_or( fs::path{ } ).parent_path( ).parent_path( );
         default:
             return { };
         }
