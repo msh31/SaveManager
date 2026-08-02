@@ -123,7 +123,11 @@ std::unordered_map<uint32_t, std::vector<PcgwEntry>> CPCGamingWikiDetector::load
 std::optional<fs::path>
 CPCGamingWikiDetector::resolve( const std::string& raw_path, const SteamManifest* manifest, const WineRootCtx* wine ) {
     bool prefer_short_id = false;
+    bool is_user_id_mid_filename = false;
+    std::string mid_filename_dir = { };
+    std::string mid_filename_pattern = { };
     size_t pass_count = 0;
+
     while ( pass_count < 2 ) {
         std::string result = { };
         size_t i = 0;
@@ -148,8 +152,16 @@ CPCGamingWikiDetector::resolve( const std::string& raw_path, const SteamManifest
                 if ( manifest == nullptr ) return { };
                 resolved = manifest->library_dir;
             } else if ( token == "USER_ID" ) {
+                is_user_id_mid_filename =
+                    close + 1 < raw_path.size( ) && ( raw_path[close + 1] != '\\' && raw_path[close + 1] != '/' );
+
+                mid_filename_dir = result.substr( 0, result.rfind( '\\' ) );
+                std::ranges::replace( mid_filename_dir, '\\', '/' );
+                mid_filename_pattern = raw_path.substr( close + 1 );
+
                 auto steamid64 = SteamHelper::parse_steam_userid( );
                 if ( !steamid64 ) return std::nullopt;
+
                 try {
                     uint64_t account_id = std::stoull( *steamid64 );
                     if ( pass_count == 0 ) {
@@ -169,6 +181,7 @@ CPCGamingWikiDetector::resolve( const std::string& raw_path, const SteamManifest
                             resolved = std::to_string( account_id );
                         }
                     }
+
                 } catch ( const std::exception& ) {
                     return std::nullopt;
                 }
@@ -196,6 +209,14 @@ CPCGamingWikiDetector::resolve( const std::string& raw_path, const SteamManifest
         }
         if ( !result.empty( ) && result.back( ) == '/' ) result.pop_back( );
         if ( fs::exists( result ) ) return fs::path( result );
+    }
+    if ( is_user_id_mid_filename && fs::exists( mid_filename_dir ) ) {
+        for ( const auto& entry :
+              fs::directory_iterator( mid_filename_dir, fs::directory_options::skip_permission_denied ) ) {
+            if ( entry.path( ).filename( ).string( ).ends_with( mid_filename_pattern ) ) {
+                return mid_filename_dir;
+            }
+        }
     }
     return std::nullopt;
 }
