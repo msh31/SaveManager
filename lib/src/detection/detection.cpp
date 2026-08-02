@@ -118,6 +118,15 @@ std::vector<Game> Detection::find_saves(
 
     std::map<GameKey, size_t> seen{ };
     std::vector<Game> deduped = { };
+
+    std::erase_if( games, [&]( const Game& game ) {
+        if ( game.type != PlatformType::PCGAMINGWIKI ) return false;
+
+        return std::ranges::any_of( games, [&]( const Game& other ) {
+            return other.type != PlatformType::PCGAMINGWIKI && other.game_name == game.game_name;
+        } );
+    } );
+
     size_t game_count = games.size( );
 
     // DE-DUPLICATION
