@@ -122,66 +122,82 @@ std::unordered_map<uint32_t, std::vector<PcgwEntry>> CPCGamingWikiDetector::load
 
 std::optional<fs::path>
 CPCGamingWikiDetector::resolve( const std::string& raw_path, const SteamManifest* manifest, const WineRootCtx* wine ) {
-    std::string result = { };
-    size_t i = 0;
+    bool prefer_short_id = false;
+    size_t pass_count = 0;
+    while ( pass_count < 2 ) {
+        std::string result = { };
+        size_t i = 0;
 
-    while ( i < raw_path.size( ) ) {
-        if ( raw_path[i] != '<' ) {
-            result += raw_path[i];
-            i++;
-            continue;
-        }
+        while ( i < raw_path.size( ) ) {
+            if ( raw_path[i] != '<' ) {
+                result += raw_path[i];
+                i++;
+                continue;
+            }
 
-        auto close = raw_path.find( '>', i );
-        if ( close == std::string::npos ) return std::nullopt;
+            auto close = raw_path.find( '>', i );
+            if ( close == std::string::npos ) return std::nullopt;
 
-        std::string token = raw_path.substr( i + 1, close - i - 1 );
-        fs::path resolved;
+            std::string token = raw_path.substr( i + 1, close - i - 1 );
+            fs::path resolved;
 
-        if ( token == "GAME_INSTALL_DIR" ) {
-            if ( manifest == nullptr ) return { };
-            resolved = manifest->library_dir / "steamapps" / "common" / manifest->install_dir;
-        } else if ( token == "STEAM_LIBRARY_DIR" ) {
-            if ( manifest == nullptr ) return { };
-            resolved = manifest->library_dir;
-        } else if ( token == "USER_ID" ) {
-            auto steamid64 = SteamHelper::parse_steam_userid( );
-            if ( !steamid64 ) return std::nullopt;
-            try {
-                uint64_t account_id = std::stoull( *steamid64 );
-                if ( result.ends_with( "userdata\\" ) ) {
-                    auto short_id = account_id - STEAM_ID64_BASE;
-                    resolved = std::to_string( short_id );
-                } else {
-                    resolved = std::to_string( account_id );
+            if ( token == "GAME_INSTALL_DIR" ) {
+                if ( manifest == nullptr ) return { };
+                resolved = manifest->library_dir / "steamapps" / "common" / manifest->install_dir;
+            } else if ( token == "STEAM_LIBRARY_DIR" ) {
+                if ( manifest == nullptr ) return { };
+                resolved = manifest->library_dir;
+            } else if ( token == "USER_ID" ) {
+                auto steamid64 = SteamHelper::parse_steam_userid( );
+                if ( !steamid64 ) return std::nullopt;
+                try {
+                    uint64_t account_id = std::stoull( *steamid64 );
+                    if ( pass_count == 0 ) {
+                        if ( result.ends_with( "userdata\\" ) ) {
+                            auto short_id = account_id - STEAM_ID64_BASE;
+                            resolved = std::to_string( short_id );
+                            prefer_short_id = true;
+                        } else {
+                            resolved = std::to_string( account_id );
+                        }
+                    }
+                    if ( pass_count == 1 ) {
+                        if ( !prefer_short_id ) {
+                            auto short_id = account_id - STEAM_ID64_BASE;
+                            resolved = std::to_string( short_id );
+                        } else {
+                            resolved = std::to_string( account_id );
+                        }
+                    }
+                } catch ( const std::exception& ) {
+                    return std::nullopt;
                 }
-            } catch ( const std::exception& ) {
+            } else if ( auto it = TOKEN_TO_ROOT.find( token ); it != TOKEN_TO_ROOT.end( ) ) {
+                resolved = wine ? resolve_wine_root( it->second, *wine ) : save::resolve_root( it->second );
+                if ( resolved.empty( ) ) return std::nullopt;
+            } else {
                 return std::nullopt;
             }
-        } else if ( auto it = TOKEN_TO_ROOT.find( token ); it != TOKEN_TO_ROOT.end( ) ) {
-            resolved = wine ? resolve_wine_root( it->second, *wine ) : save::resolve_root( it->second );
-            if ( resolved.empty( ) ) return std::nullopt;
-        } else {
-            return std::nullopt;
+
+            result += resolved.string( );
+            i = close + 1;
         }
+        pass_count += 1;
 
-        result += resolved.string( );
-        i = close + 1;
-    }
+        std::ranges::replace( result, '\\', '/' );
+        auto pos = result.rfind( '/' ); // backwards from find
 
-    std::ranges::replace( result, '\\', '/' );
-    auto pos = result.rfind( '/' ); // backwards from find
-
-    if ( pos != std::string::npos ) {
-        std::string segment = result.substr( pos + 1 );
-        auto wildcard_found = segment.find( '*' );
-        if ( wildcard_found != std::string::npos ) {
-            result = result.substr( 0, pos );
+        if ( pos != std::string::npos ) {
+            std::string segment = result.substr( pos + 1 );
+            auto wildcard_found = segment.find( '*' );
+            if ( wildcard_found != std::string::npos ) {
+                result = result.substr( 0, pos );
+            }
         }
+        if ( !result.empty( ) && result.back( ) == '/' ) result.pop_back( );
+        if ( fs::exists( result ) ) return fs::path( result );
     }
-
-    if ( !result.empty( ) && result.back( ) == '/' ) result.pop_back( );
-    return fs::path( result );
+    return std::nullopt;
 }
 
 std::expected<std::vector<Game>, SMError> CPCGamingWikiDetector::find( ) {
