@@ -235,7 +235,7 @@ std::vector<Game> CPCGamingWikiDetector::scan_wine_user( const fs::path& user_ho
     WineRootCtx wine{ user_home, user_home.parent_path( ).parent_path( ) };
 
     for ( const auto& entry : it->second ) {
-        if ( entry.os != WINE_OS ) continue;
+        if ( entry.os != WINE_OS && entry.os != "Steam" ) continue;
 
         auto resolved = resolve( entry.raw_path, manifest, &wine );
         if ( !resolved ) {
