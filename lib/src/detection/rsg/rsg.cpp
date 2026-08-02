@@ -74,7 +74,8 @@ std::vector<Game> CRockstarDetector::scan( fs::path path, const Translations& tr
             continue;
         }
 
-        for ( const auto& profile : fs::directory_iterator( profiles_folder ) ) {
+        for ( const auto& profile :
+              fs::directory_iterator( profiles_folder, fs::directory_options::skip_permission_denied ) ) {
             fs::path uuid_folder = profile.path( );
 
             Game game;
