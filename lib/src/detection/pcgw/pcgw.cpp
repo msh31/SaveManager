@@ -20,6 +20,8 @@ namespace {
         { "STEAM_DIR", SaveRoot::STEAM_DIR },
     };
 
+    constexpr uint64_t STEAM_ID64_BASE = 76561197960265728ULL;
+
 #if defined( _WIN32 )
     constexpr std::string_view CURRENT_OS = "Windows";
 #elif defined( __linux__ )
@@ -147,7 +149,12 @@ CPCGamingWikiDetector::resolve( const std::string& raw_path, const SteamManifest
             if ( !steamid64 ) return std::nullopt;
             try {
                 uint64_t account_id = std::stoull( *steamid64 );
-                resolved = std::to_string( account_id );
+                if ( result.ends_with( "userdata\\" ) ) {
+                    auto short_id = account_id - STEAM_ID64_BASE;
+                    resolved = std::to_string( short_id );
+                } else {
+                    resolved = std::to_string( account_id );
+                }
             } catch ( const std::exception& ) {
                 return std::nullopt;
             }
