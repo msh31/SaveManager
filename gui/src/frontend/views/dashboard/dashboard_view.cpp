@@ -365,7 +365,7 @@ void CDashboardView::render_save_row( const fs::path& save_file, const Game& gam
 
     float size_width = ImGui::CalcTextSize( size_text.c_str( ) ).x;
     auto btn_size = ImVec2( 80.0f, 0 );
-    float total_width = date_width + size_width + 80.0f * 2 + 4.0f * 6;
+    float total_width = date_width + size_width + 80.0f * 3 + 4.0f * 7; // this is fucked up.
 
     if ( game.show_parent_path ) {
         ImGui::Text( "%s", path_to_utf8( save_file.parent_path( ).filename( ) / save_file.filename( ) ).c_str( ) );
@@ -388,20 +388,33 @@ void CDashboardView::render_save_row( const fs::path& save_file, const Game& gam
             if ( !Features::backup_game( game, save_file, config ) ) {
                 auto str = std::format( "Failed to create backup for: {}", game.game_name );
                 Notify::show_notification( "Backup Failure", str, 3000 );
+            } else {
+                auto str = std::format( "Created a backup for: {}!", game.game_name );
+                Notify::show_notification( "Backup Creation", str, 3000 );
             }
         } );
     }
     ImGui::SetItemTooltip( "Create a backup of this save" );
+    ImGui::SameLine( 0.0f, 4.0f );
+    if ( ImGui::Button( "Duplicate", ImVec2( 90.0f, 0 ) ) ) { // also kinda fucked up
+        std::string copy_name = save_file.string( ) + ".savemgr-copy";
+        if ( fs::copy_file( save_file, copy_name ) ) {
+            Notify::show_notification( "Save Duplication", "Save duplicated!", 2500 );
+            invalidate_cache( { game } );
+        } else {
+            Notify::show_notification( "Save Duplication", "Save could not be duplicated!", 2500 );
+        }
+    }
     ImGui::SameLine( 0.0f, 4.0f );
     ImGui::PushStyleColor( ImGuiCol_Button, ImVec4( 0.8f, 0.2f, 0.2f, 1.0f ) );
     ImGui::PushStyleColor( ImGuiCol_ButtonHovered, ImVec4( 0.9f, 0.3f, 0.3f, 1.0f ) );
     if ( ImGui::Button( "Delete", btn_size ) ) {
         ConfirmDialog::show( "Are you sure?", [this, save_file, game] {
             if ( fs::remove( save_file ) ) {
-                Notify::show_notification( "Save Deletion", "Save deleted!", 1500 );
+                Notify::show_notification( "Save Deletion", "Save deleted!", 2500 );
                 invalidate_cache( { game } );
             } else {
-                Notify::show_notification( "Save Deletion", "Save could not be deleted!", 1500 );
+                Notify::show_notification( "Save Deletion", "Save could not be deleted!", 2500 );
             }
         } );
     }
