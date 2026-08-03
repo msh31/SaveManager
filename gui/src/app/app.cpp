@@ -1,6 +1,7 @@
 #include "app.hpp"
 #include <constants.hpp>
 
+#include <network/network.hpp>
 #include <utils/steam/steam.hpp>
 
 #include <frontend/fonts/font_awesome.hpp>
@@ -29,6 +30,18 @@ void CApp::init( ) {
     ThemeManager::apply_style( );
     if ( !m_config.init( ) ) {
         throw std::runtime_error( "Config is missing and could not be generated!" );
+    }
+    if ( m_config.settings.startup_update_check ) {
+        bool update_ready = false;
+
+        m_task_runner.run(
+            [&update_ready]( ) { update_ready = Network::is_update_available( ); },
+            [&update_ready]( ) {
+                if ( update_ready ) Notify::show_notification( "Update check", "Update available!!", 2500 );
+                else
+                    Notify::show_notification( "Update check", "No update available!", 2500 );
+            },
+            []( const std::exception& ex ) { SPDLOG_ERROR( "the update check failed: {}", ex.what( ) ); } );
     }
     if ( !m_translations.init( ) ) {
         SPDLOG_WARN( "Failed to initialize translations! Expect missing games!" );

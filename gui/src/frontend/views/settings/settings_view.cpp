@@ -40,6 +40,8 @@ void CSettingsView::render( ) {
 
     bool is_checking =
         m_update_future.valid( ) && m_update_future.wait_for( std::chrono::seconds( 0 ) ) != std::future_status::ready;
+
+    // translations..
     bool is_checking_t = m_update_t_future.valid( ) &&
                          m_update_t_future.wait_for( std::chrono::seconds( 0 ) ) != std::future_status::ready;
 
@@ -55,22 +57,23 @@ void CSettingsView::render( ) {
         ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse );
 
     ImGui::PushFont( CFontManager::get( ).get_font( "jbm_med" ).value_or( nullptr ) );
-    ImGui::Text( "Appearance" );
+    ImGui::Text( "General" );
     ImGui::PopFont( );
 
     ImGui::Dummy( ImVec2( 0.0f, 4.0f ) );
     ImGui::Checkbox( "Dark Mode", &m_config.settings.dark_mode );
     ImGui::SameLine( );
     ImGui::Checkbox( "Animated background", &m_config.settings.animated_background );
+    ImGui::SameLine( );
+    ImGui::Checkbox( "Check for updates on startup", &m_config.settings.startup_update_check );
     ImGui::Separator( );
 
-    // TODO: seperate this?
     if ( is_checking ) ImGui::BeginDisabled( true );
     if ( ImGui::Button( "Check for updates" ) ) {
         m_update_future = std::async( std::launch::async, []( ) { return Network::is_update_available( ); } );
     }
     if ( is_checking ) ImGui::EndDisabled( );
-    ImGui::SameLine( );
+    // ImGui::SameLine( );
     // if ( is_checking_t ) ImGui::BeginDisabled( true );
     // if ( ImGui::Button( "Update translations" ) ) {
     //     m_update_t_future = std::async( std::launch::async, [this]( ) -> std::pair<bool, bool> {
@@ -90,7 +93,6 @@ void CSettingsView::render( ) {
         m_config.save( );
         Notify::show_notification( "Config", "Saved app settings!", 2000 );
     }
-
     ImGui::EndChild( );
 
     ImGui::SameLine( 0.0f, 10.0f );

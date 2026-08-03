@@ -90,6 +90,7 @@ void CConfig::save( ) {
     json data;
     data["dark_mode"] = settings.dark_mode;
     data["animated_background"] = settings.animated_background;
+    data["startup_update_check"] = settings.startup_update_check;
 
     data["show_conflicts"] = d_settings.show_conflicts;
     data["use_savemgr_ignore"] = d_settings.use_savemgr_ignore; // TODO
@@ -139,6 +140,7 @@ void CConfig::load( ) {
 
         settings.dark_mode = data.value( "dark_mode", true );
         settings.animated_background = data.value( "animated_background", false );
+        settings.startup_update_check = data.value( "startup_update_check", true );
 
         d_settings.show_conflicts = data.value( "show_conflicts", false );
         d_settings.use_savemgr_ignore = data.value( "use_savemgr_ignore", false ); // TODO

@@ -18,6 +18,7 @@ class CConfig {
         struct AppConfig {
                 bool dark_mode = true;
                 bool animated_background = false;
+                bool startup_update_check = true;
 
                 // std::vector<fs::path> watch_paths;
         };
