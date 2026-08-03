@@ -487,7 +487,7 @@ void CDashboardView::render_backup_row(
     ImGui::SameLine( 0.0f, 4.0f );
 
     if ( ImGui::Button( "Duplicate", ImVec2( 90.0f, 0 ) ) ) { // also kinda fucked up
-        std::string bext = backup.extension( );
+        std::string bext = backup.extension( ).string( );
         std::string copy_name =
             ( backup.parent_path( ) / ( backup.stem( ).string( ) + ".savemgr-copy" + bext ) ).string( );
 
