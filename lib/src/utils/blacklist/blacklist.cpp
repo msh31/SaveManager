@@ -1,13 +1,10 @@
 #include "utils/blacklist/blacklist.hpp"
-#include "../../test.hpp"
 #include "utils/paths.hpp"
 #include <nlohmann/json.hpp>
 
 using json = nlohmann::json;
 
 bool Blacklist::init( ) {
-    testytest( );
-
     json data;
     std::ifstream file( paths::blacklist( ).string( ).c_str( ) );
 
