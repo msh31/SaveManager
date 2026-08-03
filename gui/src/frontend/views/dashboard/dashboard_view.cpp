@@ -445,7 +445,7 @@ void CDashboardView::render_backup_row(
     float date_width = ImGui::CalcTextSize( date_text.c_str( ) ).x;
     float size_width = ImGui::CalcTextSize( size_text.c_str( ) ).x;
 
-    float total_width = date_width + size_width + 80.0f * 4 + 4.0f * 6; // also fucked like save row
+    float total_width = date_width + size_width + 80.0f * 5 + 4.0f * 7; // also fucked like save row
 
     std::string tag_text = backup_filename_utf8;
     if ( tag_cache && !tag_cache->tags.empty( ) ) {
@@ -505,6 +505,21 @@ void CDashboardView::render_backup_row(
     ImGui::SetItemTooltip( "Manage tags for this backup" );
     ImGui::SameLine( 0.0f, 4.0f );
 
+    if ( ImGui::Button( "Preview", ImVec2( 80.0f, 0 ) ) ) {
+        m_preview_list = Features::get_backup_entries( backup );
+        if ( m_preview_list.empty( ) ) {
+            // this should not really happen so...
+            auto str = std::format( "{} has no files!!", backup.filename( ).string( ) );
+            SPDLOG_ERROR( "{} has no entries, that's a bit odd innit", backup.filename( ).string( ) );
+            Notify::show_notification( "Preview Failure wtf", str, 2000 );
+            return;
+        }
+
+        m_open_preview_modal = true;
+    }
+    ImGui::SetItemTooltip( "Shows the contents of this backup in a pop up dialog" );
+    ImGui::SameLine( 0.0f, 4.0f );
+
     ImGui::PushStyleColor( ImGuiCol_Button, ImVec4( 0.8f, 0.2f, 0.2f, 1.0f ) );
     ImGui::PushStyleColor( ImGuiCol_ButtonHovered, ImVec4( 0.9f, 0.3f, 0.3f, 1.0f ) );
     if ( ImGui::Button( "Delete", ImVec2( 80.0f, 0 ) ) ) {
@@ -526,6 +541,8 @@ void CDashboardView::render_backup_row(
     ImGui::PopID( );
 }
 
+// TODO: improve this
+// NOTE: its very annoying to manually do this if statement and then the popup itself bla bla bla
 void CDashboardView::render_modals( ) {
     if ( m_open_tags_modal ) {
         m_open_tags_modal = false;
@@ -540,6 +557,11 @@ void CDashboardView::render_modals( ) {
     if ( m_open_restore_modal ) {
         m_open_restore_modal = false;
         ImGui::OpenPopup( "Restore backup" );
+    }
+
+    if ( m_open_preview_modal ) {
+        m_open_preview_modal = false;
+        ImGui::OpenPopup( "Preview Backup" );
     }
 
     if ( ImGui::BeginPopupModal( "Manage Tags", nullptr, ImGuiWindowFlags_AlwaysAutoResize ) ) {
@@ -645,6 +667,7 @@ void CDashboardView::render_modals( ) {
         }
         ImGui::EndPopup( );
     }
+
     if ( ImGui::BeginPopupModal( "Restore backup", nullptr, ImGuiWindowFlags_AlwaysAutoResize ) ) {
         ImGui::TextWrapped(
             "Select all files you would like to restore from %s",
@@ -698,6 +721,25 @@ void CDashboardView::render_modals( ) {
         }
         ImGui::SameLine( );
         if ( ImGui::Button( "Cancel" ) ) ImGui::CloseCurrentPopup( );
+        ImGui::EndPopup( );
+    }
+
+    if ( ImGui::BeginPopupModal( "Preview Backup", nullptr, ImGuiWindowFlags_AlwaysAutoResize ) ) {
+        auto height = std::min( m_preview_list.size( ) * ImGui::GetFrameHeightWithSpacing( ) + 1.5f, 400.0f );
+        ImGui::BeginChild( "##Preview entries", ImVec2( 650, height ) );
+        int i = 0;
+        for ( const auto& entry : m_preview_list ) {
+            ImGui::PushID( entry.c_str( ) );
+            i += 1;
+            std::string text = std::format( "{}: {}", i, path_to_utf8( utf8_to_path( entry ).filename( ) ) );
+            ImGui::Text( "%s", text.c_str( ) );
+            ImGui::Separator( );
+            ImGui::PopID( );
+        }
+        ImGui::EndChild( );
+
+        ImGui::Separator( );
+        if ( ImGui::Button( "Ok" ) ) ImGui::CloseCurrentPopup( );
         ImGui::EndPopup( );
     }
 }

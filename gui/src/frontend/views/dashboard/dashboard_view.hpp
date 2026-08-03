@@ -98,6 +98,9 @@ class CDashboardView : public CBaseView {
         std::vector<std::pair<fs::path, fs::path>> m_pending_conflicts;
         Game m_pending_conflict_game{ };
 
+        bool m_open_preview_modal = false;
+        std::vector<std::string> m_preview_list = { };
+
         bool m_open_restore_modal = false;
         std::unordered_set<std::string> m_pending_exclusions = { };
         fs::path m_pending_restore_backup = { };
