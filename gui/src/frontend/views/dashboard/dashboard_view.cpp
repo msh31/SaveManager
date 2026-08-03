@@ -190,6 +190,8 @@ void CDashboardView::render_game_content(
     std::pair<int, int> sb_count, const Game& game, bool has_conflicts,
     std::vector<std::pair<fs::path, const Game*>> files ) {
 
+    auto& info = m_game_cache[utils::get_game_identity_key( game ).value].file_info;
+
     bool is_refreshing = m_detection.is_refreshing( );
     bool is_backing_up =
         m_backup_future.valid( ) && m_backup_future.wait_for( std::chrono::seconds( 0 ) ) != std::future_status::ready;
@@ -280,7 +282,7 @@ void CDashboardView::render_game_content(
             if ( !m_config.d_settings.show_conflicts ) {
                 if ( save.first.string( ).contains( ".savemgr-conflict-" ) ) continue;
             }
-            render_save_row( save.first, *save.second );
+            render_save_row( save.first, *save.second, info.at( save.first ) );
         }
     } );
 }
@@ -304,6 +306,7 @@ void CDashboardView::render_game_row( const std::vector<int>& group, int gi ) {
     auto backup_paths = cache.backup_paths;
     auto labels = cache.tags;
     bool has_conflicts = cache.has_conflicts;
+    auto& binfo = cache.backup_info;
 
     for ( const auto& path : cache.save_files ) {
         files.emplace_back( path, &primary );
@@ -320,7 +323,7 @@ void CDashboardView::render_game_row( const std::vector<int>& group, int gi ) {
             Card::draw( selectable_id, "BACKUPS", bk_collapsed, std::nullopt, [&]( ) {
                 for ( auto& backup : backup_paths ) {
                     ImGui::Separator( );
-                    render_backup_row( backup, primary, labels );
+                    render_backup_row( backup, primary, labels, binfo.at( backup ) );
                 }
             } );
         }
@@ -342,11 +345,9 @@ void CDashboardView::render_game_row( const std::vector<int>& group, int gi ) {
     } );
 }
 
-void CDashboardView::render_save_row( const fs::path& save_file, const Game& game ) {
-    uintmax_t b_size = 0; // big bad?
-    if ( !fs::is_directory( save_file ) ) {
-        b_size = fs::file_size( save_file );
-        if ( m_config.d_settings.skip_empty_files && b_size <= 0 ) return;
+void CDashboardView::render_save_row( const fs::path& save_file, const Game& game, const SaveFileInfo& save_info ) {
+    if ( !save_info.is_dir && save_info.size <= 0 && m_config.d_settings.skip_empty_files ) {
+        return;
     }
 
     ImGui::PushID( save_file.string( ).c_str( ) );
@@ -355,12 +356,12 @@ void CDashboardView::render_save_row( const fs::path& save_file, const Game& gam
     bool is_backing_up =
         m_backup_future.valid( ) && m_backup_future.wait_for( std::chrono::seconds( 0 ) ) != std::future_status::ready;
 
-    std::string date_text = std::format( "{} | ", format_file_time( fs::last_write_time( save_file ) ) );
+    std::string date_text = std::format( "{} | ", format_file_time( save_info.mtime ) );
     float date_width = ImGui::CalcTextSize( date_text.c_str( ) ).x;
 
     std::string size_text = "??";
     if ( game.type != PlatformType::MINECRAFT ) { // needs re-thinking
-        size_text = std::format( "{}  ", format_file_size( b_size ) );
+        size_text = std::format( "{}  ", format_file_size( save_info.size ) );
     }
 
     float size_width = ImGui::CalcTextSize( size_text.c_str( ) ).x;
@@ -426,98 +427,107 @@ void CDashboardView::render_save_row( const fs::path& save_file, const Game& gam
 }
 
 void CDashboardView::render_backup_row(
-    const fs::path& backup, const Game& game, const std::unordered_map<std::string, TagCache>& labels ) {
+    const fs::path& backup, const Game& game, const std::unordered_map<std::string, TagCache>& labels,
+    const SaveFileInfo& info ) {
 
-    if ( !fs::exists( backup ) ) {
-        SPDLOG_WARN( "backup row skipped, fs::exists() returned false for: {}", path_to_utf8( backup ) );
-        return;
-        ImGui::PopStyleVar( );
-        if ( backup.filename( ) == "undo.zip" ) return;
+    // if ( !fs::exists( backup ) ) {
+    //     // SPDLOG_WARN( "backup row skipped, fs::exists() returned false for: {}", path_to_utf8( backup ) );
+    //     return;
+    // }
+    // ImGui::PopStyleVar( );
+    if ( backup.filename( ) == "undo.zip" ) return;
 
-        ImGui::PushID( backup.string( ).c_str( ) );
-        std::string backup_filename_utf8 = path_to_utf8( backup.filename( ) );
-        auto it = labels.find( backup_filename_utf8 );
-        const TagCache* tag_cache = ( it != labels.end( ) ) ? &it->second : nullptr;
+    ImGui::PushID( backup.string( ).c_str( ) );
+    std::string backup_filename_utf8 = path_to_utf8( backup.filename( ) );
+    auto it = labels.find( backup_filename_utf8 );
+    const TagCache* tag_cache = ( it != labels.end( ) ) ? &it->second : nullptr;
 
-        std::string date_text = "??";
-        std::string size_text = "??";
-        try {
-            date_text = std::format( "{} | ", format_file_time( fs::last_write_time( backup ) ) );
-            size_text = format_file_size( fs::file_size( backup ) );
-        } catch ( const fs::filesystem_error& ex ) {
-            SPDLOG_ERROR( "backup row failed to stat {}: {}", path_to_utf8( backup ), ex.what( ) );
+    std::string date_text = "??";
+    std::string size_text = "??";
+    date_text = std::format( "{} | ", format_file_time( info.mtime ) );
+    size_text = format_file_size( info.size );
+
+    float date_width = ImGui::CalcTextSize( date_text.c_str( ) ).x;
+    float size_width = ImGui::CalcTextSize( size_text.c_str( ) ).x;
+
+    float total_width = date_width + size_width + 80.0f * 4 + 4.0f * 6; // also fucked like save row
+
+    std::string tag_text = backup_filename_utf8;
+    if ( tag_cache && !tag_cache->tags.empty( ) ) {
+        tag_text = tag_cache->display;
+    }
+    ImGui::TextDisabled( "%s", tag_text.c_str( ) );
+    ImGui::SameLine( ImGui::GetContentRegionMax( ).x - total_width );
+
+    ImGui::TextDisabled( "%s", date_text.c_str( ) );
+    ImGui::SameLine( 0.0f, 4.0f );
+    ImGui::TextDisabled( "%s", size_text.c_str( ) );
+    ImGui::SameLine( 0.0f, 4.0f );
+
+    ImGui::PushStyleVar( ImGuiStyleVar_FramePadding, ImVec2( 3.0f, 3.0f ) );
+    if ( ImGui::Button( "Restore", ImVec2( 80.0f, 0 ) ) ) {
+        m_game_exclusions_restore = game;
+        m_pending_restore_backup = backup;
+        auto res_entries = Features::get_backup_entries( backup );
+        if ( res_entries.empty( ) ) {
+            Notify::show_notification( "Restore Failed", "Found no entries in backup, odd.", 2000 );
+            ImGui::PopStyleVar( );
             ImGui::PopID( );
             return;
         }
-        float date_width = ImGui::CalcTextSize( date_text.c_str( ) ).x;
-        float size_width = ImGui::CalcTextSize( size_text.c_str( ) ).x;
-
-        float total_width = date_width + size_width + 80.0f * 3 + 4.0f * 5;
-
-        std::string tag_text = backup_filename_utf8;
-        if ( tag_cache && !tag_cache->tags.empty( ) ) {
-            tag_text = tag_cache->display;
+        m_open_restore_modal = true;
+        m_restore_entries = res_entries;
+        m_restore_checked.clear( );
+        for ( const auto& e : m_restore_entries ) {
+            m_restore_checked[e] = true;
         }
-        ImGui::TextDisabled( "%s", tag_text.c_str( ) );
-        ImGui::SameLine( ImGui::GetContentRegionMax( ).x - total_width );
+    }
 
-        ImGui::TextDisabled( "%s", date_text.c_str( ) );
-        ImGui::SameLine( 0.0f, 4.0f );
-        ImGui::TextDisabled( "%s", size_text.c_str( ) );
-        ImGui::SameLine( 0.0f, 4.0f );
+    ImGui::SetItemTooltip( "Restore save from backup" );
+    ImGui::SameLine( 0.0f, 4.0f );
 
-        ImGui::PushStyleVar( ImGuiStyleVar_FramePadding, ImVec2( 3.0f, 3.0f ) );
-        if ( ImGui::Button( "Restore", ImVec2( 80.0f, 0 ) ) ) {
-            m_game_exclusions_restore = game;
-            m_pending_restore_backup = backup;
-            auto res_entries = Features::get_backup_entries( backup );
-            if ( res_entries.empty( ) ) {
-                Notify::show_notification( "Restore Failed", "Found no entries in backup, odd.", 2000 );
-                ImGui::PopStyleVar( );
-                ImGui::PopID( );
-                return;
-            }
-            m_open_restore_modal = true;
-            m_restore_entries = res_entries;
-            m_restore_checked.clear( );
-            for ( const auto& e : m_restore_entries ) {
-                m_restore_checked[e] = true;
-            }
+    if ( ImGui::Button( "Duplicate", ImVec2( 90.0f, 0 ) ) ) { // also kinda fucked up
+        std::string bext = backup.extension( );
+        std::string copy_name = backup.parent_path( ) / ( backup.stem( ).string( ) + ".savemgr-copy" + bext );
+
+        if ( fs::copy_file( backup, copy_name ) ) {
+            Notify::show_notification( "Backup Duplication", "Backup duplicated!", 2500 );
+            invalidate_cache( { game } );
+        } else {
+            Notify::show_notification( "Backup Duplication", "Backup could not be duplicated!", 2500 );
         }
+    }
+    ImGui::SameLine( 0.0f, 4.0f );
 
-        ImGui::SetItemTooltip( "Restore save from backup" );
-        ImGui::SameLine( 0.0f, 4.0f );
+    if ( ImGui::Button( "Tags", ImVec2( 80.0f, 0 ) ) ) {
+        m_pending_rename_game = game;
+        m_pending_rename_backup = backup;
+        m_pending_tags = tag_cache ? tag_cache->tags : std::vector<std::string>{ };
+        m_new_tag_input.clear( );
+        m_open_tags_modal = true;
+    }
+    ImGui::SetItemTooltip( "Manage tags for this backup" );
+    ImGui::SameLine( 0.0f, 4.0f );
 
-        if ( ImGui::Button( "Tags", ImVec2( 80.0f, 0 ) ) ) {
-            m_pending_rename_game = game;
-            m_pending_rename_backup = backup;
-            m_pending_tags = tag_cache ? tag_cache->tags : std::vector<std::string>{ };
-            m_new_tag_input.clear( );
-            m_open_tags_modal = true;
-        }
-        ImGui::SetItemTooltip( "Manage tags for this backup" );
-        ImGui::SameLine( 0.0f, 4.0f );
-
-        ImGui::PushStyleColor( ImGuiCol_Button, ImVec4( 0.8f, 0.2f, 0.2f, 1.0f ) );
-        ImGui::PushStyleColor( ImGuiCol_ButtonHovered, ImVec4( 0.9f, 0.3f, 0.3f, 1.0f ) );
-        if ( ImGui::Button( "Delete", ImVec2( 80.0f, 0 ) ) ) {
-            if ( fs::remove( backup ) ) {
-                if ( Features::delete_tags( game.game_name, backup_filename_utf8 ) ) {
-                    Notify::show_notification( "Backup Deletion", "Backup deleted!", 1500 );
-                } else {
-                    Notify::show_notification( "Backup Deletion", "Backup could not be deleted!", 1500 );
-                }
-                invalidate_cache( { game } );
+    ImGui::PushStyleColor( ImGuiCol_Button, ImVec4( 0.8f, 0.2f, 0.2f, 1.0f ) );
+    ImGui::PushStyleColor( ImGuiCol_ButtonHovered, ImVec4( 0.9f, 0.3f, 0.3f, 1.0f ) );
+    if ( ImGui::Button( "Delete", ImVec2( 80.0f, 0 ) ) ) {
+        if ( fs::remove( backup ) ) {
+            if ( Features::delete_tags( game.game_name, backup_filename_utf8 ) ) {
+                Notify::show_notification( "Backup Deletion", "Backup deleted!", 1500 );
             } else {
                 Notify::show_notification( "Backup Deletion", "Backup could not be deleted!", 1500 );
             }
+            invalidate_cache( { game } );
+        } else {
+            Notify::show_notification( "Backup Deletion", "Backup could not be deleted!", 1500 );
         }
-        ImGui::SetItemTooltip( "Delete backed up savegame" );
-
-        ImGui::PopStyleColor( 2 );
-        ImGui::PopStyleVar( );
-        ImGui::PopID( );
     }
+    ImGui::SetItemTooltip( "Delete backed up savegame" );
+
+    ImGui::PopStyleColor( 2 );
+    ImGui::PopStyleVar( );
+    ImGui::PopID( );
 }
 
 void CDashboardView::render_modals( ) {
@@ -717,6 +727,20 @@ void CDashboardView::invalidate_cache( const std::vector<Game>& games, std::func
         [games, temp, temp_modified]( ) {
             for ( const auto& game : games ) {
                 GameCache cache;
+
+                auto backups = Features::get_backups( game.game_name );
+                cache.backup_count = backups.size( );
+                cache.backup_paths = backups;
+                for ( const auto& backup : cache.backup_paths ) {
+                    auto ftime = fs::last_write_time( backup );
+                    auto bsz = fs::file_size( backup );
+
+                    SaveFileInfo sfi = { bsz, ftime, false };
+                    cache.backup_info[backup] = sfi;
+                }
+
+                cache.tags = load_tag_cache( game.game_name );
+
                 for ( const auto& save_path : game.save_paths ) {
                     if ( !fs::is_directory( save_path ) ) continue;
                     if ( save_path.string( ).contains( ".savemgr-conflict-" ) ) continue;
@@ -725,29 +749,40 @@ void CDashboardView::invalidate_cache( const std::vector<Game>& games, std::func
                         for ( const auto& file : fs::recursive_directory_iterator(
                                   save_path, fs::directory_options::skip_permission_denied ) ) {
 
-                            if ( !fs::is_regular_file( file ) ) continue;
-                            if ( fs::file_size( file ) == 0 ) continue;
-
                             auto ext = file.path( ).extension( ).string( );
                             if ( game.type != PlatformType::CUSTOM && game.type != PlatformType::GENERIC ) {
                                 if ( extension_blocklist.contains( ext ) ) continue;
                             }
 
                             if ( g_extension_blocklist.contains( ext ) ) continue;
+
+                            bool is_dir = fs::is_directory( file );
+                            if ( is_dir ) continue;
+
+                            uintmax_t fsz = file.file_size( );
+                            if ( fsz == 0 ) continue;
+
+                            auto ftime = file.last_write_time( );
+
                             cache.save_files.push_back( file.path( ) );
+
+                            SaveFileInfo sfi = { fsz, ftime, is_dir };
+                            cache.file_info[file.path( )] = sfi;
                         }
                     } else {
+                        auto ftime = fs::last_write_time( save_path );
+                        SaveFileInfo sfi = { 0, ftime, true };
                         cache.save_files.push_back( save_path );
+                        cache.file_info[save_path] = sfi;
                     }
-                    auto backups = Features::get_backups( game.game_name );
-                    cache.backup_count = backups.size( );
-                    cache.backup_paths = backups;
-                    cache.tags = load_tag_cache( game.game_name );
 
                     auto key = utils::get_game_identity_key( game ).value;
                     if ( game.type == PlatformType::MINECRAFT ) {
                         if ( ( *temp ).contains( key ) ) {
+                            auto ftime = fs::last_write_time( save_path );
+                            SaveFileInfo sfi = { 0, ftime, true };
                             ( *temp )[key].save_files.push_back( save_path );
+                            ( *temp )[key].file_info[save_path] = sfi;
                         } else {
                             ( *temp )[key] = cache;
                         }

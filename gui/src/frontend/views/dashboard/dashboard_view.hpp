@@ -19,6 +19,12 @@ class CDashboardView : public CBaseView {
         void on_exit( ) override;
 
     private:
+        struct SaveFileInfo {
+                uintmax_t size;
+                fs::file_time_type mtime;
+                bool is_dir;
+        };
+
         void on_result_changed( );
         void invalidate_cache( const std::vector<Game>& games, std::function<void( )> on_done = nullptr );
 
@@ -28,9 +34,10 @@ class CDashboardView : public CBaseView {
             std::pair<int, int> sb_count, const Game& game, bool has_conflicts,
             std::vector<std::pair<fs::path, const Game*>> files );
         void render_game_row( const std::vector<int>& group, int gi );
-        void render_save_row( const fs::path& save_file, const Game& game );
+        void render_save_row( const fs::path& save_file, const Game& game, const SaveFileInfo& save_info );
         void render_backup_row(
-            const fs::path& backup, const Game& game, const std::unordered_map<std::string, TagCache>& labels );
+            const fs::path& backup, const Game& game, const std::unordered_map<std::string, TagCache>& labels,
+            const SaveFileInfo& info );
         void render_modals( );
 
         CConfig& m_config;
@@ -43,10 +50,13 @@ class CDashboardView : public CBaseView {
         // Detection / cache
         struct GameCache {
                 std::vector<fs::path> save_files;
+                std::unordered_map<fs::path, SaveFileInfo> file_info;
+                std::unordered_map<fs::path, SaveFileInfo> backup_info;
+
                 int backup_count;
                 bool has_conflicts = false;
-                std::vector<fs::path> backup_paths;
 
+                std::vector<fs::path> backup_paths;
                 std::unordered_map<std::string, TagCache> tags;
         };
 
