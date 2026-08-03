@@ -273,7 +273,6 @@ void CDashboardView::render_game_content(
     auto save_files_id = std::format( "savefiles_{}", game_key );
     Card::draw( save_files_id, str.data( ), saves_expanded, std::nullopt, [&]( ) {
         for ( auto& save : files ) {
-            if ( cache.has_undo ) continue;
             // ugly
             if ( !m_config.d_settings.show_conflicts ) {
                 if ( save.first.string( ).contains( ".savemgr-conflict-" ) ) continue;
