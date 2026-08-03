@@ -23,7 +23,7 @@ bool Features::backup_game( const Game& game, const fs::path& file, CConfig& con
 
     if ( !fs::exists( game_backup_dir ) ) fs::create_directories( game_backup_dir );
 
-    fs::path final_path = game_backup_dir / utf8_to_path(construct_backup_name( game.game_name ));
+    fs::path final_path = game_backup_dir / utf8_to_path( construct_backup_name( game.game_name ) );
     fs::path zip_name = final_path.parent_path( ) / ( path_to_utf8( final_path.filename( ) ) + ".tmp" );
 
     // writing happens on the destructor so we scope it to do it immediatly, needs a refactor
@@ -86,7 +86,7 @@ bool Features::backup_game_files( const Game& game, std::vector<std::pair<fs::pa
     fs::path game_backup_dir = paths::backup_dir( ) / sanitize_filename_path( game.game_name );
     if ( !fs::exists( game_backup_dir ) ) fs::create_directories( game_backup_dir );
 
-    fs::path final_path = game_backup_dir / utf8_to_path(construct_backup_name( game.game_name ));
+    fs::path final_path = game_backup_dir / utf8_to_path( construct_backup_name( game.game_name ) );
     fs::path zip_name = final_path.parent_path( ) / ( path_to_utf8( final_path.filename( ) ) + ".tmp" );
 
     bool failed_to_add = false;
@@ -96,8 +96,8 @@ bool Features::backup_game_files( const Game& game, std::vector<std::pair<fs::pa
             for ( size_t i = { }; i < game.save_paths.size( ); i++ ) {
                 fs::path result = fs::relative( entry.first, game.save_paths[i] );
                 if ( !result.string( ).starts_with( ".." ) ) {
-                    fs::path entry_path = ( game.save_paths.size( ) > 1 ) ? fs::path( std::to_string( i ) ) / result
-                                                                           : result;
+                    fs::path entry_path =
+                        ( game.save_paths.size( ) > 1 ) ? fs::path( std::to_string( i ) ) / result : result;
                     if ( !za.add_to_archive( entry.first, std::nullopt, entry_path.string( ) ) ) failed_to_add = true;
                     break;
                 }

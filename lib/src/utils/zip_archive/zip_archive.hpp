@@ -1,6 +1,6 @@
 #pragma once
-#include <zip.h>
 #include <utils/utils.hpp>
+#include <zip.h>
 
 class CZipArchive {
     public:

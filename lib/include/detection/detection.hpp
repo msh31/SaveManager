@@ -7,6 +7,5 @@
 #include <utils/unreal_name_cache/unreal_name_cache.hpp>
 
 namespace Detection {
-    std::vector<Game> find_saves(
-        const Blacklist&, const Translations&, const SteamManifestCache&, UnrealNameCache& );
+    std::vector<Game> find_saves( const Blacklist&, const Translations&, const SteamManifestCache&, UnrealNameCache& );
 }; // namespace Detection
