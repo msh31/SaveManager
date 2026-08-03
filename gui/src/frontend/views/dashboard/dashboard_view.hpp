@@ -54,7 +54,11 @@ class CDashboardView : public CBaseView {
                 std::unordered_map<fs::path, SaveFileInfo> backup_info;
 
                 int backup_count;
+
                 bool has_conflicts = false;
+
+                bool has_undo = false;
+                fs::path undo_path = { };
 
                 std::vector<fs::path> backup_paths;
                 std::unordered_map<std::string, TagCache> tags;

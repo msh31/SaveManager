@@ -190,7 +190,8 @@ void CDashboardView::render_game_content(
     std::pair<int, int> sb_count, const Game& game, bool has_conflicts,
     std::vector<std::pair<fs::path, const Game*>> files ) {
 
-    auto& info = m_game_cache[utils::get_game_identity_key( game ).value].file_info;
+    auto& cache = m_game_cache[utils::get_game_identity_key( game ).value];
+    auto& info = cache.file_info;
 
     bool is_refreshing = m_detection.is_refreshing( );
     bool is_backing_up =
@@ -202,15 +203,10 @@ void CDashboardView::render_game_content(
         return;
     }
 
-    // TODO: cache this
-    fs::path undo_dir = paths::backup_dir( ) / sanitize_filename_path( game.game_name ) / "undo.zip";
-    bool has_undo = false;
-    if ( fs::exists( undo_dir ) ) has_undo = true;
-
     float total = 110.f; // Backup All
     // total += ImGui::CalcTextSize("Create Schedule__").x + 4.f;
     if ( has_conflicts ) total += ImGui::CalcTextSize( "Resolve Conflict(s)__" ).x + 4.f;
-    if ( has_undo ) total += ImGui::CalcTextSize( "Undo last restore___" ).x + 4.f;
+    if ( cache.has_undo ) total += ImGui::CalcTextSize( "Undo last restore___" ).x + 4.f;
     ImGui::SetCursorPosX( ImGui::GetContentRegionMax( ).x - total );
 
     ImGui::PushStyleColor( ImGuiCol_Button, ImColor( 198, 97, 63 ).Value );
@@ -250,12 +246,12 @@ void CDashboardView::render_game_content(
         }
         if ( is_backing_up || is_refreshing ) ImGui::EndDisabled( );
     }
-    if ( has_undo ) {
+    if ( cache.has_undo ) {
         ImGui::SameLine( );
         if ( is_backing_up || is_refreshing ) ImGui::BeginDisabled( true );
         if ( ImGui::Button( "Undo last restore" ) ) {
-            if ( Features::restore_backup( undo_dir, game.save_paths, m_pending_conflicts ) ) {
-                fs::remove( undo_dir );
+            if ( Features::restore_backup( cache.undo_path, game.save_paths, m_pending_conflicts ) ) {
+                fs::remove( cache.undo_path );
             } else {
                 SPDLOG_ERROR( "Failed to restore backup, kept undo zip!" );
                 Notify::show_notification( "Undo Last Restore", "Failed to restore backup, kept undo zip!", 2000 );
@@ -277,7 +273,7 @@ void CDashboardView::render_game_content(
     auto save_files_id = std::format( "savefiles_{}", game_key );
     Card::draw( save_files_id, str.data( ), saves_expanded, std::nullopt, [&]( ) {
         for ( auto& save : files ) {
-            if ( !fs::exists( save.first ) ) continue;
+            if ( cache.has_undo ) continue;
             // ugly
             if ( !m_config.d_settings.show_conflicts ) {
                 if ( save.first.string( ).contains( ".savemgr-conflict-" ) ) continue;
@@ -741,6 +737,12 @@ void CDashboardView::invalidate_cache( const std::vector<Game>& games, std::func
                 }
 
                 cache.tags = load_tag_cache( game.game_name );
+
+                fs::path undo_dir = paths::backup_dir( ) / sanitize_filename_path( game.game_name ) / "undo.zip";
+                if ( fs::exists( undo_dir ) ) {
+                    cache.undo_path = undo_dir;
+                    cache.has_undo = true;
+                }
 
                 for ( const auto& save_path : game.save_paths ) {
                     if ( !fs::is_directory( save_path ) ) continue;
