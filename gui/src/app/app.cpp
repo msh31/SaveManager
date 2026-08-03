@@ -38,8 +38,6 @@ void CApp::init( ) {
             [&update_ready]( ) { update_ready = Network::is_update_available( ); },
             [&update_ready]( ) {
                 if ( update_ready ) Notify::show_notification( "Update check", "Update available!!", 2500 );
-                else
-                    Notify::show_notification( "Update check", "No update available!", 2500 );
             },
             []( const std::exception& ex ) { SPDLOG_ERROR( "the update check failed: {}", ex.what( ) ); } );
     }
