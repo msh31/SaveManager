@@ -12,9 +12,9 @@ Due to the lack of downloads of the MacOS version I will pause development there
 - Added
     <!-- - Safety guards around the Save Editor by taking a snapshot of the savegame before editing it -->
     <!-- - Option to include tags during SFTP transfers ([#12](https://github.com/msh31/savemanager/issues/12)) -->
-    <!-- - Automatic periodic update checks (configurable) -->
+    - Automatic update check on startup (configurable)
     - Detection settings (show_conflicts & skip_empty_files)
-    <!-- - Configurable ``.savemgr-ignore`` file to exclude certain filenames, directories or extensions from detection -->
+    - Configurable ``.savemgr-ignore`` file to support custom exclusions of certain filenames, directories or extensions from detection per game
 
 - Fixed
     <!-- - Fixed an issue where Minecraft saves from any launcher did not restore properly ([#13](https://github.com/msh31/SaveManager/issues/13)) -->
@@ -31,7 +31,7 @@ Due to the lack of downloads of the MacOS version I will pause development there
 - Added 
     - 'Delete' button on the list of savefiles (Has a confirm dialog)
     - 'Duplicate' button on the list of savefiles and backups
-    <!-- - 'Preview' button on the list of savefiles and backups -->
+    - 'Preview' button on the list of savefiles and backups
     - 'Save' button within the settings tab
 
 - Fixed 
@@ -44,6 +44,7 @@ Due to the lack of downloads of the MacOS version I will pause development there
     - FIxed an issue where the game count was counting games that got filterered out
     - Fixed a missing style pop before returning in the backup restore button
     - Fixed an issue where Rockstar Games profiles folder detection could fail due to a permission error
+    - Fixed an issue where the app background did not comply with the lightmode setting
 
 - Performance
     - Cache basic file info to avoid recomputing them 100's of times per frame which caused unnessesary disk io work
