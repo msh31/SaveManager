@@ -82,6 +82,7 @@ void CApp::save_window_props( int x, int y, int width, int height ) {
 
 // called from main before render so the shader actually displays
 void CApp::render_shader( std::pair<int, int> window_size ) {
+    // might be useless but a fallback for now
     if ( m_config.settings.dark_mode ) {
         glClearColor( 0.145f, 0.145f, 0.141f, 1.0f );
     } else {
