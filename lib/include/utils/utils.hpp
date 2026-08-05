@@ -122,6 +122,14 @@ namespace utils {
         SPDLOG_ERROR( "Failed to get game identify key" );
         return { GameKeyKind::INVALID }; // caller must check this
     }
+
+    inline std::string_view trim( std::string_view l ) {
+        auto b = l.find_first_not_of( " \t\r" );
+        if ( b == std::string_view::npos ) return { };
+        auto e = l.find_last_not_of( " \t\r" );
+        return l.substr( b, e - b + 1 );
+    }
+
 } // namespace utils
 
 inline std::vector<std::vector<int>> get_grouped( const std::vector<Game>& games ) {
