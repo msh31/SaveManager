@@ -137,7 +137,7 @@ void CSettingsView::render( ) {
     ImGui::SameLine( 0.0f, 10.0f );
 
     ImGui::BeginChild(
-        "##detection_settings", ImVec2( window_width, 250.0f ), true,
+        "##detection_settings", ImVec2( 350.f, 250.0f ), true, // stupid
         ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse );
 
     ImGui::PushFont( CFontManager::get( ).get_font( "jbm_med" ).value_or( nullptr ) );
