@@ -757,12 +757,14 @@ void CDashboardView::on_result_changed( ) {
     invalidate_cache( m_games_snapshot );
 }
 
+// TODO: move this out? this is the only user
 void CDashboardView::invalidate_cache( const std::vector<Game>& games, std::function<void( )> on_done ) {
     auto temp = std::make_shared<std::unordered_map<std::string, GameCache>>( );
     auto temp_modified = std::make_shared<std::unordered_map<std::string, fs::file_time_type>>( );
+    bool use_ignore = m_config.d_settings.use_savemgr_ignore;
 
     m_task_runner.run(
-        [games, temp, temp_modified]( ) {
+        [games, temp, temp_modified, use_ignore]( ) {
             for ( const auto& game : games ) {
                 GameCache cache;
 
@@ -789,16 +791,28 @@ void CDashboardView::invalidate_cache( const std::vector<Game>& games, std::func
                     if ( !fs::is_directory( save_path ) ) continue;
                     if ( save_path.string( ).contains( ".savemgr-conflict-" ) ) continue;
 
+                    bool signore_exists = fs::exists( save_path / ".savemgr-ignore" );
+                    std::vector<IgnoreRule> ignore_rules = { };
+                    if ( use_ignore && signore_exists ) {
+                        ignore_rules = Blacklist::parse_ignore_file( save_path / ".savemgr-ignore" );
+                    }
+
                     if ( game.type != PlatformType::MINECRAFT ) {
                         for ( const auto& file : fs::recursive_directory_iterator(
                                   save_path, fs::directory_options::skip_permission_denied ) ) {
 
-                            auto ext = file.path( ).extension( ).string( );
-                            if ( game.type != PlatformType::CUSTOM && game.type != PlatformType::GENERIC ) {
-                                if ( extension_blocklist.contains( ext ) ) continue;
+                            if ( ignore_rules.empty( ) ) {
+                                auto ext = save_path.extension( ).string( );
+                                if ( game.type != PlatformType::CUSTOM && game.type != PlatformType::GENERIC ) {
+                                    if ( extension_blocklist.contains( ext ) ) continue;
+                                }
+                                // images, but not svg because old COD games use .svg like BO and Ghosts
+                                if ( g_extension_blocklist.contains( ext ) ) continue;
+                            } else {
+                                if ( Blacklist::is_ignored( fs::relative( file.path( ), save_path ), ignore_rules ) ) {
+                                    continue;
+                                }
                             }
-
-                            if ( g_extension_blocklist.contains( ext ) ) continue;
 
                             bool is_dir = fs::is_directory( file );
                             if ( is_dir ) continue;

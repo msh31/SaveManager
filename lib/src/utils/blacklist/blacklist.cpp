@@ -1,7 +1,8 @@
 #include "utils/blacklist/blacklist.hpp"
 #include "utils/paths.hpp"
-#include <nlohmann/json.hpp>
+#include "utils/utils.hpp"
 
+#include <nlohmann/json.hpp>
 using json = nlohmann::json;
 
 bool Blacklist::init( ) {
@@ -59,4 +60,56 @@ void Blacklist::remove( const std::string& name ) {
     std::lock_guard<std::mutex> lock( m_blacklist_mutex );
     m_blacklisted_games.erase( name );
     save( );
+}
+
+// savemgr-ignore
+std::optional<IgnoreRule> Blacklist::parse_ignore_line( std::string_view l ) {
+    auto trimmed = utils::trim( l );
+
+    if ( trimmed.empty( ) || trimmed.starts_with( "#" ) ) return std::nullopt;
+
+    if ( trimmed.ends_with( "/" ) ) {
+        auto pos = trimmed.rfind( "/" );
+        return IgnoreRule{ IgnoreKind::Directory, std::string( trimmed.substr( 0, pos ) ) };
+    } else if ( trimmed.starts_with( "*." ) ) {
+        return IgnoreRule{ IgnoreKind::Extension, std::string( trimmed.substr( 1 ) ) };
+    }
+
+    return IgnoreRule{ IgnoreKind::Filename, std::string( trimmed ) };
+}
+
+std::vector<IgnoreRule> Blacklist::parse_ignore_file( const fs::path& f ) {
+    std::vector<IgnoreRule> rules = { };
+
+    std::ifstream file( f );
+    if ( !file.is_open( ) ) return rules;
+
+    std::string line;
+    while ( std::getline( file, line ) ) {
+        auto rule = parse_ignore_line( line );
+        if ( rule.has_value( ) ) {
+            rules.emplace_back( rule.value( ) );
+        }
+    }
+
+    return rules;
+}
+
+bool Blacklist::is_ignored( const fs::path& file, const std::vector<IgnoreRule>& rules ) {
+    for ( const auto& rule : rules ) {
+        switch ( rule.kind ) {
+        case IgnoreKind::Extension:
+            if ( file.extension( ).string( ) == rule.value ) return true;
+            break;
+        case IgnoreKind::Filename:
+            if ( file.filename( ).string( ) == rule.value ) return true;
+            break;
+        case IgnoreKind::Directory:
+            for ( const auto& part : file ) {
+                if ( part.string( ) == rule.value ) return true;
+            }
+            break;
+        }
+    }
+    return false;
 }

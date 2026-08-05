@@ -64,9 +64,8 @@ void CSettingsView::render( ) {
     ImGui::Checkbox( "Dark Mode", &m_config.settings.dark_mode );
     ImGui::SameLine( );
     ImGui::Checkbox( "Animated background", &m_config.settings.animated_background );
-    ImGui::SameLine( );
-    ImGui::Checkbox( "Check for updates on startup", &m_config.settings.startup_update_check );
     ImGui::Separator( );
+    ImGui::Checkbox( "Check for updates on startup", &m_config.settings.startup_update_check );
 
     if ( is_checking ) ImGui::BeginDisabled( true );
     if ( ImGui::Button( "Check for updates" ) ) {
@@ -98,7 +97,7 @@ void CSettingsView::render( ) {
     ImGui::SameLine( 0.0f, 10.0f );
 
     ImGui::BeginChild(
-        "##blacklisted_games", ImVec2( 300.0f, 250.0f ), true,
+        "##blacklisted_games", ImVec2( window_width, 250.0f ), true,
         ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse );
 
     ImGui::PushFont( CFontManager::get( ).get_font( "jbm_med" ).value_or( nullptr ) );
@@ -146,7 +145,7 @@ void CSettingsView::render( ) {
     ImGui::PopFont( );
 
     ImGui::Checkbox( "Show conflicting files", &m_config.d_settings.show_conflicts );
-    // ImGui::Checkbox( "", &m_config.settings.dark_mode );
+    ImGui::Checkbox( "Use ignore files", &m_config.d_settings.use_savemgr_ignore );
     ImGui::Checkbox( "Skip empty files", &m_config.d_settings.skip_empty_files );
 
     ImGui::EndChild( );
