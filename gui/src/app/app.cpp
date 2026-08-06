@@ -31,6 +31,9 @@ void CApp::init( ) {
     if ( !m_config.init( ) ) {
         throw std::runtime_error( "Config is missing and could not be generated!" );
     }
+
+    m_detection.init( );
+
     if ( m_config.settings.startup_update_check ) {
         bool update_ready = false;
 
@@ -41,17 +44,8 @@ void CApp::init( ) {
             },
             []( const std::exception& ex ) { SPDLOG_ERROR( "the update check failed: {}", ex.what( ) ); } );
     }
-    if ( !m_translations.init( ) ) {
-        SPDLOG_WARN( "Failed to initialize translations! Expect missing games!" );
-    }
     if ( !m_blacklist.init( ) ) {
         SPDLOG_WARN( "Failed to initialize blacklist!" );
-    }
-    if ( !m_manifest_cache.init( ) ) {
-        SPDLOG_WARN( "Failed to initialize Steam manifest cache! Expect missing Unreal game names!" );
-    }
-    if ( !m_unreal_name_cache.init( ) ) {
-        SPDLOG_WARN( "Failed to load cached Unreal game names!" );
     }
 
     // TODO: remove this in the future

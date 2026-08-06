@@ -40,3 +40,9 @@ struct GameKey {
         // spaceship operator,
         auto operator<=>( const GameKey& ) const = default;
 };
+
+struct PcgwEntry {
+        std::string os;
+        std::string raw_path;
+        std::string page; // page entry from the manifestm used for fallback game name
+};

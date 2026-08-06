@@ -6,8 +6,8 @@
 #include <frontend/views/backups/backup_view.hpp>
 #include <frontend/views/base_view.hpp>
 
-#include <backend/detection_service/detection_service.hpp>
 #include <backend/task_runner/task_runner.hpp>
+#include <detection/detection_service.hpp>
 
 class CDashboardView : public CBaseView {
     public:

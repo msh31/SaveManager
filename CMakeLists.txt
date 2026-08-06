@@ -76,6 +76,7 @@ set(savemanager-core_SOURCES
 	"lib/include/config/config.hpp"
 	"lib/include/constants.hpp"
 	"lib/include/detection/detection.hpp"
+	"lib/include/detection/detection_service.hpp"
 	"lib/include/detection/game.hpp"
 	"lib/include/features/features.hpp"
 	"lib/include/logger/logger.hpp"
@@ -93,6 +94,7 @@ set(savemanager-core_SOURCES
 	"lib/include/version.hpp"
 	"lib/src/config/config.cpp"
 	"lib/src/detection/detection.cpp"
+	"lib/src/detection/detection_service/detection_service.cpp"
 	"lib/src/detection/detector_context.hpp"
 	"lib/src/detection/detector_utils.hpp"
 	"lib/src/detection/idetector.hpp"
@@ -176,7 +178,6 @@ string(TIMESTAMP BUILD_DATE "%Y-%m-%d %H:%M UTC")
 set(savemanager_SOURCES
 	cmake.toml
 	"gui/src/app/app.cpp"
-	"gui/src/backend/detection_service/detection_service.cpp"
 	"gui/src/backend/font_manager/font_manager.cpp"
 	"gui/src/backend/shader/shader.cpp"
 	"gui/src/backend/task_runner/task_runner.cpp"

@@ -4,7 +4,7 @@
 #include <frontend/views/base_view.hpp>
 #include <remote_transfer/remote_transfer.hpp>
 
-#include <backend/detection_service/detection_service.hpp>
+#include <detection/detection_service.hpp>
 
 class CTransferView : public CBaseView {
     public:

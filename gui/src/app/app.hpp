@@ -1,10 +1,10 @@
 #pragma once
 #include <config/config.hpp>
 
-#include <backend/detection_service/detection_service.hpp>
 #include <backend/shader/shader.hpp>
 #include <backend/task_runner/task_runner.hpp>
 #include <backend/ui_manager/ui_manager.hpp>
+#include <detection/detection_service.hpp>
 #include <utils/paths.hpp>
 
 #include <utils/blacklist/blacklist.hpp>
@@ -29,10 +29,7 @@ class CApp {
 
         CUIManager m_ui_manager{ std::make_unique<CTabbarShell>( ) };
         Blacklist m_blacklist;
-        Translations m_translations;
-        SteamManifestCache m_manifest_cache;
-        UnrealNameCache m_unreal_name_cache;
-        CDetectionService m_detection{ m_blacklist, m_translations, m_manifest_cache, m_unreal_name_cache };
+        CDetectionService m_detection{ m_blacklist };
 
         CTaskRunner m_task_runner;
         std::optional<CShader> m_shader;

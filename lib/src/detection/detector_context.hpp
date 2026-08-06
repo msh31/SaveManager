@@ -5,12 +5,6 @@
 #include <utils/translations/translations.hpp>
 #include <utils/unreal_name_cache/unreal_name_cache.hpp>
 
-struct PcgwEntry {
-        std::string os;
-        std::string raw_path;
-        std::string page; // page entry from the manifestm used for fallback game name
-};
-
 struct DetectorContext {
         const Translations& translations;
         const SteamManifestCache& manifest_cache;

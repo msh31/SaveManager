@@ -20,12 +20,75 @@
 std::vector<Game> Detection::find_saves(
     const Blacklist& blacklist, const Translations& translations, const SteamManifestCache& manifest_cache,
     UnrealNameCache& name_cache ) {
-    std::vector<std::unique_ptr<IDetector>> detectors;
+
     std::vector<std::future<std::expected<std::vector<Game>, SMError>>> detection_futures;
 
     std::vector<Game> games = { };
+    // std::vector<std::unique_ptr<IDetector>> detectors = build_detectors( translations, manifest_cache, name_cache );
 
-    auto pcgw_entries = CPCGamingWikiDetector::load_manifest( );
+    // for ( const auto& detector : detectors ) {
+    //     detection_futures.emplace_back(
+    //         std::async( std::launch::async, [d = detector.get( )]( ) -> std::expected<std::vector<Game>, SMError> {
+    //             return d->find( );
+    //         } ) );
+    // }
+    //
+    // // c++23 ftw; wait for async completions and insert them
+    // for ( auto&& [detector, future] : std::views::zip( detectors, detection_futures ) ) {
+    //     if ( future.valid( ) ) {
+    //         try {
+    //             auto res = future.get( );
+    //             if ( res.has_value( ) ) std::ranges::move( res.value( ), std::back_inserter( games ) );
+    //             else
+    //                 SPDLOG_WARN( "{} detection failed", detector->name( ) );
+    //         } catch ( fs::filesystem_error& ex ) {
+    //             SPDLOG_ERROR(
+    //                 "{} failed in {} because: {}", detector->name( ), ex.path1( ).string( ), ex.code( ).message( ) );
+    //         }
+    //     }
+    // }
+
+    std::erase_if( games, [&]( const Game& game ) {
+        if ( game.type != PlatformType::PCGAMINGWIKI ) return false;
+
+        return std::ranges::any_of( games, [&]( const Game& other ) {
+            return other.type != PlatformType::PCGAMINGWIKI && other.game_name == game.game_name;
+        } );
+    } );
+
+    // DE-DUPLICATION
+    games = std::move( de_duplicate( games ) );
+
+    // BLACKLIST
+    std::erase_if( games, [&blacklist]( const Game& game ) {
+        bool blacklisted = blacklist.is_blacklisted( game.game_name );
+        if ( blacklisted ) SPDLOG_INFO( "[Detection] {} is blacklisted, removing.", game.game_name );
+        return blacklisted;
+    } );
+
+    // VALID PATH CHECK
+    std::erase_if( games, []( const Game& game ) {
+        bool has_valid_path = std::ranges::any_of(
+            game.save_paths, []( const fs::path& p ) { return fs::is_directory( p ) && !fs::is_empty( p ); } );
+        if ( !has_valid_path )
+            SPDLOG_INFO(
+                "[Detection] {} has no valid save paths ({} checked), removing.", game.game_name,
+                game.save_paths.size( ) );
+        return !has_valid_path;
+    } );
+
+    if ( games.empty( ) ) {
+        SPDLOG_ERROR( "No savegames found!" );
+    }
+
+    return games;
+}
+
+std::vector<std::unique_ptr<IDetector>> Detection::build_detectors(
+    const Translations& translations, const SteamManifestCache& manifest_cache, UnrealNameCache& name_cache,
+    const std::unordered_map<uint32_t, std::vector<PcgwEntry>>& pcgw_entries ) {
+
+    std::vector<std::unique_ptr<IDetector>> detectors = { };
     DetectorContext ctx{ translations, manifest_cache, name_cache, pcgw_entries };
 
 #ifdef _WIN32
@@ -94,43 +157,16 @@ std::vector<Game> Detection::find_saves(
     }
     if ( plugin_count > 0 ) SPDLOG_INFO( "Loaded {} plugins!", plugin_count );
 
-    for ( const auto& detector : detectors ) {
-        detection_futures.emplace_back(
-            std::async( std::launch::async, [d = detector.get( )]( ) -> std::expected<std::vector<Game>, SMError> {
-                return d->find( );
-            } ) );
-    }
+    return detectors;
+}
 
-    // c++23 ftw; wait for async completions and insert them
-    for ( auto&& [detector, future] : std::views::zip( detectors, detection_futures ) ) {
-        if ( future.valid( ) ) {
-            try {
-                auto res = future.get( );
-                if ( res.has_value( ) ) std::ranges::move( res.value( ), std::back_inserter( games ) );
-                else
-                    SPDLOG_WARN( "{} detection failed", detector->name( ) );
-            } catch ( fs::filesystem_error& ex ) {
-                SPDLOG_ERROR(
-                    "{} failed in {} because: {}", detector->name( ), ex.path1( ).string( ), ex.code( ).message( ) );
-            }
-        }
-    }
+std::vector<Game> Detection::de_duplicate( const std::vector<Game>& games ) {
+    if ( games.empty( ) ) return games;
 
     std::map<GameKey, size_t> seen{ };
-    std::vector<Game> deduped = { };
+    std::vector<Game> deduped{ };
 
-    std::erase_if( games, [&]( const Game& game ) {
-        if ( game.type != PlatformType::PCGAMINGWIKI ) return false;
-
-        return std::ranges::any_of( games, [&]( const Game& other ) {
-            return other.type != PlatformType::PCGAMINGWIKI && other.game_name == game.game_name;
-        } );
-    } );
-
-    size_t game_count = games.size( );
-
-    // DE-DUPLICATION
-    for ( size_t i = 0; i < game_count; i++ ) {
+    for ( size_t i = 0; i < games.size( ); i++ ) {
         auto& game = games[i];
         auto key = utils::get_game_identity_key( game );
 
@@ -159,29 +195,5 @@ std::vector<Game> Detection::find_saves(
             seen[key] = deduped.size( ) - 1;
         }
     }
-    games = std::move( deduped );
-
-    // BLACKLIST
-    std::erase_if( games, [&blacklist]( const Game& game ) {
-        bool blacklisted = blacklist.is_blacklisted( game.game_name );
-        if ( blacklisted ) SPDLOG_INFO( "[Detection] {} is blacklisted, removing.", game.game_name );
-        return blacklisted;
-    } );
-
-    // VALID PATH CHECK
-    std::erase_if( games, []( const Game& game ) {
-        bool has_valid_path = std::ranges::any_of(
-            game.save_paths, []( const fs::path& p ) { return fs::is_directory( p ) && !fs::is_empty( p ); } );
-        if ( !has_valid_path )
-            SPDLOG_INFO(
-                "[Detection] {} has no valid save paths ({} checked), removing.", game.game_name,
-                game.save_paths.size( ) );
-        return !has_valid_path;
-    } );
-
-    if ( games.empty( ) ) {
-        SPDLOG_ERROR( "No savegames found!" );
-    }
-
-    return games;
+    return deduped;
 }

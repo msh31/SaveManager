@@ -4,12 +4,10 @@
 // single owner of the detection result
 class CDetectionService {
     public:
-        CDetectionService(
-            const Blacklist& blacklist, const Translations& translations, const SteamManifestCache& manifest_cache,
-            UnrealNameCache& name_cache )
-            : m_blacklist( blacklist ), m_translations( translations ), m_manifest_cache( manifest_cache ),
-              m_name_cache( name_cache ) {}
+        CDetectionService( const Blacklist& blacklist );
+        ~CDetectionService( );
 
+        void init( );
         void refresh( );
         void ensure_started( );
 
@@ -24,9 +22,11 @@ class CDetectionService {
 
     private:
         const Blacklist& m_blacklist;
-        const Translations& m_translations;
-        const SteamManifestCache& m_manifest_cache;
-        UnrealNameCache& m_name_cache;
+        Translations m_translations;
+        SteamManifestCache m_manifest_cache;
+        UnrealNameCache m_name_cache;
+        std::unordered_map<uint32_t, std::vector<PcgwEntry>> m_pcgw_entries = { };
+        std::vector<std::unique_ptr<IDetector>> m_detectors = { };
 
         mutable std::mutex m_mutex;
         std::vector<Game> m_result;
