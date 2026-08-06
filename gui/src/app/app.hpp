@@ -2,10 +2,10 @@
 #include <config/config.hpp>
 
 #include <backend/shader/shader.hpp>
-#include <backend/task_runner/task_runner.hpp>
 #include <backend/ui_manager/ui_manager.hpp>
 #include <detection/detection_service.hpp>
 #include <utils/paths.hpp>
+#include <utils/task_runner/task_runner.hpp>
 
 #include <utils/blacklist/blacklist.hpp>
 #include <utils/steam/steam.hpp>
