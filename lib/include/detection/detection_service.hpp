@@ -26,7 +26,7 @@ class CDetectionService {
         SteamManifestCache m_manifest_cache;
         UnrealNameCache m_name_cache;
         std::unordered_map<uint32_t, std::vector<PcgwEntry>> m_pcgw_entries = { };
-        std::vector<std::unique_ptr<IDetector>> m_detectors = { };
+        std::vector<std::unique_ptr<IDetector>> m_detectors;
 
         mutable std::mutex m_mutex;
         std::vector<Game> m_result;
