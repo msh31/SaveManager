@@ -10,74 +10,98 @@ void CDetectionService::refresh( ) {
     auto start = std::chrono::steady_clock::now( );
 
     m_future = std::async( std::launch::async, [this, start] {
-        std::vector<std::future<std::expected<std::vector<Game>, SMError>>> detection_futures = { };
+        std::vector<std::pair<IDetector*, std::future<std::expected<std::vector<Game>, SMError>>>> futures = { };
+        std::vector<Game> games = { };
 
+        // collect detectors and launch them
         for ( const auto& detector : m_detectors ) {
-            detection_futures.emplace_back(
+            futures.emplace_back(
+                detector.get( ),
                 std::async( std::launch::async, [d = detector.get( )]( ) -> std::expected<std::vector<Game>, SMError> {
                     return d->find( );
                 } ) );
         }
 
-        std::vector<Game> games = { };
-
-        // // c++23 ftw; wait for async completions and insert them
-        for ( auto&& [detector, future] : std::views::zip( m_detectors, detection_futures ) ) {
-            if ( future.valid( ) ) {
-                try {
-                    auto res = future.get( );
-                    if ( res.has_value( ) ) std::ranges::move( res.value( ), std::back_inserter( games ) );
-                    else
-                        SPDLOG_WARN( "{} detection failed", detector->name( ) );
-                } catch ( fs::filesystem_error& ex ) {
-                    SPDLOG_ERROR(
-                        "{} failed in {} because: {}", detector->name( ), ex.path1( ).string( ),
-                        ex.code( ).message( ) );
+        while ( !futures.empty( ) ) {
+            std::erase_if( futures, [&]( auto& pair ) {
+                auto& [detector, future] = pair;
+                bool ready = false;
+                if ( future.valid( ) &&
+                     future.wait_for( std::chrono::milliseconds( 100 ) ) == std::future_status::ready ) {
+                    ready = true;
                 }
-            }
-        }
+                if ( ready ) {
+                    try {
+                        auto res = future.get( );
+                        if ( res.has_value( ) ) {
+                            std::ranges::move( res.value( ), std::back_inserter( games ) );
 
-        // INTERNAL > PCGW Manifest
-        std::erase_if( games, [&]( const Game& game ) {
-            if ( game.type != PlatformType::PCGAMINGWIKI ) return false;
+                            try {
+                                // INTERNAL > PCGW Manifest
+                                std::erase_if( games, [&]( const Game& game ) {
+                                    if ( game.type != PlatformType::PCGAMINGWIKI ) return false;
 
-            return std::ranges::any_of( games, [&]( const Game& other ) {
-                return other.type != PlatformType::PCGAMINGWIKI && other.game_name == game.game_name;
+                                    return std::ranges::any_of( games, [&]( const Game& other ) {
+                                        return other.type != PlatformType::PCGAMINGWIKI &&
+                                               other.game_name == game.game_name;
+                                    } );
+                                } );
+
+                                // DE-DUPLICATION
+                                games = std::move( Detection::de_duplicate( games ) );
+
+                                // BLACKLIST
+                                std::erase_if( games, [this]( const Game& game ) {
+                                    bool blacklisted = m_blacklist.is_blacklisted( game.game_name );
+                                    if ( blacklisted )
+                                        SPDLOG_INFO( "[Detection] {} is blacklisted, removing.", game.game_name );
+                                    return blacklisted;
+                                } );
+
+                                // VALID PATH CHECK
+                                std::erase_if( games, []( const Game& game ) {
+                                    bool has_valid_path =
+                                        std::ranges::any_of( game.save_paths, []( const fs::path& p ) {
+                                            return fs::is_directory( p ) && !fs::is_empty( p );
+                                        } );
+                                    if ( !has_valid_path )
+                                        SPDLOG_INFO(
+                                            "[Detection] {} has no valid save paths ({} checked), removing.",
+                                            game.game_name, game.save_paths.size( ) );
+                                    return !has_valid_path;
+                                } );
+
+                                {
+                                    std::lock_guard lock( m_mutex );
+                                    m_result = games; // std::move( games );
+                                }
+
+                                m_last_duration.store(
+                                    std::chrono::duration<double>( std::chrono::steady_clock::now( ) - start )
+                                        .count( ) );
+                                m_generation.fetch_add( 1 );
+
+                            } catch ( fs::filesystem_error& ex ) {
+                                SPDLOG_ERROR( "filter chain failed: {}", ex.what( ) );
+                            }
+
+                        } else {
+                            SPDLOG_WARN( "{} detection failed", detector->name( ) );
+                        }
+                    } catch ( fs::filesystem_error& ex ) {
+                        SPDLOG_ERROR(
+                            "{} failed in {} because: {}", detector->name( ), ex.path1( ).string( ),
+                            ex.code( ).message( ) );
+                    }
+                    return true;
+                }
+                return false;
             } );
-        } );
-
-        // DE-DUPLICATION
-        games = std::move( Detection::de_duplicate( games ) );
-
-        // BLACKLIST
-        std::erase_if( games, [this]( const Game& game ) {
-            bool blacklisted = m_blacklist.is_blacklisted( game.game_name );
-            if ( blacklisted ) SPDLOG_INFO( "[Detection] {} is blacklisted, removing.", game.game_name );
-            return blacklisted;
-        } );
-
-        // VALID PATH CHECK
-        std::erase_if( games, []( const Game& game ) {
-            bool has_valid_path = std::ranges::any_of(
-                game.save_paths, []( const fs::path& p ) { return fs::is_directory( p ) && !fs::is_empty( p ); } );
-            if ( !has_valid_path )
-                SPDLOG_INFO(
-                    "[Detection] {} has no valid save paths ({} checked), removing.", game.game_name,
-                    game.save_paths.size( ) );
-            return !has_valid_path;
-        } );
+        }
 
         if ( games.empty( ) ) {
             SPDLOG_ERROR( "No savegames found!" );
         }
-
-        {
-            std::lock_guard lock( m_mutex );
-            m_result = std::move( games );
-        }
-
-        m_last_duration.store( std::chrono::duration<double>( std::chrono::steady_clock::now( ) - start ).count( ) );
-        m_generation.fetch_add( 1 );
     } );
 }
 
