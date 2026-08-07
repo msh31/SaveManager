@@ -17,7 +17,7 @@ bool CZipArchive::add_to_archive(
             entry_name = entry_name_override.value( );
         } else {
             if ( parent.has_value( ) ) {
-                entry_name = ( fs::path( parent.value( ) ) / path_to_utf8_generic( file.filename( ).string( ) ) );
+                entry_name = path_to_utf8_generic( fs::path( parent.value( ) ) / file.filename( ) );
             } else {
                 entry_name = path_to_utf8_generic( file.filename( ) );
             }
