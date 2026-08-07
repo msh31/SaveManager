@@ -2,7 +2,7 @@
 
 template <typename T>
 void CTaskRunner::run(
-    std::function<T( )> work, std::function<void( )> on_complete,
+    std::function<T( )> work, std::function<void( T )> on_complete,
     std::function<void( const std::exception& )> on_error ) {
     auto result = std::make_shared<T>( );
 

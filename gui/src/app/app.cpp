@@ -35,7 +35,7 @@ void CApp::init( ) {
     m_detection.init( );
 
     if ( m_config.settings.startup_update_check ) {
-        m_task_runner.run(
+        m_task_runner.run<bool>(
             []( ) { return Network::is_update_available( ); },
             []( bool yes ) {
                 if ( yes ) Notify::show_notification( "Update check", "Update available!!", 2500 );
