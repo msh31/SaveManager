@@ -58,6 +58,11 @@ inline std::string path_to_utf8( const fs::path& p ) {
     return std::string( reinterpret_cast<const char*>( u8.data( ) ), u8.size( ) );
 }
 
+inline std::string path_to_utf8_generic( const fs::path& p ) {
+    auto u8 = p.generic_u8string( );
+    return std::string( reinterpret_cast<const char*>( u8.data( ) ), u8.size( ) );
+}
+
 inline fs::path sanitize_filename_path( const std::string& text ) { return utf8_to_path( sanitize_filename( text ) ); }
 
 // inline fs::path operator/( const fs::path& lhs, const std::string& utf8_rhs ) { return lhs / utf8_to_path( utf8_rhs

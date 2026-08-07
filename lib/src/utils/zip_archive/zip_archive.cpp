@@ -17,9 +17,9 @@ bool CZipArchive::add_to_archive(
             entry_name = entry_name_override.value( );
         } else {
             if ( parent.has_value( ) ) {
-                entry_name = ( fs::path( parent.value( ) ) / file.filename( ) ).string( );
+                entry_name = ( fs::path( parent.value( ) ) / path_to_utf8_generic( file.filename( ).string( ) ) );
             } else {
-                entry_name = file.filename( ).string( );
+                entry_name = path_to_utf8_generic( file.filename( ) );
             }
         }
 
@@ -53,9 +53,9 @@ bool CZipArchive::add_to_archive(
 
                 std::string zip_name = { };
                 if ( parent.has_value( ) ) {
-                    zip_name = ( fs::path( parent.value( ) ) / file_path ).string( );
+                    zip_name = path_to_utf8_generic( fs::path( parent.value( ) ) / file_path );
                 } else {
-                    zip_name = file_path.string( );
+                    zip_name = path_to_utf8_generic( file_path );
                 }
 
                 if ( zip_file_add( m_archive, zip_name.c_str( ), source, ZIP_FL_OVERWRITE ) < 0 ) {
@@ -76,7 +76,7 @@ bool CZipArchive::add_to_archive(
         }
         return false;
     } else {
-        SPDLOG_INFO( "backup for: {} has been created!", file.parent_path( ).filename( ).string( ) );
+        // SPDLOG_INFO( "backup for: {} has been created!", file.parent_path( ).filename( ).string( ) );
         return true;
     }
 }
