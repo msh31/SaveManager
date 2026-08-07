@@ -5,7 +5,6 @@
 #include <backend/utils.hpp>
 
 #include <frontend/components/card.hpp>
-#include <frontend/components/spinner.hpp>
 #include <frontend/dialogs/confirm/confirm_dialog.hpp>
 #include <frontend/icons.hpp>
 #include <frontend/notification/notification.hpp>
@@ -60,10 +59,6 @@ void CDashboardView::render_toolbar( ) {
     bool is_refreshing = m_detection.is_refreshing( );
     bool is_backing_up =
         m_backup_future.valid( ) && m_backup_future.wait_for( std::chrono::seconds( 0 ) ) != std::future_status::ready;
-
-    if ( is_refreshing ) {
-        Spinner::render( );
-    }
 
     float sort_width = ImGui::CalcTextSize( "Sort: Alphabetical" ).x + ImGui::GetStyle( ).FramePadding.x * 2;
     float filter_width = ImGui::CalcTextSize( "Filter: Rockstar" ).x + ImGui::GetStyle( ).FramePadding.x * 2;
