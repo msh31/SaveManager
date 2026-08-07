@@ -35,12 +35,10 @@ void CApp::init( ) {
     m_detection.init( );
 
     if ( m_config.settings.startup_update_check ) {
-        bool update_ready = false;
-
         m_task_runner.run(
-            [&update_ready]( ) { update_ready = Network::is_update_available( ); },
-            [&update_ready]( ) {
-                if ( update_ready ) Notify::show_notification( "Update check", "Update available!!", 2500 );
+            []( ) { return Network::is_update_available( ); },
+            []( bool yes ) {
+                if ( yes ) Notify::show_notification( "Update check", "Update available!!", 2500 );
             },
             []( const std::exception& ex ) { SPDLOG_ERROR( "the update check failed: {}", ex.what( ) ); } );
     }
