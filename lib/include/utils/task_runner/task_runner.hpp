@@ -2,8 +2,9 @@
 
 class CTaskRunner {
     public:
+        template <typename T>
         void
-        run( std::function<void( )> work, std::function<void( )> on_complete,
+        run( std::function<T( )> work, std::function<void( )> on_complete,
              std::function<void( const std::exception& )> on_error );
         void update( );
 
