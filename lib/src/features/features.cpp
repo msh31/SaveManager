@@ -31,9 +31,9 @@ bool Features::backup_game( const Game& game, const fs::path& file, CConfig& con
     {
         CZipArchive archive( MODE_CREATE_ARCHIVE, zip_name.u8string( ) );
         if ( game.type == PlatformType::MINECRAFT ) {
-            archive.set_comment( file.string( ) );
+            archive.set_comment( path_to_utf8( file ) );
         } else {
-            archive.set_comment( file.parent_path( ).string( ) );
+            archive.set_comment( path_to_utf8( file.parent_path( ) ) );
         }
         success = archive.add_to_archive( file ) && archive.finalize_add( );
     }
