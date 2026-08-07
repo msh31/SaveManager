@@ -759,12 +759,14 @@ void CDashboardView::on_result_changed( ) {
 
 // TODO: move this out? this is the only user
 void CDashboardView::invalidate_cache( const std::vector<Game>& games, std::function<void( )> on_done ) {
-    auto temp = std::make_shared<std::unordered_map<std::string, GameCache>>( );
-    auto temp_modified = std::make_shared<std::unordered_map<std::string, fs::file_time_type>>( );
-    bool use_ignore = m_config.d_settings.use_savemgr_ignore;
+    using InvalidateCacheResult =
+        std::pair<std::unordered_map<std::string, GameCache>, std::unordered_map<std::string, fs::file_time_type>>;
 
-    m_task_runner.run(
-        [games, temp, temp_modified, use_ignore]( ) {
+    bool use_ignore = m_config.d_settings.use_savemgr_ignore;
+    m_task_runner.run<InvalidateCacheResult>(
+        [games, use_ignore]( ) {
+            InvalidateCacheResult result = { };
+
             for ( const auto& game : games ) {
                 GameCache cache;
 
@@ -836,22 +838,22 @@ void CDashboardView::invalidate_cache( const std::vector<Game>& games, std::func
 
                     auto key = utils::get_game_identity_key( game ).value;
                     if ( game.type == PlatformType::MINECRAFT ) {
-                        if ( ( *temp ).contains( key ) ) {
+                        if ( result.first.contains( key ) ) {
                             auto ftime = fs::last_write_time( save_path );
                             SaveFileInfo sfi = { 0, ftime, true };
-                            ( *temp )[key].save_files.push_back( save_path );
-                            ( *temp )[key].file_info[save_path] = sfi;
+                            result.first[key].save_files.push_back( save_path );
+                            result.first[key].file_info[save_path] = sfi;
                         } else {
-                            ( *temp )[key] = cache;
+                            result.first[key] = cache;
                         }
                     } else {
-                        ( *temp )[key] = cache;
+                        result.first[key] = cache;
                     }
 
                     try {
                         for ( const auto& f : fs::directory_iterator( save_path ) ) {
                             if ( f.path( ).string( ).find( ".savemgr-conflict-" ) != std::string::npos ) {
-                                ( *temp )[key].has_conflicts = true;
+                                result.first[key].has_conflicts = true;
                                 break;
                             }
                         }
@@ -873,15 +875,19 @@ void CDashboardView::invalidate_cache( const std::vector<Game>& games, std::func
                             if ( t > current_max ) current_max = t;
                     }
                 }
-                ( *temp_modified ).insert( { entry.game_name, current_max } );
+                result.second.insert( { entry.game_name, current_max } );
             }
+            return result;
         },
-        [this, temp, temp_modified, on_done]( ) {
-            for ( auto& [key, cache] : *temp )
+        [this, on_done]( InvalidateCacheResult result ) {
+            for ( auto& [key, cache] : result.first )
                 m_game_cache[key] = std::move( cache );
-            for ( auto& [name, t] : *temp_modified )
+            for ( auto& [name, t] : result.second )
                 m_game_last_modified[name] = t;
             if ( on_done ) on_done( );
         },
-        []( const std::exception& ex ) { Notify::show_notification( "Cache Invalidation Error", ex.what( ), 3000 ); } );
+        []( const std::exception& ex ) {
+            SPDLOG_ERROR( "[Cache] Failed to invalidate cache: {}", ex.what( ) );
+            Notify::show_notification( "Cache Invalidation Error", ex.what( ), 3000 );
+        } );
 }
