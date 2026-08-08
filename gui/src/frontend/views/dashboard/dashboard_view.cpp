@@ -411,7 +411,7 @@ void CDashboardView::render_save_row( const fs::path& save_file, const Game& gam
     ImGui::PushStyleColor( ImGuiCol_ButtonHovered, ImVec4( 0.9f, 0.3f, 0.3f, 1.0f ) );
     if ( ImGui::Button( "Delete", btn_size ) ) {
         ConfirmDialog::show( "Are you sure?", [this, save_file, game] {
-            if ( fs::remove( save_file ) ) {
+            if ( fs::remove_all( save_file ) ) {
                 Notify::show_notification( "Save Deletion", "Save deleted!", 2500 );
                 invalidate_cache( { game } );
             } else {
