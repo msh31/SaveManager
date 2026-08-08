@@ -388,12 +388,22 @@ void CDashboardView::render_save_row( const fs::path& save_file, const Game& gam
     ImGui::SetItemTooltip( "Create a backup of this save" );
     ImGui::SameLine( 0.0f, 4.0f );
     if ( ImGui::Button( "Duplicate", ImVec2( 90.0f, 0 ) ) ) { // also kinda fucked up
-        std::string copy_name = save_file.string( ) + ".savemgr-copy";
-        if ( fs::copy_file( save_file, copy_name ) ) {
+        std::error_code ec;
+
+        if ( fs::is_directory( save_file ) ) {
+            std::string copy_name = save_file.string( ) + "-savemgr-copy";
+            fs::copy( save_file, copy_name, fs::copy_options::recursive, ec );
+        } else {
+            std::string copy_name = save_file.string( ) + ".savemgr-copy";
+            fs::copy_file( save_file, copy_name, ec );
+        }
+
+        if ( ec ) {
+            SPDLOG_ERROR( "Failed to copy: {} because: {}", path_to_utf8( save_file ), ec.message( ) );
+            Notify::show_notification( "Save Duplication", "Save could not be duplicated!", 2500 );
+        } else {
             Notify::show_notification( "Save Duplication", "Save duplicated!", 2500 );
             invalidate_cache( { game } );
-        } else {
-            Notify::show_notification( "Save Duplication", "Save could not be duplicated!", 2500 );
         }
     }
     ImGui::SameLine( 0.0f, 4.0f );
