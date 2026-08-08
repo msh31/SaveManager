@@ -32,10 +32,11 @@ void CDashboardView::render( ) {
 
     if ( ImGui::BeginTabBar( "##dashboard_tabs" ) ) {
         if ( ImGui::BeginTabItem( "Games" ) ) {
-            if ( m_detection.is_refreshing( ) ) ImGui::BeginDisabled( true );
+            bool disable = m_detection.is_refreshing( );
+            if ( disable ) ImGui::BeginDisabled( true );
             render_toolbar( );
             render_game_list( );
-            if ( m_detection.is_refreshing( ) ) ImGui::EndDisabled( );
+            if ( disable ) ImGui::EndDisabled( );
             ImGui::EndTabItem( );
         }
 
