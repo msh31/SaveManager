@@ -307,8 +307,12 @@ void CDashboardView::render_game_row( const std::vector<int>& group, int gi ) {
 
     auto selectable_id = std::format( "gamename_{}", game_key );
 
-    std::string right_text =
-        std::format( "{} | {} saves | {} backups", primary.platform_label, save_count, backup_count );
+    std::string prt = { };
+#ifndef NDEBUG
+    prt = std::format( "{} | ", primary.platform_label );
+#endif
+    std::string right_text = std::format( "{}{} saves | {} backups", prt, save_count, backup_count );
+
     Card::draw( selectable_id, primary.game_name, not_collapsed, right_text, [&]( ) {
         render_game_content( { save_count, backup_count }, primary, has_conflicts, files );
 
