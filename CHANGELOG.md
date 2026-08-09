@@ -17,8 +17,8 @@ Due to the lack of downloads of the MacOS version I will pause development there
     - Configurable ``.savemgr-ignore`` file to support custom exclusions of certain filenames, directories or extensions from detection per game
 
 - Fixed
-    <!-- - Fixed an issue where Minecraft saves from any launcher did not restore properly ([#13](https://github.com/msh31/SaveManager/issues/13)) -->
-    <!-- - Fixed an issue where some Minecraft saves were not being detected properly ([#14](https://github.com/msh31/savemanager/issues/14)) -->
+    - Fixed an issue where Minecraft saves from any launcher did not restore properly on windows ([#13](https://github.com/msh31/SaveManager/issues/13))
+    - Fixed an issue where some Minecraft saves were not being detected properly ([#14](https://github.com/msh31/savemanager/issues/14))
     - Fixed an issue where Anno save games were no longer being detected properly ([#17](https://github.com/msh31/savemanager/issues/17))
     <!-- - Fixed an issue with loading/deleting/adding tags not getting properly sanitized -->
     <!-- - Fixed a race condition with the Config when connecting to an SFTP server -->
@@ -35,8 +35,8 @@ Due to the lack of downloads of the MacOS version I will pause development there
     - 'Save' button within the settings tab
 
 - Fixed 
-    <!-- - Fixed the dashboard pop-in to loading regression due to 1.8.0's internal overhaul  -->
-    <!-- - Fixed an issue where the Windows titlebar did not respect the dark mode setting ([#11](https://github.com/msh31/savemanager/issues/11)) -->
+    - Fixed the dashboard pop-in to loading regression, games are not streamed in again!
+        - the game list is disabled during scans to avoid any conflicts 
     - Fixed an issue where the application window did not respect the last position and size of the window
     - Fixed an issue with the detection time display text
     - Fixed an issue with seperators showing up when not needed
@@ -54,7 +54,7 @@ Due to the lack of downloads of the MacOS version I will pause development there
     - Improved the dashboard by putting the found saves in a collapsable section
     - Added a small notice when no backups have been created yet
     - File sizes are now shown properly as B, KB, MB and GB 
-    <!-- - Removed the 'publisher' entry on a game entry, leaving just save and backup count -->
+    - Removed the 'publisher' entry on a game entry in release builds, leaving just save and backup count
 
 ### Other
 #### General
