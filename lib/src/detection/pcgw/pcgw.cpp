@@ -52,6 +52,14 @@ namespace {
             return wine.drive_c / "Program Files";
         case SaveRoot::STEAM_DIR:
             return SteamHelper::get_steam_location( ).value_or( fs::path{ } ).parent_path( ).parent_path( );
+
+        // if linux ones somehow make it through
+        case SaveRoot::LINUX_HOME:
+            return save::resolve_root( SaveRoot::LINUX_HOME );
+        case SaveRoot::XDG_CONFIG_HOME:
+            return save::resolve_root( SaveRoot::XDG_CONFIG_HOME );
+        case SaveRoot::XDG_DATA_HOME:
+            return save::resolve_root( SaveRoot::XDG_DATA_HOME );
         default:
             return { };
         }
@@ -193,7 +201,10 @@ CPCGamingWikiDetector::resolve( const std::string& raw_path, const SteamManifest
                 }
             } else if ( auto it = TOKEN_TO_ROOT.find( token ); it != TOKEN_TO_ROOT.end( ) ) {
                 resolved = wine ? resolve_wine_root( it->second, *wine ) : save::resolve_root( it->second );
-                if ( resolved.empty( ) ) return std::nullopt;
+                if ( resolved.empty( ) ) {
+                    SPDLOG_ERROR( "[PCGamingWIki]: failed to resolve token: {}", token );
+                    return std::nullopt;
+                }
             } else {
                 return std::nullopt;
             }
@@ -214,11 +225,16 @@ CPCGamingWikiDetector::resolve( const std::string& raw_path, const SteamManifest
             }
         }
         if ( !result.empty( ) && result.back( ) == '/' ) result.pop_back( );
+
         if ( fs::exists( result ) ) return fs::path( result );
+#ifndef NDEBUG
+        else
+            SPDLOG_WARN( "{} does not exist on the system!", result );
+#endif
     }
 
     if ( !is_user_id_mid_filename && fs::exists( user_id_parent_dir ) ) {
-        SPDLOG_INFO( "[PCGW] USER_ID path-segment fallback: {}", user_id_parent_dir );
+        SPDLOG_INFO( "[PCGamingWiki] using USER_ID fallback: {}", user_id_parent_dir );
         std::vector<fs::path> candidates = { };
 
         for ( const auto& entry :
