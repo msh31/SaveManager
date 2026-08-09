@@ -5,6 +5,7 @@
 
 using json = nlohmann::json;
 
+//TODO: chill on the runtime errors man sheesh
 CConfig::CConfig( fs::path config_dir ) : config_file( config_dir / "config.json" ) {
     try {
         if ( !fs::exists( config_dir ) ) {
