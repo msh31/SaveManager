@@ -23,18 +23,14 @@ void CSettingsView::render( ) {
 
     if ( m_update_t_future.valid( ) &&
          m_update_t_future.wait_for( std::chrono::seconds( 0 ) ) == std::future_status::ready ) {
-        auto [ubi, steam] = m_update_t_future.get( );
+       bool res = m_update_t_future.get( );
 
-        if ( !ubi ) {
+        if ( !res ) {
             SPDLOG_ERROR( "Failed to download Ubisoft translations" );
             Notify::show_notification( "Translations", "Failed to update translations for ubisoft", 2500 );
         }
-        // if ( !steam ) {
-        //     SPDLOG_ERROR( "Failed to download Steam ID data" );
-        //     Notify::show_notification( "Translations", "Failed to update translations for steam appids", 2500 );
-        // }
-        if ( ubi ) {
-            Notify::show_notification( "Translations", "All translations have been updated!", 2500 );
+        else {
+            Notify::show_notification( "Translations", "Updated translations successfully!", 2500 );
         }
     }
 
@@ -72,17 +68,15 @@ void CSettingsView::render( ) {
         m_update_future = std::async( std::launch::async, []( ) { return Network::is_update_available( ); } );
     }
     if ( is_checking ) ImGui::EndDisabled( );
-    // ImGui::SameLine( );
-    // if ( is_checking_t ) ImGui::BeginDisabled( true );
-    // if ( ImGui::Button( "Update translations" ) ) {
-    //     m_update_t_future = std::async( std::launch::async, [this]( ) -> std::pair<bool, bool> {
-    //         bool ubi = Network::download_file( ubi_translation_url, paths::ubi_translations( ).string( ) );
-    //         // bool steam = Network::download_file( steam_translation_url, paths::steam_appids( ).string( ) );
-    //         return { ubi, steam };
-    //     } );
-    // }
-    // ImGui::SetItemTooltip( "Forces a new download of the ubisoft id and steam id translations" );
-    // if ( is_checking_t ) ImGui::EndDisabled( );
+     ImGui::SameLine( );
+     if ( is_checking_t ) ImGui::BeginDisabled( true );
+     if ( ImGui::Button( "Update translations" ) ) {
+         m_update_t_future = std::async( std::launch::async, [this]( ) -> bool {
+             return Network::download_file( ubi_translation_url, paths::ubi_translations( ).string( ) );
+         } );
+     }
+     ImGui::SetItemTooltip( "Forces a new download of the ubisoft id translations" );
+     if ( is_checking_t ) ImGui::EndDisabled( );
     if ( ImGui::Button( "Open config" ) ) {
         open_in_file_manager( paths::config_dir( ).string( ).c_str( ) );
     }
