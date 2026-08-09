@@ -129,13 +129,16 @@ std::unordered_map<uint32_t, std::vector<PcgwEntry>> CPCGamingWikiDetector::load
 }
 
 std::optional<fs::path>
-CPCGamingWikiDetector::resolve( const std::string& raw_path, const SteamManifest* manifest, const WineRootCtx* wine ) {
+CPCGamingWikiDetector::resolve( std::string raw_path, const SteamManifest* manifest, const WineRootCtx* wine ) {
     bool prefer_short_id = false;
     bool is_user_id_mid_filename = false;
     std::string mid_filename_dir = { };
     std::string mid_filename_pattern = { };
     std::string user_id_parent_dir;
+    std::string final_path = { };
     size_t pass_count = 0;
+
+    std::ranges::replace( raw_path, '\\', '/' );
 
     while ( pass_count < 2 ) {
         std::string result = { };
@@ -161,17 +164,17 @@ CPCGamingWikiDetector::resolve( const std::string& raw_path, const SteamManifest
                 if ( manifest == nullptr ) return { };
                 resolved = manifest->library_dir;
             } else if ( token == "USER_ID" ) {
-                is_user_id_mid_filename =
-                    close + 1 < raw_path.size( ) && ( raw_path[close + 1] != '\\' && raw_path[close + 1] != '/' );
+                is_user_id_mid_filename = close + 1 < raw_path.size( ) && raw_path[close + 1] != '/';
 
                 if ( !is_user_id_mid_filename ) {
                     user_id_parent_dir = result;
-                    std::ranges::replace( user_id_parent_dir, '\\', '/' );
                 }
 
-                mid_filename_dir = result.substr( 0, result.rfind( '\\' ) );
-                std::ranges::replace( mid_filename_dir, '\\', '/' );
+                mid_filename_dir = result.substr( 0, result.rfind( '/' ) );
                 mid_filename_pattern = raw_path.substr( close + 1 );
+
+                final_path = raw_path.substr( close + 1 );
+                if ( final_path.starts_with( '/' ) ) final_path = final_path.substr( 1 );
 
                 auto steamid64 = SteamHelper::parse_steam_userid( );
                 if ( !steamid64 ) return std::nullopt;
@@ -179,7 +182,7 @@ CPCGamingWikiDetector::resolve( const std::string& raw_path, const SteamManifest
                 try {
                     uint64_t account_id = std::stoull( *steamid64 );
                     if ( pass_count == 0 ) {
-                        if ( result.ends_with( "userdata\\" ) ) {
+                        if ( result.ends_with( "userdata/" ) ) {
                             auto short_id = account_id - STEAM_ID64_BASE;
                             resolved = std::to_string( short_id );
                             prefer_short_id = true;
@@ -214,7 +217,6 @@ CPCGamingWikiDetector::resolve( const std::string& raw_path, const SteamManifest
         }
         pass_count += 1;
 
-        std::ranges::replace( result, '\\', '/' );
         auto pos = result.rfind( '/' ); // backwards from find
 
         if ( pos != std::string::npos ) {
@@ -233,7 +235,8 @@ CPCGamingWikiDetector::resolve( const std::string& raw_path, const SteamManifest
 #endif
     }
 
-    if ( !is_user_id_mid_filename && fs::exists( user_id_parent_dir ) ) {
+    bool user_id_parent_exists = fs::exists( user_id_parent_dir );
+    if ( !is_user_id_mid_filename && user_id_parent_exists ) {
         SPDLOG_INFO( "[PCGamingWiki] using USER_ID fallback: {}", user_id_parent_dir );
         std::vector<fs::path> candidates = { };
 
@@ -243,7 +246,15 @@ CPCGamingWikiDetector::resolve( const std::string& raw_path, const SteamManifest
             if ( entry.is_directory( ) ) candidates.push_back( entry.path( ) );
         }
 
-        if ( candidates.size( ) == 1 ) return candidates.front( );
+        if ( candidates.empty( ) ) {
+            // TODO?
+            return { };
+        }
+
+        for ( const auto& c : candidates ) {
+            fs::path p = c / final_path;
+            if ( fs::exists( p ) ) return p;
+        }
     }
     if ( is_user_id_mid_filename && fs::exists( mid_filename_dir ) ) {
         for ( const auto& entry :
@@ -253,6 +264,11 @@ CPCGamingWikiDetector::resolve( const std::string& raw_path, const SteamManifest
             }
         }
     }
+
+    SPDLOG_ERROR(
+        "[PCGamingWiki] Failed to find: {} | Possible reasons could be that: \n1. Is the user_id in the middle of a "
+        "filename? {}\n2. Does the user_id_parent_dir exist? {}",
+        raw_path, is_user_id_mid_filename, user_id_parent_exists );
     return std::nullopt;
 }
 
@@ -269,8 +285,18 @@ std::expected<std::vector<Game>, SMError> CPCGamingWikiDetector::find( ) {
         for ( const auto& entry : it->second ) {
             if ( entry.os != CURRENT_OS ) continue;
 
-            auto resolved = resolve( entry.raw_path, &manifest, nullptr );
-            if ( !resolved || !fs::exists( *resolved ) ) continue;
+            std::optional<fs::path> resolved = resolve( entry.raw_path, &manifest, nullptr );
+            if ( !resolved.has_value( ) ) {
+                SPDLOG_ERROR( "[PCGamingWiki] Failed to resolve {} skipping this entry..", entry.raw_path );
+                continue;
+            }
+            if ( !fs::exists( resolved.value( ) ) ) {
+                SPDLOG_ERROR(
+                    "[PCGamingWiki] {} was not found on your system, skipping this entry.",
+                    resolved.value( ).string( ) );
+                continue;
+            }
+            // if ( !resolved || !fs::exists( *resolved ) ) continue; //old
 
             Game game;
             game.type = PlatformType::PCGAMINGWIKI;
