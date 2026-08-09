@@ -283,7 +283,7 @@ std::expected<std::vector<Game>, SMError> CPCGamingWikiDetector::find( ) {
         }
 
         for ( const auto& entry : it->second ) {
-            if ( entry.os != CURRENT_OS ) continue;
+            if ( entry.os == CURRENT_OS || entry.os == "Steam" ) continue;
 
             std::optional<fs::path> resolved = resolve( entry.raw_path, &manifest, nullptr );
             if ( !resolved.has_value( ) ) {
