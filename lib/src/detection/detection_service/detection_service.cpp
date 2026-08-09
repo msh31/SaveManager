@@ -8,7 +8,6 @@ void CDetectionService::refresh( ) {
     if ( is_refreshing( ) ) return;
 
     auto start = std::chrono::steady_clock::now( );
-
     m_future = std::async( std::launch::async, [this, start] {
         std::vector<std::pair<IDetector*, std::future<std::expected<std::vector<Game>, SMError>>>> futures = { };
         std::vector<Game> games = { };
@@ -97,6 +96,7 @@ void CDetectionService::refresh( ) {
                 }
                 return false;
             } );
+            m_pending_count = futures.size( );
         }
 
         if ( games.empty( ) ) {

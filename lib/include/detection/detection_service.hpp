@@ -19,6 +19,14 @@ class CDetectionService {
         std::vector<Game> snapshot( ) const;
 
         double last_duration( ) const { return m_last_duration.load( ); }
+        std::pair<uint64_t, uint64_t> get_detection_progress( ) const {
+            std::pair<uint64_t, uint64_t> prog = { };
+
+            prog.first = m_detectors.size( ) - m_pending_count; // current
+            prog.second = m_detectors.size( );                  // total
+
+            return prog;
+        }
 
     private:
         const Blacklist& m_blacklist;
@@ -33,4 +41,6 @@ class CDetectionService {
         std::atomic<uint64_t> m_generation{ 0 };
         std::atomic<double> m_last_duration{ 0.0 };
         std::future<void> m_future;
+
+        std::atomic<std::size_t> m_pending_count = 0;
 };

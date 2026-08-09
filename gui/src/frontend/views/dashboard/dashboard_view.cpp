@@ -69,10 +69,14 @@ void CDashboardView::render_toolbar( ) {
     float backup_width = ImGui::CalcTextSize( "Mass Backup" ).x + ImGui::GetStyle( ).FramePadding.x * 2;
     float spacing = ImGui::GetStyle( ).ItemSpacing.x * 3;
 
-    ImGui::TextDisabled(
-        "found %zu games in %s", m_filtered_game_count,
-        std::format( "{:.2f} seconds", m_detection.last_duration( ) ).c_str( ) );
+    std::string toolbar_text =
+        std::format( "found {} games in {:.2f} seconds", m_filtered_game_count, m_detection.last_duration( ) );
+    if ( is_refreshing ) {
+        auto progress = m_detection.get_detection_progress( );
+        toolbar_text = std::format( "{} of {} complete", progress.first, progress.second );
+    }
 
+    ImGui::TextDisabled( "%s", toolbar_text.c_str( ) );
     ImGui::SetNextItemWidth(
         ImGui::GetContentRegionAvail( ).x - sort_width - refresh_width - backup_width - filter_width - spacing );
 
