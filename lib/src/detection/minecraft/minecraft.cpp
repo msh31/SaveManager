@@ -108,7 +108,7 @@ std::vector<Game> CMinecraftDetector::scan_curseforge( ) const {
 #if defined( __linux__ ) || defined( __APPLE__ )
     fs::path curse_path = paths::home_dir( ) / "Documents" / "curseforge" / "minecraft" / "Instances";
 #elif defined( _WIN32 )
-    fs::path curse_path = paths::home_dir( ) / "Documents" / "curseforge" / "minecraft" / "Instances";
+    fs::path curse_path = paths::home_dir( ) / "curseforge" / "minecraft" / "Instances";
 #endif
     if ( !fs::exists( curse_path ) ) return { };
     if ( !fs::is_directory( curse_path ) ) return { };
