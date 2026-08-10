@@ -58,6 +58,27 @@ namespace {
         return false;
     }
 
+    bool wildcard_match( std::string_view pattern, std::string_view text ) {
+        size_t p = 0, t = 0, star = std::string::npos, match = 0;
+        while ( t < text.size( ) ) {
+            if ( p < pattern.size( ) && ( pattern[p] == '?' || pattern[p] == text[t] ) ) {
+                p++;
+                t++;
+            } else if ( p < pattern.size( ) && pattern[p] == '*' ) {
+                star = p++;
+                match = t;
+            } else if ( star != std::string::npos ) {
+                p = star + 1;
+                t = ++match;
+            } else {
+                return false;
+            }
+        }
+        while ( p < pattern.size( ) && pattern[p] == '*' )
+            p++;
+        return p == pattern.size( );
+    }
+
     bool is_bare_root_token_path( const std::string& path ) {
         if ( path.empty( ) || path[0] != '<' ) return false;
 
@@ -284,16 +305,37 @@ CPCGamingWikiDetector::resolve( std::string raw_path, const SteamManifest* manif
 
         auto pos = result.rfind( '/' ); // backwards from find
 
+        std::string wildcard_pattern = { };
+        bool has_wildcard = false;
+
         if ( pos != std::string::npos ) {
             std::string segment = result.substr( pos + 1 );
-            auto wildcard_found = segment.find( '*' );
-            if ( wildcard_found != std::string::npos ) {
+            if ( segment.find( '*' ) != std::string::npos || segment.find( '?' ) != std::string::npos ) {
+                wildcard_pattern = segment;
+                has_wildcard = true;
                 result = result.substr( 0, pos );
             }
         }
         if ( !result.empty( ) && result.back( ) == '/' ) result.pop_back( );
 
-        if ( fs::exists( result ) ) return fs::path( result );
+        if ( has_wildcard ) {
+            // save_paths entries are treated as directories everywhere downstream (backup
+            // relative-path math, "open in file manager", the valid-path check), so return the
+            // containing directory - but only once we've confirmed something inside it actually
+            // matches the wildcard, otherwise an existing-but-unrelated folder reads as "found".
+            if ( fs::exists( result ) && fs::is_directory( result ) ) {
+                for ( const auto& entry :
+                      fs::directory_iterator( result, fs::directory_options::skip_permission_denied ) ) {
+                    if ( wildcard_match( wildcard_pattern, entry.path( ).filename( ).string( ) ) )
+                        return fs::path( result );
+                }
+            }
+#ifndef NDEBUG
+            SPDLOG_WARN( "{} has no entries matching {} on the system!", result, wildcard_pattern );
+#endif
+        } else if ( fs::exists( result ) ) {
+            return fs::path( result );
+        }
 #ifndef NDEBUG
         else
             SPDLOG_WARN( "{} does not exist on the system!", result );
