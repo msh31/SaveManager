@@ -32,6 +32,45 @@ namespace {
 
     constexpr std::string_view WINE_OS = "Windows";
 
+    bool has_unresolvable_wildcard_segment( const std::string& path ) {
+        size_t i = 0;
+        while ( i < path.size( ) ) {
+            auto open = path.find( '<', i );
+            if ( open == std::string::npos ) break;
+
+            auto close = path.find( '>', open );
+            if ( close == std::string::npos ) break;
+
+            std::string token = path.substr( open + 1, close - open - 1 );
+            if ( TOKEN_TO_ROOT.contains( token ) ) {
+                size_t seg_start = close + 1;
+                if ( seg_start < path.size( ) && path[seg_start] == '/' ) seg_start++;
+
+                auto seg_end = path.find( '/', seg_start );
+                std::string segment =
+                    path.substr( seg_start, seg_end == std::string::npos ? std::string::npos : seg_end - seg_start );
+
+                if ( segment.find( '*' ) != std::string::npos ) return true;
+            }
+
+            i = close + 1;
+        }
+        return false;
+    }
+
+    bool is_bare_root_token_path( const std::string& path ) {
+        if ( path.empty( ) || path[0] != '<' ) return false;
+
+        auto close = path.find( '>' );
+        if ( close == std::string::npos ) return false;
+
+        std::string token = path.substr( 1, close - 1 );
+        if ( !TOKEN_TO_ROOT.contains( token ) ) return false;
+
+        std::string rest = path.substr( close + 1 );
+        return rest.empty( ) || rest == "/";
+    }
+
     // for things like old windows folders like local settings /applciationdata, my documents etc..
     fs::path resolve_modern_or_legacy_token( const fs::path& root, const fs::path& modern, const fs::path& legacy ) {
         if ( fs::exists( root / modern ) ) return root / modern;
@@ -129,6 +168,14 @@ std::unordered_map<uint32_t, std::vector<PcgwEntry>> CPCGamingWikiDetector::load
                 if ( path.empty( ) ) {
                     // #ifndef NDEBUG
                     //                     SPDLOG_WARN( "[PCGamingWiki] {} is empty, skipping..", path );
+                    // #endif
+                    continue;
+                }
+
+                if ( has_unresolvable_wildcard_segment( path ) || is_bare_root_token_path( path ) ) {
+                    // #ifndef NDEBUG
+                    //                     SPDLOG_WARN( "[PCGamingWiki] {} is a bad manifest entry, skipping..", path
+                    //                     );
                     // #endif
                     continue;
                 }
