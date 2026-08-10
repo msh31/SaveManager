@@ -289,9 +289,9 @@ CPCGamingWikiDetector::resolve( std::string raw_path, const SteamManifest* manif
             } else if ( auto it = TOKEN_TO_ROOT.find( token ); it != TOKEN_TO_ROOT.end( ) ) {
                 resolved = wine ? resolve_wine_root( it->second, *wine ) : save::resolve_root( it->second );
                 if ( resolved.empty( ) ) {
-#ifndef NDEBUG
-                    SPDLOG_ERROR( "[PCGamingWIki]: failed to resolve token: {}", token );
-#endif
+                    // #ifndef NDEBUG
+                    //                     SPDLOG_ERROR( "[PCGamingWIki]: failed to resolve token: {}", token );
+                    // #endif
                     return std::nullopt;
                 }
             } else {
@@ -319,10 +319,6 @@ CPCGamingWikiDetector::resolve( std::string raw_path, const SteamManifest* manif
         if ( !result.empty( ) && result.back( ) == '/' ) result.pop_back( );
 
         if ( has_wildcard ) {
-            // save_paths entries are treated as directories everywhere downstream (backup
-            // relative-path math, "open in file manager", the valid-path check), so return the
-            // containing directory - but only once we've confirmed something inside it actually
-            // matches the wildcard, otherwise an existing-but-unrelated folder reads as "found".
             if ( fs::exists( result ) && fs::is_directory( result ) ) {
                 for ( const auto& entry :
                       fs::directory_iterator( result, fs::directory_options::skip_permission_denied ) ) {
@@ -330,16 +326,16 @@ CPCGamingWikiDetector::resolve( std::string raw_path, const SteamManifest* manif
                         return fs::path( result );
                 }
             }
-#ifndef NDEBUG
-            SPDLOG_WARN( "{} has no entries matching {} on the system!", result, wildcard_pattern );
-#endif
+            // #ifndef NDEBUG
+            //             SPDLOG_WARN( "{} has no entries matching {} on the system!", result, wildcard_pattern );
+            // #endif
         } else if ( fs::exists( result ) ) {
             return fs::path( result );
         }
-#ifndef NDEBUG
-        else
-            SPDLOG_WARN( "{} does not exist on the system!", result );
-#endif
+        // #ifndef NDEBUG
+        //         else
+        //             SPDLOG_WARN( "{} does not exist on the system!", result );
+        // #endif
     }
 
     bool user_id_parent_exists = fs::exists( user_id_parent_dir );
@@ -353,10 +349,7 @@ CPCGamingWikiDetector::resolve( std::string raw_path, const SteamManifest* manif
             if ( entry.is_directory( ) ) candidates.push_back( entry.path( ) );
         }
 
-        if ( candidates.empty( ) ) {
-            // TODO?
-            return { };
-        }
+        if ( candidates.empty( ) ) return { };
 
         for ( const auto& c : candidates ) {
             fs::path p = c / final_path;
