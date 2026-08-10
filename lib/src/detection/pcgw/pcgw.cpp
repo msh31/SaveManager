@@ -32,16 +32,32 @@ namespace {
 
     constexpr std::string_view WINE_OS = "Windows";
 
+    // for things like old windows folders like local settings /applciationdata, my documents etc..
+    fs::path resolve_modern_or_legacy_token( const fs::path& root, const fs::path& modern, const fs::path& legacy ) {
+        if ( fs::exists( root / modern ) ) return root / modern;
+        if ( fs::exists( root / legacy ) ) return root / legacy;
+        return root / modern;
+    }
+
     fs::path resolve_wine_root( SaveRoot sr, const WineRootCtx& wine ) {
         switch ( sr ) {
         case SaveRoot::USER_PROFILE:
             return wine.user_home;
-        case SaveRoot::DOCUMENTS:
-            return wine.user_home / "Documents";
-        case SaveRoot::APPDATA:
-            return wine.user_home / "AppData" / "Roaming";
-        case SaveRoot::LOCAL_APPDATA:
-            return wine.user_home / "AppData" / "Local";
+        case SaveRoot::DOCUMENTS: {
+            fs::path modern = "Documents";
+            fs::path legacy = "My Documents";
+            return resolve_modern_or_legacy_token( wine.user_home, modern, legacy );
+        }
+        case SaveRoot::APPDATA: {
+            fs::path modern = "AppData/Roaming";
+            fs::path legacy = "Application Data";
+            return resolve_modern_or_legacy_token( wine.user_home, modern, legacy );
+        }
+        case SaveRoot::LOCAL_APPDATA: {
+            fs::path modern = "AppData/Local";
+            fs::path legacy = "Local Settings/Application Data";
+            return resolve_modern_or_legacy_token( wine.user_home, modern, legacy );
+        }
         case SaveRoot::LOCAL_APPDATA_LOW:
             return wine.user_home / "AppData" / "LocalLow";
         case SaveRoot::SAVED_GAMES:
