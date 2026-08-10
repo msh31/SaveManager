@@ -2,8 +2,18 @@
 #include <utils/steam/steam.hpp>
 
 fs::path save::resolve_root( SaveRoot sr ) {
-#if defined( _WIN32 )
     switch ( sr ) {
+    case SaveRoot::STEAM_DIR: {
+        fs::path steam_loc = SteamHelper::get_steam_location( ).value_or( fs::path{ } ).parent_path( ).parent_path( );
+        if ( !fs::exists( steam_loc ) && !steam_loc.empty( ) ) {
+            SPDLOG_ERROR( "[Detection] Failed to resolve steam location {} does not exist!", steam_loc.string( ) );
+        }
+        return steam_loc; // empty or valid, sus
+        break;
+    }
+
+#if defined( _WIN32 )
+    // switch ( sr ) {
     case SaveRoot::DOCUMENTS:
         return paths::get_known_folder_path( FOLDERID_Documents );
         break;
@@ -27,15 +37,10 @@ fs::path save::resolve_root( SaveRoot sr ) {
     case SaveRoot::PROGRAM_FILES:
         return paths::get_known_folder_path( FOLDERID_ProgramFiles );
         break;
-    case SaveRoot::STEAM_DIR:
-        return SteamHelper::get_steam_location( ).value_or( fs::path{ } );
-        break;
     default:
         return { };
-    }
 #endif
 #if defined( __linux__ )
-    switch ( sr ) {
     case SaveRoot::XDG_DATA_HOME:
         return paths::xdg_data_home( );
         break;
@@ -45,25 +50,17 @@ fs::path save::resolve_root( SaveRoot sr ) {
     case SaveRoot::LINUX_HOME:
         return paths::home_dir( );
         break;
-    case SaveRoot::STEAM_DIR:
-        return SteamHelper::get_steam_location( ).value_or( fs::path{ } );
-        break;
     default:
         return { };
-    }
 #endif
 #if defined( __APPLE__ )
-    switch ( sr ) {
     case SaveRoot::OSX_HOME:
         return paths::home_dir( );
         break;
-    case SaveRoot::STEAM_DIR:
-        return SteamHelper::get_steam_location( ).value_or( fs::path{ } );
-        break;
     default:
         return { };
-    }
 #endif
+    }
 
     return { };
 }
