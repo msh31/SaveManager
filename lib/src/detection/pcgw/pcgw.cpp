@@ -255,7 +255,7 @@ CPCGamingWikiDetector::resolve( std::string raw_path, const SteamManifest* manif
 
     bool user_id_parent_exists = fs::exists( user_id_parent_dir );
     if ( !is_user_id_mid_filename && user_id_parent_exists ) {
-        SPDLOG_INFO( "[PCGamingWiki] using USER_ID fallback: {}", user_id_parent_dir );
+        // SPDLOG_INFO( "[PCGamingWiki] using USER_ID fallback: {}", user_id_parent_dir );
         std::vector<fs::path> candidates = { };
 
         for ( const auto& entry :
@@ -308,17 +308,18 @@ std::expected<std::vector<Game>, SMError> CPCGamingWikiDetector::find( ) {
 
             std::optional<fs::path> resolved = resolve( entry.raw_path, manifest, nullptr );
             if ( !resolved.has_value( ) ) {
-#ifndef NDEBUG
-                SPDLOG_ERROR( "[PCGamingWiki] Failed to resolve {} skipping this entry..", entry.raw_path );
-#endif
+                // #ifndef NDEBUG
+                //                 SPDLOG_ERROR( "[PCGamingWiki] Failed to resolve {} skipping this entry..",
+                //                 entry.raw_path );
+                // #endif
                 continue;
             }
             if ( !fs::exists( resolved.value( ) ) ) {
-#ifndef NDEBUG
-                SPDLOG_ERROR(
-                    "[PCGamingWiki] {} was not found on your system, skipping this entry.",
-                    resolved.value( ).string( ) );
-#endif
+                // #ifndef NDEBUG
+                //                 SPDLOG_ERROR(
+                //                     "[PCGamingWiki] {} was not found on your system, skipping this entry.",
+                //                     resolved.value( ).string( ) );
+                // #endif
                 continue;
             }
             // if ( !resolved || !fs::exists( *resolved ) ) continue; //old
@@ -344,17 +345,17 @@ std::vector<Game> CPCGamingWikiDetector::scan_wine_user( const fs::path& user_ho
 
     auto appid = resolve_prefix_appid( user_home );
     if ( !appid ) {
-#ifndef NDEBUG
-        SPDLOG_WARN( "[PCGamingWiki] Failed to get appid in: {}", user_home.string( ) );
-#endif
+        // #ifndef NDEBUG
+        //         SPDLOG_WARN( "[PCGamingWiki] Failed to get appid in: {}", user_home.string( ) );
+        // #endif
         return games;
     }
 
     auto it = ctx.pcgw_entries.find( *appid );
     if ( it == ctx.pcgw_entries.end( ) ) {
-#ifndef NDEBUG
-        SPDLOG_WARN( "[PCGamingWiki] Failed to find {} in: {}", *appid, user_home.string( ) );
-#endif
+        // #ifndef NDEBUG
+        //         SPDLOG_WARN( "[PCGamingWiki] Failed to find {} in: {}", *appid, user_home.string( ) );
+        // #endif
         return games;
     }
 
@@ -372,15 +373,15 @@ std::vector<Game> CPCGamingWikiDetector::scan_wine_user( const fs::path& user_ho
 
         auto resolved = resolve( entry.raw_path, manifest, &wine );
         if ( !resolved ) {
-#ifndef NDEBUG
-            SPDLOG_WARN( "[PCGamingWiki] Failed to resolve {}", entry.raw_path );
-#endif
+            // #ifndef NDEBUG
+            //             SPDLOG_WARN( "[PCGamingWiki] Failed to resolve {}", entry.raw_path );
+            // #endif
             continue;
         }
         if ( !fs::exists( *resolved ) ) {
-#ifndef NDEBUG
-            SPDLOG_WARN( "[PCGamingWiki] {} does not exist!", entry.raw_path );
-#endif
+            // #ifndef NDEBUG
+            //             SPDLOG_WARN( "[PCGamingWiki] {} does not exist!", entry.raw_path );
+            // #endif
             continue;
         }
         if ( !manifest && entry.page.empty( ) ) continue;
