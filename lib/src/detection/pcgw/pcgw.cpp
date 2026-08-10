@@ -221,7 +221,9 @@ CPCGamingWikiDetector::resolve( std::string raw_path, const SteamManifest* manif
             } else if ( auto it = TOKEN_TO_ROOT.find( token ); it != TOKEN_TO_ROOT.end( ) ) {
                 resolved = wine ? resolve_wine_root( it->second, *wine ) : save::resolve_root( it->second );
                 if ( resolved.empty( ) ) {
+#ifndef NDEBUG
                     SPDLOG_ERROR( "[PCGamingWIki]: failed to resolve token: {}", token );
+#endif
                     return std::nullopt;
                 }
             } else {
@@ -281,10 +283,12 @@ CPCGamingWikiDetector::resolve( std::string raw_path, const SteamManifest* manif
         }
     }
 
+#ifndef NDEBUG
     SPDLOG_ERROR(
         "[PCGamingWiki] Failed to find: {} | Possible reasons could be that: \n1. Is the user_id in the middle of a "
         "filename? {}\n2. Does the user_id_parent_dir exist? {}",
         raw_path, is_user_id_mid_filename, user_id_parent_exists );
+#endif
     return std::nullopt;
 }
 
@@ -303,13 +307,17 @@ std::expected<std::vector<Game>, SMError> CPCGamingWikiDetector::find( ) {
 
             std::optional<fs::path> resolved = resolve( entry.raw_path, &manifest, nullptr );
             if ( !resolved.has_value( ) ) {
+#ifndef NDEBUG
                 SPDLOG_ERROR( "[PCGamingWiki] Failed to resolve {} skipping this entry..", entry.raw_path );
+#endif
                 continue;
             }
             if ( !fs::exists( resolved.value( ) ) ) {
+#ifndef NDEBUG
                 SPDLOG_ERROR(
                     "[PCGamingWiki] {} was not found on your system, skipping this entry.",
                     resolved.value( ).string( ) );
+#endif
                 continue;
             }
             // if ( !resolved || !fs::exists( *resolved ) ) continue; //old
