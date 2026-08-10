@@ -1,5 +1,5 @@
-## 1.9.0 - 2026-??-??
-This update focuses on extending game support and reachability
+## 1.9.0 - 2026-08-20
+This update focuses on extending game support 
 
 ### New game support
 With [savemanager-manifest](https://github.com/msh31/savemanager-manifest) the detection system will now, like other tools be able to find 10000+ games on your system.
@@ -10,8 +10,6 @@ Due to the lack of downloads of the MacOS version I will pause development there
 
 ### Core
 - Added
-    <!-- - Safety guards around the Save Editor by taking a snapshot of the savegame before editing it -->
-    <!-- - Option to include tags during SFTP transfers ([#12](https://github.com/msh31/savemanager/issues/12)) -->
     - Automatic update check on startup (configurable)
     - Detection settings (show_conflicts & skip_empty_files)
     - Configurable ``.savemgr-ignore`` file to support custom exclusions of certain filenames, directories or extensions from detection per game
@@ -20,8 +18,6 @@ Due to the lack of downloads of the MacOS version I will pause development there
     - Fixed an issue where Minecraft saves from any launcher did not restore properly on windows ([#13](https://github.com/msh31/SaveManager/issues/13))
     - Fixed an issue where some Minecraft saves were not being detected properly ([#14](https://github.com/msh31/savemanager/issues/14))
     - Fixed an issue where Anno save games were no longer being detected properly ([#17](https://github.com/msh31/savemanager/issues/17))
-    <!-- - Fixed an issue with loading/deleting/adding tags not getting properly sanitized -->
-    <!-- - Fixed a race condition with the Config when connecting to an SFTP server -->
 
 - Changes
     - Improved logging even further to help identify issues more clearly
@@ -33,6 +29,7 @@ Due to the lack of downloads of the MacOS version I will pause development there
     - 'Duplicate' button on the list of savefiles and backups
     - 'Preview' button on the list of savefiles and backups
     - 'Save' button within the settings tab
+    - Detection progress indicator in the toolbar
 
 - Fixed 
     - Fixed the dashboard pop-in to loading regression, games are not streamed in again!
@@ -49,7 +46,7 @@ Due to the lack of downloads of the MacOS version I will pause development there
 - Performance
     - Cache basic file info to avoid recomputing them 100's of times per frame which caused unnessesary disk io work
 
-- Changed 
+- Changes
     - Lowered the minimum resolution from ``1280x720`` to ``1024x576`` 
     - Improved the dashboard by putting the found saves in a collapsable section
     - Added a small notice when no backups have been created yet
@@ -58,7 +55,7 @@ Due to the lack of downloads of the MacOS version I will pause development there
 
 ### Other
 #### General
-<!-- - SaveManager now has an icon! -->
+- SaveManager now has an icon!
 
 #### Development
 - Removed some dead code in the GUI such as; ``CMenuBar``, ``CStatusBar`` etc.. non user facing changes
