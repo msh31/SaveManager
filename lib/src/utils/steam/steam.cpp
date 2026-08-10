@@ -201,6 +201,7 @@ const std::unordered_map<uint32_t, SteamManifest>& SteamManifestCache::get_app_m
 std::optional<SteamManifest> SteamManifestCache::find_by_install_subfolder( std::string_view folder_name ) const {
     auto lower = []( std::string s ) {
         std::ranges::transform( s, s.begin( ), []( unsigned char c ) { return std::tolower( c ); } );
+        std::erase_if( s, []( unsigned char c ) { return std::isspace( c ); } );
         return s;
     };
     auto target = lower( std::string( folder_name ) );
