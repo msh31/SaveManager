@@ -293,19 +293,20 @@ CPCGamingWikiDetector::resolve( std::string raw_path, const SteamManifest* manif
 }
 
 std::expected<std::vector<Game>, SMError> CPCGamingWikiDetector::find( ) {
-    std::vector<Game> games;
+    std::vector<Game> games = { };
 
-    for ( const auto& [appid, manifest] : m_manifest_cache.get_app_manifests( ) ) {
-        auto it = m_entries.find( appid );
-        if ( it == m_entries.end( ) ) {
-            SPDLOG_DEBUG( "Failed to find {} in manifest cache, it might not be clean.." );
-            continue;
+    for ( const auto& [appid, entries] : m_entries ) {
+        const auto& manifests = m_manifest_cache.get_app_manifests( );
+        auto manifest_it = manifests.find( appid );
+        const SteamManifest* manifest = nullptr;
+        if ( manifest_it != manifests.end( ) ) {
+            manifest = &manifest_it->second;
         }
 
-        for ( const auto& entry : it->second ) {
+        for ( const auto& entry : entries ) {
             if ( entry.os != CURRENT_OS && entry.os != "Steam" ) continue;
 
-            std::optional<fs::path> resolved = resolve( entry.raw_path, &manifest, nullptr );
+            std::optional<fs::path> resolved = resolve( entry.raw_path, manifest, nullptr );
             if ( !resolved.has_value( ) ) {
 #ifndef NDEBUG
                 SPDLOG_ERROR( "[PCGamingWiki] Failed to resolve {} skipping this entry..", entry.raw_path );
@@ -325,7 +326,7 @@ std::expected<std::vector<Game>, SMError> CPCGamingWikiDetector::find( ) {
             Game game;
             game.type = PlatformType::PCGAMINGWIKI;
             game.platform_label = std::string( PLATFORM_LABEL );
-            game.game_name = manifest.name;
+            game.game_name = manifest ? manifest->name : entry.page; // big bad ternary but cleaner here
             game.appid = std::to_string( appid );
             game.save_paths.push_back( *resolved );
             game.show_parent_path = true;
