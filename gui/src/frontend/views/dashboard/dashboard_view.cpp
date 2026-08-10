@@ -806,75 +806,80 @@ void CDashboardView::invalidate_cache( const std::vector<Game>& games, std::func
                 }
 
                 for ( const auto& save_path : game.save_paths ) {
-                    if ( !fs::is_directory( save_path ) ) continue;
-                    if ( save_path.string( ).contains( ".savemgr-conflict-" ) ) continue;
+                    try {
+                        if ( !fs::is_directory( save_path ) ) continue;
+                        if ( save_path.string( ).contains( ".savemgr-conflict-" ) ) continue;
 
-                    bool signore_exists = fs::exists( save_path / ".savemgr-ignore" );
-                    std::vector<IgnoreRule> ignore_rules = { };
-                    if ( use_ignore && signore_exists ) {
-                        ignore_rules = Blacklist::parse_ignore_file( save_path / ".savemgr-ignore" );
-                    }
-
-                    if ( game.type != PlatformType::MINECRAFT ) {
-                        for ( const auto& file : fs::recursive_directory_iterator(
-                                  save_path, fs::directory_options::skip_permission_denied ) ) {
-
-                            if ( ignore_rules.empty( ) ) {
-                                auto ext = save_path.extension( ).string( );
-                                if ( game.type != PlatformType::CUSTOM && game.type != PlatformType::GENERIC ) {
-                                    if ( extension_blocklist.contains( ext ) ) continue;
-                                }
-                                // images, but not svg because old COD games use .svg like BO and Ghosts
-                                if ( g_extension_blocklist.contains( ext ) ) continue;
-                            } else {
-                                if ( Blacklist::is_ignored( fs::relative( file.path( ), save_path ), ignore_rules ) ) {
-                                    continue;
-                                }
-                            }
-
-                            bool is_dir = fs::is_directory( file );
-                            if ( is_dir ) continue;
-
-                            uintmax_t fsz = file.file_size( );
-                            if ( fsz == 0 ) continue;
-
-                            auto ftime = file.last_write_time( );
-
-                            cache.save_files.push_back( file.path( ) );
-
-                            SaveFileInfo sfi = { fsz, ftime, is_dir };
-                            cache.file_info[file.path( )] = sfi;
+                        bool signore_exists = fs::exists( save_path / ".savemgr-ignore" );
+                        std::vector<IgnoreRule> ignore_rules = { };
+                        if ( use_ignore && signore_exists ) {
+                            ignore_rules = Blacklist::parse_ignore_file( save_path / ".savemgr-ignore" );
                         }
-                    } else {
-                        auto ftime = fs::last_write_time( save_path );
-                        SaveFileInfo sfi = { 0, ftime, true };
-                        cache.save_files.push_back( save_path );
-                        cache.file_info[save_path] = sfi;
-                    }
 
-                    auto key = utils::get_game_identity_key( game ).value;
-                    if ( game.type == PlatformType::MINECRAFT ) {
-                        if ( result.first.contains( key ) ) {
+                        if ( game.type != PlatformType::MINECRAFT ) {
+                            for ( const auto& file : fs::recursive_directory_iterator(
+                                      save_path, fs::directory_options::skip_permission_denied ) ) {
+
+                                if ( ignore_rules.empty( ) ) {
+                                    auto ext = save_path.extension( ).string( );
+                                    if ( game.type != PlatformType::CUSTOM && game.type != PlatformType::GENERIC ) {
+                                        if ( extension_blocklist.contains( ext ) ) continue;
+                                    }
+                                    // images, but not svg because old COD games use .svg like BO and Ghosts
+                                    if ( g_extension_blocklist.contains( ext ) ) continue;
+                                } else {
+                                    if ( Blacklist::is_ignored(
+                                             fs::relative( file.path( ), save_path ), ignore_rules ) ) {
+                                        continue;
+                                    }
+                                }
+
+                                bool is_dir = fs::is_directory( file );
+                                if ( is_dir ) continue;
+
+                                uintmax_t fsz = file.file_size( );
+                                if ( fsz == 0 ) continue;
+
+                                auto ftime = file.last_write_time( );
+
+                                cache.save_files.push_back( file.path( ) );
+
+                                SaveFileInfo sfi = { fsz, ftime, is_dir };
+                                cache.file_info[file.path( )] = sfi;
+                            }
+                        } else {
                             auto ftime = fs::last_write_time( save_path );
                             SaveFileInfo sfi = { 0, ftime, true };
-                            result.first[key].save_files.push_back( save_path );
-                            result.first[key].file_info[save_path] = sfi;
+                            cache.save_files.push_back( save_path );
+                            cache.file_info[save_path] = sfi;
+                        }
+
+                        auto key = utils::get_game_identity_key( game ).value;
+                        if ( game.type == PlatformType::MINECRAFT ) {
+                            if ( result.first.contains( key ) ) {
+                                auto ftime = fs::last_write_time( save_path );
+                                SaveFileInfo sfi = { 0, ftime, true };
+                                result.first[key].save_files.push_back( save_path );
+                                result.first[key].file_info[save_path] = sfi;
+                            } else {
+                                result.first[key] = cache;
+                            }
                         } else {
                             result.first[key] = cache;
                         }
-                    } else {
-                        result.first[key] = cache;
-                    }
 
-                    try {
-                        for ( const auto& f : fs::directory_iterator( save_path ) ) {
-                            if ( f.path( ).string( ).find( ".savemgr-conflict-" ) != std::string::npos ) {
-                                result.first[key].has_conflicts = true;
-                                break;
+                        try {
+                            for ( const auto& f : fs::directory_iterator( save_path ) ) {
+                                if ( f.path( ).string( ).find( ".savemgr-conflict-" ) != std::string::npos ) {
+                                    result.first[key].has_conflicts = true;
+                                    break;
+                                }
                             }
+                        } catch ( std::exception& ex ) {
+                            SPDLOG_ERROR( "conflict iteration error: {}", ex.what( ) );
                         }
-                    } catch ( std::exception& ex ) {
-                        SPDLOG_ERROR( "conflict iteration error: {}", ex.what( ) );
+                    } catch ( const fs::filesystem_error& ex ) {
+                        SPDLOG_ERROR( "[Cache] A filesystem occured in {}: {}", save_path.string( ), ex.what( ) );
                     }
                 }
             }
@@ -883,12 +888,16 @@ void CDashboardView::invalidate_cache( const std::vector<Game>& games, std::func
                 fs::file_time_type current_max;
                 for ( const auto& save_path : entry.save_paths ) {
                     if ( !fs::is_directory( save_path ) ) continue;
-                    for ( const auto& file :
-                          fs::directory_iterator( save_path, fs::directory_options::skip_permission_denied ) ) {
-                        if ( !fs::exists( file ) ) continue;
-                        auto t = fs::last_write_time( file );
-                        if ( fs::is_regular_file( file ) )
-                            if ( t > current_max ) current_max = t;
+                    try {
+                        for ( const auto& file :
+                              fs::directory_iterator( save_path, fs::directory_options::skip_permission_denied ) ) {
+                            if ( !fs::exists( file ) ) continue;
+                            auto t = fs::last_write_time( file );
+                            if ( fs::is_regular_file( file ) )
+                                if ( t > current_max ) current_max = t;
+                        }
+                    } catch ( const fs::filesystem_error& ex ) {
+                        SPDLOG_ERROR( "[Cache] A filesystem occured in {}: {}", save_path.string( ), ex.what( ) );
                     }
                 }
                 result.second.insert( { entry.game_name, current_max } );

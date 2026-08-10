@@ -283,12 +283,12 @@ CPCGamingWikiDetector::resolve( std::string raw_path, const SteamManifest* manif
         }
     }
 
-#ifndef NDEBUG
-    SPDLOG_ERROR(
-        "[PCGamingWiki] Failed to find: {} | Possible reasons could be that: \n1. Is the user_id in the middle of a "
-        "filename? {}\n2. Does the user_id_parent_dir exist? {}",
-        raw_path, is_user_id_mid_filename, user_id_parent_exists );
-#endif
+    // #ifndef NDEBUG
+    //     SPDLOG_ERROR(
+    //         "[PCGamingWiki] Failed to find: {} | Possible reasons could be that: \n1. Is the user_id in the middle of
+    //         a " "filename? {}\n2. Does the user_id_parent_dir exist? {}", raw_path, is_user_id_mid_filename,
+    //         user_id_parent_exists );
+    // #endif
     return std::nullopt;
 }
 
