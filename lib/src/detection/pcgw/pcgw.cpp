@@ -186,6 +186,8 @@ std::unordered_map<uint32_t, std::vector<PcgwEntry>> CPCGamingWikiDetector::load
                 }
 
                 std::string path = save.value( "path", "" );
+                std::ranges::replace( path, '\\', '/' );
+
                 if ( path.empty( ) ) {
                     // #ifndef NDEBUG
                     //                     SPDLOG_WARN( "[PCGamingWiki] {} is empty, skipping..", path );
