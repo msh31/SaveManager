@@ -32,6 +32,10 @@ namespace {
 
     constexpr std::string_view WINE_OS = "Windows";
 
+    const std::unordered_set<std::string> GENERIC_SHARED_ROOT_SEGMENTS = {
+        "Documents", "Library", "Application Support", "Desktop", "Roaming",
+    };
+
     bool has_unresolvable_wildcard_segment( const std::string& path ) {
         size_t i = 0;
         while ( i < path.size( ) ) {
@@ -90,6 +94,46 @@ namespace {
 
         std::string rest = path.substr( close + 1 );
         return rest.empty( ) || rest == "/";
+    }
+
+    bool is_generic_shared_root_path( const std::string& path ) {
+        if ( path.empty( ) || path[0] != '<' ) return false;
+
+        auto close = path.find( '>' );
+        if ( close == std::string::npos ) return false;
+
+        std::string token = path.substr( 1, close - 1 );
+        if ( !TOKEN_TO_ROOT.contains( token ) ) return false;
+
+        std::string rest = path.substr( close + 1 );
+        if ( !rest.empty( ) && rest.front( ) == '/' ) rest.erase( 0, 1 );
+        while ( !rest.empty( ) && rest.back( ) == '/' )
+            rest.pop_back( );
+
+        if ( rest.empty( ) ) return false;
+
+        auto is_generic_segment = [] ( const std::string& segment ) {
+            return std::ranges::any_of( GENERIC_SHARED_ROOT_SEGMENTS, [&segment] ( const std::string& generic ) {
+                return segment.size( ) == generic.size( ) &&
+                       std::ranges::equal( segment, generic, [] ( unsigned char a, unsigned char b ) {
+                           return std::tolower( a ) == std::tolower( b );
+                       } );
+            } );
+        };
+
+        size_t seg_start = 0;
+        while ( seg_start <= rest.size( ) ) {
+            auto seg_end = rest.find( '/', seg_start );
+            std::string segment =
+                rest.substr( seg_start, seg_end == std::string::npos ? std::string::npos : seg_end - seg_start );
+
+            if ( !is_generic_segment( segment ) ) return false;
+
+            if ( seg_end == std::string::npos ) break;
+            seg_start = seg_end + 1;
+        }
+
+        return true;
     }
 
     // for things like old windows folders like local settings /applciationdata, my documents etc..
@@ -195,7 +239,8 @@ std::unordered_map<uint32_t, std::vector<PcgwEntry>> CPCGamingWikiDetector::load
                     continue;
                 }
 
-                if ( has_unresolvable_wildcard_segment( path ) || is_bare_root_token_path( path ) ) {
+                if ( has_unresolvable_wildcard_segment( path ) || is_bare_root_token_path( path ) ||
+                     is_generic_shared_root_path( path ) ) {
                     // #ifndef NDEBUG
                     //                     SPDLOG_WARN( "[PCGamingWiki] {} is a bad manifest entry, skipping..", path
                     //                     );
