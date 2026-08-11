@@ -130,3 +130,51 @@ std::vector<Game> Detection::de_duplicate( const std::vector<Game>& games ) {
     }
     return deduped;
 }
+
+std::vector<Game> Detection::merge_by_path( const std::vector<Game>& games ) {
+    auto canonical_key = []( const fs::path& p ) -> std::optional<std::string> {
+        try {
+            auto canon = path_to_utf8_generic( fs::canonical( p ) );
+            std::ranges::transform( canon, canon.begin( ), []( unsigned char c ) { return std::tolower( c ); } );
+            return canon;
+        } catch ( const fs::filesystem_error& ) {
+            return std::nullopt;
+        }
+    };
+
+    std::vector<Game> merged = games;
+    std::vector<bool> removed( merged.size( ), false );
+
+    for ( size_t i = 0; i < merged.size( ); i++ ) {
+        if ( removed[i] || merged[i].type == PlatformType::PCGAMINGWIKI ) continue;
+        if ( merged[i].save_paths.size( ) != 1 ) continue;
+
+        auto key_i = canonical_key( merged[i].save_paths[0] );
+        if ( !key_i ) continue;
+
+        for ( size_t j = 0; j < merged.size( ); j++ ) {
+            if ( i == j || removed[j] ) continue;
+            if ( merged[j].type != PlatformType::PCGAMINGWIKI ) continue;
+            if ( merged[j].save_paths.size( ) != 1 ) continue;
+
+            auto key_j = canonical_key( merged[j].save_paths[0] );
+            if ( !key_j || *key_i != *key_j ) continue;
+
+            // SPDLOG_INFO(
+            //     "[Detection] merging {} into {} by shared save path.", merged[j].game_name, merged[i].game_name );
+
+            if ( merged[i].appid.empty( ) || merged[i].appid == "N/A" ) {
+                merged[i].appid = merged[j].appid;
+                merged[i].game_name = merged[j].game_name;
+            }
+
+            removed[j] = true;
+        }
+    }
+
+    std::vector<Game> result;
+    for ( size_t i = 0; i < merged.size( ); i++ )
+        if ( !removed[i] ) result.push_back( std::move( merged[i] ) );
+
+    return result;
+}

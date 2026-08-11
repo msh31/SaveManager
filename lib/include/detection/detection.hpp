@@ -14,5 +14,6 @@ namespace Detection {
         const std::unordered_map<uint32_t, std::vector<PcgwEntry>>& );
 
     std::vector<Game> de_duplicate( const std::vector<Game>& );
+    std::vector<Game> merge_by_path( const std::vector<Game>& );
 
 }; // namespace Detection

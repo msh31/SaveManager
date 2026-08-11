@@ -49,6 +49,8 @@ void CDetectionService::refresh( ) {
                                 // DE-DUPLICATION
                                 games = std::move( Detection::de_duplicate( games ) );
 
+                                games = std::move( Detection::merge_by_path( games ) );
+
                                 // BLACKLIST
                                 std::erase_if( games, [this]( const Game& game ) {
                                     bool blacklisted = m_blacklist.is_blacklisted( game.game_name );
