@@ -112,10 +112,10 @@ namespace {
 
         if ( rest.empty( ) ) return false;
 
-        auto is_generic_segment = [] ( const std::string& segment ) {
-            return std::ranges::any_of( GENERIC_SHARED_ROOT_SEGMENTS, [&segment] ( const std::string& generic ) {
+        auto is_generic_segment = []( const std::string& segment ) {
+            return std::ranges::any_of( GENERIC_SHARED_ROOT_SEGMENTS, [&segment]( const std::string& generic ) {
                 return segment.size( ) == generic.size( ) &&
-                       std::ranges::equal( segment, generic, [] ( unsigned char a, unsigned char b ) {
+                       std::ranges::equal( segment, generic, []( unsigned char a, unsigned char b ) {
                            return std::tolower( a ) == std::tolower( b );
                        } );
             } );
@@ -222,12 +222,12 @@ std::unordered_map<uint32_t, std::vector<PcgwEntry>> CPCGamingWikiDetector::load
             }
 
             for ( const auto& save : entry["saves"] ) {
-                if ( !save.value( "clean", false ) ) {
-                    // #ifndef NDEBUG
-                    //                     SPDLOG_WARN( "[PCGamingWiki] entry is not clean, skipping.." );
-                    // #endif
-                    continue;
-                }
+                // if ( !save.value( "clean", false ) ) {
+                //     // #ifndef NDEBUG
+                //     //                     SPDLOG_WARN( "[PCGamingWiki] entry is not clean, skipping.." );
+                //     // #endif
+                //     continue;
+                // }
 
                 std::string path = save.value( "path", "" );
                 std::ranges::replace( path, '\\', '/' );
