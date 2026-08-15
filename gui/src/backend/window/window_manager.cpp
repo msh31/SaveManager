@@ -8,6 +8,9 @@
 #include <frontend/fonts/jbm_med.h>
 #include <frontend/fonts/jbm_reg.h>
 
+#define STB_IMAGE_IMPLEMENTATION
+#include <stb_image.h>
+
 std::pair<int, int> CWindowManager::get_size( ) {
     int width, height = 0;
     glfwGetFramebufferSize( m_window, &width, &height );
@@ -77,16 +80,30 @@ void CWindowManager::setup_opengl( ) {
         throw std::runtime_error( "Failed to initialize GLFW" );
     }
 
-    glfwWindowHint( GLFW_SAMPLES, 4 ); // 4x antialiasing (MSAA)
+    // glfwWindowHint( GLFW_SAMPLES, 4 ); // 4x antialiasing (MSAA)
     glfwWindowHint( GLFW_CONTEXT_VERSION_MAJOR, 3 );
     glfwWindowHint( GLFW_CONTEXT_VERSION_MINOR, 3 );
     glfwWindowHint( GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE ); // no old OpenGL
     glfwWindowHint( GLFW_VISIBLE, GLFW_FALSE );
 
+    int iconw = 0, iconh = 0, channels = 4;
+    unsigned char* icon = stbi_load( "assets/app_icon/savemanager-icon-64.png", &iconw, &iconh, &channels, 4 );
+
     m_window = glfwCreateWindow( DEF_RES_W, DEF_RES_H, APP_NAME.data( ), nullptr, nullptr );
     if ( m_window == nullptr ) {
         glfwTerminate( );
         throw std::runtime_error( "Failed to create GLFW window, OpenGL 3.3 support is required" );
+    }
+
+    if ( icon == nullptr ) {
+        SPDLOG_ERROR( "Failed to load icon! No icon will be shown.." );
+    } else {
+        GLFWimage image;
+        image.width = iconw;
+        image.height = iconh;
+        image.pixels = icon;
+        glfwSetWindowIcon( m_window, 1, &image );
+        stbi_image_free( image.pixels );
     }
 
     glfwSetWindowSizeLimits( m_window, MIN_RES_W, MIN_RES_H, MAX_RES_W, MAX_RES_H );
