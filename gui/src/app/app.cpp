@@ -74,16 +74,20 @@ void CApp::save_window_props( int x, int y, int width, int height ) {
 
 // called from main before render so the shader actually displays
 void CApp::render_shader( std::pair<int, int> window_size ) {
-    // might be useless but a fallback for now
-    if ( m_config.settings.dark_mode ) {
-        glClearColor( 0.145f, 0.145f, 0.141f, 1.0f );
-    } else {
-        glClearColor( 0.980f, 0.976f, 0.961f, 1.00f );
+    float bgr = 0.145f, bgg = 0.145f, bgb = 0.141f;
+
+    if ( !m_config.settings.dark_mode ) {
+        bgr = 0.980f;
+        bgg = 0.976f;
+        bgb = 0.961f;
     }
+    glClearColor( bgr, bgg, bgb, 1.0f );
     glClear( GL_COLOR_BUFFER_BIT ); // for the themes
     glViewport( 0, 0, window_size.first, window_size.second );
 
-    if ( m_config.settings.animated_background && m_shader.has_value( ) ) {
-        m_shader->render( window_size.first, window_size.second );
+    bool use_shader = m_config.settings.animated_background;
+
+    if ( use_shader && m_shader.has_value( ) ) {
+        m_shader->render( window_size.first, window_size.second, bgr, bgg, bgb );
     }
 }

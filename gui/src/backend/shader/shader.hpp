@@ -4,7 +4,7 @@ class CShader {
     public:
         CShader( );
         ~CShader( );
-        void render( int w, int h );
+        void render( int w, int h, float bgr, float bgg, float bgb );
 
     private:
         GLuint compile_shader( const char* source, GLenum type );
@@ -16,6 +16,7 @@ class CShader {
         GLuint m_shader_program;
         GLint m_u_resolution;
         GLint m_u_time;
+        GLint m_u_bg_color;
 };
 
 // dirty copy of the shader code
@@ -42,6 +43,7 @@ inline constexpr const char* default_frag = R"(
 
 in vec2 vUV;       // received from vert shader
 out vec4 fragColor;
+uniform vec3 iBgColor;
 
 uniform vec2 iResolution;
 uniform float iTime;
@@ -61,6 +63,6 @@ void main() {
     );
     float d = distance(local, center);
     float circle = smoothstep(0.02, 0.01, d);
-    fragColor = vec4(vec3(0.91, 0.44, 0.29) * circle + vec3(0.145, 0.145, 0.141), 1.0);
+    fragColor = vec4(mix(iBgColor, vec3(0.91, 0.44, 0.29), circle), 1.0);
 }
 )";

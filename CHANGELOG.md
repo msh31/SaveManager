@@ -42,6 +42,7 @@ Due to the lack of downloads of the MacOS version I will pause development there
     - Fixed a missing style pop before returning in the backup restore button
     - Fixed an issue where Rockstar Games profiles folder detection could fail due to a permission error
     - Fixed an issue where the app background did not comply with the lightmode setting
+    - FIxed an issue where the shader did not work with the already broken lightmode.
 
 - Performance
     - Cache basic file info to avoid recomputing them 100's of times per frame which caused unnessesary disk io work

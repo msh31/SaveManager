@@ -6,6 +6,7 @@ CShader::CShader( ) {
     m_shader_program = link_program( vert, frag );
     m_u_resolution = glGetUniformLocation( m_shader_program, "iResolution" );
     m_u_time = glGetUniformLocation( m_shader_program, "iTime" );
+    m_u_bg_color = glGetUniformLocation( m_shader_program, "iBgColor" );
     init_quad( );
 }
 
@@ -15,12 +16,13 @@ CShader::~CShader( ) {
     glDeleteProgram( m_shader_program );
 }
 
-void CShader::render( int w, int h ) {
+void CShader::render( int w, int h, float bgr, float bgg, float bgb ) {
     glUseProgram( m_shader_program );
     glBindVertexArray( m_vao );
 
     glUniform2f( m_u_resolution, w, h );
     glUniform1f( m_u_time, glfwGetTime( ) );
+    glUniform3f( m_u_bg_color, bgr, bgg, bgb );
     glDrawArrays( GL_TRIANGLES, 0, 6 );
     glBindVertexArray( 0 );
 }
