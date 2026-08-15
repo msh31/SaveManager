@@ -23,14 +23,14 @@ namespace {
     constexpr uint64_t STEAM_ID64_BASE = 76561197960265728ULL;
 
 #if defined( _WIN32 )
-    constexpr std::string_view CURRENT_OS = "Windows";
+    constexpr std::string_view CURRENT_OS = "windows";
 #elif defined( __linux__ )
-    constexpr std::string_view CURRENT_OS = "Linux";
+    constexpr std::string_view CURRENT_OS = "linux";
 #elif defined( __APPLE__ )
-    constexpr std::string_view CURRENT_OS = "OS X";
+    constexpr std::string_view CURRENT_OS = "mac";
 #endif
 
-    constexpr std::string_view WINE_OS = "Windows";
+    constexpr std::string_view WINE_OS = "windows";
 
     const std::unordered_set<std::string> GENERIC_SHARED_ROOT_SEGMENTS = {
         "Documents", "Library", "Application Support", "Desktop", "Roaming",
