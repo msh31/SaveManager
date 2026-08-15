@@ -1,6 +1,7 @@
 test_data/
 assets/export_copy
 assets/export
+*.DS_STORE
 
 # cmkr
 build*/
