@@ -201,6 +201,12 @@ set(savemanager_SOURCES
 	"gui/vendor/imgui/imgui_stdlib.cpp"
 )
 
+if(WIN32) # windows
+	list(APPEND savemanager_SOURCES
+		"assets/app_icon/resources.rc"
+	)
+endif()
+
 add_executable(savemanager)
 
 target_sources(savemanager PRIVATE ${savemanager_SOURCES})
@@ -253,19 +259,28 @@ configure_file(
 )
 target_sources(savemanager PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/lib/include/version.cpp)
 
-if(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
-    configure_file(
-        ${CMAKE_CURRENT_SOURCE_DIR}/Info.plist.in
-        ${CMAKE_CURRENT_BINARY_DIR}/SaveManager.app/Contents/Info.plist
-    )
+if(CMAKE_SYSTEM_NAME MATCHES "Linux") # linux
+	install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/assets/app_icon/savemanager.desktop
+	        DESTINATION share/applications)
+	foreach(size 16 32 64 256 512)
+	    install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/assets/app_icon/savemanager-icon-${size}.png
+	            DESTINATION share/icons/hicolor/${size}x${size}/apps
+	            RENAME savemanager-icon.png)
+	endforeach()
+endif()
 
-    # Create .app bundle and copy binary
-    add_custom_command(TARGET savemanager POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_CURRENT_BINARY_DIR}/SaveManager.app/Contents/MacOS
-        COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_CURRENT_BINARY_DIR}/SaveManager.app/Contents/Resources
-        COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:savemanager> ${CMAKE_CURRENT_BINARY_DIR}/SaveManager.app/Contents/MacOS/SaveManager
-        COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_BINARY_DIR}/SaveManager.app/Contents/Info.plist ${CMAKE_CURRENT_BINARY_DIR}/SaveManager.app/Contents/Info.plist
-    )
+if(CMAKE_SYSTEM_NAME MATCHES "Darwin") # macos
+	configure_file(
+	    ${CMAKE_CURRENT_SOURCE_DIR}/Info.plist.in
+	    ${CMAKE_CURRENT_BINARY_DIR}/SaveManager.app/Contents/Info.plist
+	)
+	add_custom_command(TARGET savemanager POST_BUILD
+	    COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_CURRENT_BINARY_DIR}/SaveManager.app/Contents/MacOS
+	    COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_CURRENT_BINARY_DIR}/SaveManager.app/Contents/Resources
+	    COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:savemanager> ${CMAKE_CURRENT_BINARY_DIR}/SaveManager.app/Contents/MacOS/SaveManager
+	    COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_BINARY_DIR}/SaveManager.app/Contents/Info.plist ${CMAKE_CURRENT_BINARY_DIR}/SaveManager.app/Contents/Info.plist
+	    COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/assets/app_icon/smicon.icns ${CMAKE_CURRENT_BINARY_DIR}/SaveManager.app/Contents/Resources/smicon.icns
+	)
 endif()
 
 # Target: savemgr

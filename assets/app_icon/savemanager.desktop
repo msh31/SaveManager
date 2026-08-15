@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=SaveManager
+Comment=The swiss army knife of save management
+Exec=savemanager
+Icon=smicon
+Terminal=false
+Categories=Utility;

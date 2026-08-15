@@ -1,7 +1,6 @@
-savemanager
-vcpkg_installed/
 test_data/
-gui/tmp/
+assets/export_copy
+assets/export
 
 # cmkr
 build*/
