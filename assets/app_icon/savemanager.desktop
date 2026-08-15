@@ -3,6 +3,6 @@ Type=Application
 Name=SaveManager
 Comment=The swiss army knife of save management
 Exec=savemanager
-Icon=smicon
+Icon=savemanager-icon.png
 Terminal=false
 Categories=Utility;
