@@ -7,6 +7,7 @@
 #include <frontend/fonts/jbm_bold.h>
 #include <frontend/fonts/jbm_med.h>
 #include <frontend/fonts/jbm_reg.h>
+#include <frontend/smicon.hpp>
 
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
@@ -87,7 +88,7 @@ void CWindowManager::setup_opengl( ) {
     glfwWindowHint( GLFW_VISIBLE, GLFW_FALSE );
 
     int iconw = 0, iconh = 0, channels = 4;
-    unsigned char* icon = stbi_load( "assets/app_icon/savemanager-icon-64.png", &iconw, &iconh, &channels, 4 );
+    unsigned char* icon = stbi_load_from_memory( smicon_data, smicon_len, &iconw, &iconh, &channels, 4 );
 
     m_window = glfwCreateWindow( DEF_RES_W, DEF_RES_H, APP_NAME.data( ), nullptr, nullptr );
     if ( m_window == nullptr ) {
