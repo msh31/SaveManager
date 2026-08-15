@@ -2,6 +2,8 @@
 #include <detection/game.hpp>
 
 enum class SaveRoot {
+    PUBLICUSER,
+    WINDIR,
     DOCUMENTS,
     LOCAL_APPDATA,
     LOCAL_APPDATA_LOW,

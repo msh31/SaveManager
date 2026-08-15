@@ -1,6 +1,8 @@
 #pragma once
 namespace fs = std::filesystem;
 
+// TODO: clean tihs shit up
+
 #if defined( _WIN32 )
     #include <KnownFolders.h>
     #include <shlobj.h>
@@ -40,6 +42,17 @@ namespace paths {
             return fs::path( path );
         } else {
             return home_dir( ) / ".config"; // default spec when the env is not set
+        }
+    }
+#endif
+
+#if defined( _WIN32 )
+    inline fs::path win_dir( ) {
+        const char* path = std::getenv( "WINDIR" );
+        if ( path ) {
+            return fs::path( path );
+        } else {
+            return fs::path( "C:/Windows" ); // fallback, WINDIR should basically always be set
         }
     }
 #endif

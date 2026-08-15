@@ -6,6 +6,8 @@ using json = nlohmann::json;
 
 namespace {
     const std::unordered_map<std::string, SaveRoot> TOKEN_TO_ROOT = {
+        { "PUBLICUSER", SaveRoot::PUBLICUSER },
+        { "WINDIR", SaveRoot::WINDIR },
         { "USER_PROFILE", SaveRoot::USER_PROFILE },
         { "USER_PROFILE_DOCUMENTS", SaveRoot::DOCUMENTS },
         { "APPDATA", SaveRoot::APPDATA },

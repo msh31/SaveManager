@@ -13,7 +13,12 @@ fs::path save::resolve_root( SaveRoot sr ) {
     }
 
 #if defined( _WIN32 )
-    // switch ( sr ) {
+    case SaveRoot::PUBLICUSER:
+        return paths::get_known_folder_path( FOLDERID_Public );
+        break;
+    case SaveRoot::WINDIR:
+        return paths::win_dir( );
+        break;
     case SaveRoot::DOCUMENTS:
         return paths::get_known_folder_path( FOLDERID_Documents );
         break;
