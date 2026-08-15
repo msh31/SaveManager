@@ -209,7 +209,7 @@ std::unordered_map<uint32_t, std::vector<PcgwEntry>> CPCGamingWikiDetector::load
                 continue;
             }
 
-            std::string page = entry.value( "page", "" );
+            std::string page = entry.value( "name", "" );
 
             uint32_t appid;
             try {
