@@ -30,6 +30,10 @@ class CPCGamingWikiDetector : public IDetector {
         static std::optional<fs::path>
         resolve( std::string raw_path, const SteamManifest* manifest, const WineRootCtx* wine );
 
+        static std::vector<Game> collect_games(
+            uint32_t appid, const std::vector<PcgwEntry>& entries, const SteamManifestCache& manifest_cache,
+            std::string_view os_filter, const WineRootCtx* wine );
+
         const SteamManifestCache& m_manifest_cache;
         std::unordered_map<uint32_t, std::vector<PcgwEntry>> m_entries;
 };

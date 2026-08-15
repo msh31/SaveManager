@@ -259,6 +259,41 @@ std::unordered_map<uint32_t, std::vector<PcgwEntry>> CPCGamingWikiDetector::load
     return entries;
 }
 
+std::vector<Game> CPCGamingWikiDetector::collect_games(
+    uint32_t appid, const std::vector<PcgwEntry>& entries, const SteamManifestCache& manifest_cache,
+    std::string_view os_filter, const WineRootCtx* wine ) {
+
+    std::vector<Game> games = { };
+
+    const auto& manifests = manifest_cache.get_app_manifests( );
+    auto manifest_it = manifests.find( appid );
+    const SteamManifest* manifest = nullptr;
+    if ( manifest_it != manifests.end( ) ) {
+        manifest = &manifest_it->second;
+    }
+
+    for ( const auto& entry : entries ) {
+        if ( entry.os != os_filter && entry.os != "Steam" ) continue;
+
+        auto resolved_path = resolve( entry.raw_path, manifest, wine );
+        if ( !resolved_path.has_value( ) ) continue;
+        if ( !fs::exists( resolved_path.value( ) ) ) continue;
+
+        Game game;
+        game.type = PlatformType::PCGAMINGWIKI;
+        game.platform_label = std::string( PLATFORM_LABEL );
+        game.game_name = manifest ? manifest->name : entry.page;
+        game.appid = std::to_string( appid );
+        game.save_paths.push_back( *resolved_path );
+        game.show_parent_path = true;
+
+        SPDLOG_INFO( "[PCGamingWiki] found{}: {}", wine ? " (wine)" : "", game.game_name );
+        games.emplace_back( std::move( game ) );
+    }
+
+    return games;
+}
+
 std::optional<fs::path>
 CPCGamingWikiDetector::resolve( std::string raw_path, const SteamManifest* manifest, const WineRootCtx* wine ) {
     bool prefer_short_id = false;
@@ -414,9 +449,9 @@ CPCGamingWikiDetector::resolve( std::string raw_path, const SteamManifest* manif
 
     // #ifndef NDEBUG
     //     SPDLOG_ERROR(
-    //         "[PCGamingWiki] Failed to find: {} | Possible reasons could be that: \n1. Is the user_id in the middle of
-    //         a " "filename? {}\n2. Does the user_id_parent_dir exist? {}", raw_path, is_user_id_mid_filename,
-    //         user_id_parent_exists );
+    //         "[PCGamingWiki] Failed to find: {} | Possible reasons could be that: \n1. Is the user_id in the
+    //         middle of a " "filename? {}\n2. Does the user_id_parent_dir exist? {}", raw_path,
+    //         is_user_id_mid_filename, user_id_parent_exists );
     // #endif
     return std::nullopt;
 }
@@ -425,109 +460,23 @@ std::expected<std::vector<Game>, SMError> CPCGamingWikiDetector::find( ) {
     std::vector<Game> games = { };
 
     for ( const auto& [appid, entries] : m_entries ) {
-        const auto& manifests = m_manifest_cache.get_app_manifests( );
-        auto manifest_it = manifests.find( appid );
-        const SteamManifest* manifest = nullptr;
-        if ( manifest_it != manifests.end( ) ) {
-            manifest = &manifest_it->second;
-        }
-
-        for ( const auto& entry : entries ) {
-            if ( entry.os != CURRENT_OS && entry.os != "Steam" ) continue;
-
-            std::optional<fs::path> resolved = resolve( entry.raw_path, manifest, nullptr );
-            if ( !resolved.has_value( ) ) {
-                // #ifndef NDEBUG
-                //                 SPDLOG_ERROR( "[PCGamingWiki] Failed to resolve {} skipping this entry..",
-                //                 entry.raw_path );
-                // #endif
-                continue;
-            }
-            if ( !fs::exists( resolved.value( ) ) ) {
-                // #ifndef NDEBUG
-                //                 SPDLOG_ERROR(
-                //                     "[PCGamingWiki] {} was not found on your system, skipping this entry.",
-                //                     resolved.value( ).string( ) );
-                // #endif
-                continue;
-            }
-            // if ( !resolved || !fs::exists( *resolved ) ) continue; //old
-
-            Game game;
-            game.type = PlatformType::PCGAMINGWIKI;
-            game.platform_label = std::string( PLATFORM_LABEL );
-            game.game_name = manifest ? manifest->name : entry.page; // big bad ternary but cleaner here
-            game.appid = std::to_string( appid );
-            game.save_paths.push_back( *resolved );
-            game.show_parent_path = true;
-
-            SPDLOG_INFO( "[PCGamingWiki] found: {}", game.game_name );
-            games.push_back( std::move( game ) );
-        }
+        auto found = collect_games( appid, entries, m_manifest_cache, CURRENT_OS, nullptr );
+        games.insert( games.end( ), found.begin( ), found.end( ) );
     }
 
     return games;
 }
 
 std::vector<Game> CPCGamingWikiDetector::scan_wine_user( const fs::path& user_home, const DetectorContext& ctx ) {
-    std::vector<Game> games = { };
-
     auto appid = resolve_prefix_appid( user_home );
-    if ( !appid ) {
-        // #ifndef NDEBUG
-        //         SPDLOG_WARN( "[PCGamingWiki] Failed to get appid in: {}", user_home.string( ) );
-        // #endif
-        return games;
-    }
+    if ( !appid ) return { };
 
     auto it = ctx.pcgw_entries.find( *appid );
-    if ( it == ctx.pcgw_entries.end( ) ) {
-        // #ifndef NDEBUG
-        //         SPDLOG_WARN( "[PCGamingWiki] Failed to find {} in: {}", *appid, user_home.string( ) );
-        // #endif
-        return games;
-    }
-
-    const auto& manifests = ctx.manifest_cache.get_app_manifests( );
-    auto manifest_it = manifests.find( *appid );
-    const SteamManifest* manifest = nullptr;
-    if ( manifest_it != manifests.end( ) ) {
-        manifest = &manifest_it->second;
-    }
+    if ( it == ctx.pcgw_entries.end( ) ) return { };
 
     WineRootCtx wine{ user_home, user_home.parent_path( ).parent_path( ) };
 
-    for ( const auto& entry : it->second ) {
-        if ( entry.os != WINE_OS && entry.os != "Steam" ) continue;
-
-        auto resolved = resolve( entry.raw_path, manifest, &wine );
-        if ( !resolved ) {
-            // #ifndef NDEBUG
-            //             SPDLOG_WARN( "[PCGamingWiki] Failed to resolve {}", entry.raw_path );
-            // #endif
-            continue;
-        }
-        if ( !fs::exists( *resolved ) ) {
-            // #ifndef NDEBUG
-            //             SPDLOG_WARN( "[PCGamingWiki] {} does not exist!", entry.raw_path );
-            // #endif
-            continue;
-        }
-        if ( !manifest && entry.page.empty( ) ) continue;
-
-        Game game;
-        game.type = PlatformType::PCGAMINGWIKI;
-        game.platform_label = std::string( CPCGamingWikiDetector::PLATFORM_LABEL );
-        game.game_name = manifest ? manifest->name : entry.page; // big bad ternary but cleaner here
-        game.appid = std::to_string( *appid );
-        game.save_paths.push_back( *resolved );
-        game.show_parent_path = true;
-
-        SPDLOG_INFO( "[PCGamingWiki] found (wine): {}", game.game_name );
-        games.push_back( std::move( game ) );
-    }
-
-    return games;
+    return collect_games( *appid, it->second, ctx.manifest_cache, WINE_OS, &wine );
 }
 
 std::string_view CPCGamingWikiDetector::name( ) const { return PLATFORM_LABEL; }
