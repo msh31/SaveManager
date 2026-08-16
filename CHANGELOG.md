@@ -58,12 +58,14 @@ Due to the lack of downloads of the MacOS version I will pause development there
 
 ### Other
 #### General
-- SaveManager now has an icon!
+- SaveManager now has an icon! (MacOS and Windows)
+#### Known Issues
+- Mass backup / individual Minecraft world backup creation blocks the UI and program exit
 
 #### Development
 - Removed some dead code in the GUI such as; ``CMenuBar``, ``CStatusBar`` etc.. non user facing changes
 - Created a ``CDetectionService`` class to unify detection for consumers such as the GUI
-- Refactored a lot of the internals of the detection system for better maintainability 
+- Refactored a lot of the internals of the detection system
 
 
 ---
