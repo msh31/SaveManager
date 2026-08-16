@@ -18,6 +18,7 @@ Due to the lack of downloads of the MacOS version I will pause development there
     - Fixed an issue where Minecraft saves from any launcher did not restore properly on windows ([#13](https://github.com/msh31/SaveManager/issues/13))
     - Fixed an issue where some Minecraft saves were not being detected properly ([#14](https://github.com/msh31/savemanager/issues/14))
     - Fixed an issue where Anno save games were no longer being detected properly ([#17](https://github.com/msh31/savemanager/issues/17))
+    - Fixed an issue where incorrect games were found by the Rockstar Games detector
 
 - Changes
     - Improved logging even further to help identify issues more clearly
