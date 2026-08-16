@@ -1,4 +1,6 @@
 #pragma once
+// 16-8-26 @ 3.27AM: this thing holds too much fucking state address this (TODO)
+
 #include <config/config.hpp>
 #include <detection/detection.hpp>
 #include <features/features.hpp>
@@ -107,6 +109,11 @@ class CDashboardView : public CBaseView {
         Game m_game_exclusions_restore; // horrible name
         std::vector<std::string> m_restore_entries;
         std::unordered_map<std::string, bool> m_restore_checked = { };
+
+        bool m_open_ignore_ruleset_modal = false;
+        std::vector<fs::path> m_file_list_ignore_rulset = { };
+        std::string m_new_ruleset_text = { };
+        fs::path m_pending_ignore_save_root = { };
 
         // Futures
         std::future<void> m_backup_future;

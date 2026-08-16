@@ -206,7 +206,7 @@ void CDashboardView::render_game_content(
     }
 
     float total = 110.f; // Backup All
-    // total += ImGui::CalcTextSize("Create Schedule__").x + 4.f;
+    total += ImGui::CalcTextSize( "Create filter__" ).x + 4.f;
     if ( has_conflicts ) total += ImGui::CalcTextSize( "Resolve Conflict(s)__" ).x + 4.f;
     if ( cache.has_undo ) total += ImGui::CalcTextSize( "Undo last restore___" ).x + 4.f;
     ImGui::SetCursorPosX( ImGui::GetContentRegionMax( ).x - total );
@@ -228,6 +228,34 @@ void CDashboardView::render_game_content(
     }
     if ( is_backing_up || is_refreshing ) ImGui::EndDisabled( );
     ImGui::PopStyleColor( 2 );
+
+    ImGui::SameLine( );
+    if ( is_backing_up || is_refreshing ) ImGui::BeginDisabled( true );
+    if ( ImGui::Button( "Create filter" ) ) {
+        m_new_ruleset_text = { };
+        m_file_list_ignore_rulset = { };
+        m_pending_ignore_save_root = game.save_paths.front( );
+
+        fs::path ignore_file = m_pending_ignore_save_root / ".savemgr-ignore";
+        if ( fs::exists( ignore_file ) ) {
+            std::ifstream in( ignore_file );
+            m_new_ruleset_text.assign( std::istreambuf_iterator<char>( in ), std::istreambuf_iterator<char>( ) );
+            in.close( );
+        }
+
+        for ( const auto& sp : game.save_paths ) {
+            for ( const auto& f : fs::recursive_directory_iterator( sp ) ) {
+                auto path = fs::relative( f.path( ), sp ).string( );
+                if ( path == ".savemgr-ignore" ) continue;
+                m_file_list_ignore_rulset.emplace_back( path );
+            }
+        }
+
+        m_open_ignore_ruleset_modal = true;
+        invalidate_cache( { game } );
+    }
+    if ( is_backing_up || is_refreshing ) ImGui::EndDisabled( );
+
     if ( has_conflicts ) {
         ImGui::SameLine( );
         if ( is_backing_up || is_refreshing ) ImGui::BeginDisabled( true );
@@ -581,6 +609,11 @@ void CDashboardView::render_modals( ) {
         ImGui::OpenPopup( "Preview Backup" );
     }
 
+    if ( m_open_ignore_ruleset_modal ) {
+        m_open_ignore_ruleset_modal = false;
+        ImGui::OpenPopup( "Create Filter" );
+    }
+
     if ( ImGui::BeginPopupModal( "Manage Tags", nullptr, ImGuiWindowFlags_AlwaysAutoResize ) ) {
         ImGui::Text( "%s", path_to_utf8( m_pending_rename_backup.filename( ) ).c_str( ) );
         ImGui::Separator( );
@@ -757,6 +790,39 @@ void CDashboardView::render_modals( ) {
 
         ImGui::Separator( );
         if ( ImGui::Button( "Ok" ) ) ImGui::CloseCurrentPopup( );
+        ImGui::EndPopup( );
+    }
+
+    if ( ImGui::BeginPopupModal( "Create Filter", nullptr, ImGuiWindowFlags_AlwaysAutoResize ) ) {
+        auto height =
+            std::clamp( m_file_list_ignore_rulset.size( ) * ImGui::GetFrameHeightWithSpacing( ), 200.0f, 500.0f );
+        ImGui::BeginChild( "##Filter entries", ImVec2( 500, height ) );
+        ImGui::Text( "File list" );
+        ImGui::Separator( );
+
+        for ( const auto& entry : m_file_list_ignore_rulset ) {
+            ImGui::PushID( entry.c_str( ) );
+            std::string text = std::format( "{}", path_to_utf8( utf8_to_path( entry ).filename( ) ) );
+            ImGui::Text( "%s", text.c_str( ) );
+            ImGui::Separator( );
+            ImGui::PopID( );
+        }
+
+        ImGui::Dummy( ImVec2( 0.0f, 5.0f ) );
+
+        ImGui::InputTextMultiline(
+            "##filter input", &m_new_ruleset_text, ImVec2( -FLT_MIN, ImGui::GetTextLineHeight( ) * 16 ) );
+
+        if ( ImGui::Button( "Save" ) ) {
+            fs::path ignore_file = m_pending_ignore_save_root / ".savemgr-ignore";
+            std::ofstream out( ignore_file );
+            out << m_new_ruleset_text;
+            out.close( );
+            Notify::show_notification( "Ignore ruleset", "Created ruleset successfully!", 2000 );
+            ImGui::CloseCurrentPopup( );
+        }
+
+        ImGui::EndChild( );
         ImGui::EndPopup( );
     }
 }

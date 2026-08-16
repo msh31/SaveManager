@@ -29,6 +29,7 @@ Due to the lack of downloads of the MacOS version I will pause development there
     - 'Duplicate' button on the list of savefiles and backups
     - 'Preview' button on the list of savefiles and backups
     - 'Save' button within the settings tab
+    - 'Create Filter' button on all game rows (Part of the savemgr-ignore system)
     - Detection progress indicator in the toolbar
 
 - Fixed 
