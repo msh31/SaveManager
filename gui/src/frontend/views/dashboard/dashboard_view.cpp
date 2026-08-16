@@ -803,7 +803,7 @@ void CDashboardView::render_modals( ) {
 
         for ( const auto& entry : m_file_list_ignore_rulset ) {
             ImGui::PushID( entry.c_str( ) );
-            std::string text = std::format( "{}", path_to_utf8( utf8_to_path( entry ) ) );
+            std::string text = std::format( "{}", path_to_utf8( utf8_to_path( entry.string() ) ) );
             ImGui::Text( "%s", text.c_str( ) );
             ImGui::Separator( );
             ImGui::PopID( );
