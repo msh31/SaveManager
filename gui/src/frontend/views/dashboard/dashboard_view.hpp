@@ -114,6 +114,7 @@ class CDashboardView : public CBaseView {
         std::vector<fs::path> m_file_list_ignore_rulset = { };
         std::string m_new_ruleset_text = { };
         fs::path m_pending_ignore_save_root = { };
+        Game m_pending_ignore_game = { };
 
         // Futures
         std::future<void> m_backup_future;

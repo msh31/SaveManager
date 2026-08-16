@@ -235,6 +235,7 @@ void CDashboardView::render_game_content(
         m_new_ruleset_text = { };
         m_file_list_ignore_rulset = { };
         m_pending_ignore_save_root = game.save_paths.front( );
+        m_pending_ignore_game = game;
 
         fs::path ignore_file = m_pending_ignore_save_root / ".savemgr-ignore";
         if ( fs::exists( ignore_file ) ) {
@@ -802,7 +803,7 @@ void CDashboardView::render_modals( ) {
 
         for ( const auto& entry : m_file_list_ignore_rulset ) {
             ImGui::PushID( entry.c_str( ) );
-            std::string text = std::format( "{}", path_to_utf8( utf8_to_path( entry ).filename( ) ) );
+            std::string text = std::format( "{}", path_to_utf8( utf8_to_path( entry ) ) );
             ImGui::Text( "%s", text.c_str( ) );
             ImGui::Separator( );
             ImGui::PopID( );
@@ -818,7 +819,12 @@ void CDashboardView::render_modals( ) {
             std::ofstream out( ignore_file );
             out << m_new_ruleset_text;
             out.close( );
+            invalidate_cache( { m_pending_ignore_game } );
             Notify::show_notification( "Ignore ruleset", "Created ruleset successfully!", 2000 );
+            ImGui::CloseCurrentPopup( );
+        }
+        ImGui::SameLine( );
+        if ( ImGui::Button( "Cancel" ) ) {
             ImGui::CloseCurrentPopup( );
         }
 
@@ -886,6 +892,8 @@ void CDashboardView::invalidate_cache( const std::vector<Game>& games, std::func
                         if ( game.type != PlatformType::MINECRAFT ) {
                             for ( const auto& file : fs::recursive_directory_iterator(
                                       save_path, fs::directory_options::skip_permission_denied ) ) {
+
+                                if ( file.path( ).filename( ) == ".savemgr-ignore" ) continue;
 
                                 if ( ignore_rules.empty( ) ) {
                                     auto ext = save_path.extension( ).string( );
