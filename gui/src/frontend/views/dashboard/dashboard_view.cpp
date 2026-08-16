@@ -350,6 +350,7 @@ void CDashboardView::render_save_row( const fs::path& save_file, const Game& gam
     if ( !save_info.is_dir && save_info.size <= 0 && m_config.d_settings.skip_empty_files ) {
         return;
     }
+    if ( save_file.filename( ).string( ) == ".savemgr-ignore" ) return;
 
     ImGui::PushID( save_file.string( ).c_str( ) );
     ImGui::Separator( );
