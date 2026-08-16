@@ -4,7 +4,6 @@
 #include <frontend/notification/notification.hpp>
 
 #include <network/network.hpp>
-
 #include <utils/utils.hpp>
 
 void CSettingsView::on_enter( ) {}
@@ -23,13 +22,12 @@ void CSettingsView::render( ) {
 
     if ( m_update_t_future.valid( ) &&
          m_update_t_future.wait_for( std::chrono::seconds( 0 ) ) == std::future_status::ready ) {
-       bool res = m_update_t_future.get( );
+        bool res = m_update_t_future.get( );
 
         if ( !res ) {
             SPDLOG_ERROR( "Failed to download Ubisoft translations" );
             Notify::show_notification( "Translations", "Failed to update translations for ubisoft", 2500 );
-        }
-        else {
+        } else {
             Notify::show_notification( "Translations", "Updated translations successfully!", 2500 );
         }
     }
@@ -68,15 +66,16 @@ void CSettingsView::render( ) {
         m_update_future = std::async( std::launch::async, []( ) { return Network::is_update_available( ); } );
     }
     if ( is_checking ) ImGui::EndDisabled( );
-     ImGui::SameLine( );
-     if ( is_checking_t ) ImGui::BeginDisabled( true );
-     if ( ImGui::Button( "Update translations" ) ) {
-         m_update_t_future = std::async( std::launch::async, [this]( ) -> bool {
-             return Network::download_file( ubi_translation_url, paths::ubi_translations( ).string( ) );
-         } );
-     }
-     ImGui::SetItemTooltip( "Forces a new download of the ubisoft id translations" );
-     if ( is_checking_t ) ImGui::EndDisabled( );
+    ImGui::SameLine( );
+    if ( is_checking_t ) ImGui::BeginDisabled( true );
+    if ( ImGui::Button( "Update translations" ) ) {
+        m_update_t_future = std::async( std::launch::async, [this]( ) -> bool {
+            return Network::download_file( ubi_translation_url, paths::ubi_translations( ).string( ) );
+            return Network::download_file( pcgw_translation_url, paths::pcgw_manifest( ).string( ) );
+        } );
+    }
+    ImGui::SetItemTooltip( "Forces a new download of the ubisoft id translations" );
+    if ( is_checking_t ) ImGui::EndDisabled( );
     if ( ImGui::Button( "Open config" ) ) {
         open_in_file_manager( paths::config_dir( ).string( ).c_str( ) );
     }
