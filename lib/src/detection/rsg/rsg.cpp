@@ -51,6 +51,12 @@ std::vector<Game> CRockstarDetector::scan( fs::path path, const Translations& tr
         std::string folder_name = game_folder.filename( ).string( );
         fs::path profiles_folder = game_folder / "Profiles";
 
+        if ( folder_name == "Pictures" || folder_name == "Music" || folder_name == "Downloads" ||
+             folder_name == "Videos" || folder_name == "Templates" ) {
+            continue;
+        }
+        // SPDLOG_INFO( "[RSG] folder_name: {}", folder_name );
+
         // legacy game search
         if ( auto it = legacy_games.find( folder_name ); it != legacy_games.end( ) ) {
             auto& [key, game_name] = *it;
@@ -65,6 +71,7 @@ std::vector<Game> CRockstarDetector::scan( fs::path path, const Translations& tr
         }
 
         // modern game search
+        if ( path.filename( ).string( ) != "Rockstar Games" ) continue;
         if ( folder_name == "Launcher" || folder_name == "Social Club" ) {
             continue;
         }
