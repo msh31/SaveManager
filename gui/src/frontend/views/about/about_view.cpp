@@ -3,6 +3,26 @@
 #include <version.hpp>
 
 #include <backend/font_manager/font_manager.hpp>
+#include <frontend/smlogo.hpp>
+
+// #define STB_IMAGE_IMPLEMENTATION
+#include <stb_image.h>
+
+void CAboutView::on_enter( ) {
+    if ( m_logo_loaded ) return;
+
+    int width = 0, height = 0, channels = 4;
+    auto* pixels = stbi_load_from_memory( smlogo_data, smlogo_len, &width, &height, &channels, 4 );
+
+    glGenTextures( 1, &m_logo_tex );
+    glBindTexture( GL_TEXTURE_2D, m_logo_tex );
+    glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
+    glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
+    glTexImage2D( GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, pixels );
+
+    stbi_image_free( pixels );
+    m_logo_loaded = true;
+}
 
 void CAboutView::render( ) {
     static const char* subtitle = "The swiss army knife of save management";
@@ -10,23 +30,20 @@ void CAboutView::render( ) {
     ImGui::NewLine( );
     float win_width = ImGui::GetWindowSize( ).x;
 
+    ImGui::BeginGroup( );
     ImGui::PushFont( CFontManager::get( ).get_font( "jbm_title" ).value_or( nullptr ) );
-    float title_width = ImGui::CalcTextSize( "SaveManager" ).x;
-    ImGui::SetCursorPosX( ( win_width - title_width ) * 0.5f );
     ImGui::Text( "SaveManager" );
     ImGui::PopFont( );
-
     ImGui::PushFont( CFontManager::get( ).get_font( "jbm_med" ).value_or( nullptr ) );
-
-    float subtitle_width = ImGui::CalcTextSize( subtitle ).x;
-    ImGui::SetCursorPosX( ( win_width - subtitle_width ) * 0.5f );
     ImGui::TextDisabled( "%s", subtitle );
     ImGui::PopFont( );
+    ImGui::EndGroup( );
 
     ImGui::Dummy( ImVec2( 0.0f, 4.0f ) );
     ImGui::Separator( );
     ImGui::Dummy( ImVec2( 0.0f, 4.0f ) );
 
+    ImGui::BeginGroup( );
     ImGui::PushFont( CFontManager::get( ).get_font( "jbm_header" ).value_or( nullptr ) );
     ImGui::Text( "Details" );
     ImGui::PopFont( );
@@ -51,4 +68,10 @@ void CAboutView::render( ) {
     ImGui::Text( "Source" );
     ImGui::SameLine( 120.0f );
     ImGui::TextLinkOpenURL( "click for sauce", "https://github.com/msh31/SaveManager" );
+    ImGui::EndGroup( );
+
+    ImGui::SameLine( win_width - 256.0f - 20.0f );
+    ImGui::Image( (ImTextureRef)(intptr_t)m_logo_tex, ImVec2( 256, 256 ) );
 }
+
+void CAboutView::on_exit( ) {}
