@@ -61,18 +61,9 @@ bool CRemoteTransfer::connect(
     }
     m_fingerprint = hex_encode( reinterpret_cast<const unsigned char*>( raw_fingerprint ), 32 );
 
-    auto it = config.sftp.known_hosts.find( dest_addr );
-    if ( it == config.sftp.known_hosts.end( ) ) {
-        SPDLOG_INFO( "Adding new host {} to known hosts (fingerprint: {})", dest_addr, m_fingerprint );
-        config.sftp.known_hosts[dest_addr] = m_fingerprint;
-        config.save( );
-    } else if ( it->second != m_fingerprint ) {
-        SPDLOG_ERROR(
-            "Host key verification failed for {}! Expected {}, got {}. The remote host key may have "
-            "changed, or this may be a man-in-the-middle attack.",
-            dest_addr, it->second, m_fingerprint );
-        return fail( );
-    }
+    // has logging internally
+    auto khres = config.verify_known_host( dest_addr, m_fingerprint );
+    if ( khres == CConfig::KNOWN_HOST_RESULT::MISMATCH ) return fail( );
 
     if ( auth_pw ) {
         if ( libssh2_userauth_password( m_session, config.sftp.username.c_str( ), config.sftp.password.c_str( ) ) ) {

@@ -88,6 +88,7 @@ bool CConfig::init( ) {
 }
 
 void CConfig::save( ) {
+    std::lock_guard<std::recursive_mutex> lock( m_mutex );
     json data;
     data["dark_mode"] = settings.dark_mode;
     data["animated_background"] = settings.animated_background;
@@ -178,4 +179,24 @@ void CConfig::load( ) {
         fs::rename( config_file, config_file.string( ) + ".bak" );
         load( );
     }
+}
+
+CConfig::KNOWN_HOST_RESULT CConfig::verify_known_host( const std::string& addr, const std::string& fingerprint ) {
+    std::lock_guard<std::recursive_mutex> lock( m_mutex );
+
+    auto it = sftp.known_hosts.find( addr );
+    if ( it == sftp.known_hosts.end( ) ) {
+        sftp.known_hosts[addr] = fingerprint;
+        save( );
+        SPDLOG_INFO( "Adding new host {} to known hosts (fingerprint: {})", addr, fingerprint );
+        return KNOWN_HOST_RESULT::NEW;
+    } else if ( it->second != fingerprint ) {
+        SPDLOG_ERROR(
+            "Host key verification failed for {}! Expected {}, got {}. The remote host key may have "
+            "changed, or this may be a man-in-the-middle attack.",
+            addr, it->second, fingerprint );
+        return KNOWN_HOST_RESULT::MISMATCH;
+    }
+
+    return KNOWN_HOST_RESULT::MATCH;
 }

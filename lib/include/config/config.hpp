@@ -8,6 +8,9 @@ class CConfig {
         bool init( );
         void save( );
 
+        enum class KNOWN_HOST_RESULT { NEW, MATCH, MISMATCH };
+        KNOWN_HOST_RESULT verify_known_host( const std::string& addr, const std::string& fingerprint );
+
         struct WindowProperties {
                 int x = -1;
                 int y = -1;
@@ -50,4 +53,6 @@ class CConfig {
         void load( );
 
         fs::path config_file = paths::config_dir( ) / "config.json";
+
+        std::recursive_mutex m_mutex;
 };
