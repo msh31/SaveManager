@@ -190,7 +190,7 @@ bool CRemoteTransfer::upload_file(
 }
 
 bool CRemoteTransfer::download_file( const fs::path& backup_path, const CConfig& config ) {
-    char mem[1024 * 100]; // TODO: replace this because big bad
+    auto mem = std::vector<char>( 1024 * 100 );
 
     fs::path local_path = paths::backup_dir( ) / backup_path.parent_path( ).filename( ) / backup_path.filename( );
 
@@ -225,8 +225,8 @@ bool CRemoteTransfer::download_file( const fs::path& backup_path, const CConfig&
 
     ssize_t rc = -1; // failure
     bool failed = false;
-    while ( ( rc = libssh2_sftp_read( m_sftp_handle, mem, sizeof( mem ) ) ) > 0 ) {
-        if ( !file.write( mem, rc ) ) {
+    while ( ( rc = libssh2_sftp_read( m_sftp_handle, mem.data( ), mem.size( ) ) ) > 0 ) {
+        if ( !file.write( mem.data( ), rc ) ) {
             failed = true;
             break;
         }
