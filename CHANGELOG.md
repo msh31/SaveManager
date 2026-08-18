@@ -1,4 +1,14 @@
-## 1.9.0 - 2026-08-20
+## 1.9.1 - 2026-08-20
+
+### Core
+- Fixed
+    - Fixed a potential race condition when saving SFTP settings
+    - Fixed an issue where backup tags were not properly sanitized
+
+---
+
+
+## 1.9.0 - 2026-08-16
 This update focuses on extending game support 
 
 ### New game support

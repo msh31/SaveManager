@@ -5,7 +5,7 @@
 
 using json = nlohmann::json;
 
-//TODO: chill on the runtime errors man sheesh
+// TODO: chill on the runtime errors man sheesh
 CConfig::CConfig( fs::path config_dir ) : config_file( config_dir / "config.json" ) {
     try {
         if ( !fs::exists( config_dir ) ) {
@@ -154,6 +154,10 @@ void CConfig::load( ) {
         // }
 
         // TODO: improve this by using a keychain on the OS
+        // COMMENT: I wanted to use -> https://github.com/hrantzsch/keychain
+        // but it fails to build because of a glib version mismatch
+        // and i cant figure out how to fix in the project even tho
+        // its not my bug, will need to look into this.
         sftp.dest_addr = data.value( "dest_addr", std::string( "" ) );
         sftp.username = data.value( "username", std::string( "" ) );
         sftp.password = data.value( "password", std::string( "" ) );

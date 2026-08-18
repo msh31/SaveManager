@@ -25,6 +25,8 @@ void CDetectionService::refresh( ) {
             std::erase_if( futures, [&]( auto& pair ) {
                 auto& [detector, future] = pair;
                 bool ready = false;
+
+                // COMMENT: would bite in the future but is fine since I don't plan on adding more detectors
                 if ( future.valid( ) &&
                      future.wait_for( std::chrono::milliseconds( 100 ) ) == std::future_status::ready ) {
                     ready = true;
