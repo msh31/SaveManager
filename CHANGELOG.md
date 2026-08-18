@@ -1,9 +1,8 @@
-## 1.9.1 - 2026-08-20
+## 1.10 - 2026-09-03
 
 ### Core
 - Fixed
     - Fixed a potential race condition when saving SFTP settings
-    - Fixed an issue where backup tags were not properly sanitized
 
 ---
 
