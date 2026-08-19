@@ -33,14 +33,13 @@ endif()
 
 # Variables
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
-set(APP_VERSION 1.9.0-dev)
 
 project(SaveManager
 	LANGUAGES
 		C
 		CXX
 	VERSION
-		1.9.0
+		1.10.0
 	DESCRIPTION
 		"The swiss army knife of save management."
 )
@@ -98,6 +97,8 @@ set(savemanager-core_SOURCES
 	"lib/src/detection/detection_service/detection_service.cpp"
 	"lib/src/detection/detector_context.hpp"
 	"lib/src/detection/detector_utils.hpp"
+	"lib/src/detection/goldberg/goldberg.cpp"
+	"lib/src/detection/goldberg/goldberg.hpp"
 	"lib/src/detection/idetector.hpp"
 	"lib/src/detection/minecraft/minecraft.cpp"
 	"lib/src/detection/minecraft/minecraft.hpp"
