@@ -25,18 +25,6 @@ extern char** environ;
 */
 
 namespace utils { // All functions in this namespace should work across Windows, Linux and macOS
-    inline std::string get_username( ) {
-        const char* usrname = nullptr;
-
-#if defined( __linux__ ) || defined( __APPLE__ )
-        usrname = std::getenv( "USER" );
-#else
-        usrname = std::getenv( "USERNAME" );
-#endif
-        if ( !usrname ) throw std::runtime_error( "USER not set, how did you manage to do this?" );
-        return std::string( usrname );
-    }
-
     inline std::string_view trim( std::string_view l ) {
         auto b = l.find_first_not_of( " \t\r" );
         if ( b == std::string_view::npos ) return { };
