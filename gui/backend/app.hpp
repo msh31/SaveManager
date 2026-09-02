@@ -28,9 +28,6 @@ class CApp {
 
         CUIManager m_ui_manager{ std::make_unique<CTabbarShell>( ) };
 
-        CMenuBar m_menubar;
-        CStatusBar m_statusbar;
-
         ImageData m_background_image = { };
         std::string m_loaded_bg_name = { };
 };

@@ -39,11 +39,6 @@ void CApp::init( ) {
     m_ui_manager.add_view( { std::make_unique<CImageDemoView>( ), ICON_IMAGE, "Image Demo" } );
     m_ui_manager.add_view( { std::make_unique<CLogView>( ), ICON_SCROLL, "Logs" } );
     m_ui_manager.set_settings_view( { std::make_unique<CSettingsView>( m_config ), ICON_GEAR, "Settings" } );
-
-    SPDLOG_INFO( "Setting up statusbar.." );
-    m_statusbar.add_left( { "I am a statusbar", "X" } );
-    m_statusbar.add_right( { "Build", APP_VERSION } );
-    m_ui_manager.set_statusbar( std::move( m_statusbar ) );
 }
 
 void CApp::refresh_background( ) {

@@ -34,21 +34,11 @@ void CUIManager::set_active_view( CBaseView* view ) {
     if ( m_active_view ) m_active_view->on_enter( );
 }
 
-void CUIManager::set_menubar( CMenuBar menubar ) { m_menubar = std::move( menubar ); }
-
-void CUIManager::set_statusbar( CStatusBar statusbar ) { m_statusbar = std::move( statusbar ); }
-
 void CUIManager::render( ) {
-    if ( m_menubar ) m_menubar->render( );
-
-    float sb_h = m_statusbar ? CStatusBar::height( ) + ImGui::GetStyle( ).ItemSpacing.y : 0.f;
-
     {
         ChildGuard shell_area(
-            "##shell_area", { 0.f, -sb_h }, ImGuiChildFlags_None,
+            "##shell_area", { 0.f, 0.0f }, ImGuiChildFlags_None,
             ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse );
         if ( auto* clicked = m_shell->render( m_active_view ) ) set_active_view( clicked );
     }
-
-    if ( m_statusbar ) m_statusbar->render( );
 }
