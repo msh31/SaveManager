@@ -12,6 +12,7 @@ msvc-runtime = "dynamic"
 [variables]
 CMAKE_EXPORT_COMPILE_COMMANDS = true
 
+# dependencies - through conan
 [find-package.CURL]
 required = true
 [find-package.glad]
@@ -37,30 +38,41 @@ required = true
 [find-package.CLI11]
 required = true
 
-
+# targets
 [target.savemanager-core]
 type = "static"
-sources = ["lib/src/**.cpp", "lib/**.hpp"]
-include-directories = ["lib/include"]
+sources = [
+    "lib/src/**.cpp", 
+    "lib/include/**.hpp", 
+    "vendor/sha256/**.cpp"
+]
+include-directories = [
+    "lib/include",
+    "vendor/sha256/include"
+]
 link-libraries = ["CURL::libcurl", "libzip::zip", "Libssh2::libssh2", "OpenSSL::Crypto", "nlohmann_json::nlohmann_json", "stb::stb", "sol2::sol2", "spdlog::spdlog"]
 compile-features = ["cxx_std_23"]
-precompile-headers = ["lib/include/pch.hpp"]
-cmake-after = """
-target_include_directories(savemanager-core PUBLIC lib/include)
-"""
+precompile-headers = ["lib/include/lib_pch.hpp"]
 
 [target.savemanager-core.windows]
 link-libraries = ["ws2_32"]
 
 [target.savemanager]
 type = "executable"
-sources = ["gui/src/**.cpp", "gui/vendor/imgui/imgui_stdlib.cpp"]
-include-directories = ["gui/src", "gui/vendor/imgui"]
+sources = [
+    "gui/**.cpp", 
+    "gui/**.hpp", 
+    "vendor/imgui/imgui_stdlib.cpp"
+]
+include-directories = [
+    "gui", 
+    "vendor/imgui"
+]
 link-libraries = ["savemanager-core", "glfw", "imgui::imgui", "glad::glad", "nfd::nfd"]
 compile-features = ["cxx_std_23"]
-precompile-headers = ["gui/src/pch.hpp"]
+precompile-headers = ["gui/pch.hpp"]
 cmake-before = """
-add_subdirectory(gui/vendor/nativefiledialog-extended)
+add_subdirectory(vendor/nativefiledialog-extended)
 
 execute_process(
     COMMAND git rev-parse HEAD
@@ -89,7 +101,7 @@ target_sources(savemanager PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/lib/include/versi
 
 [target.savemanager.windows]
 sources = ["assets/app_icon/resources.rc"]
-link-libraries = ["shell32"]
+link-libraries = ["shell32", "Dwmapi"]
 
 [target.savemanager.linux]
 cmake-after = """

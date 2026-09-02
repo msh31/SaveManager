@@ -1,9 +1,6 @@
 #pragma once
-#include <detection/game.hpp>
-
-#include <openssl/evp.h>
-#include <openssl/sha.h>
-#include <zip.h>
+#include <logger.hpp>
+#include <SHA256.h>
 
 #ifdef __APPLE__
     #include <ctime>
@@ -16,176 +13,157 @@
     #include <shellapi.h>
 #endif
 
-// apple clang doesnt support c++23 views as of apr 2026
-template <typename Range, typename Fn> void enumerate( Range& range, Fn fn ) {
 #ifdef __APPLE__
-    int i = 0;
-    for ( auto& r : range ) {
-        fn( i, r );
-        ++i;
-    }
-#else
-    for ( auto [i, element] : std::views::enumerate( range ) ) {
-        fn( i, element );
-    }
+extern char** environ;
 #endif
-}
 
-// Source - https://stackoverflow.com/a/5253245
-// Posted by Blastfurnace, modified by community. See post 'Timeline' for change history
-// Retrieved 2026-02-03, License - CC BY-SA 2.5
-inline std::string space2underscore( std::string text ) {
-    std::replace( text.begin( ), text.end( ), ' ', '_' );
-    return text;
-}
+namespace utils { // All functions in this namespace should work across Windows, Linux and macOS
+    inline std::string get_username( ) {
+        const char* usrname = nullptr;
 
-inline std::string sanitize_filename( std::string text ) {
-    const std::string invalid = "<>:\"/\\|?*";
-    std::replace_if(
-        text.begin( ), text.end( ), [&]( char c ) { return invalid.find( c ) != std::string::npos; }, '_' );
-    return text;
-}
+#if defined( __linux__ ) || defined( __APPLE__ )
+        usrname = std::getenv( "USER" );
+#else
+        usrname = std::getenv( "USERNAME" );
+#endif
+        if ( !usrname ) throw std::runtime_error( "USER not set, how did you manage to do this?" );
+        return std::string( usrname );
+    }
 
-// i hate windows and special characters
-inline fs::path utf8_to_path( const std::string& utf8 ) {
-    return fs::path(
-        reinterpret_cast<const char8_t*>( utf8.data( ) ),
-        reinterpret_cast<const char8_t*>( utf8.data( ) + utf8.size( ) ) );
-}
-
-inline std::string path_to_utf8( const fs::path& p ) {
-    auto u8 = p.u8string( );
-    return std::string( reinterpret_cast<const char*>( u8.data( ) ), u8.size( ) );
-}
-
-inline std::string path_to_utf8_generic( const fs::path& p ) {
-    auto u8 = p.generic_u8string( );
-    return std::string( reinterpret_cast<const char*>( u8.data( ) ), u8.size( ) );
-}
-
-inline fs::path sanitize_filename_path( const std::string& text ) { return utf8_to_path( sanitize_filename( text ) ); }
-
-// inline fs::path operator/( const fs::path& lhs, const std::string& utf8_rhs ) { return lhs / utf8_to_path( utf8_rhs
-// ); }
-
-inline void open_in_file_manager( const char* path ) {
+    inline void open_in_file_manager( const char* path ) {
 #ifdef __linux__
-    pid_t pid = fork( );
-    pid_t w = 0;
-    int status;
+        pid_t pid = fork( );
+        pid_t w = 0;
+        int status;
 
-    if ( pid > 0 ) {
-        w = waitpid( pid, &status, 0 );
-        if ( w == -1 ) {
-            SPDLOG_ERROR( "waitpid failed: {}", strerror( errno ) );
+        if ( pid > 0 ) {
+            w = waitpid( pid, &status, 0 );
+            if ( w == -1 ) {
+                SPDLOG_ERROR( "waitpid failed: {}", strerror( errno ) );
+            }
         }
-    }
 
-    if ( pid == 0 ) {
-        pid_t g_pid = fork( );
+        if ( pid == 0 ) {
+            pid_t g_pid = fork( );
 
-        if ( g_pid == 0 ) {
-            execl( "/usr/bin/xdg-open", "xdg-open", path, nullptr );
-            _exit( 1 );
+            if ( g_pid == 0 ) {
+                execl( "/usr/bin/xdg-open", "xdg-open", path, nullptr );
+                _exit( 1 );
+            }
+            _exit( 0 );
         }
-        _exit( 0 );
-    }
 #endif
 #ifdef _WIN32
-    ShellExecuteA( NULL, "open", path, NULL, NULL, SW_SHOWDEFAULT );
+        ShellExecuteA( NULL, "open", path, NULL, NULL, SW_SHOWDEFAULT );
 #endif
 #ifdef __APPLE__
-    extern char** environ;
-    pid_t pid;
+        pid_t pid;
 
-    const char* argv[] = { "open", path, nullptr };
-    int status = posix_spawn( &pid, "/usr/bin/open", nullptr, nullptr, (char* const*)argv, environ );
-    if ( status == 0 ) {
-        waitpid( pid, &status, 0 );
-    }
+        const char* argv[] = { "open", path, nullptr };
+        int status = posix_spawn( &pid, "/usr/bin/open", nullptr, nullptr, (char* const*)argv, environ );
+        if ( status == 0 ) {
+            waitpid( pid, &status, 0 );
+        }
 #endif
-}
-
-// TODO: move everything into this namespace so the code is easier to navigate
-namespace utils {
-    inline GameKey get_game_identity_key( const Game& game ) {
-        if ( !game.appid.empty( ) && game.appid != "N/A" ) return { GameKeyKind::STEAM_APPID, game.appid };
-
-        // ubisoft
-        if ( game.game_id.has_value( ) ) return { GameKeyKind::UBISOFT_ID, *game.game_id };
-
-        // minecraft launchers
-        if ( game.type == PlatformType::MINECRAFT ) return { GameKeyKind::MINECRAFT, game.game_name };
-
-        if ( !game.game_name.empty( ) ) return { GameKeyKind::NAME, game.game_name };
-
-        if ( !game.save_paths.empty( ) ) {
-            SPDLOG_INFO( "save path hit: {}", game.game_name );
-            return { GameKeyKind::PATH, weakly_canonical( game.save_paths[0] ).string( ) };
-        }
-
-        SPDLOG_ERROR( "Failed to get game identify key" );
-        return { GameKeyKind::INVALID }; // caller must check this
     }
 
-    inline std::string_view trim( std::string_view l ) {
-        auto b = l.find_first_not_of( " \t\r" );
-        if ( b == std::string_view::npos ) return { };
-        auto e = l.find_last_not_of( " \t\r" );
-        return l.substr( b, e - b + 1 );
+    // file_clock::to_sys / from_sys are not available on MSVC or Apple Clang
+    static std::chrono::system_clock::time_point file_time_to_sys( fs::file_time_type ft ) {
+        return std::chrono::system_clock::now( ) + std::chrono::duration_cast<std::chrono::system_clock::duration>(
+                                                       ft - fs::file_time_type::clock::now( ) );
     }
 
-} // namespace utils
+    static fs::file_time_type sys_to_file_time( std::chrono::system_clock::time_point tp ) {
+        return fs::file_time_type::clock::now( ) + std::chrono::duration_cast<fs::file_time_type::clock::duration>(
+                                                       tp - std::chrono::system_clock::now( ) );
+    }
 
-inline std::vector<std::vector<int>> get_grouped( const std::vector<Game>& games ) {
-    std::map<GameKey, size_t> key_to_group;
-    std::vector<std::vector<int>> groups;
-
-    enumerate( games, [&]( int i, auto& game ) {
-        auto key = utils::get_game_identity_key( game );
-
-        auto it = key_to_group.find( key );
-        if ( it != key_to_group.end( ) ) {
-            groups[it->second].push_back( i );
-        } else {
-            key_to_group[key] = groups.size( );
-            groups.push_back( { static_cast<int>( i ) } );
-        }
-    } );
-
-    return groups;
-}
-
-// file_clock::to_sys / from_sys are not available on MSVC or Apple Clang
-static std::chrono::system_clock::time_point file_time_to_sys( fs::file_time_type ft ) {
-    return std::chrono::system_clock::now( ) +
-           std::chrono::duration_cast<std::chrono::system_clock::duration>( ft - fs::file_time_type::clock::now( ) );
-}
-
-static fs::file_time_type sys_to_file_time( std::chrono::system_clock::time_point tp ) {
-    return fs::file_time_type::clock::now( ) +
-           std::chrono::duration_cast<fs::file_time_type::clock::duration>( tp - std::chrono::system_clock::now( ) );
-}
-
-static std::string format_file_time( fs::file_time_type f ) {
+    static std::string format_file_time( fs::file_time_type f ) {
 #ifdef __APPLE__
-    char buf[32];
-    auto ts = std::chrono::system_clock::to_time_t( file_time_to_sys( f ) );
-    auto tm = std::localtime( &ts );
-    std::strftime( buf, sizeof( buf ), "%d-%m-%y %H:%M:%S", tm );
-    return buf;
+        char buf[32];
+        auto ts = std::chrono::system_clock::to_time_t( file_time_to_sys( f ) );
+        auto tm = std::localtime( &ts );
+        std::strftime( buf, sizeof( buf ), "%d-%m-%y %H:%M:%S", tm );
+        return buf;
 #else
-    auto time = std::chrono::current_zone( )->to_local( file_time_to_sys( f ) );
-    auto floored = std::chrono::floor<std::chrono::seconds>( time );
-    return std::format( "{:%d-%m-%y %H:%M:%S}", floored );
+        auto time = std::chrono::current_zone( )->to_local( file_time_to_sys( f ) );
+        auto floored = std::chrono::floor<std::chrono::seconds>( time );
+        return std::format( "{:%d-%m-%y %H:%M:%S}", floored );
 #endif
-}
+    }
 
-static std::string format_file_size( uintmax_t size ) {
-    constexpr uintmax_t KB = 1024, MB = KB * 1024, GB = MB * 1024;
+    static std::string format_file_size( uintmax_t size ) {
+        constexpr uintmax_t KB = 1024, MB = KB * 1024, GB = MB * 1024;
 
-    if ( size >= GB ) return std::format( "{:.2f}GB", static_cast<double>( size ) / GB );
-    if ( size >= MB ) return std::format( "{:.2f}MB", static_cast<double>( size ) / MB );
-    if ( size >= KB ) return std::format( "{:.2f}KB", static_cast<double>( size ) / KB );
-    return std::format( "{}B", size );
-}
+        if ( size >= GB ) return std::format( "{:.2f}GB", static_cast<double>( size ) / GB );
+        if ( size >= MB ) return std::format( "{:.2f}MB", static_cast<double>( size ) / MB );
+        if ( size >= KB ) return std::format( "{:.2f}KB", static_cast<double>( size ) / KB );
+        return std::format( "{}B", size );
+    }
+
+    // simply writes the contents to a tmp file and flushes the contents onto the drive
+    static bool atomic_write( const fs::path& path, const std::string& content ) {
+        if ( fs::is_directory( path ) ) return false;
+
+        fs::path tmp_path = path;
+        tmp_path += ".tmp";
+
+        std::ofstream file( tmp_path, std::ios::binary );
+        if ( !file.is_open( ) ) {
+            SPDLOG_ERROR( "[AtomicWrite]: failed to open temp file for writing!" );
+            return false;
+        }
+
+        auto cleanup = [&file]( fs::path cpath ) {
+            file.close( );
+            std::error_code ecr;
+            fs::remove( cpath, ecr );
+            if ( ecr ) SPDLOG_ERROR( "[AtomicWrite]: {}", ecr.message( ) );
+        };
+
+        file.write( content.data( ), content.size( ) );
+        if ( !file.good( ) ) {
+            SPDLOG_ERROR( "[AtomicWrite]: failed to write to temp file!" );
+            cleanup( tmp_path );
+            return false;
+        }
+
+        if ( !file.flush( ) ) {
+            SPDLOG_ERROR( "[AtomicWrite]: failed to flush content to disk!" );
+            cleanup( tmp_path );
+            return false;
+        }
+
+        file.close( );
+
+        std::error_code ec;
+        fs::rename( tmp_path, path, ec );
+
+        if ( ec ) {
+            SPDLOG_ERROR( "[AtomicWrite]: rename error {}", ec.message( ) );
+            cleanup( tmp_path );
+            return false;
+        }
+
+        return true;
+    }
+
+    static std::string hash_file( const fs::path& path ) {
+        if ( !fs::is_regular_file( path ) ) return { };
+
+        std::ifstream file( path, std::ios::binary );
+        if ( !file.is_open( ) ) return { };
+
+        SHA256 sha;
+        char buffer[8192];
+        while ( file.read( buffer, sizeof( buffer ) ) ) {
+            sha.update( reinterpret_cast<uint8_t*>( buffer ), file.gcount( ) );
+        }
+
+        if ( file.gcount( ) > 0 ) sha.update( reinterpret_cast<uint8_t*>( buffer ), file.gcount( ) );
+        file.close( );
+
+        std::array<uint8_t, 32> digest = sha.digest( );
+        return SHA256::toString( digest );
+    }
+} // namespace utils

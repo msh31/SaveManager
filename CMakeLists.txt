@@ -72,61 +72,23 @@ find_package(CLI11 REQUIRED)
 # Target: savemanager-core
 set(savemanager-core_SOURCES
 	cmake.toml
+	"lib/include/async_queue/async_queue.hpp"
+	"lib/include/branding.hpp"
 	"lib/include/config/config.hpp"
-	"lib/include/constants.hpp"
-	"lib/include/detection/detection.hpp"
-	"lib/include/detection/detection_service.hpp"
-	"lib/include/detection/game.hpp"
-	"lib/include/features/features.hpp"
-	"lib/include/logger/logger.hpp"
-	"lib/include/network/network.hpp"
-	"lib/include/pch.hpp"
-	"lib/include/remote_transfer/remote_transfer.hpp"
-	"lib/include/save_editor/save_editor.hpp"
-	"lib/include/sm_error.hpp"
-	"lib/include/utils/blacklist/blacklist.hpp"
+	"lib/include/lib_pch.hpp"
+	"lib/include/logger.hpp"
+	"lib/include/types.hpp"
+	"lib/include/utils/cache.hpp"
+	"lib/include/utils/disk_cache.hpp"
+	"lib/include/utils/image_extensions.hpp"
+	"lib/include/utils/network.hpp"
 	"lib/include/utils/paths.hpp"
-	"lib/include/utils/steam/steam.hpp"
-	"lib/include/utils/task_runner/task_runner.hpp"
-	"lib/include/utils/translations/translations.hpp"
-	"lib/include/utils/unreal_name_cache/unreal_name_cache.hpp"
 	"lib/include/utils/utils.hpp"
 	"lib/include/version.hpp"
+	"lib/src/async_queue/async_queue.cpp"
 	"lib/src/config/config.cpp"
-	"lib/src/detection/detection.cpp"
-	"lib/src/detection/detection_service/detection_service.cpp"
-	"lib/src/detection/detector_context.hpp"
-	"lib/src/detection/detector_utils.hpp"
-	"lib/src/detection/goldberg/goldberg.cpp"
-	"lib/src/detection/goldberg/goldberg.hpp"
-	"lib/src/detection/idetector.hpp"
-	"lib/src/detection/minecraft/minecraft.cpp"
-	"lib/src/detection/minecraft/minecraft.hpp"
-	"lib/src/detection/pcgw/pcgw.cpp"
-	"lib/src/detection/pcgw/pcgw.hpp"
-	"lib/src/detection/rsg/rsg.cpp"
-	"lib/src/detection/rsg/rsg.hpp"
-	"lib/src/detection/ubi/ubi.cpp"
-	"lib/src/detection/ubi/ubi.hpp"
-	"lib/src/detection/unreal/unreal.cpp"
-	"lib/src/detection/unreal/unreal.hpp"
-	"lib/src/detection/wine/wine.cpp"
-	"lib/src/detection/wine/wine.hpp"
-	"lib/src/features/features.cpp"
-	"lib/src/network/network.cpp"
-	"lib/src/plugin/plugin.cpp"
-	"lib/src/plugin/plugin.hpp"
-	"lib/src/remote_transfer/remote_transfer.cpp"
-	"lib/src/save_editor/save_editor.cpp"
-	"lib/src/utils/blacklist/blacklist.cpp"
-	"lib/src/utils/save_helper/save_helper.cpp"
-	"lib/src/utils/save_helper/save_helper.hpp"
-	"lib/src/utils/steam/steam.cpp"
-	"lib/src/utils/task_runner/task_runner.cpp"
-	"lib/src/utils/translations/translations.cpp"
-	"lib/src/utils/unreal_name_cache/unreal_name_cache.cpp"
-	"lib/src/utils/zip_archive/zip_archive.cpp"
-	"lib/src/utils/zip_archive/zip_archive.hpp"
+	"lib/src/utils/network.cpp"
+	"vendor/sha256/src/SHA256.cpp"
 )
 
 add_library(savemanager-core STATIC)
@@ -140,6 +102,7 @@ target_compile_features(savemanager-core PUBLIC
 
 target_include_directories(savemanager-core PUBLIC
 	"lib/include"
+	"vendor/sha256/include"
 )
 
 target_link_libraries(savemanager-core PUBLIC
@@ -160,15 +123,12 @@ if(WIN32) # windows
 endif()
 
 target_precompile_headers(savemanager-core PUBLIC
-	"lib/include/pch.hpp"
+	"lib/include/lib_pch.hpp"
 )
-
-set(CMKR_TARGET savemanager-core)
-target_include_directories(savemanager-core PUBLIC lib/include)
 
 # Target: savemanager
 set(CMKR_TARGET savemanager)
-add_subdirectory(gui/vendor/nativefiledialog-extended)
+add_subdirectory(vendor/nativefiledialog-extended)
 
 execute_process(
     COMMAND git rev-parse HEAD
@@ -180,26 +140,63 @@ string(TIMESTAMP BUILD_DATE "%Y-%m-%d %H:%M UTC")
 
 set(savemanager_SOURCES
 	cmake.toml
-	"gui/src/app/app.cpp"
-	"gui/src/backend/font_manager/font_manager.cpp"
-	"gui/src/backend/shader/shader.cpp"
-	"gui/src/backend/ui_manager/ui_manager.cpp"
-	"gui/src/backend/window/window_manager.cpp"
-	"gui/src/frontend/components/menubar/menubar.cpp"
-	"gui/src/frontend/components/statusbar/statusbar.cpp"
-	"gui/src/frontend/dialogs/confirm/confirm_dialog.cpp"
-	"gui/src/frontend/layout/tabbar/tabbar.cpp"
-	"gui/src/frontend/notification/notification.cpp"
-	"gui/src/frontend/theme/theme.cpp"
-	"gui/src/frontend/views/about/about_view.cpp"
-	"gui/src/frontend/views/backups/backup_view.cpp"
-	"gui/src/frontend/views/dashboard/dashboard_view.cpp"
-	"gui/src/frontend/views/editor/editor_view.cpp"
-	"gui/src/frontend/views/log/log_view.cpp"
-	"gui/src/frontend/views/settings/settings_view.cpp"
-	"gui/src/frontend/views/transfer/transfer_view.cpp"
-	"gui/src/main.cpp"
-	"gui/vendor/imgui/imgui_stdlib.cpp"
+	"gui/backend/app.cpp"
+	"gui/backend/app.hpp"
+	"gui/backend/font_manager/font_manager.cpp"
+	"gui/backend/font_manager/font_manager.hpp"
+	"gui/backend/image_manager/image_manager.cpp"
+	"gui/backend/image_manager/image_manager.hpp"
+	"gui/backend/ui_manager/ui_manager.cpp"
+	"gui/backend/ui_manager/ui_manager.hpp"
+	"gui/backend/window_manager/window_manager.cpp"
+	"gui/backend/window_manager/window_manager.hpp"
+	"gui/frontend/childguard.hpp"
+	"gui/frontend/components/menubar/menubar.cpp"
+	"gui/frontend/components/menubar/menubar.hpp"
+	"gui/frontend/components/sidebar/sidebar.cpp"
+	"gui/frontend/components/sidebar/sidebar.hpp"
+	"gui/frontend/components/spinner.hpp"
+	"gui/frontend/components/statusbar/statusbar.cpp"
+	"gui/frontend/components/statusbar/statusbar.hpp"
+	"gui/frontend/dialogs/confirm/confirm_dialog.cpp"
+	"gui/frontend/dialogs/confirm/confirm_dialog.hpp"
+	"gui/frontend/dialogs/dialog.hpp"
+	"gui/frontend/fonts/font_awesome.hpp"
+	"gui/frontend/fonts/font_registry.hpp"
+	"gui/frontend/fonts/inter.hpp"
+	"gui/frontend/fonts/inter_med.hpp"
+	"gui/frontend/icons.hpp"
+	"gui/frontend/images/pepe.hpp"
+	"gui/frontend/layout/none/none.cpp"
+	"gui/frontend/layout/none/none.hpp"
+	"gui/frontend/layout/ribbon/ribbon.cpp"
+	"gui/frontend/layout/ribbon/ribbon.hpp"
+	"gui/frontend/layout/shell.hpp"
+	"gui/frontend/layout/sidebar/sidebar.cpp"
+	"gui/frontend/layout/sidebar/sidebar.hpp"
+	"gui/frontend/layout/tabbar/tabbar.cpp"
+	"gui/frontend/layout/tabbar/tabbar.hpp"
+	"gui/frontend/notification/notification.cpp"
+	"gui/frontend/notification/notification.hpp"
+	"gui/frontend/theme/theme.cpp"
+	"gui/frontend/theme/theme.hpp"
+	"gui/frontend/ui.hpp"
+	"gui/frontend/views/base_view.hpp"
+	"gui/frontend/views/cache_demo/cache_demo_view.cpp"
+	"gui/frontend/views/cache_demo/cache_demo_view.hpp"
+	"gui/frontend/views/debug/debug_view.cpp"
+	"gui/frontend/views/debug/debug_view.hpp"
+	"gui/frontend/views/home/home_view.cpp"
+	"gui/frontend/views/home/home_view.hpp"
+	"gui/frontend/views/image_demo/image_demo_view.cpp"
+	"gui/frontend/views/image_demo/image_demo_view.hpp"
+	"gui/frontend/views/log/log_view.cpp"
+	"gui/frontend/views/log/log_view.hpp"
+	"gui/frontend/views/settings/settings_view.cpp"
+	"gui/frontend/views/settings/settings_view.hpp"
+	"gui/main.cpp"
+	"gui/pch.hpp"
+	"vendor/imgui/imgui_stdlib.cpp"
 )
 
 if(WIN32) # windows
@@ -218,8 +215,8 @@ target_compile_features(savemanager PRIVATE
 )
 
 target_include_directories(savemanager PRIVATE
-	"gui/src"
-	"gui/vendor/imgui"
+	gui
+	"vendor/imgui"
 )
 
 target_link_libraries(savemanager PRIVATE
@@ -233,11 +230,12 @@ target_link_libraries(savemanager PRIVATE
 if(WIN32) # windows
 	target_link_libraries(savemanager PRIVATE
 		shell32
+		Dwmapi
 	)
 endif()
 
 target_precompile_headers(savemanager PRIVATE
-	"gui/src/pch.hpp"
+	"gui/pch.hpp"
 )
 
 get_directory_property(CMKR_VS_STARTUP_PROJECT DIRECTORY ${PROJECT_SOURCE_DIR} DEFINITION VS_STARTUP_PROJECT)
