@@ -30,6 +30,49 @@ namespace utils { // All functions in this namespace should work across Windows,
         return std::string( usrname );
     }
 
+    inline std::string_view trim( std::string_view l ) {
+        auto b = l.find_first_not_of( " \t\r" );
+        if ( b == std::string_view::npos ) return { };
+        auto e = l.find_last_not_of( " \t\r" );
+        return l.substr( b, e - b + 1 );
+    }
+
+    // Source - https://stackoverflow.com/a/5253245
+    // Posted by Blastfurnace, modified by community. See post 'Timeline' for change history
+    // Retrieved 2026-02-03, License - CC BY-SA 2.5
+    inline std::string space2underscore( std::string text ) {
+        std::replace( text.begin( ), text.end( ), ' ', '_' );
+        return text;
+    }
+
+    inline std::string sanitize_filename( std::string text ) {
+        const std::string invalid = "<>:\"/\\|?*";
+        std::replace_if(
+            text.begin( ), text.end( ), [&]( char c ) { return invalid.find( c ) != std::string::npos; }, '_' );
+        return text;
+    }
+
+    // i hate windows and special characters
+    inline fs::path utf8_to_path( const std::string& utf8 ) {
+        return fs::path(
+            reinterpret_cast<const char8_t*>( utf8.data( ) ),
+            reinterpret_cast<const char8_t*>( utf8.data( ) + utf8.size( ) ) );
+    }
+
+    inline std::string path_to_utf8( const fs::path& p ) {
+        auto u8 = p.u8string( );
+        return std::string( reinterpret_cast<const char*>( u8.data( ) ), u8.size( ) );
+    }
+
+    inline std::string path_to_utf8_generic( const fs::path& p ) {
+        auto u8 = p.generic_u8string( );
+        return std::string( reinterpret_cast<const char*>( u8.data( ) ), u8.size( ) );
+    }
+
+    inline fs::path sanitize_filename_path( const std::string& text ) {
+        return utf8_to_path( sanitize_filename( text ) );
+    }
+
     inline void open_in_file_manager( const char* path ) {
 #ifdef __linux__
         pid_t pid = fork( );
