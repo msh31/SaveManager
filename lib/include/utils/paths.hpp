@@ -88,6 +88,7 @@ namespace paths {
     inline fs::path blacklist( ) { return config_dir( ) / "game_blacklist.json"; }
 
     inline fs::path demo_disk_cache_file( ) { return cache_dir( ) / "demo_cache.json"; };
+    inline fs::path unreal_name_cache( ) { return cache_dir( ) / "unreal_names.json"; }
 
 // le games
 #if defined( __linux__ )

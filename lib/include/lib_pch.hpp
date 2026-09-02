@@ -6,20 +6,27 @@
     #include <algorithm>
     #include <atomic>
     #include <chrono>
+    #include <cstring>
     #include <deque>
     #include <expected>
     #include <filesystem>
     #include <fstream>
     #include <functional>
     #include <future>
+    #include <map>
     #include <memory>
+    #include <optional>
     #include <mutex>
     #include <print>
+    #include <ranges>
     #include <regex>
+    #include <set>
+    #include <shared_mutex>
     #include <stdexcept>
     #include <string>
     #include <string_view>
     #include <thread>
+    #include <unordered_map>
     #include <unordered_set>
     #include <vector>
 

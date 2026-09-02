@@ -1,0 +1,28 @@
+#pragma once
+#include <utils/paths.hpp>
+
+struct SteamManifest {
+        uint32_t appid;
+        std::string name;
+        std::string install_dir;
+        fs::path library_dir;
+};
+
+namespace SteamHelper {
+    std::vector<std::string> get_platform_steam_paths( );
+    std::optional<fs::path> get_steam_location( );
+    std::vector<fs::path> get_library_folders( );
+
+    std::optional<std::string> parse_steam_userid( );
+    std::optional<SteamManifest> parse_app_manifest( const fs::path& acf_path );
+} // namespace SteamHelper
+
+struct SteamManifestCache {
+    public:
+        bool init( );
+        const std::unordered_map<uint32_t, SteamManifest>& get_app_manifests( ) const;
+        std::optional<SteamManifest> find_by_install_subfolder( std::string_view folder_name ) const;
+
+    private:
+        std::unordered_map<uint32_t, SteamManifest> m_cache = { };
+};

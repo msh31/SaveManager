@@ -1,6 +1,7 @@
 #pragma once
 #include <logger.hpp>
 #include <SHA256.h>
+#include <detection/game.hpp> //1.
 
 #ifdef __APPLE__
     #include <ctime>
@@ -16,6 +17,12 @@
 #ifdef __APPLE__
 extern char** environ;
 #endif
+
+/*
+    TODO LIST
+
+    1. move to either a different namespace or to detection utils entirely since it is detection specific
+*/
 
 namespace utils { // All functions in this namespace should work across Windows, Linux and macOS
     inline std::string get_username( ) {
@@ -73,6 +80,27 @@ namespace utils { // All functions in this namespace should work across Windows,
         return utf8_to_path( sanitize_filename( text ) );
     }
 
+    //1.
+    inline GameKey get_game_identity_key( const Game& game ) {
+        if ( !game.appid.empty( ) && game.appid != "N/A" ) return { GameKeyKind::STEAM_APPID, game.appid };
+
+        // ubisoft
+        if ( game.game_id.has_value( ) ) return { GameKeyKind::UBISOFT_ID, *game.game_id };
+
+        // minecraft launchers
+        if ( game.type == PlatformType::MINECRAFT ) return { GameKeyKind::MINECRAFT, game.game_name };
+
+        if ( !game.game_name.empty( ) ) return { GameKeyKind::NAME, game.game_name };
+
+        if ( !game.save_paths.empty( ) ) {
+            SPDLOG_INFO( "save path hit: {}", game.game_name );
+            return { GameKeyKind::PATH, weakly_canonical( game.save_paths[0] ).string( ) };
+        }
+
+        SPDLOG_ERROR( "Failed to get game identify key" );
+        return { GameKeyKind::INVALID }; // caller must check this
+    }
+
     inline void open_in_file_manager( const char* path ) {
 #ifdef __linux__
         pid_t pid = fork( );
@@ -106,6 +134,21 @@ namespace utils { // All functions in this namespace should work across Windows,
         int status = posix_spawn( &pid, "/usr/bin/open", nullptr, nullptr, (char* const*)argv, environ );
         if ( status == 0 ) {
             waitpid( pid, &status, 0 );
+        }
+#endif
+    }
+
+    // apple clang doesnt support c++23 views as of apr 2026
+    template <typename Range, typename Fn> void enumerate( Range& range, Fn fn ) {
+#ifdef __APPLE__
+        int i = 0;
+        for ( auto& r : range ) {
+            fn( i, r );
+            ++i;
+        }
+#else
+        for ( auto [i, element] : std::views::enumerate( range ) ) {
+            fn( i, element );
         }
 #endif
     }
