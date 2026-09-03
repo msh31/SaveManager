@@ -2,6 +2,12 @@
 #include <frontend/notification/notification.hpp>
 #include <utils/utils.hpp>
 
+/*
+    TODO LIST
+
+    1. replace dummy data with real data
+*/
+
 void CHomeView::on_enter( ) {
     
 }
@@ -44,9 +50,16 @@ void CHomeView::render( ) {
     }
     ImGui::SameLine( );
     if ( ImGui::Button( "Create Ruleset" ) ) {
+        std::error_code ec;
+        auto ruleset_demo_path = fs::temp_directory_path( ec ) / "SaveManager-ruleset-demo";
+        if ( ec || ( !fs::create_directories( ruleset_demo_path, ec ) && ec ) ) {
+            Notify::show_notification( "Ignore ruleset", "Failed to create the ruleset demo directory!", 2000 );
+            return;
+        }
+
         Game game;
         game.game_name = "SaveManager";
-        game.save_paths = { fs::temp_directory_path( ) };
+        game.save_paths = { std::move( ruleset_demo_path ) };
         m_ruleset_modal.open( game, []( const Game& g ) {} );
     }
 }
