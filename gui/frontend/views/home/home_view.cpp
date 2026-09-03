@@ -10,6 +10,7 @@ void CHomeView::render( ) {
     m_tags_modal.render();
     m_conflicts_modal.render( );
     m_backup_preview_modal.render( );
+    m_ruleset_modal.render( );
 
     // 1. 
     if ( ImGui::Button( "Tags" ) ) {
@@ -40,6 +41,13 @@ void CHomeView::render( ) {
     if ( ImGui::Button( "Preview" ) ) {
         std::vector<std::string> list = { "test.zip", "more_test.zip", "testy_test.zip", "cool_test.zip", "even_cooler_test.zip" };
         m_backup_preview_modal.open( list );
+    }
+    ImGui::SameLine( );
+    if ( ImGui::Button( "Create Ruleset" ) ) {
+        Game game;
+        game.game_name = "SaveManager";
+        game.save_paths = { fs::temp_directory_path( ) };
+        m_ruleset_modal.open( game, []( const Game& g ) {} );
     }
 }
 
