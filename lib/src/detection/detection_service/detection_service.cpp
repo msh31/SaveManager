@@ -2,8 +2,45 @@
 #include <detection/detection_service.hpp>
 #include <logger.hpp>
 
-CDetectionService::CDetectionService( const Blacklist& blacklist ) : m_blacklist( blacklist ) {}
-CDetectionService::~CDetectionService( ) = default;
+CDetectionService& CDetectionService::get( ) {
+    static CDetectionService instance;
+    return instance;
+}
+
+void CDetectionService::ensure_started( ) {
+    if ( m_generation.load( ) == 0 && !is_refreshing( ) ) refresh( );
+}
+
+bool CDetectionService::is_refreshing( ) const {
+    return m_future.valid( ) && m_future.wait_for( std::chrono::seconds( 0 ) ) != std::future_status::ready;
+}
+
+std::vector<Game> CDetectionService::snapshot( ) const {
+    std::lock_guard lock( m_mutex );
+    return m_result;
+}
+
+void CDetectionService::init( ) {
+    if ( !m_translations.init( ) ) {
+        SPDLOG_WARN( "Failed to initialize translations! Expect missing games!" );
+    }
+    if ( !m_manifest_cache.init( ) ) {
+        SPDLOG_WARN( "Failed to initialize Steam manifest cache! Expect missing Unreal game names!" );
+    }
+    if ( !m_name_cache.init( ) ) {
+        SPDLOG_WARN( "Failed to load cached Unreal game names!" );
+    }
+    if ( !m_blacklist.init( ) ) {
+        SPDLOG_WARN( "Failed to initialize blacklist!" );
+    }
+
+    m_pcgw_entries = CPCGamingWikiDetector::load_manifest( );
+    if ( m_pcgw_entries.empty( ) ) {
+        SPDLOG_WARN( "Failed to load the manifest, expect missing games!" );
+    }
+    m_detectors = Detection::build_detectors( m_translations, m_manifest_cache, m_name_cache, m_pcgw_entries );
+}
+
 
 void CDetectionService::refresh( ) {
     if ( is_refreshing( ) ) return;
@@ -108,35 +145,4 @@ void CDetectionService::refresh( ) {
             SPDLOG_ERROR( "No savegames found!" );
         }
     } );
-}
-
-void CDetectionService::ensure_started( ) {
-    if ( m_generation.load( ) == 0 && !is_refreshing( ) ) refresh( );
-}
-
-bool CDetectionService::is_refreshing( ) const {
-    return m_future.valid( ) && m_future.wait_for( std::chrono::seconds( 0 ) ) != std::future_status::ready;
-}
-
-std::vector<Game> CDetectionService::snapshot( ) const {
-    std::lock_guard lock( m_mutex );
-    return m_result;
-}
-
-void CDetectionService::init( ) {
-    if ( !m_translations.init( ) ) {
-        SPDLOG_WARN( "Failed to initialize translations! Expect missing games!" );
-    }
-    if ( !m_manifest_cache.init( ) ) {
-        SPDLOG_WARN( "Failed to initialize Steam manifest cache! Expect missing Unreal game names!" );
-    }
-    if ( !m_name_cache.init( ) ) {
-        SPDLOG_WARN( "Failed to load cached Unreal game names!" );
-    }
-
-    m_pcgw_entries = CPCGamingWikiDetector::load_manifest( );
-    if ( m_pcgw_entries.empty( ) ) {
-        SPDLOG_WARN( "Failed to load the manifest, expect missing games!" );
-    }
-    m_detectors = Detection::build_detectors( m_translations, m_manifest_cache, m_name_cache, m_pcgw_entries );
 }

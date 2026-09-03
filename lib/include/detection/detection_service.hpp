@@ -1,11 +1,14 @@
 #pragma once
 #include <detection/detection.hpp>
+#include <utils/blacklist/blacklist.hpp>
 
 // single owner of the detection result
 class CDetectionService {
     public:
-        CDetectionService( const Blacklist& blacklist );
-        ~CDetectionService( );
+        CDetectionService( ) = default;
+        ~CDetectionService( ) = default;
+
+        static CDetectionService& get( );
 
         void init( );
         void refresh( );
@@ -28,8 +31,14 @@ class CDetectionService {
             return prog;
         }
 
+        // delete copy & move constructors since there must only be 1 instance
+        CDetectionService( const CDetectionService& ) = delete;
+        CDetectionService& operator=( const CDetectionService& ) = delete;
+        CDetectionService( CDetectionService&& ) = delete;
+        CDetectionService& operator=( CDetectionService&& ) = delete;
+
     private:
-        const Blacklist& m_blacklist;
+        Blacklist m_blacklist;
         Translations m_translations;
         SteamManifestCache m_manifest_cache;
         UnrealNameCache m_name_cache;

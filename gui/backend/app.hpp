@@ -4,7 +4,7 @@
 #include <async_queue/async_queue.hpp>
 
 #include <config/config.hpp>
-#include <utils/paths.hpp>
+#include <detection/detection_service.hpp>
 
 #include <frontend/layout/tabbar/tabbar.hpp>
 
@@ -23,11 +23,13 @@ class CApp {
 
         CConfig& m_config;
         CAsyncQueue m_queue;
-        std::optional<TaskHandle> m_task_handle;
+        std::optional<TaskHandle> m_update_handle;
         CDebugView* m_debug_view = nullptr;
 
         CUIManager m_ui_manager{ std::make_unique<CTabbarShell>( ) };
 
         ImageData m_background_image = { };
         std::string m_loaded_bg_name = { };
+
+        std::optional<TaskHandle> m_detection_handle;
 };

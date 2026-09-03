@@ -1,7 +1,7 @@
 #pragma once
 
 namespace {
-    constexpr const char* update_url = "https://api.github.com/repos/msh31/desktop-app-template/releases/latest";
+    constexpr const char* update_url = "https://api.github.com/repos/msh31/SaveManager/releases/latest";
 }
 
 namespace Network {

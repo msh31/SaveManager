@@ -18,16 +18,30 @@
 #include <frontend/notification/notification.hpp>
 
 void CApp::init( ) {
-    m_task_handle = m_queue.run<bool>(
+    m_update_handle = m_queue.run<bool>(
         []( TaskControl& control ) {
             if ( control.cancel_requested.load( ) ) throw TaskCancelled{ };
             return Network::is_update_available( );
         },
         [this]( bool nva ) {
             if ( nva ) Notify::show_notification( "Update Check", "A new update is available to download!", 1500 );
-            m_task_handle = std::nullopt;
+            m_update_handle = std::nullopt;
         },
         []( const std::exception& ex ) { Notify::show_notification( "Error", ex.what( ), 5000 ); 
+    } );
+
+    //init - cant be cnaceled
+    m_detection_handle = m_queue.run<bool>(
+        [this]( TaskControl& control ) {
+            // kinda odd
+            CDetectionService::get( ).init( );
+            return true;
+        },
+        [this]( bool res ) {
+            CDetectionService::get( ).ensure_started( );
+            m_detection_handle = std::nullopt;
+        },
+        []( const std::exception& ex ) { Notify::show_notification( "Detection init error", ex.what( ), 5000 ); 
     } );
 
     refresh_background( );

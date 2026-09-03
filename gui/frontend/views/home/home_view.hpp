@@ -6,6 +6,8 @@
 #include <frontend/components/modals/backup_preview/backup_preview.hpp>
 #include <frontend/components/modals/create_ruleset/create_ruleset.hpp>
 
+#include <detection/detection_service.hpp>
+
 class CHomeView : public CBaseView {
     public:
         ~CHomeView( ) override;
