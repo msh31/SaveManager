@@ -31,13 +31,13 @@ void CApp::init( ) {
     } );
 
     //init - cant be cnaceled
-    m_detection_handle = m_queue.run<bool>(
+    m_detection_handle = m_queue.run<std::monostate>(
         [this]( TaskControl& control ) {
             // kinda odd
             CDetectionService::get( ).init( );
-            return true;
+            return std::monostate{ };
         },
-        [this]( bool res ) {
+        [this]( std::monostate ) {
             CDetectionService::get( ).ensure_started( );
             m_detection_handle = std::nullopt;
         },
