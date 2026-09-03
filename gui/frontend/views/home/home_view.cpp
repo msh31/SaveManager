@@ -9,6 +9,7 @@ void CHomeView::on_enter( ) {
 void CHomeView::render( ) {
     m_tags_modal.render();
     m_conflicts_modal.render( );
+    m_backup_preview_modal.render( );
 
     // 1. 
     if ( ImGui::Button( "Tags" ) ) {
@@ -21,6 +22,7 @@ void CHomeView::render( ) {
             Notify::show_notification( "Tags", "Added tags!", 2000 );
         } );
     }
+    ImGui::SameLine( );
     if ( ImGui::Button( "Conflicts" ) ) {
         Game game;
         game.game_name = "SaveManager";
@@ -33,6 +35,11 @@ void CHomeView::render( ) {
         }
              
         m_conflicts_modal.open( game, conflicts, []( const Game& g ) {} );
+    }
+    ImGui::SameLine( );
+    if ( ImGui::Button( "Preview" ) ) {
+        std::vector<std::string> list = { "test.zip", "more_test.zip", "testy_test.zip", "cool_test.zip", "even_cooler_test.zip" };
+        m_backup_preview_modal.open( list );
     }
 }
 

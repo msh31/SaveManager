@@ -3,6 +3,7 @@
 
 #include <frontend/components/modals/tags/tags_modal.hpp>
 #include <frontend/components/modals/restore_conflicts/restore_conflicts.hpp>
+#include <frontend/components/modals/backup_preview/backup_preview.hpp>
 
 /*
     TODO LIST
@@ -21,4 +22,5 @@ class CHomeView : public CBaseView {
         // 1.
         CTagsModal m_tags_modal; 
         CConflictsModal m_conflicts_modal;
+        CBackupPreviewModal m_backup_preview_modal;
 };
