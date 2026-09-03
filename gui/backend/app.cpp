@@ -2,6 +2,7 @@
 #include <branding.hpp>
 #include <logger.hpp>
 #include <utils/network.hpp>
+#include <detection/detection_service.hpp>
 
 #include <frontend/icons.hpp>
 #include <frontend/theme/theme.hpp>

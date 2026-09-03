@@ -4,7 +4,6 @@
 #include <async_queue/async_queue.hpp>
 
 #include <config/config.hpp>
-#include <detection/detection_service.hpp>
 
 #include <frontend/layout/tabbar/tabbar.hpp>
 
