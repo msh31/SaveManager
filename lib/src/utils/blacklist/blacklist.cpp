@@ -1,4 +1,4 @@
-#include "utils/blacklist/blacklist.hpp"
+#include "blacklist.hpp"
 #include "utils/paths.hpp"
 #include "utils/utils.hpp"
 
