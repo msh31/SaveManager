@@ -4,7 +4,7 @@
 
 #include <frontend/childguard.hpp>
 
-#include <frontend/dialogs/confirm/confirm_dialog.hpp>
+#include <frontend/components/dialogs/confirm/confirm_dialog.hpp>
 #include <frontend/notification/notification.hpp>
 #include <frontend/theme/theme.hpp>
 

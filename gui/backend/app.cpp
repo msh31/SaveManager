@@ -14,7 +14,7 @@
 #include <frontend/views/log/log_view.hpp>
 #include <frontend/views/settings/settings_view.hpp>
 
-#include <frontend/dialogs/confirm/confirm_dialog.hpp>
+#include <frontend/components/dialogs/confirm/confirm_dialog.hpp>
 #include <frontend/notification/notification.hpp>
 
 void CApp::init( ) {
