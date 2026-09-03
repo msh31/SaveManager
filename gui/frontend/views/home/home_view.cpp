@@ -8,6 +8,7 @@ void CHomeView::on_enter( ) {
 
 void CHomeView::render( ) {
     m_tags_modal.render();
+    m_conflicts_modal.render( );
 
     // 1. 
     if ( ImGui::Button( "Tags" ) ) {
@@ -19,6 +20,19 @@ void CHomeView::render( ) {
         m_tags_modal.open( game, backup, tags, []( const std::string& filename, const std::vector<std::string>& tags ) {
             Notify::show_notification( "Tags", "Added tags!", 2000 );
         } );
+    }
+    if ( ImGui::Button( "Conflicts" ) ) {
+        Game game;
+        game.game_name = "SaveManager";
+        std::vector<std::pair<fs::path, fs::path>> conflicts = { };
+        
+        for ( int i = 0; i < 9; i++ ) {
+            std::string pstr = std::format( "{}.zip", i );
+            fs::path p = fs::temp_directory_path( ) / pstr;
+            conflicts.push_back( { p, p } );
+        }
+             
+        m_conflicts_modal.open( game, conflicts, []( const Game& g ) {} );
     }
 }
 

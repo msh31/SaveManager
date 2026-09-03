@@ -2,6 +2,7 @@
 #include <frontend/views/base_view.hpp>
 
 #include <frontend/components/modals/tags/tags_modal.hpp>
+#include <frontend/components/modals/restore_conflicts/restore_conflicts.hpp>
 
 /*
     TODO LIST
@@ -17,5 +18,7 @@ class CHomeView : public CBaseView {
         void on_exit( ) override;
 
     private:
-        CTagsModal m_tags_modal; //1.
+        // 1.
+        CTagsModal m_tags_modal; 
+        CConflictsModal m_conflicts_modal;
 };
