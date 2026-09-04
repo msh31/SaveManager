@@ -134,6 +134,24 @@ bool Backup::backup_game_files( const Game& game, std::vector<std::pair<fs::path
             failed_to_add = true;
         }
     }
+
+    if ( failed_to_add ) {
+        std::error_code ec;
+        fs::remove( zip_name, ec );
+        if ( ec ) {
+            SPDLOG_ERROR( "[Backup] failed to remove temporary zip after add failure, manual cleanup is advised!" );
+        }
+        return false;
+    }
+
+    std::error_code ec;
+    fs::rename( zip_name, final_path, ec );
+    if ( ec ) {
+        SPDLOG_ERROR( "[Backup] rename failed: {}", ec.message( ) );
+        return false;
+    }
+
+    return true;
 }
 
 bool Backup::restore_backup(
