@@ -19,7 +19,6 @@ class CApp {
 
         CAsyncQueue m_queue;
         std::optional<TaskHandle> m_update_handle;
-        CDebugView* m_debug_view = nullptr;
 
         CUIManager m_ui_manager{ std::make_unique<CTabbarShell>( ) };
 

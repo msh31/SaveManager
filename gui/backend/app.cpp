@@ -9,10 +9,7 @@
 #include <frontend/theme/theme.hpp>
 #include <frontend/ui.hpp>
 
-#include <frontend/views/cache_demo/cache_demo_view.hpp>
-#include <frontend/views/debug/debug_view.hpp>
 #include <frontend/views/home/home_view.hpp>
-#include <frontend/views/image_demo/image_demo_view.hpp>
 #include <frontend/views/log/log_view.hpp>
 #include <frontend/views/settings/settings_view.hpp>
 
@@ -50,9 +47,6 @@ void CApp::init( ) {
 
     SPDLOG_INFO( "Setting up application views.." );
     m_ui_manager.add_view( { std::make_unique<CHomeView>( ), ICON_HOME, "Home" } );
-    m_debug_view = static_cast<CDebugView*>( m_ui_manager.add_view( { std::make_unique<CDebugView>( ), ICON_BUG, "Debug" } ));
-    m_ui_manager.add_view( { std::make_unique<CCacheDemoView>( ), ICON_CACHE, "Cache Demo" } );
-    m_ui_manager.add_view( { std::make_unique<CImageDemoView>( ), ICON_IMAGE, "Image Demo" } );
     m_ui_manager.add_view( { std::make_unique<CLogView>( ), ICON_SCROLL, "Logs" } );
     m_ui_manager.set_settings_view( { std::make_unique<CSettingsView>( ), ICON_GEAR, "Settings" } );
 }
@@ -102,5 +96,5 @@ void CApp::render( ) {
 }
 
 void CApp::on_files_dropped(const std::vector<std::string>& files) {
-    m_debug_view->set_dropped_paths(files);
+    //m_debug_view->set_dropped_paths(files);
 }
