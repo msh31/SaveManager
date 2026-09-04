@@ -21,3 +21,4 @@ static constexpr const char* ICON_FILTER = "\xef\x82\xb0";
 static constexpr const char* ICON_TRANSFER = "\xef\x83\xae";
 
 static constexpr const char* ICON_EDIT = "\xef\x81\x84";
+static constexpr const char* ICON_INFO = "\xef\x81\x9a";
