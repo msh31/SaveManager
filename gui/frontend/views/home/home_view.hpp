@@ -7,7 +7,13 @@
 #include <frontend/components/modals/create_ruleset/create_ruleset.hpp>
 #include <frontend/components/modals/backup_restore/backup_restore.hpp>
 
-#include <detection/detection_service.hpp>
+#include <async_queue/async_queue.hpp>
+
+/*
+    TODO LIST
+
+    1. move this out once its required ( when porting the backup view )
+*/
 
 class CHomeView : public CBaseView {
     public:
@@ -91,4 +97,9 @@ class CHomeView : public CBaseView {
         std::unordered_map<std::string, bool> m_backups_expanded;
         std::unordered_map<std::string, bool> m_saves_expanded;
 
+        void invalidate_cache( const std::vector<Game>& games, std::function<void( )> on_done );
+        CAsyncQueue m_queue;
+
+        //1.
+        static std::unordered_map<std::string, TagCache> load_tag_cache( const std::string& game_name );
 };

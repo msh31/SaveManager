@@ -1,26 +1,26 @@
 #include "home_view.hpp"
-#include <utils/utils.hpp>
-#include <logger.hpp>
 #include <config/config.hpp>
+#include <logger.hpp>
+#include <utils/utils.hpp>
+#include <async_queue/async_queue.hpp>
 #include <backup/backup.hpp>
 #include <tags/tags.hpp>
+#include <detection/detection_service.hpp>
+
+#include <utils/blacklist/blacklist.hpp>
 
 #include <frontend/components/dialogs/confirm/confirm_dialog.hpp>
 #include <frontend/notification/notification.hpp>
 #include <frontend/components/card.hpp>
 #include <frontend/icons.hpp>
 
-/*
-    TODO LIST
-    
-    1. improve this mechanism because it can go to the wrong path in some cases, to be confirmed
-*/
-
 void CHomeView::on_enter( ) {
     
 }
 
 void CHomeView::render( ) {
+    m_queue.update( );
+
     if ( CDetectionService::get( ).generation( ) != m_seen_generation ) {
         m_seen_generation = CDetectionService::get( ).generation( );
         m_games_snapshot = CDetectionService::get( ).snapshot( );
@@ -267,7 +267,7 @@ void CHomeView::render_game_content(
                 SPDLOG_ERROR( "Failed to restore backup, kept undo zip!" );
                 Notify::show_notification( "Undo Last Restore", "Failed to restore backup, kept undo zip!", 2000 );
             }
-            //invalidate_cache( { game } );
+            invalidate_cache( { game }, []( ) {} );
         }
         if ( is_backing_up || is_refreshing ) ImGui::EndDisabled( );
     }
@@ -397,8 +397,9 @@ void CHomeView::render_backup_row(
             ( backup.parent_path( ) / ( backup.stem( ).string( ) + ".savemgr-copy" + bext ) ).string( );
 
         if ( fs::copy_file( backup, copy_name ) ) {
-            Notify::show_notification( "Backup Duplication", "Backup duplicated!", 2500 );
-            //invalidate_cache( { game } );
+            
+            invalidate_cache(
+                { game }, []( ) { Notify::show_notification( "Backup Duplication", "Backup duplicated!", 2500 ); } );
         } else {
             Notify::show_notification( "Backup Duplication", "Backup could not be duplicated!", 2500 );
         }
@@ -438,7 +439,7 @@ void CHomeView::render_backup_row(
             } else {
                 Notify::show_notification( "Backup Deletion", "Backup could not be deleted!", 1500 );
             }
-            //invalidate_cache( { game } );
+            invalidate_cache( { game }, []( ){ } );
         } else {
             Notify::show_notification( "Backup Deletion", "Backup could not be deleted!", 1500 );
         }
@@ -516,8 +517,7 @@ void CHomeView::render_save_row( const fs::path& save_file, const Game& game, co
             SPDLOG_ERROR( "Failed to copy: {} because: {}", utils::path_to_utf8( save_file ), ec.message( ) );
             Notify::show_notification( "Save Duplication", "Save could not be duplicated!", 2500 );
         } else {
-            Notify::show_notification( "Save Duplication", "Save duplicated!", 2500 );
-            //invalidate_cache( { game } );
+            invalidate_cache( { game }, []( ) { Notify::show_notification( "Save Duplication", "Save duplicated!", 2500 ); } );
         }
     }
     ImGui::SameLine( 0.0f, 4.0f );
@@ -526,8 +526,7 @@ void CHomeView::render_save_row( const fs::path& save_file, const Game& game, co
     if ( ImGui::Button( "Delete", btn_size ) ) {
         ConfirmDialog::show( "Are you sure?", [this, save_file, game] {
             if ( fs::remove_all( save_file ) ) {
-                Notify::show_notification( "Save Deletion", "Save deleted!", 2500 );
-                //invalidate_cache( { game } );
+                invalidate_cache( { game }, []( ) { Notify::show_notification( "Save Deletion", "Save deleted!", 2500 ); } );
             } else {
                 Notify::show_notification( "Save Deletion", "Save could not be deleted!", 2500 );
             }
@@ -546,4 +545,171 @@ void CHomeView::render_modals() {
     m_preview_modal.render( );
     m_ruleset_modal.render( );
     m_restore_modal.render( );
+}
+
+std::unordered_map<std::string, CHomeView::TagCache> CHomeView::load_tag_cache( const std::string& game_name ) {
+    std::unordered_map<std::string, TagCache> cache;
+
+    auto loaded_tags = Tags::load_tags( game_name );
+    std::string file_name = ( paths::backup_dir( ) / utils::sanitize_filename_path( game_name ) / "tags.json" ).string( );
+
+    if ( loaded_tags.empty( ) ) {
+        if ( fs::exists( file_name ) ) SPDLOG_WARN( "Failed to load tags for: {}", game_name );
+        return { };
+    }
+
+    for ( const auto& [filename, tags] : loaded_tags ) {
+        TagCache tcache;
+        tcache.tags = tags;
+        tcache.display =
+            tags | std::ranges::views::join_with( std::string_view( ", " ) ) | std::ranges::to<std::string>( );
+        cache.insert( { filename, tcache } );
+    }
+
+    return cache;
+}
+
+// TODO: move this out? this is the only user
+void CHomeView::invalidate_cache( const std::vector<Game>& games, std::function<void( )> on_done ) {
+    using InvalidateCacheResult =
+        std::pair<std::unordered_map<std::string, GameCache>, std::unordered_map<std::string, fs::file_time_type>>;
+
+    bool use_ignore = CConfig::get( ).d_settings.use_savemgr_ignore;
+    m_queue.run<InvalidateCacheResult>(
+        [games, use_ignore]( TaskControl& control ) { //control is unused
+            InvalidateCacheResult result = { };
+
+            for ( const auto& game : games ) {
+                GameCache cache;
+                cache.tags = CHomeView::load_tag_cache( game.game_name );
+
+                auto backups = Backup::get_backups( game.game_name );
+                cache.backup_count = backups.size( );
+                cache.backup_paths = backups;
+                for ( const auto& backup : cache.backup_paths ) {
+                    auto ftime = fs::last_write_time( backup );
+                    auto bsz = fs::file_size( backup );
+
+                    SaveFileInfo sfi = { bsz, ftime, false };
+                    cache.backup_info[backup] = sfi;
+                }
+
+                fs::path undo_dir = paths::backup_dir( ) / utils::sanitize_filename_path( game.game_name ) / "undo.zip";
+                if ( fs::exists( undo_dir ) ) {
+                    cache.undo_path = undo_dir;
+                    cache.has_undo = true;
+                }
+
+                for ( const auto& save_path : game.save_paths ) {
+                    try {
+                        if ( !fs::is_directory( save_path ) ) continue;
+                        if ( save_path.string( ).contains( ".savemgr-conflict-" ) ) continue;
+
+                        bool signore_exists = fs::exists( save_path / ".savemgr-ignore" );
+                        std::vector<IgnoreRule> ignore_rules = { };
+                        if ( use_ignore && signore_exists ) {
+                            ignore_rules = Blacklist::parse_ignore_file( save_path / ".savemgr-ignore" );
+                        }
+
+                        if ( game.type != PlatformType::MINECRAFT ) {
+                            for ( const auto& file : fs::recursive_directory_iterator(
+                                      save_path, fs::directory_options::skip_permission_denied ) ) {
+
+                                if ( file.path( ).filename( ) == ".savemgr-ignore" ) continue;
+
+                                if ( ignore_rules.empty( ) ) {
+                                    auto ext = save_path.extension( ).string( );
+                                    if ( game.type != PlatformType::CUSTOM && game.type != PlatformType::GENERIC ) {
+                                        if ( extension_blocklist.contains( ext ) ) continue;
+                                    }
+                                    // images, but not svg because old COD games use .svg like BO and Ghosts
+                                    if ( g_extension_blocklist.contains( ext ) ) continue;
+                                } else {
+                                    if ( Blacklist::is_ignored(
+                                             fs::relative( file.path( ), save_path ), ignore_rules ) ) {
+                                        continue;
+                                    }
+                                }
+
+                                bool is_dir = fs::is_directory( file );
+                                if ( is_dir ) continue;
+
+                                uintmax_t fsz = file.file_size( );
+                                if ( fsz == 0 ) continue;
+
+                                auto ftime = file.last_write_time( );
+
+                                cache.save_files.push_back( file.path( ) );
+
+                                SaveFileInfo sfi = { fsz, ftime, is_dir };
+                                cache.file_info[file.path( )] = sfi;
+                            }
+                        } else {
+                            auto ftime = fs::last_write_time( save_path );
+                            SaveFileInfo sfi = { 0, ftime, true };
+                            cache.save_files.push_back( save_path );
+                            cache.file_info[save_path] = sfi;
+                        }
+
+                        auto key = utils::get_game_identity_key( game ).value;
+                        if ( game.type == PlatformType::MINECRAFT ) {
+                            if ( result.first.contains( key ) ) {
+                                auto ftime = fs::last_write_time( save_path );
+                                SaveFileInfo sfi = { 0, ftime, true };
+                                result.first[key].save_files.push_back( save_path );
+                                result.first[key].file_info[save_path] = sfi;
+                            } else {
+                                result.first[key] = cache;
+                            }
+                        } else {
+                            result.first[key] = cache;
+                        }
+
+                        try {
+                            for ( const auto& f : fs::directory_iterator( save_path ) ) {
+                                if ( f.path( ).string( ).find( ".savemgr-conflict-" ) != std::string::npos ) {
+                                    result.first[key].has_conflicts = true;
+                                    break;
+                                }
+                            }
+                        } catch ( std::exception& ex ) {
+                            SPDLOG_ERROR( "conflict iteration error: {}", ex.what( ) );
+                        }
+                    } catch ( const fs::filesystem_error& ex ) {
+                        SPDLOG_ERROR( "[Cache] A filesystem occured in {}: {}", save_path.string( ), ex.what( ) );
+                    }
+                }
+            }
+
+            for ( const auto& entry : games ) {
+                fs::file_time_type current_max;
+                for ( const auto& save_path : entry.save_paths ) {
+                    if ( !fs::is_directory( save_path ) ) continue;
+                    try {
+                        for ( const auto& file :
+                              fs::directory_iterator( save_path, fs::directory_options::skip_permission_denied ) ) {
+                            if ( !fs::exists( file ) ) continue;
+                            auto t = fs::last_write_time( file );
+                            if ( fs::is_regular_file( file ) )
+                                if ( t > current_max ) current_max = t;
+                        }
+                    } catch ( const fs::filesystem_error& ex ) {
+                        SPDLOG_ERROR( "[Cache] A filesystem occured in {}: {}", save_path.string( ), ex.what( ) );
+                    }
+                }
+                result.second.insert( { entry.game_name, current_max } );
+            }
+            return result;
+        },
+        [this, on_done]( InvalidateCacheResult result ) {
+            for ( auto& [key, cache] : result.first )
+                m_game_cache[key] = std::move( cache );
+            for ( auto& [name, t] : result.second )
+                m_game_last_modified[name] = t;
+            if ( on_done ) on_done( );
+        },
+        []( const std::exception& ex ) {
+            SPDLOG_ERROR( "[Cache] Failed to invalidate cache: {}", ex.what( ) );
+            Notify::show_notification( "Cache Invalidation Error", ex.what( ), 3000 );
+        } );
 }
