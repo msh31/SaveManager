@@ -97,7 +97,7 @@ class CHomeView : public CBaseView {
         std::unordered_map<std::string, bool> m_backups_expanded;
         std::unordered_map<std::string, bool> m_saves_expanded;
 
-        void on_result_changed( );
+        void refresh_game_state( );
         void invalidate_cache( const std::vector<Game>& games, std::function<void( )> on_done );
         CAsyncQueue m_queue;
 

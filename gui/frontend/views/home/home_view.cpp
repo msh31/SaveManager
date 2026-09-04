@@ -24,7 +24,7 @@ void CHomeView::render( ) {
     if ( CDetectionService::get( ).generation( ) != m_seen_generation ) {
         m_seen_generation = CDetectionService::get( ).generation( );
         m_games_snapshot = CDetectionService::get( ).snapshot( );
-        on_result_changed( );
+        refresh_game_state( );
     }
 
     if ( ImGui::BeginTabBar( "##dashboard_tabs" ) ) {
@@ -588,7 +588,7 @@ std::vector<std::vector<int>> CHomeView::get_grouped( const std::vector<Game>& g
     return groups;
 }
 
-void CHomeView::on_result_changed( ) {
+void CHomeView::refresh_game_state( ) {
     m_grouped_games = get_grouped( m_games_snapshot );
     m_game_cache.clear( );
 
