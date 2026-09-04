@@ -240,4 +240,23 @@ namespace utils { // All functions in this namespace should work across Windows,
         std::array<uint8_t, 32> digest = sha.digest( );
         return SHA256::toString( digest );
     }
+
+    static std::vector<std::vector<int>> get_grouped(const std::vector<Game>& games) {
+        std::map<GameKey, size_t> key_to_group = { };
+        std::vector<std::vector<int>> groups = { };
+
+        enumerate( games, [&]( int i, auto& game ) {
+            auto key = get_game_identity_key( game );
+
+            auto it = key_to_group.find( key );
+            if ( it != key_to_group.end( ) ) {
+                groups[it->second].push_back( i );
+            } else {
+                key_to_group[key] = groups.size( );
+                groups.push_back( { static_cast<int>( i ) } );
+            }
+        } );
+
+        return groups;
+    }
 } // namespace utils

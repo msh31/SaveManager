@@ -102,5 +102,4 @@ class CHomeView : public CBaseView {
 
         //1.
         static std::unordered_map<std::string, TagCache> load_tag_cache( const std::string& game_name );
-        static std::vector<std::vector<int>> get_grouped( const std::vector<Game>& games );
 };

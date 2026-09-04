@@ -579,27 +579,8 @@ std::unordered_map<std::string, CHomeView::TagCache> CHomeView::load_tag_cache( 
     return cache;
 }
 
-std::vector<std::vector<int>> CHomeView::get_grouped( const std::vector<Game>& games ) {
-    std::map<GameKey, size_t> key_to_group;
-    std::vector<std::vector<int>> groups;
-
-    utils::enumerate( games, [&]( int i, auto& game ) {
-        auto key = utils::get_game_identity_key( game );
-
-        auto it = key_to_group.find( key );
-        if ( it != key_to_group.end( ) ) {
-            groups[it->second].push_back( i );
-        } else {
-            key_to_group[key] = groups.size( );
-            groups.push_back( { static_cast<int>( i ) } );
-        }
-    } );
-
-    return groups;
-}
-
 void CHomeView::refresh_game_state( ) {
-    m_grouped_games = get_grouped( m_games_snapshot );
+    m_grouped_games = utils::get_grouped( m_games_snapshot );
     m_game_cache.clear( );
 
     std::set<std::string> labels = { };
