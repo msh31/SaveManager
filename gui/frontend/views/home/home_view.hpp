@@ -1,5 +1,6 @@
 #pragma once
 #include <frontend/views/base_view.hpp>
+#include <frontend/views/backups/backup_view.hpp>
 
 #include <frontend/components/modals/tags/tags_modal.hpp>
 #include <frontend/components/modals/restore_conflicts/restore_conflicts.hpp>
@@ -8,7 +9,6 @@
 #include <frontend/components/modals/backup_restore/backup_restore.hpp>
 
 #include <async_queue/async_queue.hpp>
-#include <backup/backup.hpp>
 #include <tags/tags.hpp>
 
 /*
@@ -25,6 +25,9 @@ class CHomeView : public CBaseView {
         void on_exit( ) override;
 
     private:
+        CBackupsView m_backups_view;
+        bool m_backups_tab_was_active = false;
+
         struct SaveFileInfo {
                 uintmax_t size;
                 fs::file_time_type mtime;

@@ -219,6 +219,8 @@ set(savemanager_SOURCES
 	"gui/frontend/ui.hpp"
 	"gui/frontend/views/about/about_view.cpp"
 	"gui/frontend/views/about/about_view.hpp"
+	"gui/frontend/views/backups/backup_view.cpp"
+	"gui/frontend/views/backups/backup_view.hpp"
 	"gui/frontend/views/base_view.hpp"
 	"gui/frontend/views/editor/editor_view.cpp"
 	"gui/frontend/views/editor/editor_view.hpp"

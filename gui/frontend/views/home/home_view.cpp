@@ -2,6 +2,7 @@
 #include <config/config.hpp>
 #include <utils/utils.hpp>
 #include <async_queue/async_queue.hpp>
+#include <backup/backup.hpp>
 #include <detection/detection_service.hpp>
 
 #include <utils/blacklist/blacklist.hpp>
@@ -44,13 +45,14 @@ void CHomeView::render( ) {
             ImGui::EndTabItem( );
         }
 
-        //bool backups_open = ImGui::BeginTabItem( "Backups" );
-        //if ( !m_backups_tab_was_active && backups_open ) m_backups_view.on_enter( m_games_snapshot );
-        //m_backups_tab_was_active = backups_open;
-        //if ( backups_open ) {
-        //    m_backups_view.render( m_games_snapshot );
-        //    ImGui::EndTabItem( );
-        //}
+        bool backups_open = ImGui::BeginTabItem( "Backups" );
+        if ( !m_backups_tab_was_active && backups_open ) m_backups_view.on_enter( m_games_snapshot );
+        m_backups_tab_was_active = backups_open;
+        if ( backups_open ) {
+            m_backups_view.render( m_games_snapshot );
+            ImGui::EndTabItem( );
+        }
+        if (m_backups_tab_was_active && !backups_open) m_backups_view.on_exit();
 
         ImGui::EndTabBar( );
     }
