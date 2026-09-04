@@ -29,11 +29,6 @@ class CHomeView : public CBaseView {
                 bool is_dir;
         };
 
-        struct TagCache {
-                std::vector<std::string> tags;
-                std::string display;
-        };
-
         struct GameCache {
                 std::vector<fs::path> save_files;
                 std::unordered_map<fs::path, SaveFileInfo> file_info;
@@ -99,7 +94,4 @@ class CHomeView : public CBaseView {
         void refresh_game_state( );
         void invalidate_cache( const std::vector<Game>& games, std::function<void( )> on_done );
         CAsyncQueue m_queue;
-
-        //1.
-        static std::unordered_map<std::string, TagCache> load_tag_cache( const std::string& game_name );
 };

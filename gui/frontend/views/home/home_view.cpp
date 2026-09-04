@@ -1,6 +1,5 @@
 #include "home_view.hpp"
 #include <config/config.hpp>
-#include <logger.hpp>
 #include <utils/utils.hpp>
 #include <async_queue/async_queue.hpp>
 #include <backup/backup.hpp>
@@ -557,28 +556,6 @@ void CHomeView::render_modals() {
     m_restore_modal.render( );
 }
 
-std::unordered_map<std::string, CHomeView::TagCache> CHomeView::load_tag_cache( const std::string& game_name ) {
-    std::unordered_map<std::string, TagCache> cache;
-
-    auto loaded_tags = Tags::load_tags( game_name );
-    std::string file_name = ( paths::backup_dir( ) / utils::sanitize_filename_path( game_name ) / "tags.json" ).string( );
-
-    if ( loaded_tags.empty( ) ) {
-        if ( fs::exists( file_name ) ) SPDLOG_WARN( "Failed to load tags for: {}", game_name );
-        return { };
-    }
-
-    for ( const auto& [filename, tags] : loaded_tags ) {
-        TagCache tcache;
-        tcache.tags = tags;
-        tcache.display =
-            tags | std::ranges::views::join_with( std::string_view( ", " ) ) | std::ranges::to<std::string>( );
-        cache.insert( { filename, tcache } );
-    }
-
-    return cache;
-}
-
 void CHomeView::refresh_game_state( ) {
     m_grouped_games = utils::get_grouped( m_games_snapshot );
     m_game_cache.clear( );
@@ -604,7 +581,7 @@ void CHomeView::invalidate_cache( const std::vector<Game>& games, std::function<
 
             for ( const auto& game : games ) {
                 GameCache cache;
-                cache.tags = CHomeView::load_tag_cache( game.game_name );
+                cache.tags = Tags::load_tag_cache( game.game_name );
 
                 auto backups = Backup::get_backups( game.game_name );
                 cache.backup_count = backups.size( );
