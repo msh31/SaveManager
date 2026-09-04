@@ -15,10 +15,10 @@ using json = nlohmann::json;
     3. decide if plugins should be repurposed instead of only serving the purpose of being a custom game
 */
 
-CConfig::CConfig( fs::path config_dir ) : m_config_file( config_dir / "config.json" ) {
+CConfig::CConfig( ) {
     try {
-        if ( !fs::exists( config_dir ) ) {
-            if ( !fs::create_directories( config_dir ) ) {
+        if ( !fs::exists( paths::config_dir() ) ) {
+            if ( !fs::create_directories( paths::config_dir( ) ) ) {
                 throw std::runtime_error( "Failed to create config directory" );
             }
         }
@@ -48,6 +48,11 @@ CConfig::~CConfig( ) {
     } catch ( const std::exception& err ) {
         SPDLOG_CRITICAL( "config destructor: {}", err.what( ) );
     }
+}
+
+CConfig& CConfig::get( ) {
+    static CConfig instance;
+    return instance;
 }
 
 void CConfig::init( ) {

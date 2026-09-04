@@ -14,9 +14,8 @@ int main( ) {
         setup_logger( );
 
         SPDLOG_INFO( "==============={}===============", APP_NAME );
-        CConfig config;
-        CWindowManager window( config );
-        CApp app( config );
+        CWindowManager window;
+        CApp app;
 
         app.init( );
         window.set_drop_callback( [&app]( const auto& paths ) { app.on_files_dropped( paths ); } );

@@ -1,10 +1,10 @@
 #include "window_manager.hpp"
 #include <branding.hpp>
+#include <config/config.hpp>
+#include <logger.hpp>
 
 #include <frontend/fonts/font_registry.hpp>
 #include <frontend/theme/theme.hpp>
-
-#include <logger.hpp>
 
 #if defined( _WIN32 )
     #define GLFW_EXPOSE_NATIVE_WIN32
@@ -63,7 +63,7 @@ void CWindowManager::render_frame( ) {
                                     ImGuiWindowFlags_NoNavFocus | ImGuiWindowFlags_NoScrollbar |
                                     ImGuiWindowFlags_NoScrollWithMouse;
 
-    if ( m_config.settings.use_bg ) {
+    if ( CConfig::get( ).settings.use_bg ) {
         window_flags |= ImGuiWindowFlags_NoBackground;
     }
 
@@ -109,8 +109,8 @@ void CWindowManager::setup_opengl( ) {
     glfwWindowHint( GLFW_CONTEXT_VERSION_MINOR, 3 );
     glfwWindowHint( GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE );
 
-    int width = m_config.settings.window_w;
-    int height = m_config.settings.window_h;
+    int width = CConfig::get( ).settings.window_w;
+    int height = CConfig::get( ).settings.window_h;
     if ( width <= 0 || height <= 0 ) {
         // no persisted size yet - derive a sane default from the primary monitor instead of a hardcoded resolution
         width = kMinWindowW;
@@ -131,7 +131,7 @@ void CWindowManager::setup_opengl( ) {
     }
 
 #if defined( _WIN32 )
-    BOOL dark_mode = m_config.settings.dark_mode;
+    BOOL dark_mode = CConfig::get( ).settings.dark_mode;
     DwmSetWindowAttribute(
         glfwGetWin32Window( m_window ), DWMWA_USE_IMMERSIVE_DARK_MODE, &dark_mode, sizeof( dark_mode ) );
 #endif
@@ -148,8 +148,8 @@ void CWindowManager::setup_opengl( ) {
 void CWindowManager::remember_window_size( ) {
     int w = 0, h = 0;
     glfwGetWindowSize( m_window, &w, &h );
-    m_config.settings.window_w = w;
-    m_config.settings.window_h = h;
+    CConfig::get( ).settings.window_w = w;
+    CConfig::get( ).settings.window_h = h;
 }
 
 void CWindowManager::apply_content_scale( float scale ) {
@@ -213,5 +213,5 @@ void CWindowManager::setup_imgui( ) {
         cleanup( );
         throw std::runtime_error( "Failed to initialize ImGui" );
     }
-    ThemeManager::apply_colors( m_config.settings.dark_mode ? ThemeType::Dark : ThemeType::Light );
+    ThemeManager::apply_colors( CConfig::get( ).settings.dark_mode ? ThemeType::Dark : ThemeType::Light );
 }

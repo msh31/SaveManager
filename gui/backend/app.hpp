@@ -3,15 +3,12 @@
 #include <backend/ui_manager/ui_manager.hpp>
 #include <async_queue/async_queue.hpp>
 
-#include <config/config.hpp>
-
 #include <frontend/layout/tabbar/tabbar.hpp>
 
 class CDebugView;
 
 class CApp {
     public:
-        explicit CApp( CConfig& config ) : m_config( config ) {}
 
         void init( );
         void render( );
@@ -20,7 +17,6 @@ class CApp {
     private:
         void refresh_background( );
 
-        CConfig& m_config;
         CAsyncQueue m_queue;
         std::optional<TaskHandle> m_update_handle;
         CDebugView* m_debug_view = nullptr;
