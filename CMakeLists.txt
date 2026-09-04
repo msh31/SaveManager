@@ -44,6 +44,17 @@ project(SaveManager
 		"The swiss army knife of save management."
 )
 
+if(APPLE) # apple
+	enable_language(
+		OBJC
+	)
+
+endif()
+
+if(WIN32)
+  set(SPDLOG_WCHAR_FILENAMES ON)
+endif()
+
 # Packages
 find_package(CURL REQUIRED)
 
@@ -204,8 +215,6 @@ set(savemanager_SOURCES
 	"gui/frontend/components/spinner.hpp"
 	"gui/frontend/fonts/font_awesome.hpp"
 	"gui/frontend/fonts/font_registry.hpp"
-	"gui/frontend/fonts/inter.hpp"
-	"gui/frontend/fonts/inter_med.hpp"
 	"gui/frontend/icons.hpp"
 	"gui/frontend/layout/shell.hpp"
 	"gui/frontend/layout/tabbar/tabbar.cpp"
@@ -276,7 +285,7 @@ target_precompile_headers(savemanager PRIVATE
 	"gui/pch.hpp"
 )
 
-get_directory_property(CMKR_VS_STARTUP_PROJECT DIRECTORY ${PROJECT_SOURCE_DIR} DEFINITION VS_STARTUP_PROJECT)
+get_directory_property(CMKR_VS_STARTUP_PROJECT DIRECTORY ${PROJECT_SOURCE_DIR} VS_STARTUP_PROJECT)
 if(NOT CMKR_VS_STARTUP_PROJECT)
 	set_property(DIRECTORY ${PROJECT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT savemanager)
 endif()
@@ -348,7 +357,7 @@ target_precompile_headers(savemgr PRIVATE
 	"lib/include/pch.hpp"
 )
 
-get_directory_property(CMKR_VS_STARTUP_PROJECT DIRECTORY ${PROJECT_SOURCE_DIR} DEFINITION VS_STARTUP_PROJECT)
+get_directory_property(CMKR_VS_STARTUP_PROJECT DIRECTORY ${PROJECT_SOURCE_DIR} VS_STARTUP_PROJECT)
 if(NOT CMKR_VS_STARTUP_PROJECT)
 	set_property(DIRECTORY ${PROJECT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT savemgr)
 endif()
@@ -382,7 +391,7 @@ target_precompile_headers(savemanager-daemon PRIVATE
 	"lib/include/pch.hpp"
 )
 
-get_directory_property(CMKR_VS_STARTUP_PROJECT DIRECTORY ${PROJECT_SOURCE_DIR} DEFINITION VS_STARTUP_PROJECT)
+get_directory_property(CMKR_VS_STARTUP_PROJECT DIRECTORY ${PROJECT_SOURCE_DIR} VS_STARTUP_PROJECT)
 if(NOT CMKR_VS_STARTUP_PROJECT)
 	set_property(DIRECTORY ${PROJECT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT savemanager-daemon)
 endif()

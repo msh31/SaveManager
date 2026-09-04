@@ -8,6 +8,12 @@ description = "The swiss army knife of save management."
 version = "1.10.0"
 languages = ["C", "CXX"]
 msvc-runtime = "dynamic"
+apple.languages = ["OBJC"]
+cmake-after = """
+if(WIN32)
+  set(SPDLOG_WCHAR_FILENAMES ON)
+endif()
+"""
 
 [variables]
 CMAKE_EXPORT_COMPILE_COMMANDS = true
