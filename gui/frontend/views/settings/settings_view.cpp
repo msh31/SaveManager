@@ -158,7 +158,7 @@ void CSettingsView::render( ) {
     {
         ChildGuard blacklist( "Blacklist", { } );
         ImGui::PushFont( CFontManager::get( ).get_font( "jbm_med" ).value_or( nullptr ) );
-        ImGui::Text( "Blacklisted Games" );
+        ImGui::Text( "Blacklist" );
         ImGui::PopFont( );
 
         {
