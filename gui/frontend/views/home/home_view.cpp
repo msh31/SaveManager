@@ -65,7 +65,7 @@ void CHomeView::on_exit( ) {
     
 }
 
-CHomeView::~CHomeView( ) {}
+CHomeView::~CHomeView( ) { m_queue.shutdown( ); }
 
 //private
 void CHomeView::render_toolbar( ) {
