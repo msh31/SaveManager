@@ -1,5 +1,8 @@
 ## 1.10 - 2026-09-03
 
+#### Information
+There are now 2 versions of Savemanager: Portable & Installer!
+
 ### Core
 - Fixed
     - Fixed a potential race condition when saving SFTP settings
@@ -7,6 +10,10 @@
 ### GUI
 - Fixed
     - Fixed an issue where the path to the loaded save file was an input field instead of regular text
+    - Fixed an issue where window resizes would block rendering & cause artifacts 
+
+- Changed
+    - Made the Windows titlebar respect the OS appearance setting on startup & theme changes (requires restart) ([#11](https://github.com/msh31/SaveManager/issues/11))
 
 ---
 
