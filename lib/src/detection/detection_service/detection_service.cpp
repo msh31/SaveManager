@@ -20,6 +20,8 @@ std::vector<Game> CDetectionService::snapshot( ) const {
     return m_result;
 }
 
+Blacklist& CDetectionService::blacklist() { return m_blacklist; }
+
 void CDetectionService::init( ) {
     if ( !m_translations.init( ) ) {
         SPDLOG_WARN( "Failed to initialize translations! Expect missing games!" );

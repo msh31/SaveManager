@@ -15,6 +15,7 @@ class CDetectionService {
         void ensure_started( );
 
         bool is_refreshing( ) const;
+        Blacklist& blacklist( );
 
         // bumped once per completed scan; compare against a locally-cached value to notice new results
         uint64_t generation( ) const { return m_generation.load( ); }
@@ -43,10 +44,10 @@ class CDetectionService {
         SteamManifestCache m_manifest_cache;
         UnrealNameCache m_name_cache;
         std::unordered_map<uint32_t, std::vector<PcgwEntry>> m_pcgw_entries = { };
-        std::vector<std::unique_ptr<IDetector>> m_detectors;
+        std::vector<std::unique_ptr<IDetector>> m_detectors = { };
 
         mutable std::mutex m_mutex;
-        std::vector<Game> m_result;
+        std::vector<Game> m_result = { };
         std::atomic<uint64_t> m_generation{ 0 };
         std::atomic<double> m_last_duration{ 0.0 };
         std::future<void> m_future;
