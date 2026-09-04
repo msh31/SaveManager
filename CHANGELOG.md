@@ -4,6 +4,10 @@
 - Fixed
     - Fixed a potential race condition when saving SFTP settings
 
+### GUI
+- Fixed
+    - Fixed an issue where the path to the loaded save file was an input field instead of regular text
+
 ---
 
 

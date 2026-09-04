@@ -10,6 +10,7 @@
 #include <frontend/ui.hpp>
 
 #include <frontend/views/home/home_view.hpp>
+#include <frontend/views/editor/editor_view.hpp>
 #include <frontend/views/log/log_view.hpp>
 #include <frontend/views/about/about_view.hpp>
 #include <frontend/views/settings/settings_view.hpp>
@@ -48,6 +49,7 @@ void CApp::init( ) {
 
     SPDLOG_INFO( "Setting up application views.." );
     m_ui_manager.add_view( { std::make_unique<CHomeView>( ), ICON_HOME, "Home" } );
+    m_ui_manager.add_view( { std::make_unique<CEditorView>( ), ICON_EDIT, "Editor" } );
     m_ui_manager.add_view( { std::make_unique<CLogView>( ), ICON_SCROLL, "Logs" } );
     m_ui_manager.add_view( { std::make_unique<CAboutView>( ), ICON_INFO, "About" } );
     m_ui_manager.set_settings_view( { std::make_unique<CSettingsView>( ), ICON_GEAR, "Settings" } );
