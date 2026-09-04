@@ -2,7 +2,7 @@
 #include <imgui_impl_glfw.h>
 #include <imgui_impl_opengl3.h>
 
-#include <backend/font_manager/font_manager.hpp>
+#include <backend/shader/shader.hpp>
 
 class CWindowManager {
     public:
@@ -34,4 +34,7 @@ class CWindowManager {
 
         void drop_callback( int count, const char** paths );
         std::function<void( const std::vector<std::string>& )> m_drop_fn;
+
+        std::optional<CShader> m_shader;
+        void render_shader( );
 };

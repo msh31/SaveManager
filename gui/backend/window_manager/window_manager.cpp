@@ -3,6 +3,8 @@
 #include <config/config.hpp>
 #include <logger.hpp>
 
+#include <backend/font_manager/font_manager.hpp>
+
 #include <frontend/fonts/font_registry.hpp>
 #include <frontend/theme/theme.hpp>
 
@@ -47,7 +49,10 @@ void CWindowManager::run( std::function<void( )> fun ) {
 void CWindowManager::render_frame( ) {
     if ( !m_render_fn ) return;
 
-    glClear( GL_COLOR_BUFFER_BIT );
+    bool use_shader = CConfig::get( ).settings.animated_background;
+    bool use_bg = CConfig::get( ).settings.use_bg;
+
+    render_shader( );
 
     ImGui_ImplOpenGL3_NewFrame( );
     ImGui_ImplGlfw_NewFrame( );
@@ -63,12 +68,14 @@ void CWindowManager::render_frame( ) {
                                     ImGuiWindowFlags_NoNavFocus | ImGuiWindowFlags_NoScrollbar |
                                     ImGuiWindowFlags_NoScrollWithMouse;
 
-    if ( CConfig::get( ).settings.use_bg ) {
+    if ( use_bg || use_shader ) {
         window_flags |= ImGuiWindowFlags_NoBackground;
+        ImGui::PushStyleColor( ImGuiCol_ChildBg, ImVec4( 0, 0, 0, 0 ) );
     }
 
     ImGui::Begin( "Main Window", nullptr, window_flags );
     m_render_fn( );
+    if ( use_bg || use_shader ) ImGui::PopStyleColor( );
     ImGui::End( );
     ImGui::Render( );
 
@@ -143,6 +150,8 @@ void CWindowManager::setup_opengl( ) {
         cleanup( );
         throw std::runtime_error( "Failed to initialize GLAD!" );
     }
+
+    m_shader.emplace( );
 }
 
 void CWindowManager::remember_window_size( ) {
@@ -214,4 +223,27 @@ void CWindowManager::setup_imgui( ) {
         throw std::runtime_error( "Failed to initialize ImGui" );
     }
     ThemeManager::apply_colors( CConfig::get( ).settings.dark_mode ? ThemeType::Dark : ThemeType::Light );
+}
+
+void CWindowManager::render_shader( ) {
+    float bgr = 0.145f, bgg = 0.145f, bgb = 0.141f;
+    bool use_shader = CConfig::get( ).settings.animated_background;
+    bool dark_mode = CConfig::get( ).settings.dark_mode;
+
+    int w = 0;
+    int h = 0;
+    glfwGetFramebufferSize( m_window, &w, &h );
+
+    if ( !dark_mode ) {
+        bgr = 0.980f;
+        bgg = 0.976f;
+        bgb = 0.961f;
+    }
+    glClearColor( bgr, bgg, bgb, 1.0f );
+    glClear( GL_COLOR_BUFFER_BIT ); // for the themes
+    glViewport( 0, 0, w, h );
+
+    if ( use_shader && m_shader.has_value( ) ) {
+        m_shader->render( w, h, bgr, bgg, bgb );
+    }
 }

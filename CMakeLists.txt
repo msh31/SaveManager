@@ -174,6 +174,8 @@ set(savemanager_SOURCES
 	"gui/backend/font_manager/font_manager.hpp"
 	"gui/backend/image_manager/image_manager.cpp"
 	"gui/backend/image_manager/image_manager.hpp"
+	"gui/backend/shader/shader.cpp"
+	"gui/backend/shader/shader.hpp"
 	"gui/backend/ui_manager/ui_manager.cpp"
 	"gui/backend/ui_manager/ui_manager.hpp"
 	"gui/backend/window_manager/window_manager.cpp"
