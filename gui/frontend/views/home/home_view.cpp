@@ -415,7 +415,8 @@ void CHomeView::render_backup_row(
     if ( ImGui::Button( "Tags", ImVec2( 80.0f, 0 ) ) ) {
         auto tagz = tag_cache ? tag_cache->tags : std::vector<std::string>{ };
         m_tags_modal.open(
-            game, backup, tagz, [this, game]( const std::string& filename, const std::vector<std::string>& tags ) {
+            game.game_name, backup, tagz,
+            [this, game]( const std::string& filename, const std::vector<std::string>& tags ) {
                 invalidate_cache( { game }, []( ) { Notify::show_notification( "Tags", "Added tags!", 2000 ); } );
             } );
     }

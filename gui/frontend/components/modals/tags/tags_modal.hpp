@@ -1,7 +1,6 @@
 #pragma once
 #include "../base_model.hpp"
 #include <sm_error.hpp>
-#include <detection/game.hpp>
 
 /*
     TODO LIST
@@ -15,13 +14,13 @@ class CTagsModal : public CModalBase {
         CTagsModal(  ) : CModalBase("Manage Tags") {};
 
         void open(
-            const Game& game, const fs::path& backup, const std::vector<std::string>& tag_list,
+            const std::string& game_name, const fs::path& backup, const std::vector<std::string>& tag_list,
             const std::function<void( const std::string&, const std::vector<std::string>& )>& on_saved );
         void render_content( );
 
-    private: 
+    private:
         //1.
-        Game m_pending_rename_game{ };
+        std::string m_pending_rename_game = { };
         std::string m_new_tag_input = { };
         std::vector<std::string> m_pending_tags = { };
         fs::path m_pending_rename_backup = { };

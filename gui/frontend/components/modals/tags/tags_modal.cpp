@@ -5,10 +5,10 @@
 #include <nlohmann/json.hpp>
 using json = nlohmann::json;
 
-void CTagsModal::open( const Game& game, const fs::path& backup, const std::vector<std::string>& tag_list,
+void CTagsModal::open( const std::string& game_name, const fs::path& backup, const std::vector<std::string>& tag_list,
     const std::function<void( const std::string&, const std::vector<std::string>& )>& on_saved ) {
     m_new_tag_input.clear( );
-    m_pending_rename_game = game;
+    m_pending_rename_game = game_name;
     m_pending_rename_backup = backup;
     m_pending_tags = tag_list;
     m_on_saved = on_saved;
@@ -45,7 +45,7 @@ void CTagsModal::render_content() {
     ImGui::Dummy( ImVec2( 0, 5.0f ) );
     if ( ImGui::Button( "Save" ) ) {
         std::string backup_filename_utf8 = utils::path_to_utf8( m_pending_rename_backup.filename( ) );
-        auto result = save_tags( m_pending_rename_game.game_name, backup_filename_utf8, m_pending_tags );
+        auto result = save_tags( m_pending_rename_game, backup_filename_utf8, m_pending_tags );
         if ( result.has_value( ) && *result ) {
             m_on_saved( backup_filename_utf8, m_pending_tags );
         } else {
