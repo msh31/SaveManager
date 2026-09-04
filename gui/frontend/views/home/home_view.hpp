@@ -63,6 +63,8 @@ class CHomeView : public CBaseView {
         std::unordered_map<std::string, GameCache> m_game_cache;
         std::unordered_map<std::string, fs::file_time_type> m_game_last_modified = { };
 
+        std::vector<std::pair<fs::path, fs::path>> m_conflicts = { };
+
         void render_toolbar( );
         void render_game_list( );
         void render_game_content(

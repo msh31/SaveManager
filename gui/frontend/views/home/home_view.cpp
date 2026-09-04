@@ -1,7 +1,7 @@
 #include "home_view.hpp"
 #include <utils/utils.hpp>
 #include <logger.hpp>
-
+#include <config/config.hpp>
 #include <backup/backup.hpp>
 #include <tags/tags.hpp>
 
@@ -240,20 +240,19 @@ void CHomeView::render_game_content(
         ImGui::SameLine( );
         if ( is_backing_up || is_refreshing ) ImGui::BeginDisabled( true );
         if ( ImGui::Button( "Conflicts" ) ) {
-            std::vector<std::pair<fs::path, fs::path>> conflicts = { };
-
+            m_conflicts.clear( );
             for ( const auto& sp : game.save_paths ) {
                 for ( const auto& f : fs::recursive_directory_iterator( sp ) ) {
                     auto full = f.path( ).string( );
                     auto pos = full.find( ".savemgr-conflict-" );
                     if ( pos != std::string::npos ) {
                         fs::path original = full.substr( 0, pos );
-                        conflicts.push_back( { original, f.path( ) } );
+                        m_conflicts.push_back( { original, f.path( ) } );
                     }
                 }
             }
 
-            m_conflicts_modal.open( game, conflicts, []( const Game& g ) {} );
+            m_conflicts_modal.open( game, m_conflicts, []( const Game& g ) {} );
         }
         if ( is_backing_up || is_refreshing ) ImGui::EndDisabled( );
     }
@@ -261,15 +260,15 @@ void CHomeView::render_game_content(
     if ( cache.has_undo ) {
         ImGui::SameLine( );
         if ( is_backing_up || is_refreshing ) ImGui::BeginDisabled( true );
-        //if ( ImGui::Button( "Undo last restore" ) ) {
-        //    if ( Backup::restore_backup( cache.undo_path, game.save_paths, m_pending_conflicts ) ) {
-        //        fs::remove( cache.undo_path );
-        //    } else {
-        //        SPDLOG_ERROR( "Failed to restore backup, kept undo zip!" );
-        //        Notify::show_notification( "Undo Last Restore", "Failed to restore backup, kept undo zip!", 2000 );
-        //    }
-        //    //invalidate_cache( { game } );
-        //}
+        if ( ImGui::Button( "Undo last restore" ) ) {
+            if ( Backup::restore_backup( cache.undo_path, game.save_paths, m_conflicts ) ) {
+                fs::remove( cache.undo_path );
+            } else {
+                SPDLOG_ERROR( "Failed to restore backup, kept undo zip!" );
+                Notify::show_notification( "Undo Last Restore", "Failed to restore backup, kept undo zip!", 2000 );
+            }
+            //invalidate_cache( { game } );
+        }
         if ( is_backing_up || is_refreshing ) ImGui::EndDisabled( );
     }
 
@@ -285,10 +284,7 @@ void CHomeView::render_game_content(
     auto save_files_id = std::format( "savefiles_{}", game_key );
     Card::draw( save_files_id, str.data( ), saves_expanded, std::nullopt, [&]( ) {
         for ( auto& save : files ) {
-            // ugly
-            //if ( !CConfig::get().d_settings.show_conflicts ) {
-            //    if ( save.first.string( ).contains( ".savemgr-conflict-" ) ) continue;
-            //}
+            if ( !CConfig::get( ).d_settings.show_conflicts && save.first.string( ).contains( ".savemgr-conflict-" ) ) continue;
             render_save_row( save.first, *save.second, info.at( save.first ) );
         }
     } );
@@ -455,9 +451,7 @@ void CHomeView::render_backup_row(
 }
 
 void CHomeView::render_save_row( const fs::path& save_file, const Game& game, const SaveFileInfo& save_info ) {
-    //if ( !save_info.is_dir && save_info.size <= 0 && CConfig::get().d_settings.skip_empty_files ) {
-    //    return;
-    //}
+    if ( !save_info.is_dir && save_info.size <= 0 && CConfig::get( ).d_settings.skip_empty_files ) return;
     if ( save_file.filename( ).string( ) == ".savemgr-ignore" ) return;
 
     ImGui::PushID( save_file.string( ).c_str( ) );
