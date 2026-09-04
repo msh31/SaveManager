@@ -18,6 +18,11 @@ endif()
 [variables]
 CMAKE_EXPORT_COMPILE_COMMANDS = true
 
+# dependencies
+[fetch-content.nfd]
+git = "https://github.com/btzy/nativefiledialog-extended"
+tag = "v1.3.0"
+
 # dependencies - through conan
 [find-package.CURL]
 required = true
@@ -78,8 +83,6 @@ link-libraries = ["savemanager-core", "glfw", "imgui::imgui", "glad::glad", "nfd
 compile-features = ["cxx_std_23"]
 precompile-headers = ["gui/pch.hpp"]
 cmake-before = """
-add_subdirectory(vendor/nativefiledialog-extended)
-
 execute_process(
     COMMAND git rev-parse HEAD
     OUTPUT_VARIABLE GIT_COMMIT

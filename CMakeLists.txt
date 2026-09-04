@@ -80,6 +80,21 @@ find_package(spdlog REQUIRED)
 
 find_package(CLI11 REQUIRED)
 
+include(FetchContent)
+
+# Fix warnings about DOWNLOAD_EXTRACT_TIMESTAMP
+if(POLICY CMP0135)
+	cmake_policy(SET CMP0135 NEW)
+endif()
+message(STATUS "Fetching nfd (v1.3.0)...")
+FetchContent_Declare(nfd
+	GIT_REPOSITORY
+		"https://github.com/btzy/nativefiledialog-extended"
+	GIT_TAG
+		v1.3.0
+)
+FetchContent_MakeAvailable(nfd)
+
 # Target: savemanager-core
 set(savemanager-core_SOURCES
 	cmake.toml
@@ -171,8 +186,6 @@ target_precompile_headers(savemanager-core PUBLIC
 
 # Target: savemanager
 set(CMKR_TARGET savemanager)
-add_subdirectory(vendor/nativefiledialog-extended)
-
 execute_process(
     COMMAND git rev-parse HEAD
     OUTPUT_VARIABLE GIT_COMMIT
