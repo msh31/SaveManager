@@ -3,7 +3,7 @@
 #include "../utils/zip_archive/zip_archive.hpp"
 #include <logger.hpp>
 
-bool Backup::backup_game( const Game& game, const fs::path& file, CConfig& config ) {
+bool Backup::backup_game( const Game& game, const fs::path& file ) {
     SPDLOG_INFO( "creating backup of: {}", game.game_name );
     fs::path game_backup_dir = paths::backup_dir( ) / utils::sanitize_filename_path( game.game_name );
 
@@ -49,7 +49,7 @@ bool Backup::backup_game( const Game& game, const fs::path& file, CConfig& confi
     return true;
 }
 
-std::vector<std::string> Backup::backup_all_games( const std::vector<Game>& snapshot, CConfig& config ) {
+std::vector<std::string> Backup::backup_all_games( const std::vector<Game>& snapshot) {
     std::vector<std::string> failures = { };
 
     for ( const auto& entry : snapshot ) {

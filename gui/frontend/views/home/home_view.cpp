@@ -136,15 +136,15 @@ void CHomeView::render_toolbar( ) {
                 return;
             }
 
-            //auto failed_games = Backup::backup_all_games( snapshot, m_config );
-            //if ( !failed_games.empty( ) ) {
-            //    for ( const auto& entry : failed_games ) {
-            //        auto str = std::format( "Failed to backup {}!", entry );
-            //        Notify::show_notification( "Mass Backup", str, 1500 );
-            //    }
-            //} else {
-            //    Notify::show_notification( "Mass Backup", "Succesfully backed up all gamesaves!", 1500 );
-            //}
+            auto failed_games = Backup::backup_all_games( snapshot );
+            if ( !failed_games.empty( ) ) {
+                for ( const auto& entry : failed_games ) {
+                    auto str = std::format( "Failed to backup {}!", entry );
+                    Notify::show_notification( "Mass Backup", str, 1500 );
+                }
+            } else {
+                Notify::show_notification( "Mass Backup", "Succesfully backed up all gamesaves!", 1500 );
+            }
         } );
     }
     if ( is_refreshing || is_backing_up ) ImGui::EndDisabled( );
@@ -286,7 +286,7 @@ void CHomeView::render_game_content(
     Card::draw( save_files_id, str.data( ), saves_expanded, std::nullopt, [&]( ) {
         for ( auto& save : files ) {
             // ugly
-            //if ( !m_config.d_settings.show_conflicts ) {
+            //if ( !CConfig::get().d_settings.show_conflicts ) {
             //    if ( save.first.string( ).contains( ".savemgr-conflict-" ) ) continue;
             //}
             render_save_row( save.first, *save.second, info.at( save.first ) );
@@ -455,7 +455,7 @@ void CHomeView::render_backup_row(
 }
 
 void CHomeView::render_save_row( const fs::path& save_file, const Game& game, const SaveFileInfo& save_info ) {
-    //if ( !save_info.is_dir && save_info.size <= 0 && m_config.d_settings.skip_empty_files ) {
+    //if ( !save_info.is_dir && save_info.size <= 0 && CConfig::get().d_settings.skip_empty_files ) {
     //    return;
     //}
     if ( save_file.filename( ).string( ) == ".savemgr-ignore" ) return;
@@ -495,15 +495,15 @@ void CHomeView::render_save_row( const fs::path& save_file, const Game& game, co
     if ( is_backing_up ) ImGui::BeginDisabled( true );
     if ( ImGui::Button( "Backup", btn_size ) ) {
         m_pending_invalidate = { game };
-        //m_backup_future = std::async( std::launch::async, [this, game, save_file, &config = m_config]( ) {
-        //    if ( !Features::backup_game( game, save_file, config ) ) {
-        //        auto str = std::format( "Failed to create backup for: {}", game.game_name );
-        //        Notify::show_notification( "Backup Failure", str, 3000 );
-        //    } else {
-        //        auto str = std::format( "Created a backup for: {}!", game.game_name );
-        //        Notify::show_notification( "Backup Creation", str, 3000 );
-        //    }
-        //} );
+        m_backup_future = std::async( std::launch::async, [this, game, save_file, &config = CConfig::get()]( ) {
+            if ( !Backup::backup_game( game, save_file ) ) {
+                auto str = std::format( "Failed to create backup for: {}", game.game_name );
+                Notify::show_notification( "Backup Failure", str, 3000 );
+            } else {
+                auto str = std::format( "Created a backup for: {}!", game.game_name );
+                Notify::show_notification( "Backup Creation", str, 3000 );
+            }
+        } );
     }
     ImGui::SetItemTooltip( "Create a backup of this save" );
     ImGui::SameLine( 0.0f, 4.0f );
