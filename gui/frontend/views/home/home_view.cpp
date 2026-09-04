@@ -128,7 +128,6 @@ void CHomeView::render_toolbar( ) {
     if ( is_refreshing ) ImGui::BeginDisabled( true );
     bool is_refresh_keybind_pressed = ( ImGui::GetIO( ).KeyCtrl && ImGui::IsKeyPressed( ImGuiKey_R ) );
     if ( ( ImGui::Button( "Refresh" ) || is_refresh_keybind_pressed ) && !is_refreshing ) {
-        m_last_game_count = 0;
         m_grouped_games.clear( );
         m_game_cache.clear( );
         CDetectionService::get( ).refresh( );
@@ -309,7 +308,6 @@ void CHomeView::render_game_row( const std::vector<int>& group, int gi ) {
 
     bool& not_collapsed = m_card_collapsed[game_key];
     bool& bk_collapsed = m_backups_expanded[game_key];
-    const char* chevron = bk_collapsed ? "▶" : "▼";
 
     std::vector<std::pair<fs::path, const Game*>> files = { };
 
@@ -502,7 +500,7 @@ void CHomeView::render_save_row( const fs::path& save_file, const Game& game, co
     if ( is_backing_up ) ImGui::BeginDisabled( true );
     if ( ImGui::Button( "Backup", btn_size ) ) {
         m_pending_invalidate = { game };
-        m_backup_future = std::async( std::launch::async, [this, game, save_file, &config = CConfig::get()]( ) {
+        m_backup_future = std::async( std::launch::async, [this, game, save_file]( ) {
             if ( !Backup::backup_game( game, save_file ) ) {
                 auto str = std::format( "Failed to create backup for: {}", game.game_name );
                 Notify::show_notification( "Backup Failure", str, 3000 );

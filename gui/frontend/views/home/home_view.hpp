@@ -60,7 +60,6 @@ class CHomeView : public CBaseView {
 
         uint64_t m_seen_generation = 0; //snapshot counter
         size_t m_filtered_game_count = 0;
-        size_t m_last_game_count = 0;
 
         std::vector<Game> m_games_snapshot = { };
         std::vector<std::vector<int>> m_grouped_games = { };
