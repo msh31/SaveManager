@@ -2,8 +2,6 @@
 #include <config/config.hpp>
 #include <utils/utils.hpp>
 #include <async_queue/async_queue.hpp>
-#include <backup/backup.hpp>
-#include <tags/tags.hpp>
 #include <detection/detection_service.hpp>
 
 #include <utils/blacklist/blacklist.hpp>

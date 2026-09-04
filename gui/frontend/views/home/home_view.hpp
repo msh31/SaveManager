@@ -8,6 +8,8 @@
 #include <frontend/components/modals/backup_restore/backup_restore.hpp>
 
 #include <async_queue/async_queue.hpp>
+#include <backup/backup.hpp>
+#include <tags/tags.hpp>
 
 /*
     TODO LIST

@@ -10,14 +10,14 @@ static const std::unordered_set<std::string_view> extension_blocklist{
 
 static const std::unordered_set<std::string_view> g_extension_blocklist{ ".png", ".jpg", ".jpeg", ".webp", ".bmp" };
 
-namespace Backup {
-    struct BackupEntry {
-            fs::path name;
-            fs::path save_path;
-            std::vector<fs::path> entries;
-            size_t size = 0;
-    };
+struct BackupEntry {
+        fs::path name;
+        fs::path save_path;
+        std::vector<fs::path> entries;
+        size_t size = 0;
+};
 
+namespace Backup {
     bool backup_game( const Game& game, const fs::path& file );
     std::vector<std::string> backup_all_games( const std::vector<Game>& snapshot );
     bool backup_to_path( fs::path source, fs::path dest );
