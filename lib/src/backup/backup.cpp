@@ -183,6 +183,18 @@ bool Backup::restore_backup(
     return true;
 }
 
+std::vector<fs::path> Backup::get_backups( const std::string& game ) {
+    fs::path game_backup_dir = paths::backup_dir( ) / utils::sanitize_filename_path( game );
+    if ( !fs::exists( game_backup_dir ) ) return { };
+
+    auto backups =
+        fs::recursive_directory_iterator( game_backup_dir ) |
+        std::views::filter( []( const auto& e ) { return e.is_regular_file( ) && e.path( ).extension( ) == ".zip"; } ) |
+        std::views::transform( &fs::directory_entry::path ) | std::ranges::to<std::vector>( );
+
+    return backups;
+}
+
 std::string Backup::construct_backup_name( const std::string& game, const std::string& custom_name ) {
     auto now = std::chrono::system_clock::now( );
     auto timestamp = std::format( "{:%Y%m%d_%H%M%S}", now );
