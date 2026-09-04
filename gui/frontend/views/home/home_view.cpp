@@ -21,6 +21,16 @@ void CHomeView::on_enter( ) {
 void CHomeView::render( ) {
     m_queue.update( );
 
+    bool backup_done =
+        m_backup_future.valid( ) && m_backup_future.wait_for( std::chrono::seconds( 0 ) ) == std::future_status::ready;
+    if ( backup_done ) {
+        m_backup_future.get( );
+        if ( !m_pending_invalidate.empty( ) ) {
+            invalidate_cache( m_pending_invalidate, []( ) {} );
+            m_pending_invalidate.clear( );
+        }
+    }
+
     if ( CDetectionService::get( ).generation( ) != m_seen_generation ) {
         m_seen_generation = CDetectionService::get( ).generation( );
         m_games_snapshot = CDetectionService::get( ).snapshot( );
@@ -232,7 +242,7 @@ void CHomeView::render_game_content(
 
     if ( is_backing_up || is_refreshing ) ImGui::BeginDisabled( true );
     if ( ImGui::Button( "Create Ruleset" ) ) {
-        m_ruleset_modal.open( game, []( const Game& g ) {} );
+        m_ruleset_modal.open( game, [this]( const Game& g ) { invalidate_cache( { g }, []( ) {} ); } );
     }
     if ( is_backing_up || is_refreshing ) ImGui::EndDisabled( );
 
@@ -252,7 +262,7 @@ void CHomeView::render_game_content(
                 }
             }
 
-            m_conflicts_modal.open( game, m_conflicts, []( const Game& g ) {} );
+            m_conflicts_modal.open( game, m_conflicts, [this]( const Game& g ) { invalidate_cache( { g }, []( ) {} ); } );
         }
         if ( is_backing_up || is_refreshing ) ImGui::EndDisabled( );
     }
@@ -382,9 +392,10 @@ void CHomeView::render_backup_row(
     ImGui::PushStyleVar( ImGuiStyleVar_FramePadding, ImVec2( 3.0f, 3.0f ) );
     if ( ImGui::Button( "Restore", ImVec2( 80.0f, 0 ) ) ) {
         m_restore_modal.open(
-            game, backup, []( const Game& game ) {},
+            game, backup, [this]( const Game& game ) { invalidate_cache( { game }, []( ) {} ); },
             [this]( const Game& game, const std::vector<std::pair<fs::path, fs::path>>& conflicts ) {
-                m_conflicts_modal.open( game, conflicts, []( const Game& g ) {} );
+                m_conflicts_modal.open(
+                    game, conflicts, [this]( const Game& g ) { invalidate_cache( { g }, []( ) {} ); } );
             } );
     }
 
@@ -408,9 +419,10 @@ void CHomeView::render_backup_row(
     ImGui::SameLine( 0.0f, 4.0f );
     if ( ImGui::Button( "Tags", ImVec2( 80.0f, 0 ) ) ) {
         auto tagz = tag_cache ? tag_cache->tags : std::vector<std::string>{ };
-        m_tags_modal.open( game, backup, tagz, []( const std::string& filename, const std::vector<std::string>& tags ) {
-            Notify::show_notification( "Tags", "Added tags!", 2000 );
-        } );
+        m_tags_modal.open(
+            game, backup, tagz, [this, game]( const std::string& filename, const std::vector<std::string>& tags ) {
+                invalidate_cache( { game }, []( ) { Notify::show_notification( "Tags", "Added tags!", 2000 ); } );
+            } );
     }
     ImGui::SetItemTooltip( "Manage tags for this backup" );
 
