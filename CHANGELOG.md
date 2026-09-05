@@ -1,7 +1,8 @@
-## 1.10 - 2026-09-03
+## 1.10 - 2026-09-10
+This update focuses on reachability and bugfixes
 
 #### Information
-There are now 2 versions of Savemanager: Portable & Installer!
+There are now 2 versions of SaveManager: Portable & Installer!
 
 ### Core
 - Fixed
@@ -9,12 +10,12 @@ There are now 2 versions of Savemanager: Portable & Installer!
 
 ### GUI
 - Fixed
-    - Fixed an issue where the path to the loaded save file was an input field instead of regular text
+    - Fixed an issue where the path to the loaded save file in the editor was an input field instead of regular text
     - Fixed an issue where window resizes would block rendering & cause artifacts 
 
 - Changed
     - Made the Windows titlebar respect the OS appearance setting on startup & theme changes (requires restart) ([#11](https://github.com/msh31/SaveManager/issues/11))
-
+    - Made improvements to handle different screen sizes more dynamically
 ---
 
 
