@@ -34,7 +34,6 @@ void Notify::render_notifications( ) {
         ImGui::SetNextWindowPos(
             ImVec2( ImGui::GetIO( ).DisplaySize.x - notif_width - 10.f, offset ), ImGuiCond_Always );
         ImGui::SetNextWindowSize( ImVec2( notif_width, 0 ), ImGuiCond_Always );
-        ImGui::PushStyleColor( ImGuiCol_WindowBg, ImVec4( 0.1f, 0.1f, 0.1f, 0.9f ) );
         ImGui::PushStyleVar( ImGuiStyleVar_WindowRounding, 8.f );
         ImGui::PushStyleVar( ImGuiStyleVar_WindowPadding, ImVec2( 10.f, 10.f ) );
 
@@ -47,7 +46,6 @@ void Notify::render_notifications( ) {
         notif.last_height = ImGui::GetWindowSize( ).y;
         ImGui::End( );
         ImGui::PopStyleVar( 2 );
-        ImGui::PopStyleColor( );
 
         offset += notif.last_height + 10.f;
     }

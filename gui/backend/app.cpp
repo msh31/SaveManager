@@ -1,12 +1,10 @@
 #include "app.hpp"
-#include <branding.hpp>
 #include <config/config.hpp>
 #include <logger.hpp>
 #include <utils/network.hpp>
 #include <detection/detection_service.hpp>
 
 #include <frontend/icons.hpp>
-#include <frontend/theme/theme.hpp>
 #include <frontend/ui.hpp>
 
 #include <frontend/views/home/home_view.hpp>
@@ -20,6 +18,11 @@
 #include <frontend/notification/notification.hpp>
 
 void CApp::init( ) {
+    if ( CConfig::get( ).was_reset( ) ) {
+        Notify::show_notification(
+            "Config Warning", "Config was reset due to an issue, your old config is backed up.", 3000 );
+    }
+
     m_update_handle = m_queue.run<bool>(
         []( TaskControl& control ) {
             if ( control.cancel_requested.load( ) ) throw TaskCancelled{ };

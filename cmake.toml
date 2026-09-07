@@ -12,8 +12,14 @@ apple.languages = ["OBJC"]
 cmake-after = """
 if(WIN32)
   set(SPDLOG_WCHAR_FILENAMES ON)
+  set(CURL_USE_SCHANNEL ON)
 endif()
 """
+
+[[install]]  
+targets = ["savemanager"]  
+destination = "bin"  
+component = "app"
 
 [variables]
 CMAKE_EXPORT_COMPILE_COMMANDS = true

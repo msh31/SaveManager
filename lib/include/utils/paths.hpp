@@ -24,7 +24,7 @@ namespace paths {
     inline fs::path g_config_dir = { };
     inline void set_config_dir( const fs::path& p ) { g_config_dir = p; }
 
-    inline fs::path exe_dir() {
+    inline fs::path exe_dir( ) {
 #if defined( _WIN32 )
         wchar_t szFileName[MAX_PATH];
         GetModuleFileNameW( NULL, szFileName, MAX_PATH );
@@ -35,12 +35,12 @@ namespace paths {
         ssize_t len = readlink( "/proc/self/exe", buffer, sizeof( buffer ) - 1 );
         if ( len == -1 ) throw std::runtime_error( "readlink /proc/self/exe failed" );
         buffer[len] = '\0';
-        return fs::path( buffer );
+        return fs::path( buffer ).parent_path( );
 #elif defined( __APPLE__ )
         char buffer[PATH_MAX];
         uint32_t size = sizeof( buffer );
         if ( _NSGetExecutablePath( buffer, &size ) != 0 ) throw std::runtime_error( "exe path buffer too small" );
-        return fs::canonical( fs::path( buffer ) );
+        return fs::canonical( fs::path( buffer ) ).parent_path( );
 #endif
     }
 

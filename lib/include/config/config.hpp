@@ -9,7 +9,8 @@ class CConfig {
         static CConfig& get( );
 
         void init( );
-        void save( );
+        bool save( );
+        bool was_reset( ) { return m_was_reset; }
 
         enum class KNOWN_HOST_RESULT { NEW, MATCH, MISMATCH };
         KNOWN_HOST_RESULT verify_known_host( const std::string& addr, const std::string& fingerprint );
@@ -61,6 +62,7 @@ class CConfig {
 
         bool load( );
         bool m_load_ok = false;
+        bool m_was_reset = false;
 
         std::recursive_mutex m_mutex;
 

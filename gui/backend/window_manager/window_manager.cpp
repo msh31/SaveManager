@@ -27,12 +27,8 @@ namespace {
 
 bool CWindowManager::should_continue( ) {
     bool window_open = glfwWindowShouldClose( m_window ) == 0;
-#ifndef NDEBUG
-    bool q_pressed = glfwGetKey( m_window, GLFW_KEY_Q ) == GLFW_PRESS;
+    bool q_pressed = !ImGui::GetIO( ).WantTextInput && glfwGetKey( m_window, GLFW_KEY_Q ) == GLFW_PRESS;
     return window_open && !q_pressed;
-#else
-    return window_open;
-#endif
 }
 
 void CWindowManager::run( std::function<void( )> fun ) {
