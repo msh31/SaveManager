@@ -13,18 +13,20 @@
 
 void CSettingsView::on_enter( ) {
     m_backgrounds.clear( );
-    
-    //unlikely to happen but guard it anyway
-    if ( fs::exists( paths::backgrounds_dir( ) ) ) {
+
+    // this is over engineered as hell.
+    // by this point, the program will have created this DIRECTORY itself and therefore IS GUARANTEED to be a directory.
+    //  i hate this.
+    if ( fs::exists( paths::backgrounds_dir( ) ) && fs::is_directory( paths::backgrounds_dir( ) ) ) {
         for ( const auto& f :
               fs::directory_iterator( paths::backgrounds_dir( ), fs::directory_options::skip_permission_denied ) ) {
             if ( f.is_regular_file( ) && utils::is_image_file( f.path( ) ) ) {
                 m_backgrounds.emplace_back( f.path( ).filename( ).string( ) );
             }
         }
-    
+
         m_current_background = 0;
-        auto it = std::find( m_backgrounds.begin( ), m_backgrounds.end( ), CConfig::get().settings.bg_name );
+        auto it = std::find( m_backgrounds.begin( ), m_backgrounds.end( ), CConfig::get( ).settings.bg_name );
         if ( it != m_backgrounds.end( ) ) {
             m_current_background = (int)std::distance( m_backgrounds.begin( ), it );
         }

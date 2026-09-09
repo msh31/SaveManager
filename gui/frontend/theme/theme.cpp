@@ -39,6 +39,7 @@ void ThemeManager::apply_scale( float scale ) {
     ImGuiStyle scaled = style;
     scaled.ScaleAllSizes( scale );
     std::copy( std::begin( ImGui::GetStyle( ).Colors ), std::end( ImGui::GetStyle( ).Colors ), scaled.Colors );
+    scaled.FontScaleMain = ImGui::GetStyle( ).FontScaleMain;
     ImGui::GetStyle( ) = scaled;
 }
 

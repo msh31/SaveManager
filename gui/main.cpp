@@ -24,10 +24,8 @@ int main( ) {
         window.run( [&app] { app.render( ); } );
     } catch ( const std::exception& e ) {
         SPDLOG_CRITICAL( "Fatal: {}", e.what( ) );
-        curl_global_cleanup( );
         return 1;
     }
 
-    curl_global_cleanup( );
     return 0;
 }

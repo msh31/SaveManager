@@ -16,6 +16,9 @@ if(WIN32)
 endif()
 """
 
+[options]
+APP_PORTABLE = true
+
 [[install]]  
 targets = ["savemanager"]  
 destination = "bin"  
