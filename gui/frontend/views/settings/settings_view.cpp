@@ -48,6 +48,12 @@ void CSettingsView::render( ) {
 
         ImGui::Checkbox( "Use Shader", &CConfig::get( ).settings.animated_background );
 
+        ImGui::Separator( );
+
+        if ( ImGui::SliderFloat( "Font scale", &m_font_scale, m_font_scale_min, m_font_scale_max ) ) {
+            ThemeManager::set_font_scale( m_font_scale );
+        }
+
         // ImGui::Separator( );
         // 
         //if ( (int)m_backgrounds.size( ) <= 0 ) {

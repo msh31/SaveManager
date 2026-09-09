@@ -43,6 +43,8 @@ void ThemeManager::apply_scale( float scale ) {
     ImGui::GetStyle( ) = scaled;
 }
 
+void ThemeManager::set_font_scale( float scale ) { ImGui::GetStyle( ).FontScaleMain = scale; }
+
 void ThemeManager::apply_colors( ThemeType theme ) {
     if ( has_applied && theme == current_theme ) return;
     current_theme = theme;

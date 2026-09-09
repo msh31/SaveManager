@@ -24,4 +24,8 @@ class CSettingsView : public CBaseView {
 
         std::vector<std::string> m_backgrounds = { };
         int m_current_background = 0;
+
+        float m_font_scale = 1.0f;
+        float m_font_scale_min = 0.80f;
+        float m_font_scale_max = 1.50f;
 };
