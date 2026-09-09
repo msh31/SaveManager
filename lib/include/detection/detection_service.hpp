@@ -5,8 +5,8 @@
 // single owner of the detection result
 class CDetectionService {
     public:
-        CDetectionService( ) = default;
-        ~CDetectionService( ) = default;
+        CDetectionService( );
+        ~CDetectionService( );
 
         static CDetectionService& get( );
 

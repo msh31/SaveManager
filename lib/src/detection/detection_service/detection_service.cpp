@@ -1,6 +1,10 @@
 #include "../pcgw/pcgw.hpp"
+#include "../idetector.hpp"
 #include <detection/detection_service.hpp>
 #include <logger.hpp>
+
+CDetectionService::CDetectionService( ) = default;
+CDetectionService::~CDetectionService( ) = default;
 
 CDetectionService& CDetectionService::get( ) {
     static CDetectionService instance;
