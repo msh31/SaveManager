@@ -115,7 +115,6 @@ set(savemanager-core_SOURCES
 	"lib/include/save_editor/save_editor.hpp"
 	"lib/include/sm_error.hpp"
 	"lib/include/tags/tags.hpp"
-	"lib/include/types.hpp"
 	"lib/include/utils/blacklist/blacklist.hpp"
 	"lib/include/utils/cache.hpp"
 	"lib/include/utils/disk_cache.hpp"
