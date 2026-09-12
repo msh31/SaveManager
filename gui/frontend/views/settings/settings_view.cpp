@@ -50,9 +50,8 @@ void CSettingsView::render( ) {
 
         ImGui::Separator( );
 
-        if ( ImGui::SliderFloat( "Font scale", &m_font_scale, m_font_scale_min, m_font_scale_max ) ) {
-            ThemeManager::set_font_scale( m_font_scale );
-        }
+        ImGui::Text( "Font scale" );
+        ImGui::SliderFloat("##f_scale_slider", &CConfig::get( ).settings.font_scale, m_font_scale_min, m_font_scale_max );
 
         // ImGui::Separator( );
         // 

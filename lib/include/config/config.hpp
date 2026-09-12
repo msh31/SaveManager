@@ -45,6 +45,8 @@ class CConfig {
                 // 0 means "unset" - window_manager computes a default from the primary monitor
                 int window_w = 0;
                 int window_h = 0;
+
+                float font_scale = 1.069f;
         };
 
         AppConfig settings;

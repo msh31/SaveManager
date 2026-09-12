@@ -47,6 +47,7 @@ void CWindowManager::render_frame( ) {
 
     bool use_shader = CConfig::get( ).settings.animated_background;
     bool use_bg = CConfig::get( ).settings.use_bg;
+    float font_scale = CConfig::get( ).settings.font_scale;
 
     render_shader( );
 
@@ -70,6 +71,7 @@ void CWindowManager::render_frame( ) {
     }
 
     ImGui::Begin( "Main Window", nullptr, window_flags );
+    ThemeManager::set_font_scale( font_scale );
     m_render_fn( );
     if ( use_bg || use_shader ) ImGui::PopStyleColor( );
     ImGui::End( );
