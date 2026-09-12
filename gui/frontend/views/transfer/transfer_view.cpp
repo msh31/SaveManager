@@ -348,6 +348,7 @@ void CTransferView::render( ) {
 
             float remote_content_height = ImGui::GetContentRegionAvail( ).y - 10.0f;
 
+            std::optional<std::string> pending_navigate = std::nullopt;
             if ( ImGui::BeginListBox( "##remote_entries", ImVec2( -FLT_MIN, remote_content_height ) ) ) {
                 if ( m_current_remote_path != "/" ) {
                     if ( is_transferring ) ImGui::BeginDisabled( true );
@@ -377,16 +378,19 @@ void CTransferView::render( ) {
                                     "Download failure", "Failed to download file: No remote path specified!", 2000 );
                                 return;
                             }
-                            m_current_remote_path = m_current_remote_path +
+                            pending_navigate = m_current_remote_path +
                                                     ( m_current_remote_path.back( ) == '/' ? "" : "/" ) + entry.name;
-                            m_remote_entries = m_remote->list_directory( m_current_remote_path );
-                            m_selected_remote_idx = -1;
                         } else {
                             m_selected_remote_idx = static_cast<int>( gi );
                         }
                     }
                     if ( is_transferring ) ImGui::EndDisabled( );
                 } );
+                if ( pending_navigate.has_value( ) ) {
+                    m_current_remote_path = pending_navigate.value( );
+                    m_remote_entries = m_remote->list_directory( m_current_remote_path );
+                    m_selected_remote_idx = -1;
+                }
                 ImGui::EndListBox( );
             }
         }
