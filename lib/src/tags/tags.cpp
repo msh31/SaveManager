@@ -43,10 +43,15 @@ void Tags::migrate_labels_to_tags( ) {
             }
 
             bool write_res = utils::atomic_write( tags_file, j_tags.dump( 4 ) );
-            if ( !write_res ) {
+            if ( write_res ) {
+                std::error_code ec;
+                fs::remove( labels_file, ec );
+                if ( ec ) {
+                    SPDLOG_ERROR( "[Tags] Failed to cleanup old labels!" );
+                }
+            } else {
                 SPDLOG_ERROR( "[Tags] Failed to migrate tags!" );
             }
-            fs::remove( labels_file );
         }
     }
 }
