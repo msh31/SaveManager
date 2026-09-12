@@ -82,8 +82,6 @@ find_package(sol2 REQUIRED)
 
 find_package(spdlog REQUIRED)
 
-find_package(CLI11 REQUIRED)
-
 include(FetchContent)
 
 # Fix warnings about DOWNLOAD_EXTRACT_TIMESTAMP
@@ -343,73 +341,6 @@ if(CMAKE_SYSTEM_NAME MATCHES "Darwin") # macos
 	    COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_BINARY_DIR}/SaveManager.app/Contents/Info.plist ${CMAKE_CURRENT_BINARY_DIR}/SaveManager.app/Contents/Info.plist
 	    COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/assets/app_icon/smicon.icns ${CMAKE_CURRENT_BINARY_DIR}/SaveManager.app/Contents/Resources/smicon.icns
 	)
-endif()
-
-# Target: savemgr
-set(savemgr_SOURCES
-	"cli/src/main.cpp"
-	cmake.toml
-)
-
-add_executable(savemgr)
-
-target_sources(savemgr PRIVATE ${savemgr_SOURCES})
-source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${savemgr_SOURCES})
-
-target_compile_features(savemgr PRIVATE
-	cxx_std_23
-)
-
-target_include_directories(savemgr PRIVATE
-	"cli/src"
-)
-
-target_link_libraries(savemgr PRIVATE
-	savemanager-core
-	CLI11::CLI11
-)
-
-target_precompile_headers(savemgr PRIVATE
-	"lib/include/pch.hpp"
-)
-
-get_directory_property(CMKR_VS_STARTUP_PROJECT DIRECTORY ${PROJECT_SOURCE_DIR} VS_STARTUP_PROJECT)
-if(NOT CMKR_VS_STARTUP_PROJECT)
-	set_property(DIRECTORY ${PROJECT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT savemgr)
-endif()
-
-# Target: savemanager-daemon
-set(savemanager-daemon_SOURCES
-	cmake.toml
-	"daemon/src/main.cpp"
-	"daemon/src/server/server.cpp"
-	"daemon/src/watcher/watcher.cpp"
-)
-
-add_executable(savemanager-daemon)
-
-target_sources(savemanager-daemon PRIVATE ${savemanager-daemon_SOURCES})
-source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${savemanager-daemon_SOURCES})
-
-target_compile_features(savemanager-daemon PRIVATE
-	cxx_std_23
-)
-
-target_include_directories(savemanager-daemon PRIVATE
-	"daemon/src"
-)
-
-target_link_libraries(savemanager-daemon PRIVATE
-	savemanager-core
-)
-
-target_precompile_headers(savemanager-daemon PRIVATE
-	"lib/include/pch.hpp"
-)
-
-get_directory_property(CMKR_VS_STARTUP_PROJECT DIRECTORY ${PROJECT_SOURCE_DIR} VS_STARTUP_PROJECT)
-if(NOT CMKR_VS_STARTUP_PROJECT)
-	set_property(DIRECTORY ${PROJECT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT savemanager-daemon)
 endif()
 
 install(

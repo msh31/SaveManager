@@ -55,8 +55,6 @@ required = true
 required = true
 [find-package.spdlog]
 required = true
-[find-package.CLI11]
-required = true
 
 # targets
 [target.savemanager-core]
@@ -146,19 +144,3 @@ add_custom_command(TARGET savemanager POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/assets/app_icon/smicon.icns ${CMAKE_CURRENT_BINARY_DIR}/SaveManager.app/Contents/Resources/smicon.icns
 )
 """
-
-[target.savemgr]
-type = "executable"
-sources = ["cli/src/**.cpp"]
-include-directories = ["cli/src"]
-link-libraries = ["savemanager-core", "CLI11::CLI11"]
-compile-features = ["cxx_std_23"]
-precompile-headers = ["lib/include/pch.hpp"]
-
-[target.savemanager-daemon]
-type = "executable"
-sources = ["daemon/src/**.cpp"]
-include-directories = ["daemon/src"]
-link-libraries = ["savemanager-core"]
-compile-features = ["cxx_std_23"]
-precompile-headers = ["lib/include/pch.hpp"]
