@@ -51,8 +51,8 @@ bool Network::download_file( const char* url, const std::string& output_path ) {
     curl_easy_setopt( handle.get( ), CURLOPT_WRITEDATA, fp );
 
     CURLcode res = curl_easy_perform( handle.get( ) );
-    if ( res != CURLE_OK ) {
-        SPDLOG_ERROR( "[Network] Failed to download file: {}", curl_easy_strerror( res ) );
+    auto close_res = fclose( fp );
+    if ( close_res != 0 ) {
         std::error_code ec;
         fs::remove( tmp_path, ec );
         if ( ec ) {
@@ -62,8 +62,8 @@ bool Network::download_file( const char* url, const std::string& output_path ) {
         return false;
     }
 
-    auto close_res = fclose( fp );
-    if ( close_res != 0 ) {
+    if ( res != CURLE_OK ) {
+        SPDLOG_ERROR( "[Network] Failed to download file: {}", curl_easy_strerror( res ) );
         std::error_code ec;
         fs::remove( tmp_path, ec );
         if ( ec ) {
