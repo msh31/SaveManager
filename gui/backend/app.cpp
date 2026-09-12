@@ -72,6 +72,7 @@ void CApp::refresh_background( ) {
     if ( fs::exists( path ) ) {
         auto img = CImageManager::get( ).load_from_disk( path, "background" );
         if ( img.texture_id == 0 ) {
+            CConfig::get( ).settings.use_bg = false;
             Notify::show_notification( "Background", "Failed to load background from disk!", 3000 );
             return;
         }
