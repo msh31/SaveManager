@@ -3,6 +3,8 @@
 #include <detection/detection_service.hpp>
 #include <logger.hpp>
 
+#include <config/config.hpp>
+
 CDetectionService::CDetectionService( ) = default;
 CDetectionService::~CDetectionService( ) = default;
 
@@ -50,9 +52,10 @@ void CDetectionService::init( ) {
 
 void CDetectionService::refresh( ) {
     if ( is_refreshing( ) ) return;
+    bool skip_empty = CConfig::get( ).d_settings.skip_empty_files;
 
     auto start = std::chrono::steady_clock::now( );
-    m_future = std::async( std::launch::async, [this, start] {
+    m_future = std::async( std::launch::async, [this, start, skip_empty] {
         std::vector<std::pair<IDetector*, std::future<std::expected<std::vector<Game>, SMError>>>> futures = { };
         std::vector<Game> games = { };
 
@@ -106,17 +109,19 @@ void CDetectionService::refresh( ) {
                                 } );
 
                                 // VALID PATH CHECK
-                                std::erase_if( games, []( const Game& game ) {
-                                    bool has_valid_path =
-                                        std::ranges::any_of( game.save_paths, []( const fs::path& p ) {
-                                            return fs::is_directory( p ) && !fs::is_empty( p );
-                                        } );
-                                    if ( !has_valid_path )
-                                        SPDLOG_INFO(
-                                            "[Detection] {} has no valid save paths ({} checked), removing.",
-                                            game.game_name, game.save_paths.size( ) );
-                                    return !has_valid_path;
-                                } );
+                                if ( skip_empty ) {
+                                    std::erase_if( games, []( const Game& game ) {
+                                        bool has_valid_path =
+                                            std::ranges::any_of( game.save_paths, []( const fs::path& p ) {
+                                                return (fs::is_directory( p ) && !fs::is_empty( p )) || fs::is_regular_file(p);
+                                            } );
+                                        if ( !has_valid_path )
+                                            SPDLOG_INFO(
+                                                "[Detection] {} has no valid save paths ({} checked), removing.",
+                                                game.game_name, game.save_paths.size( ) );
+                                        return !has_valid_path;
+                                    } );
+                                }
 
                                 {
                                     std::lock_guard lock( m_mutex );
