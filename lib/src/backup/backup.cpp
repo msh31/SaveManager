@@ -196,7 +196,8 @@ std::vector<fs::path> Backup::get_backups( const std::string& game ) {
 }
 
 std::string Backup::construct_backup_name( const std::string& game, const std::string& custom_name ) {
-    auto now = std::chrono::system_clock::now( );
+    auto now = std::chrono::time_point_cast<std::chrono::milliseconds>( std::chrono::system_clock::now( ) );
+
     auto timestamp = std::format( "{:%Y%m%d_%H%M%S}", now );
 
     std::string game_name = utils::sanitize_filename( game );
