@@ -74,7 +74,9 @@ std::vector<std::string> Backup::backup_all_games( const std::vector<Game>& snap
 
                 if ( ignore_rules.empty( ) ) {
                     auto ext = file.path( ).extension( ).string( );
-                    if ( extension_blocklist.contains( ext ) ) continue;
+                    if ( entry.type != PlatformType::MINECRAFT && extension_blocklist.contains( ext ) ) {
+                        if ( extension_blocklist.contains( ext ) ) continue;
+                    }
                 } else {
                     if ( Blacklist::is_ignored( file, ignore_rules ) ) continue;                
                 }
