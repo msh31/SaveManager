@@ -3,6 +3,9 @@
 #include "../utils/zip_archive/zip_archive.hpp"
 #include <logger.hpp>
 
+#include <utils/blacklist/blacklist.hpp>
+#include <config/config.hpp>
+
 bool Backup::backup_game( const Game& game, const fs::path& file ) {
     SPDLOG_INFO( "creating backup of: {}", game.game_name );
     fs::path game_backup_dir = paths::backup_dir( ) / utils::sanitize_filename_path( game.game_name );
@@ -51,18 +54,30 @@ bool Backup::backup_game( const Game& game, const fs::path& file ) {
 
 std::vector<std::string> Backup::backup_all_games( const std::vector<Game>& snapshot) {
     std::vector<std::string> failures = { };
+    bool use_ignore = CConfig::get( ).d_settings.use_savemgr_ignore;
 
     for ( const auto& entry : snapshot ) {
         std::vector<std::pair<fs::path, const Game*>> files;
 
         for ( const auto& save : entry.save_paths ) {
             if ( !fs::is_directory( save ) ) continue;
+
+            std::vector<IgnoreRule> ignore_rules = { };
+            bool signore_exists = fs::exists( save / ".savemgr-ignore" );
+            if ( use_ignore && signore_exists ) {
+                ignore_rules = Blacklist::parse_ignore_file( save / ".savemgr-ignore" );
+            }
+
             for ( const auto& file :
                   fs::recursive_directory_iterator( save, fs::directory_options::skip_permission_denied ) ) {
                 if ( !fs::is_regular_file( file ) ) continue;
 
-                auto ext = file.path( ).extension( ).string( );
-                if ( extension_blocklist.contains( ext ) ) continue;
+                if ( ignore_rules.empty( ) ) {
+                    auto ext = file.path( ).extension( ).string( );
+                    if ( extension_blocklist.contains( ext ) ) continue;
+                } else {
+                    if ( Blacklist::is_ignored( file, ignore_rules ) ) continue;                
+                }
 
                 files.push_back( { file.path( ), &entry } );
             }
