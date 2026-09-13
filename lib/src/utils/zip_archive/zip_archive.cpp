@@ -104,6 +104,7 @@ bool CZipArchive::finalize_add( ) {
 
 // Manifest not being able to be parsed is fine, it might not exist
 // which is the case for old backups created before this was added
+// TODO: refactor this behemoth of a method
 bool CZipArchive::extract_archive(
     const std::vector<fs::path>& save_paths, std::vector<std::pair<fs::path, fs::path>>& conflicts,
     bool has_index_prefixes, std::unordered_set<std::string> exclusions ) {
@@ -187,6 +188,7 @@ bool CZipArchive::extract_archive(
                 if ( fs::relative( resolved, safe_base ).string( ).starts_with( ".." ) ) {
                     SPDLOG_WARN( "zip-slip attempt: {}", fileInfo.name );
                     zip_fclose( file );
+                    failed_files.push_back( fileInfo.name );
                     continue;
                 }
                 auto resolved_tmp = resolved.string( ) + ".tmp";
@@ -222,6 +224,7 @@ bool CZipArchive::extract_archive(
                         fs::rename( resolved, conflict_dest, ec );
                         if ( ec ) {
                             SPDLOG_ERROR( "rename failed: {}", ec.message( ) );
+                            failed_files.push_back( fileInfo.name );
                             continue;
                         }
                         conflict_path = conflict_dest;
@@ -299,6 +302,7 @@ bool CZipArchive::extract_archive(
                 }
             } catch ( std::exception& ex ) {
                 SPDLOG_WARN( "Error on '{}': {}", fileInfo.name, ex.what( ) );
+                failed_files.push_back( fileInfo.name );
             }
         }
     }
