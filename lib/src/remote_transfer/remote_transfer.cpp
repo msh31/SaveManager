@@ -195,7 +195,7 @@ bool CRemoteTransfer::download_file( const fs::path& backup_path ) {
         return false;
     }
 
-    std::ofstream file( local_path, std::ios::binary );
+    std::ofstream file( local_path.string( ) + ".tmp", std::ios::binary );
     if ( !file.is_open( ) ) {
         SPDLOG_ERROR( "Could not open backup path with SFTP" );
         libssh2_sftp_close( m_sftp_handle );
@@ -227,7 +227,6 @@ bool CRemoteTransfer::download_file( const fs::path& backup_path ) {
         }
         m_bytes_transferred += rc;
     }
-
     if ( rc < 0 ) {
         SPDLOG_ERROR( "SFTP read failed: {}", rc );
         failed = true;
@@ -236,9 +235,30 @@ bool CRemoteTransfer::download_file( const fs::path& backup_path ) {
     libssh2_sftp_close( m_sftp_handle );
     m_sftp_handle = nullptr;
     file.close( );
+
+    if ( m_bytes_transferred != attrs.filesize ) {
+        m_bytes_transferred = { };
+        return false;
+    }
+
     m_bytes_transferred = { };
 
-    if ( !failed ) SPDLOG_INFO( "File has been downloaded!" );
+    if ( !failed ) {
+        std::error_code ec;
+        fs::rename( local_path.string( ) + ".tmp", local_path, ec );
+        if ( ec ) {
+            SPDLOG_ERROR( "[RemoteTransfer] failed to rename downloaded file from temp path!" );
+            return false;
+        }
+        SPDLOG_INFO( "File has been downloaded!" );
+    } else {
+        std::error_code ecr;
+        fs::remove( local_path.string( ) + ".tmp", ecr );
+        if ( ecr ) {
+            SPDLOG_WARN( "[RemoteTransfer] failed to cleanup temp file after download failure" );
+        }
+    }
+
     return !failed;
 }
 
