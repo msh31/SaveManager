@@ -5,8 +5,7 @@
 // https://libssh2.org/examples/sftp_write.html
 CRemoteTransfer::CRemoteTransfer( ) {}
 
-bool CRemoteTransfer::connect(
-    const std::string& dest_addr, CConfig& config, bool auth_pw, const std::string& key_passphrase ) {
+bool CRemoteTransfer::connect(const std::string& dest_addr, bool auth_pw, const std::string& key_passphrase ) {
 #ifdef _WIN32
     WSADATA wsadata;
     WSAStartup( MAKEWORD( 2, 2 ), &wsadata );
@@ -63,19 +62,20 @@ bool CRemoteTransfer::connect(
     m_fingerprint = hex_encode( reinterpret_cast<const unsigned char*>( raw_fingerprint ), 32 );
 
     // has logging internally
-    auto khres = config.verify_known_host( dest_addr, m_fingerprint );
+    auto khres = CConfig::get( ).verify_known_host( dest_addr, m_fingerprint );
     if ( khres == CConfig::KNOWN_HOST_RESULT::MISMATCH ) return fail( );
 
     if ( auth_pw ) {
-        if ( libssh2_userauth_password( m_session, config.sftp.username.c_str( ), config.sftp.password.c_str( ) ) ) {
+        if ( libssh2_userauth_password( m_session, CConfig::get( ).sftp.username.c_str( ), CConfig::get( ).sftp.password.c_str( ) ) ) {
             SPDLOG_ERROR( "Authentication by password failed." );
             return fail( );
         }
     } else {
-        if ( libssh2_userauth_publickey_fromfile(
-                 m_session, config.sftp.username.c_str( ), config.sftp.pubkey.string( ).c_str( ),
-                 config.sftp.privkey.string( ).c_str( ),
-                 key_passphrase.empty( ) ? nullptr : key_passphrase.c_str( ) ) ) {
+        if ( libssh2_userauth_publickey_fromfile(m_session, CConfig::get( ).sftp.username.c_str( ), 
+            CConfig::get( ).sftp.pubkey.string( ).c_str( ),
+            CConfig::get( ).sftp.privkey.string( ).c_str( ),
+            key_passphrase.empty( ) ? nullptr : key_passphrase.c_str( ) ) ) 
+        {
             SPDLOG_ERROR( "Authentication by public key failed." );
             return fail( );
         }
@@ -122,8 +122,7 @@ bool CRemoteTransfer::disconnect( ) {
     return false;
 }
 
-bool CRemoteTransfer::upload_file(
-    const fs::path& backup_path, const std::string& remote_path, const CConfig& config ) {
+bool CRemoteTransfer::upload_file(const fs::path& backup_path, const std::string& remote_path ) {
     char mem[1024 * 100];
     size_t nread;
     ssize_t nwritten;
@@ -181,7 +180,7 @@ bool CRemoteTransfer::upload_file(
     return !failed;
 }
 
-bool CRemoteTransfer::download_file( const fs::path& backup_path, const CConfig& config ) {
+bool CRemoteTransfer::download_file( const fs::path& backup_path ) {
     auto mem = std::vector<char>( 1024 * 100 );
 
     fs::path local_path = paths::backup_dir( ) / backup_path.parent_path( ).filename( ) / backup_path.filename( );

@@ -100,19 +100,26 @@ void CTransferView::render( ) {
         if ( !is_connecting && !m_connected ) {
             if ( ImGui::Button( "Connect" ) ) {
                 m_connecting = true;
+
+                CConfig::get( ).sftp.username = m_username;
+                CConfig::get( ).sftp.password = m_password;
+                CConfig::get( ).sftp.pubkey = m_pubkey;
+                CConfig::get( ).sftp.privkey = m_privkey;
+
                 m_queue.run<bool>(
                     [remote = m_remote, addr = m_dest_addr, auth = m_use_password_auth,
                      pass = m_key_passphrase]( TaskControl& ) {
-                        return remote->connect( addr, CConfig::get( ), auth, pass );
+                        return remote->connect( addr, auth, pass );
                     },
                     [this]( bool success ) {
                         m_connecting = false;
                         if ( success ) {
                             m_connected = true;
                             m_current_remote_path =
-                                "/home/" + CConfig::get( ).sftp.username; // TODO: allow custom start location..
+                                "/home/" + m_username; // TODO: allow custom start location..
                             m_remote_entries = m_remote->list_directory( m_current_remote_path );
                             Notify::show_notification( "SFTP Connection", "Connected!", 2000 );
+                            CConfig::get( ).save( );
                         } else {
                             Notify::show_notification( "SFTP Connection", "Failed to connect!", 2000 );
                         }
@@ -215,7 +222,7 @@ void CTransferView::render( ) {
                     [remote = m_remote, cr = m_current_remote_path, selected_paths]( TaskControl& control ) {
                         utils::enumerate( selected_paths, [&]( int gi, auto& path ) {
                             if ( control.cancel_requested.load( ) ) throw TaskCancelled{ };
-                            if ( !remote->upload_file( path, cr, CConfig::get( ) ) ) {
+                            if ( !remote->upload_file( path, cr ) ) {
                                 auto str = std::format( "Failed to upload: {}", path.string( ) );
                                 Notify::show_notification( "Upload", str, 2500 );
                             } else {
@@ -317,7 +324,7 @@ void CTransferView::render( ) {
                     m_downloading = true;
                     m_queue.run<int>(
                         [remote = m_remote, path]( TaskControl& ) {
-                            if ( !remote->download_file( path, CConfig::get( ) ) ) {
+                            if ( !remote->download_file( path ) ) {
                                 auto str = std::format( "Failed to download: {}", path );
                                 Notify::show_notification( "Download", str, 2500 );
                             } else {
