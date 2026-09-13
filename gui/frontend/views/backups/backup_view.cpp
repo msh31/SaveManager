@@ -35,12 +35,12 @@ void CBackupsView::request_refresh( const std::vector<Game>& games_snapshot ) {
 void CBackupsView::on_exit( ) {}
 
 CBackupsView::RefreshResult CBackupsView::scan_backups( const std::vector<Game>& snapshot ) {
-    std::unordered_map<std::string, fs::path> save_path_lookup;
+    std::unordered_map<std::string, std::vector<fs::path>> save_path_lookup = { };
 
     for ( const auto& game : snapshot ) {
         for ( const auto& save : game.save_paths ) {
             auto name = utils::sanitize_filename( game.game_name );
-            save_path_lookup[name] = save;
+            save_path_lookup[name].push_back(save);
         }
     }
 
@@ -57,7 +57,7 @@ CBackupsView::RefreshResult CBackupsView::scan_backups( const std::vector<Game>&
         labels_cache[name_utf8] = Tags::load_tag_cache( name_utf8 );
 
         if ( auto it = save_path_lookup.find( name_utf8 ); it != save_path_lookup.end( ) )
-            bentry.save_path = it->second;
+            bentry.save_paths = it->second;
 
         for ( const auto& entry_b : fs::directory_iterator( entry ) ) {
             if ( entry_b.path( ).extension( ) != ".zip" ) continue;

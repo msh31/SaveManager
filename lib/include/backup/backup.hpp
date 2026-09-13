@@ -12,7 +12,7 @@ static const std::unordered_set<std::string_view> g_extension_blocklist{ ".png",
 
 struct BackupEntry {
         fs::path name;
-        fs::path save_path;
+        std::vector<fs::path> save_paths;
         std::vector<fs::path> entries;
         size_t size = 0;
 };
