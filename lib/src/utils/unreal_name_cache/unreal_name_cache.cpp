@@ -1,5 +1,6 @@
 #include "utils/unreal_name_cache/unreal_name_cache.hpp"
 #include "utils/paths.hpp"
+#include "utils/utils.hpp"
 #include <logger.hpp>
 
 bool UnrealNameCache::init( ) {
@@ -72,17 +73,13 @@ void UnrealNameCache::remember_by_folder( const std::string& folder_name, const 
 void UnrealNameCache::save( ) const {
     std::lock_guard<std::mutex> lock( m_mutex );
 
-    json data;
+    json data = json::object( );
     for ( const auto& [appid, name] : m_cache )
         data["appid"][std::to_string( appid )] = name;
     for ( const auto& [folder, name] : m_folder_cache )
         data["folder"][folder] = name;
 
-    std::ofstream file( paths::unreal_name_cache( ) );
-    if ( !file.is_open( ) ) {
-        SPDLOG_WARN( "Failed to open unreal name cache for writing!" );
-        return;
+    if ( !utils::atomic_write( paths::unreal_name_cache( ), data.dump( 4 ) ) ) {
+        SPDLOG_WARN( "Failed to write unreal name cache!" );
     }
-    file << data.dump( 4 );
-    file.close( );
 }

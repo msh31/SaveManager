@@ -83,7 +83,6 @@ std::unordered_map<std::string, std::vector<std::string>> Tags::load_tags( const
 
 std::expected<bool, SMError> Tags::save_tags( const std::string& game, const std::string& filename, const std::vector<std::string>& tags ) {
     std::string file_name = ( paths::backup_dir( ) / utils::sanitize_filename_path( game ) / "tags.json" ).string( );
-    std::string tmp_name = file_name + ".tmp";
 
     json data = load_tags( game );
     data[filename] = tags;
@@ -97,16 +96,8 @@ std::expected<bool, SMError> Tags::save_tags( const std::string& game, const std
         return true;
     }
 
-    bool write_res = utils::atomic_write( tmp_name, data.dump( 4 ) );
-    if ( !write_res ) {
+    if ( !utils::atomic_write( file_name, data.dump( 4 ) ) ) {
         SPDLOG_ERROR( "[Tags] Failed to save tags due to a write error!" );
-        return false;
-    }
-
-    std::error_code ec;
-    fs::rename( tmp_name, file_name, ec );
-    if ( ec ) {
-        SPDLOG_ERROR( "Failed to move tags into place for: {}", game );
         return false;
     }
     return true;

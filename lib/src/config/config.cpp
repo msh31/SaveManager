@@ -71,12 +71,8 @@ void CConfig::init( ) {
     }
 
     if ( !fs::exists( paths::blacklist( ) ) ) { //1.
-        std::ofstream f( paths::blacklist( ) );
-        if ( f.is_open( ) ) {
-            f << R"(["The Crew Motorfest", "Skull and Bones"])";
-            f.close( );
-        } else {
-            SPDLOG_WARN( "[Blacklist] Failed to open blacklist for writing" );
+        if ( !utils::atomic_write( paths::blacklist( ), R"(["The Crew Motorfest", "Skull and Bones"])" ) ) {
+            SPDLOG_WARN( "[Blacklist] Failed to seed the blacklist" );
         }
     }
 }

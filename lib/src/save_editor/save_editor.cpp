@@ -1,4 +1,5 @@
 #include "save_editor/save_editor.hpp"
+#include <utils/utils.hpp>
 #include <logger.hpp>
 
 /*
@@ -100,9 +101,11 @@ bool SanAndreas::open( fs::path path ) {
     }
 
     data = std::vector<uint8_t>( std::istreambuf_iterator<char>( file ), { } );
+    file.close( ); // everything past this point works on the in-memory copy, and save( ) cannot
+                   // replace the file on Windows while a read handle is still open on it
+
     if ( data.empty( ) ) {
         SPDLOG_ERROR( "Failed to load data from savegame!" );
-        file.close( );
         return false;
     }
 
@@ -111,13 +114,11 @@ bool SanAndreas::open( fs::path path ) {
         SPDLOG_DEBUG( "file validated!" );
     } else {
         SPDLOG_DEBUG( "file failed to validate!" );
-        file.close( );
         return false;
     }
     SPDLOG_INFO( "parsing savefile: {}", path.filename( ).string( ) );
     if ( !parse_block_zero( ) ) {
         SPDLOG_ERROR( "Failed to parse BLOCK0, aborting!" );
-        file.close( );
         return false;
     }
     parse_block_two( );
@@ -140,17 +141,11 @@ bool SanAndreas::save( fs::path path ) {
     std::uint32_t checksum = calculate_checksum( );
     std::memcpy( data.data( ) + data.size( ) - 4, &checksum, 4 );
 
-    std::ofstream out( path, std::ios::binary );
-    if ( !out ) {
-        SPDLOG_ERROR( "Failed to open savegame for writing!" );
+    if ( !utils::atomic_write( path, std::string( data.begin( ), data.end( ) ) ) ) {
+        SPDLOG_ERROR( "Failed to write savegame!" );
         return false;
     }
-    out.write( reinterpret_cast<const char*>( data.data( ) ), data.size( ) );
-    if ( out.good( ) ) {
-        out.close( );
-        return true;
-    }
-    return false;
+    return true;
 }
 
 bool SanAndreas::parse_block_zero( ) {
