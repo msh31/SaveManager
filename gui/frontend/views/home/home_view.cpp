@@ -619,7 +619,7 @@ void CHomeView::invalidate_cache( const std::vector<Game>& games, std::function<
                                 if ( file.path( ).filename( ) == ".savemgr-ignore" ) continue;
 
                                 if ( ignore_rules.empty( ) ) {
-                                    auto ext = save_path.extension( ).string( );
+                                    auto ext = file.path().extension( ).string( );
                                     if ( game.type != PlatformType::CUSTOM && game.type != PlatformType::GENERIC ) {
                                         if ( extension_blocklist.contains( ext ) ) continue;
                                     }
