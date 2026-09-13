@@ -21,7 +21,7 @@ class CBackupsView {
         void render_game_row( const BackupEntry& bentry, const LabelsCache& labels_cache );
 
         void render_backup_row(
-            fs::path path, const fs::path& save_path, const std::unordered_map<std::string, TagCache>& labels,
+            fs::path path, const std::vector<fs::path>& save_paths, const std::unordered_map<std::string, TagCache>& labels,
             const std::string& game_name );
 
         void render_modals( );

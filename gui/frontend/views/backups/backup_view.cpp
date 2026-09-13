@@ -137,14 +137,14 @@ void CBackupsView::render_game_row( const BackupEntry& bentry, const LabelsCache
             auto it = labels_cache.find( name_utf8 );
             const auto& labels = ( it != labels_cache.end( ) ) ? it->second : empty_labels;
             for ( const auto& entry : bentry.entries )
-                render_backup_row( entry, bentry.save_path, labels, name_utf8 );
+                render_backup_row( entry, bentry.save_paths, labels, name_utf8 );
         }
     }
     ImGui::PopStyleVar( );
 }
 
 void CBackupsView::render_backup_row(
-    fs::path path, const fs::path& save_path, const std::unordered_map<std::string, TagCache>& labels,
+    fs::path path, const std::vector<fs::path>& save_paths, const std::unordered_map<std::string, TagCache>& labels,
     const std::string& game_name ) {
     if ( path.filename( ) == "undo.zip" ) return;
     if ( !fs::exists( path ) ) return;
@@ -183,11 +183,11 @@ void CBackupsView::render_backup_row(
     ImGui::PushStyleVar( ImGuiStyleVar_FramePadding, ImVec2( 3.0f, 3.0f ) );
 
     if ( ImGui::Button( "Restore", ImVec2( 80.0f, 0 ) ) ) {
-        if ( save_path.empty( ) ) {
+        if ( save_paths.empty( ) ) {
             Notify::show_notification( "Restore", "Cannot restore: save location unknown.", 2000 );
         } else {
             std::vector<std::pair<fs::path, fs::path>> conflicts;
-            Backup::restore_backup( path, { save_path }, conflicts );
+            Backup::restore_backup( path, { save_paths }, conflicts );
         }
     }
     ImGui::SetItemTooltip( "Restore save from backup" );
