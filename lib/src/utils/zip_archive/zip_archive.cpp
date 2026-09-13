@@ -177,6 +177,19 @@ bool CZipArchive::extract_archive(
                     safe_base = fs::weakly_canonical( save_paths[0] );
                 }
 
+                if ( fs::path( relative_name ).is_absolute( ) ) {
+                    SPDLOG_WARN( "absolute path in archive entry, rejecting: {}", fileInfo.name );
+                    failed_files.push_back( fileInfo.name );
+                    continue;
+                }
+
+                //windows format for network paths
+                if ( relative_name.starts_with( "\\\\" ) ) {
+                    SPDLOG_WARN( "UNC path in archive entry, rejecting: {}", fileInfo.name );
+                    failed_files.push_back( fileInfo.name );
+                    continue;
+                }
+
                 zip_file* file = zip_fopen_index( m_archive, i, 0 );
                 if ( file == nullptr ) {
                     SPDLOG_WARN( "Failed to open file in archive: {}", fileInfo.name );
