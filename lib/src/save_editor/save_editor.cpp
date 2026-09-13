@@ -184,13 +184,15 @@ void SanAndreas::parse_block_five( ) {
 
 void SanAndreas::parse_block_fifteen( ) {
     auto bft_offset = block_offsets[15];
-    if ( bft_offset + 0x23 > data.size( ) ) return;
+    if ( bft_offset + 0x27 > data.size( ) ) return;
 
     std::memcpy( &money, data.data( ) + bft_offset + 4, 4 );
     std::memcpy( &money_displayed, data.data( ) + bft_offset + 0x10, 4 );
 
     max_health = data[bft_offset + 35];
     max_armor = data[bft_offset + 36];
+    free_busted_once = data[bft_offset + 0x25];
+    free_wasted_once = data[bft_offset + 0x26];
     infinite_run = data[bft_offset + 0x20];
     fast_reload = data[bft_offset + 0x21];
     fireproof = data[bft_offset + 0x22];
