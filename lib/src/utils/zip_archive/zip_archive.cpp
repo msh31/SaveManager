@@ -190,6 +190,12 @@ bool CZipArchive::extract_archive(
                     continue;
                 }
 
+                if ( fs::path( relative_name ).has_root_name( ) ) {
+                    SPDLOG_WARN( "path in archive entry has root name, rejecting: {}", fileInfo.name );
+                    failed_files.push_back( fileInfo.name );
+                    continue;
+                }
+
                 zip_file* file = zip_fopen_index( m_archive, i, 0 );
                 if ( file == nullptr ) {
                     SPDLOG_WARN( "Failed to open file in archive: {}", fileInfo.name );
