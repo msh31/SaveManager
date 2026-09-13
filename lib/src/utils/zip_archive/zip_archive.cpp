@@ -114,6 +114,7 @@ bool CZipArchive::extract_archive(
     }
 
     auto manifest = read_manifest_from_zip( m_archive );
+    bool manifest_parse_failed = false;
 
     int file_count = zip_get_num_entries( m_archive, 0 );
     std::vector<std::string> failed_files;
@@ -123,8 +124,14 @@ bool CZipArchive::extract_archive(
         try {
             manifest_json = json::parse( *manifest );
         } catch ( json::exception& ex ) {
-            SPDLOG_ERROR( "manifest parsing error: {}", ex.what( ) );
+            SPDLOG_ERROR( "[ZipArchive] Manifest parsing error: {}", ex.what( ) );
+            manifest_parse_failed = true;
         }
+    }
+
+    if ( manifest_parse_failed ) {
+        SPDLOG_ERROR( "[ZipArchive] Manifest present but failed to parse, refusing to extract archive" );
+        return false;
     }
 
     for ( int i = 0; i < file_count; i++ ) {
