@@ -48,8 +48,12 @@ void CEditorView::render( ) {
     } else {
     
         if ( ImGui::Button( "Save" ) ) {
-            m_san_andreas.save( file_path );
-            Notify::show_notification( "Save Editor", "Savegame changed saved succesfully!", 3000 );
+            bool res = m_san_andreas.save( file_path );
+            if ( res ) {
+                Notify::show_notification( "Save Editor", "Savegame changed saved succesfully!", 3000 );
+            } else {
+                Notify::show_notification( "Save Editor", "Failed to save your changes! refer to the log for more info!", 3000 );
+            }
         }
         ImGui::SameLine( );
         if ( ImGui::Button( "Close" ) ) {
