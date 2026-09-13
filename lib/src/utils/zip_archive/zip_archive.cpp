@@ -10,7 +10,7 @@ bool CZipArchive::add_to_archive(
     if ( fs::is_regular_file( file ) ) {
         if ( m_archive == nullptr ) return false;
 
-        std::string entry_name;
+        std::string entry_name = { };
         if ( entry_name_override.has_value( ) ) {
             entry_name = entry_name_override.value( );
         } else {
@@ -39,6 +39,15 @@ bool CZipArchive::add_to_archive(
     if ( fs::is_directory( file ) ) {
         if ( m_archive == nullptr ) return false;
 
+        std::string entry_name = { };
+        if ( entry_name_override.has_value( ) ) {
+            entry_name = entry_name_override.value( );
+        } else {
+            if ( parent.has_value( ) ) {
+                entry_name = utils::path_to_utf8_generic( parent.value( ) );
+            }
+        }
+
         for ( const auto& entry :
               fs::recursive_directory_iterator( file, fs::directory_options::skip_permission_denied ) ) {
             if ( !fs::is_regular_file( entry ) ) continue;
@@ -48,13 +57,7 @@ bool CZipArchive::add_to_archive(
                 failed_files.push_back( entry.path( ).filename( ).string( ).c_str( ) );
             } else {
                 auto file_path = fs::relative( entry.path( ), file );
-
-                std::string zip_name = { };
-                if ( parent.has_value( ) ) {
-                    zip_name = utils::path_to_utf8_generic( fs::path( parent.value( ) ) / file_path );
-                } else {
-                    zip_name = utils::path_to_utf8_generic( file_path );
-                }
+                auto zip_name = utils::path_to_utf8_generic( fs::path( entry_name ) / file_path );
 
                 if ( zip_file_add( m_archive, zip_name.c_str( ), source, ZIP_FL_OVERWRITE ) < 0 ) {
                     SPDLOG_ERROR( "Failed to add file: {}", zip_strerror( m_archive ) );
