@@ -408,6 +408,8 @@ std::optional<std::string> CZipArchive::read_manifest_from_zip( zip_t* zip_handl
             auto bytes_read = zip_fread( file, content.data( ), fileInfo.size );
             if ( bytes_read != static_cast<zip_int64_t>( fileInfo.size ) ) {
                 SPDLOG_WARN( "manifest read incomplete or failed ({} of {} bytes)", bytes_read, fileInfo.size );
+                zip_fclose( file );
+                return std::nullopt;
             }
             zip_fclose( file );
             return content;
