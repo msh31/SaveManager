@@ -133,24 +133,25 @@ bool CRemoteTransfer::upload_file(const fs::path& backup_path, const std::string
         return false;
     }
 
+    std::ifstream file( backup_path, std::ios::binary );
+    if ( !file.is_open( ) ) {
+        SPDLOG_ERROR( "Could not open backup for reading: {}", backup_path.string( ) );
+        return false;
+    }
+
     std::string remote_file =
         remote_path + ( remote_path.back( ) == '/' ? "" : "/" ) + backup_path.filename( ).string( );
+    std::string remote_tmp = remote_file + ".tmp";
+
     m_sftp_handle = libssh2_sftp_open(
-        m_sftp_session, remote_file.c_str( ), LIBSSH2_FXF_WRITE | LIBSSH2_FXF_CREAT | LIBSSH2_FXF_TRUNC,
+        m_sftp_session, remote_tmp.c_str( ), LIBSSH2_FXF_WRITE | LIBSSH2_FXF_CREAT | LIBSSH2_FXF_TRUNC,
         LIBSSH2_SFTP_S_IRUSR | LIBSSH2_SFTP_S_IWUSR | LIBSSH2_SFTP_S_IRGRP | LIBSSH2_SFTP_S_IROTH );
     if ( !m_sftp_handle ) {
         SPDLOG_ERROR( "Unable to open path with SFTP {}", libssh2_sftp_last_error( m_sftp_session ) );
         return false;
     }
 
-    std::ifstream file( backup_path, std::ios::binary );
-    if ( !file.is_open( ) ) {
-        SPDLOG_ERROR( "Could not open backup path with SFTP" );
-        libssh2_sftp_close_handle( m_sftp_handle );
-        m_sftp_handle = nullptr;
-        return false;
-    }
-
+    m_bytes_transferred = { };
     m_total_bytes = fs::file_size( backup_path );
     bool failed = false;
     do {
@@ -174,10 +175,42 @@ bool CRemoteTransfer::upload_file(const fs::path& backup_path, const std::string
         } while ( nread );
     } while ( file.gcount( ) > 0 && !failed );
 
+    if ( file.bad( ) ) {
+        SPDLOG_ERROR( "Failed to read backup while uploading: {}", backup_path.string( ) );
+        failed = true;
+    }
+
     libssh2_sftp_close_handle( m_sftp_handle );
     m_sftp_handle = nullptr;
-    if ( !failed ) SPDLOG_INFO( "File has been uploaded!" );
-    return !failed;
+    file.close( );
+
+    if ( !failed && m_bytes_transferred != m_total_bytes ) {
+        SPDLOG_ERROR(
+            "Upload is short: sent {} of {} bytes", m_bytes_transferred.load( ), m_total_bytes.load( ) );
+        failed = true;
+    }
+
+    if ( failed ) {
+        libssh2_sftp_unlink( m_sftp_session, remote_tmp.c_str( ) );
+        m_bytes_transferred = { };
+        return false;
+    }
+
+    if ( libssh2_sftp_rename( m_sftp_session, remote_tmp.c_str( ), remote_file.c_str( ) ) < 0 ) {
+        libssh2_sftp_unlink( m_sftp_session, remote_file.c_str( ) );
+
+        if ( libssh2_sftp_rename( m_sftp_session, remote_tmp.c_str( ), remote_file.c_str( ) ) < 0 ) {
+            SPDLOG_ERROR(
+                "Failed to move uploaded file into place: {}", libssh2_sftp_last_error( m_sftp_session ) );
+            libssh2_sftp_unlink( m_sftp_session, remote_tmp.c_str( ) );
+            m_bytes_transferred = { };
+            return false;
+        }
+    }
+
+    m_bytes_transferred = { };
+    SPDLOG_INFO( "File has been uploaded!" );
+    return true;
 }
 
 bool CRemoteTransfer::download_file( const fs::path& backup_path ) {
@@ -212,6 +245,7 @@ bool CRemoteTransfer::download_file( const fs::path& backup_path ) {
         file.close( );
         return false;
     }
+    m_bytes_transferred = { };
     m_total_bytes = attrs.filesize;
 
     ssize_t rc = -1; // failure
