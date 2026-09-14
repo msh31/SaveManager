@@ -1,10 +1,10 @@
 #include "editor_view.hpp"
-#include <utils/utils.hpp>
 #include <nfd.h>
+#include <utils/utils.hpp>
 
 #include <backend/font_manager/font_manager.hpp>
-#include <frontend/notification/notification.hpp>
 #include <frontend/childguard.hpp>
+#include <frontend/notification/notification.hpp>
 
 /*
     TODO LIST
@@ -13,12 +13,12 @@
 */
 
 void CEditorView::render( ) {
-    ImGui::Text( "Save Editor" ); //1.
+    ImGui::Text( "Save Editor" ); // 1.
 
     bool file_empty = file_path.empty( );
 
     if ( file_empty ) {
-        ChildGuard toolbar( "", { 0.0f, 0.0f } );
+        ChildGuard toolbar( "##help_me", { 0.0f, 0.0f } );
 
         if ( ImGui::Button( "Open savefile" ) ) {
             NFD_Init( );
@@ -46,13 +46,14 @@ void CEditorView::render( ) {
             NFD_Quit( );
         }
     } else {
-    
+
         if ( ImGui::Button( "Save" ) ) {
             bool res = m_san_andreas.save( file_path );
             if ( res ) {
                 Notify::show_notification( "Save Editor", "Savegame changed saved succesfully!", 3000 );
             } else {
-                Notify::show_notification( "Save Editor", "Failed to save your changes! refer to the log for more info!", 3000 );
+                Notify::show_notification(
+                    "Save Editor", "Failed to save your changes! refer to the log for more info!", 3000 );
             }
         }
         ImGui::SameLine( );
@@ -109,7 +110,7 @@ void CEditorView::render( ) {
             ImGui::Checkbox( "Fireproof", &m_san_andreas.fireproof );
         }
 
-         ImGui::SameLine( );
+        ImGui::SameLine( );
 
         {
             ChildGuard sa_collect( "Collectables", { 0.0f, 0.0f } );
