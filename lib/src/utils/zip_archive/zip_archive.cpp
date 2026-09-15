@@ -268,6 +268,7 @@ bool CZipArchive::extract_archive(
                     SPDLOG_ERROR( "Failed to open save file for writing: {}", resolved.filename( ).string( ) );
                     failed_files.push_back( fileInfo.name );
                     zip_fclose( file );
+                    restore_conflict( );
                     continue;
                 }
 
