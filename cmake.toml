@@ -9,6 +9,7 @@ version = "1.10.0"
 languages = ["C", "CXX"]
 msvc-runtime = "dynamic"
 apple.languages = ["OBJC"]
+include-after = ["cmake/packaging.cmake"]
 cmake-after = """
 if(WIN32)
   set(SPDLOG_WCHAR_FILENAMES ON)
