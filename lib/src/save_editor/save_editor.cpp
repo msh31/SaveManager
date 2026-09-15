@@ -1,11 +1,11 @@
 #include "save_editor/save_editor.hpp"
-#include <utils/utils.hpp>
 #include <logger.hpp>
+#include <utils/utils.hpp>
 
 /*
     TODO LIST
 
-    1. Move SA to dedicated file like sanandreas.cpp/hpp 
+    1. Move SA to dedicated file like sanandreas.cpp/hpp
 */
 
 std::uint32_t SanAndreas::calculate_checksum( ) {

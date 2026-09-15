@@ -8,9 +8,7 @@
 #include <frontend/smlogo.hpp>
 #include <frontend/ui.hpp>
 
-void CAboutView::on_enter( ) {
-    m_embedded = CImageManager::get( ).load_from_memory( smlogo_data, smlogo_len, "logo" );
-}
+void CAboutView::on_enter( ) { m_embedded = CImageManager::get( ).load_from_memory( smlogo_data, smlogo_len, "logo" ); }
 
 void CAboutView::render( ) {
     static const char* subtitle = "The swiss army knife of save management";

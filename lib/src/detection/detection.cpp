@@ -1,14 +1,14 @@
-#include <logger.hpp>
 #include "detector_context.hpp"
 #include <detection/detection.hpp>
+#include <logger.hpp>
 
 #include "utils/paths.hpp"
-#include <utils/utils.hpp>
 #include <utils/steam/steam.hpp>
+#include <utils/utils.hpp>
 
-#include "plugin/plugin.hpp"
 #include "minecraft/minecraft.hpp"
 #include "pcgw/pcgw.hpp"
+#include "plugin/plugin.hpp"
 #include "rsg/rsg.hpp"
 #include "ubi/ubi.hpp"
 #include "unreal/unreal.hpp"

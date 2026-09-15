@@ -1,6 +1,6 @@
-#include <utils/blacklist/blacklist.hpp>
 #include "utils/paths.hpp"
 #include "utils/utils.hpp"
+#include <utils/blacklist/blacklist.hpp>
 
 #include <nlohmann/json.hpp>
 using json = nlohmann::json;

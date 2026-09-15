@@ -1,8 +1,8 @@
 #include "backup_preview.hpp"
-#include <utils/utils.hpp>
 #include <frontend/notification/notification.hpp>
+#include <utils/utils.hpp>
 
-void CBackupPreviewModal::open( const std::vector<std::string>& list) {
+void CBackupPreviewModal::open( const std::vector<std::string>& list ) {
     m_preview_list = list;
     request_open( );
 }

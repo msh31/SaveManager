@@ -1,6 +1,6 @@
 #pragma once
-#include <detection/detection.hpp>
 #include <backup/backup.hpp>
+#include <detection/detection.hpp>
 #include <tags/tags.hpp>
 
 #include <async_queue/async_queue.hpp>
@@ -21,8 +21,8 @@ class CBackupsView {
         void render_game_row( const BackupEntry& bentry, const LabelsCache& labels_cache );
 
         void render_backup_row(
-            fs::path path, const std::vector<fs::path>& save_paths, const std::unordered_map<std::string, TagCache>& labels,
-            const std::string& game_name );
+            fs::path path, const std::vector<fs::path>& save_paths,
+            const std::unordered_map<std::string, TagCache>& labels, const std::string& game_name );
 
         void render_modals( );
         void request_refresh( const std::vector<Game>& games_snapshot );

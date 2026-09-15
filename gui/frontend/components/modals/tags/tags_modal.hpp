@@ -11,7 +11,7 @@
 
 class CTagsModal : public CModalBase {
     public:
-        CTagsModal(  ) : CModalBase("Manage Tags") {};
+        CTagsModal( ) : CModalBase( "Manage Tags" ) {};
 
         void open(
             const std::string& game_name, const fs::path& backup, const std::vector<std::string>& tag_list,
@@ -19,7 +19,7 @@ class CTagsModal : public CModalBase {
         void render_content( );
 
     private:
-        //1.
+        // 1.
         std::string m_pending_rename_game = { };
         std::string m_new_tag_input = { };
         std::vector<std::string> m_pending_tags = { };
@@ -27,7 +27,8 @@ class CTagsModal : public CModalBase {
 
         std::function<void( const std::string&, const std::vector<std::string>& )> m_on_saved;
 
-        //2.
+        // 2.
         std::unordered_map<std::string, std::vector<std::string>> load_tags( const std::string& game );
-        std::expected<bool, SMError> save_tags(const std::string& game, const std::string& filename, const std::vector<std::string>& tags );
+        std::expected<bool, SMError>
+        save_tags( const std::string& game, const std::string& filename, const std::vector<std::string>& tags );
 };

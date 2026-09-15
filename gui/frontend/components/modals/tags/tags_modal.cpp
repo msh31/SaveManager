@@ -1,11 +1,12 @@
 #include "tags_modal.hpp"
-#include <utils/utils.hpp>
 #include <frontend/notification/notification.hpp>
+#include <utils/utils.hpp>
 
 #include <nlohmann/json.hpp>
 using json = nlohmann::json;
 
-void CTagsModal::open( const std::string& game_name, const fs::path& backup, const std::vector<std::string>& tag_list,
+void CTagsModal::open(
+    const std::string& game_name, const fs::path& backup, const std::vector<std::string>& tag_list,
     const std::function<void( const std::string&, const std::vector<std::string>& )>& on_saved ) {
     m_new_tag_input.clear( );
     m_pending_rename_game = game_name;
@@ -15,7 +16,7 @@ void CTagsModal::open( const std::string& game_name, const fs::path& backup, con
     request_open( );
 }
 
-void CTagsModal::render_content() {
+void CTagsModal::render_content( ) {
     ImGui::Text( "%s", utils::path_to_utf8( m_pending_rename_backup.filename( ) ).c_str( ) );
     ImGui::Separator( );
 
@@ -34,7 +35,7 @@ void CTagsModal::render_content() {
     ImGui::Separator( );
 
     bool add_tag = ImGui::InputText( "##new_tag", &m_new_tag_input, ImGuiInputTextFlags_EnterReturnsTrue );
-    //ImGui::SameLine( );
+    // ImGui::SameLine( );
     add_tag = ImGui::Button( "Add" ) || add_tag;
     if ( add_tag && !m_new_tag_input.empty( ) ) {
         if ( std::ranges::find( m_pending_tags, m_new_tag_input ) == m_pending_tags.end( ) )

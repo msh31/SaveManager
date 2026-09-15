@@ -1,7 +1,7 @@
+#include <logger.hpp>
 #include <tags/tags.hpp>
 #include <utils/paths.hpp>
 #include <utils/utils.hpp>
-#include <logger.hpp>
 
 #include <nlohmann/json.hpp>
 using json = nlohmann::json;
@@ -81,7 +81,8 @@ std::unordered_map<std::string, std::vector<std::string>> Tags::load_tags( const
     return tags;
 }
 
-std::expected<bool, SMError> Tags::save_tags( const std::string& game, const std::string& filename, const std::vector<std::string>& tags ) {
+std::expected<bool, SMError>
+Tags::save_tags( const std::string& game, const std::string& filename, const std::vector<std::string>& tags ) {
     std::string file_name = ( paths::backup_dir( ) / utils::sanitize_filename_path( game ) / "tags.json" ).string( );
 
     json data = load_tags( game );

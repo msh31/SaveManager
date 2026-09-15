@@ -1,10 +1,10 @@
-#include <backup/backup.hpp>
-#include <utils/utils.hpp>
 #include "../utils/zip_archive/zip_archive.hpp"
+#include <backup/backup.hpp>
 #include <logger.hpp>
+#include <utils/utils.hpp>
 
-#include <utils/blacklist/blacklist.hpp>
 #include <config/config.hpp>
+#include <utils/blacklist/blacklist.hpp>
 
 bool Backup::backup_game( const Game& game, const fs::path& file ) {
     SPDLOG_INFO( "creating backup of: {}", game.game_name );
@@ -52,7 +52,7 @@ bool Backup::backup_game( const Game& game, const fs::path& file ) {
     return true;
 }
 
-std::vector<std::string> Backup::backup_all_games( const std::vector<Game>& snapshot) {
+std::vector<std::string> Backup::backup_all_games( const std::vector<Game>& snapshot ) {
     std::vector<std::string> failures = { };
     bool use_ignore = CConfig::get( ).d_settings.use_savemgr_ignore;
 
@@ -78,7 +78,7 @@ std::vector<std::string> Backup::backup_all_games( const std::vector<Game>& snap
                         if ( extension_blocklist.contains( ext ) ) continue;
                     }
                 } else {
-                    if ( Blacklist::is_ignored( file, ignore_rules ) ) continue;                
+                    if ( Blacklist::is_ignored( file, ignore_rules ) ) continue;
                 }
 
                 files.push_back( { file.path( ), &entry } );

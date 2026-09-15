@@ -8,6 +8,6 @@ class CBackupPreviewModal : public CModalBase {
         void open( const std::vector<std::string>& list );
         void render_content( );
 
-    private: 
+    private:
         std::vector<std::string> m_preview_list = { };
 };

@@ -1,6 +1,6 @@
 #pragma once
-#include <frontend/views/base_view.hpp>
 #include <async_queue/async_queue.hpp>
+#include <frontend/views/base_view.hpp>
 
 constexpr std::string_view ubi_translation_url =
     "https://raw.githubusercontent.com/msh31/SaveManager/refs/heads/dev/data/ubi_translations.json";

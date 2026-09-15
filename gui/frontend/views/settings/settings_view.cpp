@@ -1,9 +1,9 @@
 #include "settings_view.hpp"
-#include <utils/image_extensions.hpp>
-#include <utils/utils.hpp>
 #include <config/config.hpp>
 #include <detection/detection_service.hpp>
+#include <utils/image_extensions.hpp>
 #include <utils/network.hpp>
+#include <utils/utils.hpp>
 
 #include <backend/font_manager/font_manager.hpp>
 
@@ -40,8 +40,8 @@ void CSettingsView::render( ) {
         ChildGuard appearance( "Appearance", { 300.0f, 0.0f } );
         ImGui::Text( "Appearance" );
 
-        if ( ImGui::Checkbox( "Dark Mode", &CConfig::get().settings.dark_mode ) ) {
-            ThemeManager::apply_colors( CConfig::get().settings.dark_mode ? ThemeType::Dark : ThemeType::Light );
+        if ( ImGui::Checkbox( "Dark Mode", &CConfig::get( ).settings.dark_mode ) ) {
+            ThemeManager::apply_colors( CConfig::get( ).settings.dark_mode ? ThemeType::Dark : ThemeType::Light );
         }
 
         ImGui::Separator( );
@@ -51,11 +51,12 @@ void CSettingsView::render( ) {
         ImGui::Separator( );
 
         ImGui::Text( "Font scale" );
-        ImGui::SliderFloat("##f_scale_slider", &CConfig::get( ).settings.font_scale, m_font_scale_min, m_font_scale_max );
+        ImGui::SliderFloat(
+            "##f_scale_slider", &CConfig::get( ).settings.font_scale, m_font_scale_min, m_font_scale_max );
 
         // ImGui::Separator( );
-        // 
-        //if ( (int)m_backgrounds.size( ) <= 0 ) {
+        //
+        // if ( (int)m_backgrounds.size( ) <= 0 ) {
         //    auto str = std::format( "No backgrounds found, add some here: {}", paths::backgrounds_dir( ).string( ) );
         //    ImGui::TextWrapped( "%s", str.c_str( ) );
         //} else {
@@ -104,10 +105,9 @@ void CSettingsView::render( ) {
                     return Network::is_update_available( );
                 },
                 [this]( bool nva ) {
-                    if (nva) {
+                    if ( nva ) {
                         Notify::show_notification( "Update Check", "A new update is available to download!", 1500 );
-                    }
-                    else {
+                    } else {
                         Notify::show_notification( "Update Check", "No updates found!", 1500 );
                     }
                     m_update_handle = std::nullopt;
@@ -119,35 +119,35 @@ void CSettingsView::render( ) {
         if ( m_ubi_translations_handle.has_value( ) || m_manifest_handle.has_value( ) ) ImGui::BeginDisabled( true );
         if ( ImGui::Button( "Update translations" ) ) {
             m_ubi_translations_handle = m_queue.run<bool>(
-            []( TaskControl& control ) {
-                if ( control.cancel_requested.load( ) ) throw TaskCancelled{ };
+                []( TaskControl& control ) {
+                    if ( control.cancel_requested.load( ) ) throw TaskCancelled{ };
                     return Network::download_file( ubi_translation_url.data( ), paths::ubi_translations( ).string( ) );
-            },
-            [this]( bool nva ) {
-                if ( nva ) {
-                    Notify::show_notification( "Update Check", "Updated ubisoft translations!", 1500 );
-                }
-                m_ubi_translations_handle = std::nullopt;
-            },
-            []( const std::exception& ex ) { Notify::show_notification( "Error", ex.what( ), 5000 ); } );
+                },
+                [this]( bool nva ) {
+                    if ( nva ) {
+                        Notify::show_notification( "Update Check", "Updated ubisoft translations!", 1500 );
+                    }
+                    m_ubi_translations_handle = std::nullopt;
+                },
+                []( const std::exception& ex ) { Notify::show_notification( "Error", ex.what( ), 5000 ); } );
 
             m_manifest_handle = m_queue.run<bool>(
-            []( TaskControl& control ) {
-                if ( control.cancel_requested.load( ) ) throw TaskCancelled{ };
+                []( TaskControl& control ) {
+                    if ( control.cancel_requested.load( ) ) throw TaskCancelled{ };
                     return Network::download_file( pcgw_translation_url.data( ), paths::pcgw_manifest( ).string( ) );
-            },
-            [this]( bool nva ) {
-                if ( nva ) {
-                    Notify::show_notification( "Update Check", "Updated manifest!", 1500 );
-                }
-                m_manifest_handle = std::nullopt;
-            },
-            []( const std::exception& ex ) { Notify::show_notification( "Error", ex.what( ), 5000 ); } );
+                },
+                [this]( bool nva ) {
+                    if ( nva ) {
+                        Notify::show_notification( "Update Check", "Updated manifest!", 1500 );
+                    }
+                    m_manifest_handle = std::nullopt;
+                },
+                []( const std::exception& ex ) { Notify::show_notification( "Error", ex.what( ), 5000 ); } );
         }
         ImGui::SetItemTooltip( "Forces a new download of the ubisoft id translations" );
         if ( m_ubi_translations_handle.has_value( ) || m_manifest_handle.has_value( ) ) ImGui::EndDisabled( );
     }
-    
+
     ImGui::SameLine( );
 
     {
@@ -161,7 +161,6 @@ void CSettingsView::render( ) {
         ImGui::Checkbox( "Skip empty files", &CConfig::get( ).d_settings.skip_empty_files );
     }
 
-    
     {
         ChildGuard blacklist( "Blacklist", { } );
         ImGui::PushFont( CFontManager::get( ).get_font( "jbm_med" ).value_or( nullptr ) );
@@ -190,7 +189,7 @@ void CSettingsView::render( ) {
         }
 
         ImGui::InputText( "##m_blacklist_input", &m_blacklist_input );
-        //ImGui::SameLine( );
+        // ImGui::SameLine( );
         if ( ImGui::Button( "Add##blacklist" ) ) {
             if ( !m_blacklist_input.empty( ) ) {
                 CDetectionService::get( ).blacklist( ).add( m_blacklist_input );

@@ -40,7 +40,7 @@ CBackupsView::RefreshResult CBackupsView::scan_backups( const std::vector<Game>&
     for ( const auto& game : snapshot ) {
         for ( const auto& save : game.save_paths ) {
             auto name = utils::sanitize_filename( game.game_name );
-            save_path_lookup[name].push_back(save);
+            save_path_lookup[name].push_back( save );
         }
     }
 
@@ -195,10 +195,9 @@ void CBackupsView::render_backup_row(
 
     if ( ImGui::Button( "Tags", ImVec2( 80.0f, 0 ) ) ) {
         auto tagz = tag_cache ? tag_cache->tags : std::vector<std::string>{ };
-        m_tags_modal.open(
-            game_name, path, tagz, [this]( const std::string&, const std::vector<std::string>& ) {
-                m_reload_backups = true;
-            } );
+        m_tags_modal.open( game_name, path, tagz, [this]( const std::string&, const std::vector<std::string>& ) {
+            m_reload_backups = true;
+        } );
     }
     ImGui::SetItemTooltip( "Manage tags for this backup" );
     ImGui::SameLine( 0.0f, spacing );

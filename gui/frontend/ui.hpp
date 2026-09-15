@@ -4,7 +4,7 @@ namespace ui {
     // text
     inline void add_font_text( const std::string& text, ImFont* font ) {
         ImGui::PushFont( font );
-        ImGui::Text( "%s", text.c_str() );
+        ImGui::Text( "%s", text.c_str( ) );
         ImGui::PopFont( );
     }
 

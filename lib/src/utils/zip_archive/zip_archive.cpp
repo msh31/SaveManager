@@ -183,7 +183,7 @@ bool CZipArchive::extract_archive(
                     continue;
                 }
 
-                //windows format for network paths
+                // windows format for network paths
                 if ( relative_name.starts_with( "\\\\" ) ) {
                     SPDLOG_WARN( "UNC path in archive entry, rejecting: {}", fileInfo.name );
                     failed_files.push_back( fileInfo.name );

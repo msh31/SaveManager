@@ -1,6 +1,6 @@
 #pragma once
-#include <frontend/views/base_view.hpp>
 #include <backend/image_manager/image_manager.hpp>
+#include <frontend/views/base_view.hpp>
 
 class CAboutView : public CBaseView {
     public:

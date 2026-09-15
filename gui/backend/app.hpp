@@ -10,7 +10,6 @@ class CDebugView;
 
 class CApp {
     public:
-
         void init( );
         void render( );
         void on_files_dropped( const std::vector<std::string>& );

@@ -1,7 +1,6 @@
 #include "create_ruleset.hpp"
-#include <utils/utils.hpp>
 #include <frontend/notification/notification.hpp>
-
+#include <utils/utils.hpp>
 
 void CCreateRulesetModal::open( const Game& game, const std::function<void( const Game& )>& on_create ) {
     m_new_ruleset_text.clear( );
@@ -46,8 +45,7 @@ void CCreateRulesetModal::open( const Game& game, const std::function<void( cons
 
 void CCreateRulesetModal::render_content( ) {
     auto height = std::clamp(
-        static_cast<float>( m_file_list_ignore_rulset.size( ) ) * ImGui::GetFrameHeightWithSpacing( ), 200.0f,
-        500.0f );
+        static_cast<float>( m_file_list_ignore_rulset.size( ) ) * ImGui::GetFrameHeightWithSpacing( ), 200.0f, 500.0f );
     ImGui::BeginChild( "##Filter entries", ImVec2( 500, height ) );
     ImGui::Text( "File list" );
     ImGui::Separator( );

@@ -1,5 +1,5 @@
-#include "../pcgw/pcgw.hpp"
 #include "../idetector.hpp"
+#include "../pcgw/pcgw.hpp"
 #include <detection/detection_service.hpp>
 #include <logger.hpp>
 
@@ -26,7 +26,7 @@ std::vector<Game> CDetectionService::snapshot( ) const {
     return m_result;
 }
 
-Blacklist& CDetectionService::blacklist() { return m_blacklist; }
+Blacklist& CDetectionService::blacklist( ) { return m_blacklist; }
 
 void CDetectionService::init( ) {
     if ( !m_translations.init( ) ) {
@@ -48,7 +48,6 @@ void CDetectionService::init( ) {
     }
     m_detectors = Detection::build_detectors( m_translations, m_manifest_cache, m_name_cache, m_pcgw_entries );
 }
-
 
 void CDetectionService::refresh( ) {
     if ( is_refreshing( ) ) return;
@@ -113,7 +112,8 @@ void CDetectionService::refresh( ) {
                                     std::erase_if( games, []( const Game& game ) {
                                         bool has_valid_path =
                                             std::ranges::any_of( game.save_paths, []( const fs::path& p ) {
-                                                return (fs::is_directory( p ) && !fs::is_empty( p )) || fs::is_regular_file(p);
+                                                return ( fs::is_directory( p ) && !fs::is_empty( p ) ) ||
+                                                       fs::is_regular_file( p );
                                             } );
                                         if ( !has_valid_path )
                                             SPDLOG_INFO(

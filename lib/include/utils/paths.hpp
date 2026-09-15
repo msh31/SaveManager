@@ -2,21 +2,21 @@
 #include <branding.hpp>
 
 #if defined( __linux__ )
-#include <unistd.h>
-#include <climits>
+    #include <climits>
+    #include <unistd.h>
 #elif defined( __APPLE__ )
-#include <mach-o/dyld.h>
-#include <climits>
+    #include <climits>
+    #include <mach-o/dyld.h>
 #endif
 
 namespace fs = std::filesystem;
 
 /*
     TODO LIST
-    
+
     1. figure out if the direct file  works
     2. decide to keep said redirect file
-    3. currently overriden in GUI's entrypoint - should be guarded by an ifdef like 'SM_PORTABLE' or some shit 
+    3. currently overriden in GUI's entrypoint - should be guarded by an ifdef like 'SM_PORTABLE' or some shit
     4. not always the default directory, to be verified
 */
 
@@ -55,7 +55,7 @@ namespace paths {
         return fs::path( home );
     }
 
-    //3. 
+    // 3.
     inline fs::path default_config_dir( ) {
 #if defined( __linux__ )
         return home_dir( ) / ".config" / APP_NAME;
@@ -73,7 +73,7 @@ namespace paths {
 
         return default_config_dir( );
     }
- 
+
     inline fs::path redirect_file( ) { return config_dir( ) / "cfg.redirect"; } // 1. & 2.
 
     inline fs::path log_dir( ) { return config_dir( ) / "logs"; }
@@ -92,11 +92,11 @@ namespace paths {
 
 // le games
 #if defined( __linux__ )
-    inline fs::path lutris_dir( ) { return home_dir( ) / "Games"; } //4. 
+    inline fs::path lutris_dir( ) { return home_dir( ) / "Games"; } // 4.
 #endif
-    inline fs::path heroic_dir( ) { return home_dir( ) / "Games" / "Heroic"; } //4. 
+    inline fs::path heroic_dir( ) { return home_dir( ) / "Games" / "Heroic"; } // 4.
 
-//ugly platform guarded herlpers
+// ugly platform guarded herlpers
 #if defined( _WIN32 )
     inline fs::path get_known_folder_path( const KNOWNFOLDERID& folder_id ) {
         PWSTR path = NULL;
@@ -127,7 +127,7 @@ namespace paths {
     }
 
 #if defined( __linux__ )
-    //fallbacks match the spec when env is not set
+    // fallbacks match the spec when env is not set
     inline fs::path xdg_data_home( ) {
         const char* path = std::getenv( "XDG_DATA_HOME" );
         if ( path ) {

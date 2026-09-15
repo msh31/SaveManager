@@ -10,14 +10,14 @@ ImageData CImageManager::load_from_disk( const fs::path& path, const std::string
     int channels = 0; // discarded
 
     FILE* fp = nullptr;
-#if defined( _WIN32)
+#if defined( _WIN32 )
     fp = _wfopen( path.c_str( ), L"rb" );
 #else
     fp = fopen( path.c_str( ), "rb" );
 #endif
 
     if ( !fp ) {
-        SPDLOG_ERROR( "[CImageManager]: failed to open file for loading: {}", path.filename( ).string() );
+        SPDLOG_ERROR( "[CImageManager]: failed to open file for loading: {}", path.filename( ).string( ) );
         return { };
     }
 

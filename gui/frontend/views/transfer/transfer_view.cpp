@@ -1,8 +1,8 @@
 #include "transfer_view.hpp"
-#include <config/config.hpp>
-#include <utils/utils.hpp>
 #include <backup/backup.hpp>
+#include <config/config.hpp>
 #include <detection/detection.hpp>
+#include <utils/utils.hpp>
 
 #include <backend/font_manager/font_manager.hpp>
 
@@ -108,15 +108,12 @@ void CTransferView::render( ) {
 
                 m_queue.run<bool>(
                     [remote = m_remote, addr = m_dest_addr, auth = m_use_password_auth,
-                     pass = m_key_passphrase]( TaskControl& ) {
-                        return remote->connect( addr, auth, pass );
-                    },
+                     pass = m_key_passphrase]( TaskControl& ) { return remote->connect( addr, auth, pass ); },
                     [this]( bool success ) {
                         m_connecting = false;
                         if ( success ) {
                             m_connected = true;
-                            m_current_remote_path =
-                                "/home/" + m_username; // TODO: allow custom start location..
+                            m_current_remote_path = "/home/" + m_username; // TODO: allow custom start location..
                             m_remote_entries = m_remote->list_directory( m_current_remote_path );
                             Notify::show_notification( "SFTP Connection", "Connected!", 2000 );
                             CConfig::get( ).save( );
@@ -279,8 +276,7 @@ void CTransferView::render( ) {
                         if ( path.filename( ) == "undo.zip" ) {
                             return;
                         }
-                        std::string label =
-                            std::format( "{}##{}", path.filename( ).string( ), static_cast<int>( gi ) );
+                        std::string label = std::format( "{}##{}", path.filename( ).string( ), static_cast<int>( gi ) );
                         if ( ImGui::Selectable(
                                  label.c_str( ), m_selected_backups[static_cast<int>( gi )],
                                  ImGuiSelectableFlags_AllowDoubleClick ) ) {
@@ -386,7 +382,7 @@ void CTransferView::render( ) {
                                 return;
                             }
                             pending_navigate = m_current_remote_path +
-                                                    ( m_current_remote_path.back( ) == '/' ? "" : "/" ) + entry.name;
+                                               ( m_current_remote_path.back( ) == '/' ? "" : "/" ) + entry.name;
                         } else {
                             m_selected_remote_idx = static_cast<int>( gi );
                         }

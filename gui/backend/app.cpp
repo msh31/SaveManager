@@ -1,18 +1,18 @@
 #include "app.hpp"
 #include <config/config.hpp>
+#include <detection/detection_service.hpp>
 #include <logger.hpp>
 #include <utils/network.hpp>
-#include <detection/detection_service.hpp>
 
 #include <frontend/icons.hpp>
 #include <frontend/ui.hpp>
 
-#include <frontend/views/home/home_view.hpp>
-#include <frontend/views/editor/editor_view.hpp>
-#include <frontend/views/transfer/transfer_view.hpp>
-#include <frontend/views/log/log_view.hpp>
 #include <frontend/views/about/about_view.hpp>
+#include <frontend/views/editor/editor_view.hpp>
+#include <frontend/views/home/home_view.hpp>
+#include <frontend/views/log/log_view.hpp>
 #include <frontend/views/settings/settings_view.hpp>
+#include <frontend/views/transfer/transfer_view.hpp>
 
 #include <frontend/components/dialogs/confirm/confirm_dialog.hpp>
 #include <frontend/notification/notification.hpp>
@@ -32,10 +32,9 @@ void CApp::init( ) {
             if ( nva ) Notify::show_notification( "Update Check", "A new update is available to download!", 1500 );
             m_update_handle = std::nullopt;
         },
-        []( const std::exception& ex ) { Notify::show_notification( "Error", ex.what( ), 5000 ); 
-    } );
+        []( const std::exception& ex ) { Notify::show_notification( "Error", ex.what( ), 5000 ); } );
 
-    //init - cant be cnaceled
+    // init - cant be cnaceled
     m_detection_handle = m_queue.run<std::monostate>(
         [this]( TaskControl& control ) {
             // kinda odd
@@ -46,8 +45,7 @@ void CApp::init( ) {
             CDetectionService::get( ).ensure_started( );
             m_detection_handle = std::nullopt;
         },
-        []( const std::exception& ex ) { Notify::show_notification( "Detection init error", ex.what( ), 5000 ); 
-    } );
+        []( const std::exception& ex ) { Notify::show_notification( "Detection init error", ex.what( ), 5000 ); } );
 
     refresh_background( );
 
@@ -77,7 +75,7 @@ void CApp::refresh_background( ) {
             return;
         }
         m_background_image = img;
-        
+
         m_loaded_bg_name = CConfig::get( ).settings.bg_name;
     } else {
         CConfig::get( ).settings.use_bg = false;
@@ -111,6 +109,6 @@ void CApp::render( ) {
     ConfirmDialog::render( );
 }
 
-void CApp::on_files_dropped(const std::vector<std::string>& files) {
-    //m_debug_view->set_dropped_paths(files);
+void CApp::on_files_dropped( const std::vector<std::string>& files ) {
+    // m_debug_view->set_dropped_paths(files);
 }

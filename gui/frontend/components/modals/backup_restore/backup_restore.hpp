@@ -5,7 +5,7 @@
 /*
     TODO LIST
 
-    1. 
+    1.
 */
 
 class CBackupRestoreModal : public CModalBase {
@@ -23,7 +23,8 @@ class CBackupRestoreModal : public CModalBase {
 
         std::vector<std::string> m_restore_entries = { };
         std::vector<std::pair<fs::path, fs::path>> m_pending_conflicts = { };
-        std::unordered_set<std::string> m_pending_exclusions = { };;
+        std::unordered_set<std::string> m_pending_exclusions = { };
+        ;
         std::unordered_map<std::string, bool> m_restore_checked = { };
 
         std::function<void( const Game& )> m_on_restored;

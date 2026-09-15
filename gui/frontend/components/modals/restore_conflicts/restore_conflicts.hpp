@@ -5,7 +5,7 @@
 /*
     TODO LIST
 
-    1. 
+    1.
 */
 
 class CConflictsModal : public CModalBase {
@@ -13,11 +13,11 @@ class CConflictsModal : public CModalBase {
         CConflictsModal( ) : CModalBase( "Resolve conflict(s)" ) {};
 
         void open(
-            const Game& game, const std::vector<std::pair<fs::path, fs::path>>& conflicts, 
+            const Game& game, const std::vector<std::pair<fs::path, fs::path>>& conflicts,
             const std::function<void( const Game& )>& on_resolved );
         void render_content( );
 
-    private: 
+    private:
         std::vector<std::pair<fs::path, fs::path>> m_pending_conflicts = { };
         Game m_conflicted_game = { };
 

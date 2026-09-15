@@ -1,7 +1,7 @@
 #include <config/config.hpp>
 #include <logger.hpp>
-#include <utils/utils.hpp>
 #include <utils/network.hpp>
+#include <utils/utils.hpp>
 
 #include <nlohmann/json.hpp>
 
@@ -10,14 +10,15 @@ using json = nlohmann::json;
 /*
     TODO LIST:
 
-    1. replace blacklist pre-filling method instead of hardcoding games 
-    2. save SFTP information in the OS Keychain (I wanted to use -> https://github.com/hrantzsch/keychain but there is some incompability that needs resolving)
+    1. replace blacklist pre-filling method instead of hardcoding games
+    2. save SFTP information in the OS Keychain (I wanted to use -> https://github.com/hrantzsch/keychain but there is
+   some incompability that needs resolving)
     3. decide if plugins should be repurposed instead of only serving the purpose of being a custom game
 */
 
 CConfig::CConfig( ) {
     try {
-        if ( !fs::exists( paths::config_dir() ) ) {
+        if ( !fs::exists( paths::config_dir( ) ) ) {
             if ( !fs::create_directories( paths::config_dir( ) ) ) {
                 throw std::runtime_error( "[Config] Failed to create config directory" );
             }
@@ -29,7 +30,7 @@ CConfig::CConfig( ) {
             fs::create_directories( paths::plugin_dir( ) ); // 3.
             fs::create_directories( paths::cache_dir( ) );
 
-            m_load_ok = true; //initial creation
+            m_load_ok = true; // initial creation
             save( );
         }
 
@@ -70,7 +71,7 @@ void CConfig::init( ) {
         }
     }
 
-    if ( !fs::exists( paths::blacklist( ) ) ) { //1.
+    if ( !fs::exists( paths::blacklist( ) ) ) { // 1.
         if ( !utils::atomic_write( paths::blacklist( ), R"(["The Crew Motorfest", "Skull and Bones"])" ) ) {
             SPDLOG_WARN( "[Blacklist] Failed to seed the blacklist" );
         }
@@ -99,7 +100,7 @@ bool CConfig::save( ) {
     data["window_w"] = settings.window_w;
     data["window_h"] = settings.window_h;
 
-    //2.
+    // 2.
     data["dest_addr"] = sftp.dest_addr;
     data["username"] = sftp.username;
     data["password"] = sftp.password;
@@ -133,7 +134,7 @@ bool CConfig::load( ) {
         settings.dark_mode = data.value( "dark_mode", true );
         settings.animated_background = data.value( "animated_background", false );
         settings.startup_update_check = data.value( "startup_update_check", true );
-        settings.font_scale = data.value("font_scale", 1.069f);
+        settings.font_scale = data.value( "font_scale", 1.069f );
 
         settings.use_bg = data.value( "use_bg", false );
         settings.bg_name = data.value( "bg_name", std::string( "" ) );
@@ -142,7 +143,7 @@ bool CConfig::load( ) {
         d_settings.use_savemgr_ignore = data.value( "use_savemgr_ignore", false );
         d_settings.skip_empty_files = data.value( "skip_empty_files", false );
 
-        //2.
+        // 2.
         sftp.dest_addr = data.value( "dest_addr", std::string( "" ) );
         sftp.username = data.value( "username", std::string( "" ) );
         sftp.password = data.value( "password", std::string( "" ) );

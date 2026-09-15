@@ -1,11 +1,11 @@
 #include "remote_transfer/remote_transfer.hpp"
-#include <logger.hpp>
 #include "config/config.hpp"
+#include <logger.hpp>
 
 // https://libssh2.org/examples/sftp_write.html
 CRemoteTransfer::CRemoteTransfer( ) {}
 
-bool CRemoteTransfer::connect(const std::string& dest_addr, bool auth_pw, const std::string& key_passphrase ) {
+bool CRemoteTransfer::connect( const std::string& dest_addr, bool auth_pw, const std::string& key_passphrase ) {
 #ifdef _WIN32
     WSADATA wsadata;
     WSAStartup( MAKEWORD( 2, 2 ), &wsadata );
@@ -66,16 +66,16 @@ bool CRemoteTransfer::connect(const std::string& dest_addr, bool auth_pw, const 
     if ( khres == CConfig::KNOWN_HOST_RESULT::MISMATCH ) return fail( );
 
     if ( auth_pw ) {
-        if ( libssh2_userauth_password( m_session, CConfig::get( ).sftp.username.c_str( ), CConfig::get( ).sftp.password.c_str( ) ) ) {
+        if ( libssh2_userauth_password(
+                 m_session, CConfig::get( ).sftp.username.c_str( ), CConfig::get( ).sftp.password.c_str( ) ) ) {
             SPDLOG_ERROR( "Authentication by password failed." );
             return fail( );
         }
     } else {
-        if ( libssh2_userauth_publickey_fromfile(m_session, CConfig::get( ).sftp.username.c_str( ), 
-            CConfig::get( ).sftp.pubkey.string( ).c_str( ),
-            CConfig::get( ).sftp.privkey.string( ).c_str( ),
-            key_passphrase.empty( ) ? nullptr : key_passphrase.c_str( ) ) ) 
-        {
+        if ( libssh2_userauth_publickey_fromfile(
+                 m_session, CConfig::get( ).sftp.username.c_str( ), CConfig::get( ).sftp.pubkey.string( ).c_str( ),
+                 CConfig::get( ).sftp.privkey.string( ).c_str( ),
+                 key_passphrase.empty( ) ? nullptr : key_passphrase.c_str( ) ) ) {
             SPDLOG_ERROR( "Authentication by public key failed." );
             return fail( );
         }
@@ -122,7 +122,7 @@ bool CRemoteTransfer::disconnect( ) {
     return false;
 }
 
-bool CRemoteTransfer::upload_file(const fs::path& backup_path, const std::string& remote_path ) {
+bool CRemoteTransfer::upload_file( const fs::path& backup_path, const std::string& remote_path ) {
     char mem[1024 * 100];
     size_t nread;
     ssize_t nwritten;
@@ -185,8 +185,7 @@ bool CRemoteTransfer::upload_file(const fs::path& backup_path, const std::string
     file.close( );
 
     if ( !failed && m_bytes_transferred != m_total_bytes ) {
-        SPDLOG_ERROR(
-            "Upload is short: sent {} of {} bytes", m_bytes_transferred.load( ), m_total_bytes.load( ) );
+        SPDLOG_ERROR( "Upload is short: sent {} of {} bytes", m_bytes_transferred.load( ), m_total_bytes.load( ) );
         failed = true;
     }
 
@@ -200,8 +199,7 @@ bool CRemoteTransfer::upload_file(const fs::path& backup_path, const std::string
         libssh2_sftp_unlink( m_sftp_session, remote_file.c_str( ) );
 
         if ( libssh2_sftp_rename( m_sftp_session, remote_tmp.c_str( ), remote_file.c_str( ) ) < 0 ) {
-            SPDLOG_ERROR(
-                "Failed to move uploaded file into place: {}", libssh2_sftp_last_error( m_sftp_session ) );
+            SPDLOG_ERROR( "Failed to move uploaded file into place: {}", libssh2_sftp_last_error( m_sftp_session ) );
             libssh2_sftp_unlink( m_sftp_session, remote_tmp.c_str( ) );
             m_bytes_transferred = { };
             return false;

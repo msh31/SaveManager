@@ -6,7 +6,7 @@
 
 class CWindowManager {
     public:
-        explicit CWindowManager(  ) {
+        explicit CWindowManager( ) {
             setup_opengl( );
             setup_imgui( );
         }

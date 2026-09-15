@@ -1,12 +1,12 @@
 #pragma once
-#include <frontend/views/base_view.hpp>
 #include <frontend/views/backups/backup_view.hpp>
+#include <frontend/views/base_view.hpp>
 
-#include <frontend/components/modals/tags/tags_modal.hpp>
-#include <frontend/components/modals/restore_conflicts/restore_conflicts.hpp>
 #include <frontend/components/modals/backup_preview/backup_preview.hpp>
-#include <frontend/components/modals/create_ruleset/create_ruleset.hpp>
 #include <frontend/components/modals/backup_restore/backup_restore.hpp>
+#include <frontend/components/modals/create_ruleset/create_ruleset.hpp>
+#include <frontend/components/modals/restore_conflicts/restore_conflicts.hpp>
+#include <frontend/components/modals/tags/tags_modal.hpp>
 
 #include <async_queue/async_queue.hpp>
 #include <tags/tags.hpp>
@@ -47,18 +47,18 @@ class CHomeView : public CBaseView {
                 fs::path undo_path = { };
 
                 std::vector<fs::path> backup_paths;
-                 std::unordered_map<std::string, TagCache> tags;
+                std::unordered_map<std::string, TagCache> tags;
         };
 
         enum class SortMode { Recent, Alphabetical };
-        SortMode m_sort_mode = SortMode::Alphabetical; //default
+        SortMode m_sort_mode = SortMode::Alphabetical; // default
 
         std::string m_search_query = { };
         std::optional<std::string> m_platform_filter;
 
         bool m_focus_search = false;
 
-        uint64_t m_seen_generation = 0; //snapshot counter
+        uint64_t m_seen_generation = 0; // snapshot counter
         size_t m_filtered_game_count = 0;
 
         std::vector<Game> m_games_snapshot = { };
@@ -83,7 +83,7 @@ class CHomeView : public CBaseView {
         void render_save_row( const fs::path& save_file, const Game& game, const SaveFileInfo& save_info );
 
         void render_modals( );
-        CTagsModal m_tags_modal; 
+        CTagsModal m_tags_modal;
         CConflictsModal m_conflicts_modal;
         CBackupPreviewModal m_preview_modal;
         CCreateRulesetModal m_ruleset_modal;

@@ -1,9 +1,9 @@
 #pragma once
 // a bit ugly
-#include <logger.hpp>
 #include <SHA256.h>
-#include <random>
 #include <detection/game.hpp> //1.
+#include <logger.hpp>
+#include <random>
 
 #ifdef __APPLE__
     #include <ctime>
@@ -70,7 +70,7 @@ namespace utils { // All functions in this namespace should work across Windows,
         return utf8_to_path( sanitize_filename( text ) );
     }
 
-    //1.
+    // 1.
     inline GameKey get_game_identity_key( const Game& game ) {
         if ( !game.appid.empty( ) && game.appid != "N/A" ) return { GameKeyKind::STEAM_APPID, game.appid };
 
@@ -216,14 +216,14 @@ namespace utils { // All functions in this namespace should work across Windows,
 
         file.close( );
 
-        #if defined(_WIN32)
+#if defined( _WIN32 )
         BOOL res = MoveFileExW( tmp_path.c_str( ), path.c_str( ), MOVEFILE_REPLACE_EXISTING );
         if ( !res ) {
             SPDLOG_ERROR( "[AtomicWrite]: rename error: {}", GetLastError( ) );
             cleanup( tmp_path );
             return false;
         }
-        #else
+#else
         std::error_code ec;
         fs::rename( tmp_path, path, ec );
 
@@ -232,7 +232,7 @@ namespace utils { // All functions in this namespace should work across Windows,
             cleanup( tmp_path );
             return false;
         }
-        #endif
+#endif
         return true;
     }
 
@@ -255,7 +255,7 @@ namespace utils { // All functions in this namespace should work across Windows,
         return SHA256::toString( digest );
     }
 
-    static std::vector<std::vector<int>> get_grouped(const std::vector<Game>& games) {
+    static std::vector<std::vector<int>> get_grouped( const std::vector<Game>& games ) {
         std::map<GameKey, size_t> key_to_group = { };
         std::vector<std::vector<int>> groups = { };
 

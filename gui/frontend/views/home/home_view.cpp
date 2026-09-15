@@ -1,20 +1,18 @@
 #include "home_view.hpp"
-#include <config/config.hpp>
-#include <utils/utils.hpp>
 #include <async_queue/async_queue.hpp>
 #include <backup/backup.hpp>
+#include <config/config.hpp>
 #include <detection/detection_service.hpp>
+#include <utils/utils.hpp>
 
 #include <utils/blacklist/blacklist.hpp>
 
-#include <frontend/components/dialogs/confirm/confirm_dialog.hpp>
-#include <frontend/notification/notification.hpp>
 #include <frontend/components/card.hpp>
+#include <frontend/components/dialogs/confirm/confirm_dialog.hpp>
 #include <frontend/icons.hpp>
+#include <frontend/notification/notification.hpp>
 
-void CHomeView::on_enter( ) {
-    
-}
+void CHomeView::on_enter( ) {}
 
 void CHomeView::render( ) {
     m_queue.update( );
@@ -52,7 +50,7 @@ void CHomeView::render( ) {
             m_backups_view.render( m_games_snapshot );
             ImGui::EndTabItem( );
         }
-        if (m_backups_tab_was_active && !backups_open) m_backups_view.on_exit();
+        if ( m_backups_tab_was_active && !backups_open ) m_backups_view.on_exit( );
 
         ImGui::EndTabBar( );
     }
@@ -60,13 +58,11 @@ void CHomeView::render( ) {
     render_modals( );
 }
 
-void CHomeView::on_exit( ) {
-    
-}
+void CHomeView::on_exit( ) {}
 
 CHomeView::~CHomeView( ) { m_queue.shutdown( ); }
 
-//private
+// private
 void CHomeView::render_toolbar( ) {
     bool is_refreshing = CDetectionService::get( ).is_refreshing( );
     bool is_backing_up =
@@ -78,8 +74,8 @@ void CHomeView::render_toolbar( ) {
     float backup_width = ImGui::CalcTextSize( "Mass Backup" ).x + ImGui::GetStyle( ).FramePadding.x * 2;
     float spacing = ImGui::GetStyle( ).ItemSpacing.x * 3;
 
-    std::string toolbar_text =
-        std::format( "found {} games in {:.2f} seconds", m_filtered_game_count, CDetectionService::get( ).last_duration( ) );
+    std::string toolbar_text = std::format(
+        "found {} games in {:.2f} seconds", m_filtered_game_count, CDetectionService::get( ).last_duration( ) );
     if ( is_refreshing ) {
         auto progress = CDetectionService::get( ).get_detection_progress( );
         toolbar_text = std::format( "{} of {} complete", progress.first, progress.second );
@@ -161,7 +157,7 @@ void CHomeView::render_toolbar( ) {
     ImGui::Dummy( ImVec2( 0.0f, 5.0f ) );
 }
 
-void CHomeView::render_game_list() {
+void CHomeView::render_game_list( ) {
     m_filtered_game_count = 0;
     auto sorted = m_grouped_games;
 
@@ -198,7 +194,7 @@ void CHomeView::render_game_list() {
 
 void CHomeView::render_game_content(
     std::pair<int, int> sb_count, const Game& game, bool has_conflicts,
-    std::vector<std::pair<fs::path, const Game*>> files) {
+    std::vector<std::pair<fs::path, const Game*>> files ) {
 
     if ( sb_count.first <= 0 ) {
         ImGui::TextDisabled( "Game detected but no saves were found!" );
@@ -260,7 +256,8 @@ void CHomeView::render_game_content(
                 }
             }
 
-            m_conflicts_modal.open( game, m_conflicts, [this]( const Game& g ) { invalidate_cache( { g }, []( ) {} ); } );
+            m_conflicts_modal.open(
+                game, m_conflicts, [this]( const Game& g ) { invalidate_cache( { g }, []( ) {} ); } );
         }
         if ( is_backing_up || is_refreshing ) ImGui::EndDisabled( );
     }
@@ -292,7 +289,8 @@ void CHomeView::render_game_content(
     auto save_files_id = std::format( "savefiles_{}", game_key );
     Card::draw( save_files_id, str.data( ), saves_expanded, std::nullopt, [&]( ) {
         for ( auto& save : files ) {
-            if ( !CConfig::get( ).d_settings.show_conflicts && save.first.string( ).contains( ".savemgr-conflict-" ) ) continue;
+            if ( !CConfig::get( ).d_settings.show_conflicts && save.first.string( ).contains( ".savemgr-conflict-" ) )
+                continue;
             render_save_row( save.first, *save.second, info.at( save.first ) );
         }
     } );
@@ -342,7 +340,7 @@ void CHomeView::render_game_row( const std::vector<int>& group, int gi ) {
             } );
         }
 
-        //1. 
+        // 1.
         if ( ImGui::BeginPopupContextWindow( ) ) {
             if ( ImGui::MenuItem( "Open Path" ) ) {
                 // Most games will have one path, front is fine here.
@@ -405,7 +403,7 @@ void CHomeView::render_backup_row(
             ( backup.parent_path( ) / ( backup.stem( ).string( ) + ".savemgr-copy" + bext ) ).string( );
 
         if ( fs::copy_file( backup, copy_name ) ) {
-            
+
             invalidate_cache(
                 { game }, []( ) { Notify::show_notification( "Backup Duplication", "Backup duplicated!", 2500 ); } );
         } else {
@@ -449,7 +447,7 @@ void CHomeView::render_backup_row(
             } else {
                 Notify::show_notification( "Backup Deletion", "Backup could not be deleted!", 1500 );
             }
-            invalidate_cache( { game }, []( ){ } );
+            invalidate_cache( { game }, []( ) {} );
         } else {
             Notify::show_notification( "Backup Deletion", "Backup could not be deleted!", 1500 );
         }
@@ -484,7 +482,8 @@ void CHomeView::render_save_row( const fs::path& save_file, const Game& game, co
     float total_width = date_width + size_width + 80.0f * 3 + 4.0f * 7; // this is fucked up.
 
     if ( game.show_parent_path ) {
-        ImGui::Text( "%s", utils::path_to_utf8( save_file.parent_path( ).filename( ) / save_file.filename( ) ).c_str( ) );
+        ImGui::Text(
+            "%s", utils::path_to_utf8( save_file.parent_path( ).filename( ) / save_file.filename( ) ).c_str( ) );
     } else {
         ImGui::Text( "%s", utils::path_to_utf8( save_file.filename( ) ).c_str( ) );
     }
@@ -527,7 +526,8 @@ void CHomeView::render_save_row( const fs::path& save_file, const Game& game, co
             SPDLOG_ERROR( "Failed to copy: {} because: {}", utils::path_to_utf8( save_file ), ec.message( ) );
             Notify::show_notification( "Save Duplication", "Save could not be duplicated!", 2500 );
         } else {
-            invalidate_cache( { game }, []( ) { Notify::show_notification( "Save Duplication", "Save duplicated!", 2500 ); } );
+            invalidate_cache(
+                { game }, []( ) { Notify::show_notification( "Save Duplication", "Save duplicated!", 2500 ); } );
         }
     }
     ImGui::SameLine( 0.0f, 4.0f );
@@ -536,7 +536,8 @@ void CHomeView::render_save_row( const fs::path& save_file, const Game& game, co
     if ( ImGui::Button( "Delete", btn_size ) ) {
         ConfirmDialog::show( "Are you sure?", [this, save_file, game] {
             if ( fs::remove_all( save_file ) ) {
-                invalidate_cache( { game }, []( ) { Notify::show_notification( "Save Deletion", "Save deleted!", 2500 ); } );
+                invalidate_cache(
+                    { game }, []( ) { Notify::show_notification( "Save Deletion", "Save deleted!", 2500 ); } );
             } else {
                 Notify::show_notification( "Save Deletion", "Save could not be deleted!", 2500 );
             }
@@ -549,7 +550,7 @@ void CHomeView::render_save_row( const fs::path& save_file, const Game& game, co
     ImGui::PopID( );
 }
 
-void CHomeView::render_modals() {
+void CHomeView::render_modals( ) {
     m_tags_modal.render( );
     m_conflicts_modal.render( );
     m_preview_modal.render( );
@@ -577,7 +578,7 @@ void CHomeView::invalidate_cache( const std::vector<Game>& games, std::function<
 
     bool use_ignore = CConfig::get( ).d_settings.use_savemgr_ignore;
     m_queue.run<InvalidateCacheResult>(
-        [games, use_ignore]( TaskControl& control ) { //control is unused
+        [games, use_ignore]( TaskControl& control ) { // control is unused
             InvalidateCacheResult result = { };
 
             for ( const auto& game : games ) {
@@ -619,7 +620,7 @@ void CHomeView::invalidate_cache( const std::vector<Game>& games, std::function<
                                 if ( file.path( ).filename( ) == ".savemgr-ignore" ) continue;
 
                                 if ( ignore_rules.empty( ) ) {
-                                    auto ext = file.path().extension( ).string( );
+                                    auto ext = file.path( ).extension( ).string( );
                                     if ( game.type != PlatformType::CUSTOM && game.type != PlatformType::GENERIC ) {
                                         if ( extension_blocklist.contains( ext ) ) continue;
                                     }

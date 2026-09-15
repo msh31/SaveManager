@@ -1,6 +1,6 @@
 #pragma once
-#include <logger.hpp>
 #include <async_queue/async_queue.hpp>
+#include <logger.hpp>
 
 template <typename T> class CCache {
     public:

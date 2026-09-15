@@ -15,7 +15,6 @@ class CConfig {
         enum class KNOWN_HOST_RESULT { NEW, MATCH, MISMATCH };
         KNOWN_HOST_RESULT verify_known_host( const std::string& addr, const std::string& fingerprint );
 
-        
         struct DetectionSettings {
                 bool show_conflicts = false;
                 bool use_savemgr_ignore = false; // TODO

@@ -1,9 +1,9 @@
 #include "restore_conflicts.hpp"
-#include <utils/utils.hpp>
 #include <frontend/notification/notification.hpp>
+#include <utils/utils.hpp>
 
-
-void CConflictsModal::open( const Game& game, const std::vector<std::pair<fs::path, fs::path>>& conflicts,
+void CConflictsModal::open(
+    const Game& game, const std::vector<std::pair<fs::path, fs::path>>& conflicts,
     const std::function<void( const Game& )>& on_resolved ) {
     m_pending_conflicts = conflicts;
     m_conflicted_game = game;
@@ -47,12 +47,12 @@ void CConflictsModal::render_content( ) {
     for ( int i = to_remove.size( ) - 1; i >= 0; i-- ) {
         m_pending_conflicts.erase( m_pending_conflicts.begin( ) + to_remove[i] );
     }
-    
+
     if ( ImGui::Button( "Cancel" ) ) {
         ImGui::CloseCurrentPopup( );
     }
 
-     // invalidates the cache in the home view
+    // invalidates the cache in the home view
     if ( m_pending_conflicts.empty( ) ) {
         m_on_resolved( m_conflicted_game );
         ImGui::CloseCurrentPopup( );
