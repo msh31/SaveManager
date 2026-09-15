@@ -287,6 +287,7 @@ bool CZipArchive::extract_archive(
                     continue;
                 }
                 if ( bytes_read == -1 ) {
+                    zip_fclose(file);
                     SPDLOG_ERROR( "Failed to read file in archive: {}", fileInfo.name );
                     failed_files.push_back( fileInfo.name );
                     fs::remove( resolved_tmp );
