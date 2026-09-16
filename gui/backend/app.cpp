@@ -23,16 +23,18 @@ void CApp::init( ) {
             "Config Warning", "Config was reset due to an issue, your old config is backed up.", 3000 );
     }
 
-    m_update_handle = m_queue.run<bool>(
-        []( TaskControl& control ) {
-            if ( control.cancel_requested.load( ) ) throw TaskCancelled{ };
-            return Network::is_update_available( );
-        },
-        [this]( bool nva ) {
-            if ( nva ) Notify::show_notification( "Update Check", "A new update is available to download!", 1500 );
-            m_update_handle = std::nullopt;
-        },
-        []( const std::exception& ex ) { Notify::show_notification( "Error", ex.what( ), 5000 ); } );
+    if ( CConfig::get( ).settings.startup_update_check ) {
+        m_update_handle = m_queue.run<bool>(
+            []( TaskControl& control ) {
+                if ( control.cancel_requested.load( ) ) throw TaskCancelled{ };
+                return Network::is_update_available( );
+            },
+            [this]( bool nva ) {
+                if ( nva ) Notify::show_notification( "Update Check", "A new update is available to download!", 1500 );
+                m_update_handle = std::nullopt;
+            },
+            []( const std::exception& ex ) { Notify::show_notification( "Error", ex.what( ), 5000 ); } );
+    }
 
     // init - cant be cnaceled
     m_detection_handle = m_queue.run<std::monostate>(
