@@ -398,16 +398,19 @@ void CHomeView::render_backup_row(
     ImGui::SameLine( 0.0f, 4.0f );
 
     if ( ImGui::Button( "Duplicate", ImVec2( 90.0f, 0 ) ) ) { // also kinda fucked up
-        std::string bext = backup.extension( ).string( );
-        std::string copy_name =
-            ( backup.parent_path( ) / ( backup.stem( ).string( ) + ".savemgr-copy" + bext ) ).string( );
+        fs::path copy_name = ( backup.parent_path( ) / ( (backup.stem( ) += ".savemgr-copy") += backup.extension( ) ) ); //ugly
 
-        if ( fs::copy_file( backup, copy_name ) ) {
+        try {
 
-            invalidate_cache(
-                { game }, []( ) { Notify::show_notification( "Backup Duplication", "Backup duplicated!", 2500 ); } );
-        } else {
-            Notify::show_notification( "Backup Duplication", "Backup could not be duplicated!", 2500 );
+            fs::copy_file( backup, copy_name );
+
+            invalidate_cache( { game }, []( ) {
+                Notify::show_notification( "Backup Duplication", "Backup duplicated!", 2500 );
+            } );
+        } catch ( const fs::filesystem_error& er ) {
+            auto str = std::format( "Exception occured: {}", er.what( ) );
+            SPDLOG_ERROR( "[Backup Duplication] {}", str );
+            Notify::show_notification( "Backup Duplication", str, 2500 );
         }
     }
 
