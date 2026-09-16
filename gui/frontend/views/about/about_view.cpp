@@ -17,10 +17,10 @@ void CAboutView::render( ) {
     float win_width = ImGui::GetWindowSize( ).x;
 
     ImGui::BeginGroup( );
-    ImGui::PushFont( CFontManager::get( ).get_font( "jbm_title" ).value_or( nullptr ) );
+    ImGui::PushFont( CFontManager::get( ).get_font( "jbm_reg_xl" ).value_or( nullptr ) );
     ImGui::Text( "SaveManager" );
     ImGui::PopFont( );
-    ImGui::PushFont( CFontManager::get( ).get_font( "jbm_med" ).value_or( nullptr ) );
+    ImGui::PushFont( CFontManager::get( ).get_font( "jbm_reg_xl" ).value_or( nullptr ) );
     ImGui::TextDisabled( "%s", subtitle );
     ImGui::PopFont( );
     ImGui::EndGroup( );
@@ -30,7 +30,7 @@ void CAboutView::render( ) {
     ImGui::Dummy( ImVec2( 0.0f, 4.0f ) );
 
     ImGui::BeginGroup( );
-    ImGui::PushFont( CFontManager::get( ).get_font( "jbm_header" ).value_or( nullptr ) );
+    ImGui::PushFont( CFontManager::get( ).get_font( "jbm_reg_xl" ).value_or( nullptr ) );
     ImGui::Text( "Details" );
     ImGui::PopFont( );
 
