@@ -430,6 +430,8 @@ void CHomeView::render_backup_row(
             auto str = std::format( "{} has no files!!", backup.filename( ).string( ) );
             SPDLOG_ERROR( "{} has no entries, that's a bit odd innit", backup.filename( ).string( ) );
             Notify::show_notification( "Preview Failure wtf", str, 2000 );
+            ImGui::PopStyleVar( );
+            ImGui::PopID( );
             return;
         }
 
