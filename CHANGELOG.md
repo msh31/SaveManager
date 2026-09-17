@@ -1,21 +1,51 @@
-## 1.10 - 2026-09-10
+## 1.10 - 2026-09-19
 This update focuses on reachability and bugfixes
 
 #### Information
-There are now 2 versions of SaveManager: Portable & Installer!
+There are now 2 versions of SaveManager: Portable & Installer! \
+*more info can be found in the [README](README.md)*
+
+#### Known Issues
+- Mass backup / individual Minecraft world backup creation can block the UI and program exit
 
 ### Core
 - Fixed
     - Fixed a potential race condition when saving SFTP settings
+    - Fixed a potential silent backup overwrite / failure by improving precision with ms timestamps
+    - Fixed an issue where a download failure did not close the handle in all cases
+    - Fixed an issue where tag migration failure deleted the original tags
+    - Fixed an issue where 'Free wasted once' & 'Free busted ones' toggles did nothing in the GTA:SA save editor
+    - Fixed an issue where the mass backup feature ignored custom ignore files
+    - Fixed an issue where minecraft saves in the mass backup silently ignored ``.dat`` files
+    - FIxed an issue where SFTP downloads were not verified before written to disk which could overwrite an existing file
+    - Fixed an issue where archive entries with absolute or UNC-style paths could bypass the save directory restriction
+    - Fixed an issue where a corrupted backup manifest silently skipped hash verification instead of refusing to restore
+    - Fixed a potential file handle leak during a read failure of a file inside an archive
+    - Fixed an issue where failing to open a temporary file for writing did not restore the original file in place in archive extraction
+
+- Changed
+    - Added more proper logging around restore failures (exceptions, zip-slips, conflicts, renames etc.)
 
 ### GUI
+- Added
+    - Font scale slider within the settings
+
 - Fixed
     - Fixed an issue where the path to the loaded save file in the editor was an input field instead of regular text
     - Fixed an issue where window resizes would block rendering & cause artifacts 
+    - Fixed a possible crash when double-clicking a folder while browsing remote (SFTP) files
+    - Fixed an issue where the save editor view's save button did not show the correct message based on the save result
+    - Fixed an issue where backupos with multiple save locations could only restore to one of those locations, silently ignoring the rest
+    - Fixed an issue where doube clicking a backup preview could crash the application
+    - Fixed a possible crash when duplicating a backup due to the copy failing
 
 - Changed
     - Made the Windows titlebar respect the OS appearance setting on startup & theme changes (requires restart) ([#11](https://github.com/msh31/SaveManager/issues/11))
     - Made improvements to handle different screen sizes more dynamically
+
+### Development
+- Underlying code for the GUI has been upgraded to the latest version of [my template](https://github.com/msh31/desktop-app-template) until [this commit](https://github.com/msh31/desktop-app-template/commit/)
+- Dropped the CLI & Daemon for now to focus on the GUI (was not usable yet)
 ---
 
 
@@ -80,6 +110,7 @@ Due to the lack of downloads of the MacOS version I will pause development there
 ### Other
 #### General
 - SaveManager now has an icon! (MacOS and Windows)
+- 
 #### Known Issues
 - Mass backup / individual Minecraft world backup creation blocks the UI and program exit
 
