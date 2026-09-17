@@ -71,6 +71,7 @@ include-directories = [
 ]
 link-libraries = ["CURL::libcurl", "libzip::zip", "Libssh2::libssh2", "OpenSSL::Crypto", "nlohmann_json::nlohmann_json", "stb::stb", "sol2::sol2", "spdlog::spdlog"]
 compile-features = ["cxx_std_23"]
+compile-definitions = ["APP_PORTABLE=$<BOOL:${APP_PORTABLE}>"]
 precompile-headers = ["lib/include/lib_pch.hpp"]
 
 [target.savemanager-core.windows]

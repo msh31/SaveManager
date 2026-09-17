@@ -54,6 +54,8 @@ if(APPLE) # apple
 
 endif()
 
+include("cmake/packaging.cmake")
+
 if(WIN32)
   set(SPDLOG_WCHAR_FILENAMES ON)
   set(CURL_USE_SCHANNEL ON)
@@ -154,6 +156,10 @@ add_library(savemanager-core STATIC)
 
 target_sources(savemanager-core PRIVATE ${savemanager-core_SOURCES})
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${savemanager-core_SOURCES})
+
+target_compile_definitions(savemanager-core PUBLIC
+	"APP_PORTABLE=$<BOOL:${APP_PORTABLE}>"
+)
 
 target_compile_features(savemanager-core PUBLIC
 	cxx_std_23
