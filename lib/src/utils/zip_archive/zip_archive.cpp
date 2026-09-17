@@ -21,9 +21,13 @@ bool CZipArchive::add_to_archive(
             }
         }
 
-        zip_source_t* source = zip_source_file( m_archive, file.string( ).c_str( ), 0, 0 );
+        #ifdef _WIN32
+            zip_source_t* source = zip_source_win32w( m_archive, file.c_str( ), 0, 0 );
+        #else
+            zip_source_t* source = zip_source_file( m_archive, file.string( ).c_str( ), 0, 0 );
+        #endif
         if ( source == nullptr ) {
-            SPDLOG_ERROR( "Failed to create source for: {}", file.filename( ).string( ).c_str( ) );
+            SPDLOG_ERROR( "Failed to create source for: {}", file.filename( ).string( ) );
             failed_files.push_back( file.filename( ).string( ).c_str( ) );
         } else {
             if ( zip_file_add( m_archive, entry_name.c_str( ), source, ZIP_FL_OVERWRITE ) < 0 ) {
@@ -51,9 +55,15 @@ bool CZipArchive::add_to_archive(
         for ( const auto& entry :
               fs::recursive_directory_iterator( file, fs::directory_options::skip_permission_denied ) ) {
             if ( !fs::is_regular_file( entry ) ) continue;
-            zip_source_t* source = zip_source_file( m_archive, entry.path( ).string( ).c_str( ), 0, 0 );
+
+            #ifdef _WIN32
+                zip_source_t* source = zip_source_win32w( m_archive, entry.path( ).c_str( ), 0, 0 );
+            #else
+                zip_source_t* source = zip_source_file( m_archive, entry.path( ).string( ).c_str( ), 0, 0 );
+            #endif
+            
             if ( source == nullptr ) {
-                SPDLOG_ERROR( "Failed to create source for: {}", entry.path( ).filename( ).string( ).c_str( ) );
+                SPDLOG_ERROR( "Failed to create source for: {}", entry.path( ).filename( ).string( ) );
                 failed_files.push_back( entry.path( ).filename( ).string( ).c_str( ) );
             } else {
                 auto file_path = fs::relative( entry.path( ), file );
