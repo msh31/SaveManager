@@ -11,6 +11,7 @@ static const std::unordered_set<std::string_view> extension_blocklist{
 static const std::unordered_set<std::string_view> g_extension_blocklist{ ".png", ".jpg", ".jpeg", ".webp", ".bmp" };
 
 struct BackupEntry {
+        Game game;
         fs::path name;
         std::vector<fs::path> save_paths;
         std::vector<fs::path> entries;

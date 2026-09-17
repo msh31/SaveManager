@@ -5,6 +5,9 @@
 
 #include <async_queue/async_queue.hpp>
 #include <frontend/components/modals/tags/tags_modal.hpp>
+#include <frontend/components/modals/restore_conflicts/restore_conflicts.hpp>
+#include <frontend/components/modals/backup_restore/backup_restore.hpp>
+#include <frontend/components/modals/backup_preview/backup_preview.hpp>
 
 class CBackupsView {
     public:
@@ -22,7 +25,7 @@ class CBackupsView {
 
         void render_backup_row(
             fs::path path, const std::vector<fs::path>& save_paths,
-            const std::unordered_map<std::string, TagCache>& labels, const std::string& game_name );
+            const std::unordered_map<std::string, TagCache>& labels, const Game& game );
 
         void render_modals( );
         void request_refresh( const std::vector<Game>& games_snapshot );
@@ -41,4 +44,7 @@ class CBackupsView {
         LabelsCache m_labels_cache;
 
         CTagsModal m_tags_modal;
+        CConflictsModal m_conflicts_modal;
+        CBackupRestoreModal m_restore_modal;
+        CBackupPreviewModal m_preview_modal; //todo
 };

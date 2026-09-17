@@ -36,10 +36,13 @@ void CBackupsView::on_exit( ) {}
 
 CBackupsView::RefreshResult CBackupsView::scan_backups( const std::vector<Game>& snapshot ) {
     std::unordered_map<std::string, std::vector<fs::path>> save_path_lookup = { };
+    std::unordered_map<std::string, Game> game_lookup = { };
 
     for ( const auto& game : snapshot ) {
+        auto name = utils::sanitize_filename( game.game_name );
+        game_lookup[name] = game;
+
         for ( const auto& save : game.save_paths ) {
-            auto name = utils::sanitize_filename( game.game_name );
             save_path_lookup[name].push_back( save );
         }
     }
@@ -56,9 +59,13 @@ CBackupsView::RefreshResult CBackupsView::scan_backups( const std::vector<Game>&
         std::string name_utf8 = utils::path_to_utf8( bentry.name );
         labels_cache[name_utf8] = Tags::load_tag_cache( name_utf8 );
 
-        if ( auto it = save_path_lookup.find( name_utf8 ); it != save_path_lookup.end( ) )
+        if ( auto it = save_path_lookup.find( name_utf8 ); it != save_path_lookup.end( ) ) {
             bentry.save_paths = it->second;
-
+        }
+        if ( auto it = game_lookup.find( name_utf8 ); it != game_lookup.end( ) ) {
+            bentry.game = it->second;
+        }
+         
         for ( const auto& entry_b : fs::directory_iterator( entry ) ) {
             if ( entry_b.path( ).extension( ) != ".zip" ) continue;
             bentry.entries.push_back( entry_b.path( ) );
@@ -137,7 +144,7 @@ void CBackupsView::render_game_row( const BackupEntry& bentry, const LabelsCache
             auto it = labels_cache.find( name_utf8 );
             const auto& labels = ( it != labels_cache.end( ) ) ? it->second : empty_labels;
             for ( const auto& entry : bentry.entries )
-                render_backup_row( entry, bentry.save_paths, labels, name_utf8 );
+                render_backup_row( entry, bentry.save_paths, labels, bentry.game );
         }
     }
     ImGui::PopStyleVar( );
@@ -145,7 +152,7 @@ void CBackupsView::render_game_row( const BackupEntry& bentry, const LabelsCache
 
 void CBackupsView::render_backup_row(
     fs::path path, const std::vector<fs::path>& save_paths, const std::unordered_map<std::string, TagCache>& labels,
-    const std::string& game_name ) {
+    const Game& game ) {
     if ( path.filename( ) == "undo.zip" ) return;
     if ( !fs::exists( path ) ) return;
 
@@ -183,19 +190,18 @@ void CBackupsView::render_backup_row(
     ImGui::PushStyleVar( ImGuiStyleVar_FramePadding, ImVec2( 3.0f, 3.0f ) );
 
     if ( ImGui::Button( "Restore", ImVec2( 80.0f, 0 ) ) ) {
-        if ( save_paths.empty( ) ) {
-            Notify::show_notification( "Restore", "Cannot restore: save location unknown.", 2000 );
-        } else {
-            std::vector<std::pair<fs::path, fs::path>> conflicts;
-            Backup::restore_backup( path, { save_paths }, conflicts );
-        }
+        m_restore_modal.open(
+            game, path, [this]( const Game& game ) { m_reload_backups = true; },
+            [this]( const Game& game, const std::vector<std::pair<fs::path, fs::path>>& conflicts ) {
+                m_conflicts_modal.open( game, conflicts, [this]( const Game& g ) { m_reload_backups = true; } );
+            } );
     }
     ImGui::SetItemTooltip( "Restore save from backup" );
     ImGui::SameLine( 0.0f, spacing );
 
     if ( ImGui::Button( "Tags", ImVec2( 80.0f, 0 ) ) ) {
         auto tagz = tag_cache ? tag_cache->tags : std::vector<std::string>{ };
-        m_tags_modal.open( game_name, path, tagz, [this]( const std::string&, const std::vector<std::string>& ) {
+        m_tags_modal.open( game.game_name, path, tagz, [this]( const std::string&, const std::vector<std::string>& ) {
             m_reload_backups = true;
         } );
     }
@@ -206,7 +212,7 @@ void CBackupsView::render_backup_row(
     ImGui::PushStyleColor( ImGuiCol_ButtonHovered, ImVec4( 0.9f, 0.3f, 0.3f, 1.0f ) );
     if ( ImGui::Button( "Delete", ImVec2( 80.0f, 0 ) ) ) {
         if ( fs::remove( path ) ) {
-            Tags::delete_tags( game_name, utils::path_to_utf8( path.filename( ) ) );
+            Tags::delete_tags( game.game_name, utils::path_to_utf8( path.filename( ) ) );
             m_reload_backups = true;
             Notify::show_notification( "Backup Deletion", "Backup deleted!", 1500 );
         } else {
@@ -220,4 +226,9 @@ void CBackupsView::render_backup_row(
     ImGui::PopID( );
 }
 
-void CBackupsView::render_modals( ) { m_tags_modal.render( ); }
+void CBackupsView::render_modals( ) { 
+    m_tags_modal.render( ); 
+    m_conflicts_modal.render( );
+    m_restore_modal.render( );
+    m_preview_modal.render( );
+}
