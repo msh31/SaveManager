@@ -43,7 +43,7 @@ class CZipArchive {
         std::string build_manifest( std::vector<std::pair<fs::path, fs::path>> paths );
         bool write_manifest_to_zip( zip_t* zip_handle, const std::string& manifest );
 
-        std::optional<std::string> read_manifest_from_zip( zip_t* zip_handle, bool* out_parse_failure = false );
+        std::optional<std::string> read_manifest_from_zip( zip_t* zip_handle, bool* out_parse_failure = nullptr );
         bool close( ) {
             if ( m_archive != nullptr ) {
                 auto res = zip_close( m_archive );
