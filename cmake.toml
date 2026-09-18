@@ -20,11 +20,6 @@ endif()
 [options]
 APP_PORTABLE = true
 
-[[install]]  
-targets = ["savemanager"]  
-destination = "bin"  
-component = "app"
-
 [variables]
 CMAKE_EXPORT_COMPILE_COMMANDS = true
 
@@ -120,6 +115,9 @@ target_sources(savemanager PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/lib/include/versi
 [target.savemanager.windows]
 sources = ["assets/app_icon/resources.rc"]
 link-libraries = ["shell32", "Dwmapi"]
+cmake-after = """
+install(TARGETS savemanager DESTINATION bin COMPONENT app)
+"""
 
 [target.savemanager.linux]
 cmake-after = """
@@ -145,4 +143,5 @@ add_custom_command(TARGET savemanager POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_BINARY_DIR}/SaveManager.app/Contents/Info.plist ${CMAKE_CURRENT_BINARY_DIR}/SaveManager.app/Contents/Info.plist
     COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/assets/app_icon/smicon.icns ${CMAKE_CURRENT_BINARY_DIR}/SaveManager.app/Contents/Resources/smicon.icns
 )
+install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/SaveManager.app DESTINATION .)
 """
