@@ -222,21 +222,25 @@ void SanAndreas::parse_block_twenty_four( ) {
 }
 
 void SanAndreas::serialize( ) {
+    //block 0
     auto bz_offset = block_offsets[0];
     if ( bz_offset + 4 + 100 > data.size( ) ) return;
     std::memcpy(
         data.data( ) + bz_offset + 4, save_name.c_str( ), std::min( save_name.size( ), static_cast<size_t>( 100 ) ) );
 
+    //block 2
     auto bt_offset = block_offsets[2];
     if ( bt_offset + 0x04 + 0x20 > data.size( ) ) return;
     std::memcpy( data.data( ) + bt_offset + 0x04 + 0x1C, &health, 4 );
     std::memcpy( data.data( ) + bt_offset + 0x04 + 0x20, &armor, 4 );
 
+    //block 5
     auto bf_offset = block_offsets[5];
     if ( bf_offset + 0x06 > data.size( ) ) return;
     data[bf_offset + 0x04] = lose_stuff_after_wasted;
     data[bf_offset + 0x05] = lose_stuff_after_busted;
 
+    //block 15
     auto bft_offset = block_offsets[15];
     if ( bft_offset + 0x23 > data.size( ) ) return;
     std::memcpy( data.data( ) + bft_offset + 4, &money, 4 );
@@ -246,12 +250,16 @@ void SanAndreas::serialize( ) {
     data[bft_offset + 0x20] = infinite_run;
     data[bft_offset + 0x21] = fast_reload;
     data[bft_offset + 0x22] = fireproof;
+    data[bft_offset + 0x25] = free_busted_once;
+    data[bft_offset + 0x26] = free_wasted_once;
 
+    //block 20
     auto bty_offset = block_offsets[20];
     if ( bty_offset + 4 + tag_count > data.size( ) ) return;
     std::memcpy( data.data( ) + bty_offset, &tag_count, 4 );
     std::memcpy( data.data( ) + bty_offset + 4, tag_statuses.data( ), tag_count );
 
+    //block 24
     auto btyf_offset = block_offsets[24];
     size_t bytes_needed = 4 + static_cast<size_t>( usj_count ) * 0x44;
     if ( btyf_offset + bytes_needed > data.size( ) ) return;
