@@ -20,7 +20,12 @@ void CHomeView::render( ) {
     bool backup_done =
         m_backup_future.valid( ) && m_backup_future.wait_for( std::chrono::seconds( 0 ) ) == std::future_status::ready;
     if ( backup_done ) {
-        m_backup_future.get( );
+        try {
+            m_backup_future.get( );
+        } catch ( std::exception& err ) {
+            auto str = std::format( "An exception occured during the backup future polling: {}", err.what( ) );
+            Notify::show_notification( "Critical Backup Failure", str, 5000 );
+        }
         if ( !m_pending_invalidate.empty( ) ) {
             invalidate_cache( m_pending_invalidate, []( ) {} );
             m_pending_invalidate.clear( );
