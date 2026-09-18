@@ -310,9 +310,18 @@ bool CZipArchive::extract_archive(
 
                 if ( manifest_json.contains( fileInfo.name ) ) {
                     auto& entry = manifest_json[fileInfo.name];
-                    if ( ( utils::hash_file( resolved_tmp ).compare( entry["hash"].get<std::string>( ) ) ) != 0 ) {
-                        SPDLOG_WARN(
-                            "{}'s hash does not match {}'s hash, aborting restore operation!",
+
+                    if ( !entry.contains( "hash" ) ) {
+                        SPDLOG_ERROR( "[ZipArchive] there is no hash for entry: {}", fileInfo.name );
+                        failed_files.emplace_back( fileInfo.name );
+                        fs::remove( resolved_tmp );
+
+                        restore_conflict( );
+                        continue;
+                    }
+
+                    if( utils::hash_file( resolved_tmp ).compare( entry["hash"].get<std::string>( ) ) != 0 ) {
+                        SPDLOG_WARN("{}'s hash does not match {}'s hash, aborting restore operation!",
                             resolved.filename( ).string( ), entry["hash"].get<std::string>( ) );
 
                         failed_files.emplace_back( fileInfo.name );
@@ -321,6 +330,7 @@ bool CZipArchive::extract_archive(
                         restore_conflict( );
                         continue;
                     }
+
                     fs::rename( resolved_tmp, resolved );
 
                     if ( entry.contains( "mtime" ) ) {
