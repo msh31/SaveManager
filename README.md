@@ -33,7 +33,7 @@ SaveManager is a cross-platform game save manager with automatic save detection,
 Download for Windows, Linux, or Mac is available from [here](https://github.com/msh31/SaveManager/releases)
 
 ### Note
-- Linux is only portable & Mac is not portble at all, this will be addressed in a future release 
+- Linux is only portable & Mac is not portable at all, this will be addressed in a future release! 
 - Windows users may see a popup that says "Windows protected your PC" because Windows does not recognize the program's publisher. Click "more info" and then "run anyway" to start the program.
 - Mac users may see a popup that says "SaveManager can't be opened because it is from an unidentified developer". Go to Settings -> Privacy & Security and click "Allow" on SaveManager
 

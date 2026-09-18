@@ -17,14 +17,14 @@ There are now 2 versions of SaveManager: Portable & Installer! \
     - Fixed an issue where 'Free wasted once' & 'Free busted ones' toggles did nothing in the GTA:SA save editor
     - Fixed an issue where the mass backup feature ignored custom ignore files
     - Fixed an issue where minecraft saves in the mass backup silently ignored ``.dat`` files
-    - FIxed an issue where SFTP downloads were not verified before written to disk which could overwrite an existing file
+    - Fixed an issue where SFTP downloads were not verified before written to disk which could overwrite an existing file
     - Fixed an issue where archive entries with absolute or UNC-style paths could bypass the save directory restriction
     - Fixed an issue where a corrupted backup manifest silently skipped hash verification instead of refusing to restore
     - Fixed a potential file handle leak during a read failure of a file inside an archive
     - Fixed an issue where failing to open a temporary file for writing did not restore the original file in place in archive extraction
 
 - Changed
-    - Added more proper logging around restore failures (exceptions, zip-slips, conflicts, renames etc.)
+    - Added more logging around restore failures (exceptions, zip-slips, conflicts, renames etc.)
 
 ### GUI
 - Added
@@ -44,8 +44,8 @@ There are now 2 versions of SaveManager: Portable & Installer! \
     - Made improvements to handle different screen sizes more dynamically
 
 ### Development
-- Underlying code for the GUI has been upgraded to the latest version of [my template](https://github.com/msh31/desktop-app-template) until [this commit](https://github.com/msh31/desktop-app-template/commit/)
-- Dropped the CLI & Daemon for now to focus on the GUI (was not usable yet)
+- Underlying code for the GUI has been upgraded to the latest version of [my template](https://github.com/msh31/desktop-app-template)
+- Dropped the CLI & Daemon for now to focus on the GUI (were not used yet)
 ---
 
 
