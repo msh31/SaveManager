@@ -1,4 +1,21 @@
-## 1.10 - 2026-09-19
+## 1.10.1 - 2026-09-19
+I missed some critical bugs
+
+### Core
+- Fixed
+    - Fixed an issue where restoring an individual backup (e.g. a specific Minecraft world) always restored into the first detected save location instead of the one it was actually backed up from
+    - Fixed an issue where restoring a backup with multiple save locations on Windows could place files in the wrong location
+    - Fixed a possible crash bug where a backup manifest missing a file's hash entry could abort a restore partway through, leaving a save file renamed and not restored
+    - Fixed an issue where an exception during a backup restore did not trigger a restoration of conflict renamed files
+    - Fixed an issue where 'Free wasted once' & 'Free busted ones' flags were not being serialized in the GTA:SA save editor
+
+- Changed
+    - backups containing a manifest that fails to read/parse now also to extract more consistently
+
+---
+
+
+## 1.10 - 2026-09-18
 This update focuses on reachability and bugfixes
 
 #### Information
@@ -46,6 +63,8 @@ There are now 2 versions of SaveManager: Portable & Installer! \
 ### Development
 - Underlying code for the GUI has been upgraded to the latest version of [my template](https://github.com/msh31/desktop-app-template)
 - Dropped the CLI & Daemon for now to focus on the GUI (were not used yet)
+
+
 ---
 
 
