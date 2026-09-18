@@ -347,6 +347,7 @@ if(CMAKE_SYSTEM_NAME MATCHES "Darwin") # macos
 	    COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_BINARY_DIR}/SaveManager.app/Contents/Info.plist ${CMAKE_CURRENT_BINARY_DIR}/SaveManager.app/Contents/Info.plist
 	    COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/assets/app_icon/smicon.icns ${CMAKE_CURRENT_BINARY_DIR}/SaveManager.app/Contents/Resources/smicon.icns
 	)
+	install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/SaveManager.app DESTINATION .)
 endif()
 
 install(

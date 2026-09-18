@@ -1,4 +1,5 @@
-# reference: https://cmake.org/cmake/help/book/mastering-cmake/chapter/Packaging%20With%20CPack.html
+# references: 
+# https://cmake.org/cmake/help/book/mastering-cmake/chapter/Packaging%20With%20CPack.html
 
 set (CPACK_PACKAGE_NAME ${PROJECT_NAME})
 set (CPACK_PACKAGE_VERSION ${PROJECT_VERSION})
@@ -16,7 +17,7 @@ if(WIN32)
     include (InstallRequiredSystemLibraries)
 elseif(APPLE)
     set (CPACK_GENERATOR "DragNDrop")
-    # CPACK_BUNDLE_* vars here
+    # handled by cmake.toml
 else()
     set (CPACK_GENERATOR "TGZ")
 endif()
