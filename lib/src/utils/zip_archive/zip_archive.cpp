@@ -159,7 +159,7 @@ bool CZipArchive::extract_archive(
             fs::path safe_base = { };
             try {
                 std::string name = fileInfo.name;
-                auto slash_pos = name.find( '/' );
+                auto slash_pos = name.find_first_of( "/\\" ); //compatibility with old backups pre 1.10.1 on Window
                 std::string index_str = { };
                 std::string relative_name = { };
 
