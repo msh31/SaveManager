@@ -128,7 +128,7 @@ bool CZipArchive::extract_archive(
     bool manifest_parse_failed = false;
 
     int file_count = zip_get_num_entries( m_archive, 0 );
-    std::vector<std::string> failed_files;
+    std::vector<std::string> failed_files = { };
 
     json manifest_json;
     if ( manifest.has_value( ) ) {
@@ -157,6 +157,21 @@ bool CZipArchive::extract_archive(
             if ( exclusions.contains( fileInfo.name ) ) continue;
 
             fs::path safe_base = { };
+            fs::path conflict_path = { };
+            fs::path resolved = { };
+
+            auto restore_conflict = [&] {
+                if ( !conflict_path.empty( ) ) {
+                    std::error_code ec;
+                    fs::rename( conflict_path, resolved, ec );
+                    if ( ec ) {
+                        SPDLOG_WARN(
+                            "Rename from {} to {} failed: {}", conflict_path.string( ), resolved.string( ),
+                            ec.message( ) );
+                    }
+                }
+            };
+
             try {
                 std::string name = fileInfo.name;
                 auto slash_pos = name.find_first_of( "/\\" ); //compatibility with old backups pre 1.10.1 on Window
@@ -213,7 +228,7 @@ bool CZipArchive::extract_archive(
                     continue;
                 }
 
-                auto resolved = fs::weakly_canonical( safe_base / relative_name );
+                resolved = fs::weakly_canonical( safe_base / relative_name );
                 if ( fs::relative( resolved, safe_base ).string( ).starts_with( ".." ) ) {
                     SPDLOG_WARN( "zip-slip attempt: {}", fileInfo.name );
                     zip_fclose( file );
@@ -230,7 +245,7 @@ bool CZipArchive::extract_archive(
                     fs::remove( resolved_tmp );
                 }
 
-                fs::path conflict_path = { };
+                
                 if ( fs::exists( resolved ) ) {
                     // SPDLOG_WARN( "{} already exists in your game directory!", resolved.filename( ).string( ) );
 
@@ -260,18 +275,6 @@ bool CZipArchive::extract_archive(
                         conflicts.emplace_back( resolved, conflict_dest );
                     }
                 }
-
-                auto restore_conflict = [&] {
-                    if ( !conflict_path.empty( ) ) {
-                        std::error_code ec;
-                        fs::rename( conflict_path, resolved, ec );
-                        if ( ec ) {
-                            SPDLOG_WARN(
-                                "Rename from {} to {} failed: {}", conflict_path.string( ), resolved.string( ),
-                                ec.message( ) );
-                        }
-                    }
-                };
 
                 std::ofstream save_file( resolved_tmp, std::ios::binary );
                 if ( !save_file.is_open( ) ) {
@@ -344,6 +347,7 @@ bool CZipArchive::extract_archive(
             } catch ( std::exception& ex ) {
                 SPDLOG_WARN( "Error on '{}': {}", fileInfo.name, ex.what( ) );
                 failed_files.push_back( fileInfo.name );
+                restore_conflict( );
             }
         }
     }
