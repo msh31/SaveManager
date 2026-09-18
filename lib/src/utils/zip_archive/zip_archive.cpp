@@ -124,8 +124,9 @@ bool CZipArchive::extract_archive(
         return false;
     }
 
-    auto manifest = read_manifest_from_zip( m_archive );
+    bool parse_failure = false;
     bool manifest_parse_failed = false;
+    auto manifest = read_manifest_from_zip( m_archive, &parse_failure );
 
     int file_count = zip_get_num_entries( m_archive, 0 );
     std::vector<std::string> failed_files = { };
@@ -140,7 +141,7 @@ bool CZipArchive::extract_archive(
         }
     }
 
-    if ( manifest_parse_failed ) {
+    if ( parse_failure || manifest_parse_failed ) {
         SPDLOG_ERROR( "[ZipArchive] Manifest present but failed to parse, refusing to extract archive" );
         return false;
     }
@@ -429,7 +430,7 @@ bool CZipArchive::write_manifest_to_zip( zip_t* zip_handle, const std::string& m
     return true;
 }
 
-std::optional<std::string> CZipArchive::read_manifest_from_zip( zip_t* zip_handle ) {
+std::optional<std::string> CZipArchive::read_manifest_from_zip( zip_t* zip_handle, bool* parse_failure ) {
     if ( zip_handle == nullptr ) {
         SPDLOG_ERROR( "invalid archive" );
         return std::nullopt;
@@ -454,6 +455,7 @@ std::optional<std::string> CZipArchive::read_manifest_from_zip( zip_t* zip_handl
         zip_file* file = zip_fopen_index( zip_handle, i, 0 );
         if ( file == nullptr ) {
             SPDLOG_WARN( "Failed to open manifest in archive" );
+            if ( parse_failure != nullptr ) *parse_failure = true;
             continue;
         }
 
@@ -465,12 +467,14 @@ std::optional<std::string> CZipArchive::read_manifest_from_zip( zip_t* zip_handl
             if ( bytes_read != static_cast<zip_int64_t>( fileInfo.size ) ) {
                 SPDLOG_WARN( "manifest read incomplete or failed ({} of {} bytes)", bytes_read, fileInfo.size );
                 zip_fclose( file );
+                if ( parse_failure != nullptr ) *parse_failure = true;
                 return std::nullopt;
             }
             zip_fclose( file );
             return content;
         }
         zip_fclose( file );
+        if(parse_failure != nullptr ) *parse_failure = true;
     }
 
     SPDLOG_WARN( "manifest.json not found in archive" );
