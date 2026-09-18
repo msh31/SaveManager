@@ -8,6 +8,7 @@ void CBackupRestoreModal::open(
     const std::function<void( const Game&, const std::vector<std::pair<fs::path, fs::path>>& )>& on_conflicts ) {
 
     m_restore_checked.clear( );
+    m_pending_conflicts.clear( );
     m_pending_game = game;
     m_pending_backup = backup_file;
     m_on_restored = on_restored;
