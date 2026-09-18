@@ -177,9 +177,27 @@ bool Backup::restore_backup(
     CZipArchive archive( MODE_EXTRACT_ARCHIVE, name.u8string( ) );
 
     std::string comment = archive.get_comment( );
+    std::vector<fs::path> extract_paths = save_paths;
+    bool has_index_prefixes = save_paths.size( ) > 1;
+
     if ( !comment.empty( ) ) {
-        fs::path restore_path;
-        restore_path = comment;
+        fs::path restore_path = comment;
+
+        bool within_allowed = false;
+        for ( const auto& base : save_paths ) {
+            auto rel = fs::relative( restore_path, base );
+            if ( !rel.empty( ) && !rel.string( ).starts_with( ".." ) ) {
+                within_allowed = true;
+                break;
+            }
+        }
+        if ( !within_allowed ) {
+            SPDLOG_ERROR(
+                "Backup's recorded restore location is outside any known save path, refusing to restore: {}",
+                restore_path.string( ) );
+            return false;
+        }
+
         auto entries = archive.get_entry_names( );
         fs::path undo_source = ( entries.size( ) == 1 ) ? restore_path / entries[0] : restore_path;
         fs::create_directories( restore_path );
@@ -190,9 +208,12 @@ bool Backup::restore_backup(
                 return false;
             }
         }
+
+        extract_paths = { restore_path };
+        has_index_prefixes = false;
     }
-    bool has_index_prefixes = comment.empty( ) ? ( save_paths.size( ) > 1 ) : false;
-    if ( !archive.extract_archive( save_paths, conflicts, has_index_prefixes, exclusions ) ) {
+
+    if ( !archive.extract_archive( extract_paths, conflicts, has_index_prefixes, exclusions ) ) {
         SPDLOG_ERROR( "failed to restore backup: {}", name.filename( ).string( ) );
         return false;
     }
