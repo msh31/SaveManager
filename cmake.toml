@@ -5,14 +5,30 @@ cmkr-include = "cmkr.cmake"
 [project]
 name = "SaveManager"
 description = "The swiss army knife of save management."
-version = "1.9.0"
+version = "1.10.0"
 languages = ["C", "CXX"]
 msvc-runtime = "dynamic"
+apple.languages = ["OBJC"]
+include-after = ["cmake/packaging.cmake"]
+cmake-after = """
+if(WIN32)
+  set(SPDLOG_WCHAR_FILENAMES ON)
+  set(CURL_USE_SCHANNEL ON)
+endif()
+"""
+
+[options]
+APP_PORTABLE = true
 
 [variables]
 CMAKE_EXPORT_COMPILE_COMMANDS = true
-APP_VERSION = "1.9.0-dev"
 
+# dependencies
+[fetch-content.nfd]
+git = "https://github.com/btzy/nativefiledialog-extended"
+tag = "v1.3.0"
+
+# dependencies - through conan
 [find-package.CURL]
 required = true
 [find-package.glad]
@@ -35,34 +51,42 @@ required = true
 required = true
 [find-package.spdlog]
 required = true
-[find-package.CLI11]
-required = true
 
-
+# targets
 [target.savemanager-core]
 type = "static"
-sources = ["lib/src/**.cpp", "lib/**.hpp"]
-include-directories = ["lib/include"]
+sources = [
+    "lib/src/**.cpp", 
+    "lib/include/**.hpp", 
+    "vendor/sha256/**.cpp"
+]
+include-directories = [
+    "lib/include",
+    "vendor/sha256/include"
+]
 link-libraries = ["CURL::libcurl", "libzip::zip", "Libssh2::libssh2", "OpenSSL::Crypto", "nlohmann_json::nlohmann_json", "stb::stb", "sol2::sol2", "spdlog::spdlog"]
 compile-features = ["cxx_std_23"]
-precompile-headers = ["lib/include/pch.hpp"]
-cmake-after = """
-target_include_directories(savemanager-core PUBLIC lib/include)
-"""
+compile-definitions = ["APP_PORTABLE=$<BOOL:${APP_PORTABLE}>"]
+precompile-headers = ["lib/include/lib_pch.hpp"]
 
 [target.savemanager-core.windows]
 link-libraries = ["ws2_32"]
 
 [target.savemanager]
 type = "executable"
-sources = ["gui/src/**.cpp", "gui/vendor/imgui/imgui_stdlib.cpp"]
-include-directories = ["gui/src", "gui/vendor/imgui"]
+sources = [
+    "gui/**.cpp", 
+    "gui/**.hpp", 
+    "vendor/imgui/imgui_stdlib.cpp"
+]
+include-directories = [
+    "gui", 
+    "vendor/imgui"
+]
 link-libraries = ["savemanager-core", "glfw", "imgui::imgui", "glad::glad", "nfd::nfd"]
 compile-features = ["cxx_std_23"]
-precompile-headers = ["gui/src/pch.hpp"]
+precompile-headers = ["gui/pch.hpp"]
 cmake-before = """
-add_subdirectory(gui/vendor/nativefiledialog-extended)
-
 execute_process(
     COMMAND git rev-parse HEAD
     OUTPUT_VARIABLE GIT_COMMIT
@@ -90,7 +114,10 @@ target_sources(savemanager PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/lib/include/versi
 
 [target.savemanager.windows]
 sources = ["assets/app_icon/resources.rc"]
-link-libraries = ["shell32"]
+link-libraries = ["shell32", "Dwmapi"]
+cmake-after = """
+install(TARGETS savemanager DESTINATION bin COMPONENT app)
+"""
 
 [target.savemanager.linux]
 cmake-after = """
@@ -116,20 +143,5 @@ add_custom_command(TARGET savemanager POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_BINARY_DIR}/SaveManager.app/Contents/Info.plist ${CMAKE_CURRENT_BINARY_DIR}/SaveManager.app/Contents/Info.plist
     COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/assets/app_icon/smicon.icns ${CMAKE_CURRENT_BINARY_DIR}/SaveManager.app/Contents/Resources/smicon.icns
 )
+install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/SaveManager.app DESTINATION .)
 """
-
-[target.savemgr]
-type = "executable"
-sources = ["cli/src/**.cpp"]
-include-directories = ["cli/src"]
-link-libraries = ["savemanager-core", "CLI11::CLI11"]
-compile-features = ["cxx_std_23"]
-precompile-headers = ["lib/include/pch.hpp"]
-
-[target.savemanager-daemon]
-type = "executable"
-sources = ["daemon/src/**.cpp"]
-include-directories = ["daemon/src"]
-link-libraries = ["savemanager-core"]
-compile-features = ["cxx_std_23"]
-precompile-headers = ["lib/include/pch.hpp"]

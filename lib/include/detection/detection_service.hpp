@@ -1,17 +1,21 @@
 #pragma once
 #include <detection/detection.hpp>
+#include <utils/blacklist/blacklist.hpp>
 
 // single owner of the detection result
 class CDetectionService {
     public:
-        CDetectionService( const Blacklist& blacklist );
+        CDetectionService( );
         ~CDetectionService( );
+
+        static CDetectionService& get( );
 
         void init( );
         void refresh( );
         void ensure_started( );
 
         bool is_refreshing( ) const;
+        Blacklist& blacklist( );
 
         // bumped once per completed scan; compare against a locally-cached value to notice new results
         uint64_t generation( ) const { return m_generation.load( ); }
@@ -28,8 +32,14 @@ class CDetectionService {
             return prog;
         }
 
+        // delete copy & move constructors since there must only be 1 instance
+        CDetectionService( const CDetectionService& ) = delete;
+        CDetectionService& operator=( const CDetectionService& ) = delete;
+        CDetectionService( CDetectionService&& ) = delete;
+        CDetectionService& operator=( CDetectionService&& ) = delete;
+
     private:
-        const Blacklist& m_blacklist;
+        Blacklist m_blacklist;
         Translations m_translations;
         SteamManifestCache m_manifest_cache;
         UnrealNameCache m_name_cache;
@@ -37,7 +47,7 @@ class CDetectionService {
         std::vector<std::unique_ptr<IDetector>> m_detectors;
 
         mutable std::mutex m_mutex;
-        std::vector<Game> m_result;
+        std::vector<Game> m_result = { };
         std::atomic<uint64_t> m_generation{ 0 };
         std::atomic<double> m_last_duration{ 0.0 };
         std::future<void> m_future;

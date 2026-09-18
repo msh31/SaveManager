@@ -18,6 +18,8 @@ CMakeLists.txt
 *.jpeg
 .idea/
 *.mp4
+gui_old/
+lib_old/
 
 # some of my plans
 VISION.md

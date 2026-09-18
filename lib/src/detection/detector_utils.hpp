@@ -1,5 +1,6 @@
 #pragma once
 #include <detection/game.hpp>
+#include <logger.hpp>
 
 template <typename ScanFn>
 std::vector<Game> scan_prefixes( std::string_view label, const std::vector<fs::path>& prefixes, ScanFn&& scan ) {

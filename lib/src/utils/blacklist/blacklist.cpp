@@ -1,6 +1,6 @@
-#include "utils/blacklist/blacklist.hpp"
 #include "utils/paths.hpp"
 #include "utils/utils.hpp"
+#include <utils/blacklist/blacklist.hpp>
 
 #include <nlohmann/json.hpp>
 using json = nlohmann::json;
@@ -31,14 +31,14 @@ bool Blacklist::init( ) {
 
 // NOTE: this function does not lock itself and any caller MUST lock the interal mutex
 void Blacklist::save( ) {
-    json data;
+    json data = json::array( );
     for ( const auto& entry : m_blacklisted_games ) {
         data.emplace_back( entry );
     }
 
-    std::ofstream file( paths::blacklist( ).string( ).c_str( ) );
-    file << data.dump( 4 );
-    if ( file.good( ) ) file.close( );
+    if ( !utils::atomic_write( paths::blacklist( ), data.dump( 4 ) ) ) {
+        SPDLOG_ERROR( "Failed to save blacklist!" );
+    }
 }
 
 bool Blacklist::is_blacklisted( const std::string& game_name ) const {

@@ -1,5 +1,6 @@
 #include "utils/steam/steam.hpp"
 #include "utils/paths.hpp"
+#include <logger.hpp>
 
 std::vector<std::string> SteamHelper::get_platform_steam_paths( ) {
 #ifdef __APPLE__

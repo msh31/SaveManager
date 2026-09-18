@@ -1,6 +1,7 @@
 #include "rsg.hpp"
 #include "../detector_utils.hpp"
 #include "utils/translations/translations.hpp"
+#include <logger.hpp>
 
 std::expected<std::vector<Game>, SMError> CRockstarDetector::find( ) {
     std::vector<fs::path> prefixes = { };

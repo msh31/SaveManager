@@ -1,5 +1,6 @@
 #include "ubi.hpp"
 #include "../detector_utils.hpp"
+#include <logger.hpp>
 
 std::string_view CUbisoftDetector::name( ) const { return PLATFORM_LABEL; }
 

@@ -1,14 +1,14 @@
-#include "../plugin/plugin.hpp"
 #include "detector_context.hpp"
 #include <detection/detection.hpp>
+#include <logger.hpp>
 
 #include "utils/paths.hpp"
-#include <utils/utils.hpp>
-
 #include <utils/steam/steam.hpp>
+#include <utils/utils.hpp>
 
 #include "minecraft/minecraft.hpp"
 #include "pcgw/pcgw.hpp"
+#include "plugin/plugin.hpp"
 #include "rsg/rsg.hpp"
 #include "ubi/ubi.hpp"
 #include "unreal/unreal.hpp"
@@ -134,7 +134,7 @@ std::vector<Game> Detection::de_duplicate( const std::vector<Game>& games ) {
 std::vector<Game> Detection::merge_by_path( const std::vector<Game>& games ) {
     auto canonical_key = []( const fs::path& p ) -> std::optional<std::string> {
         try {
-            auto canon = path_to_utf8_generic( fs::canonical( p ) );
+            auto canon = utils::path_to_utf8_generic( fs::canonical( p ) );
             std::ranges::transform( canon, canon.begin( ), []( unsigned char c ) { return std::tolower( c ); } );
             return canon;
         } catch ( const fs::filesystem_error& ) {

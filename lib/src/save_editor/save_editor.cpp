@@ -1,4 +1,12 @@
 #include "save_editor/save_editor.hpp"
+#include <logger.hpp>
+#include <utils/utils.hpp>
+
+/*
+    TODO LIST
+
+    1. Move SA to dedicated file like sanandreas.cpp/hpp
+*/
 
 std::uint32_t SanAndreas::calculate_checksum( ) {
     std::uint32_t sum = 0;
@@ -93,9 +101,11 @@ bool SanAndreas::open( fs::path path ) {
     }
 
     data = std::vector<uint8_t>( std::istreambuf_iterator<char>( file ), { } );
+    file.close( ); // everything past this point works on the in-memory copy, and save( ) cannot
+                   // replace the file on Windows while a read handle is still open on it
+
     if ( data.empty( ) ) {
         SPDLOG_ERROR( "Failed to load data from savegame!" );
-        file.close( );
         return false;
     }
 
@@ -104,13 +114,11 @@ bool SanAndreas::open( fs::path path ) {
         SPDLOG_DEBUG( "file validated!" );
     } else {
         SPDLOG_DEBUG( "file failed to validate!" );
-        file.close( );
         return false;
     }
     SPDLOG_INFO( "parsing savefile: {}", path.filename( ).string( ) );
     if ( !parse_block_zero( ) ) {
         SPDLOG_ERROR( "Failed to parse BLOCK0, aborting!" );
-        file.close( );
         return false;
     }
     parse_block_two( );
@@ -133,17 +141,11 @@ bool SanAndreas::save( fs::path path ) {
     std::uint32_t checksum = calculate_checksum( );
     std::memcpy( data.data( ) + data.size( ) - 4, &checksum, 4 );
 
-    std::ofstream out( path, std::ios::binary );
-    if ( !out ) {
-        SPDLOG_ERROR( "Failed to open savegame for writing!" );
+    if ( !utils::atomic_write( path, std::string( data.begin( ), data.end( ) ) ) ) {
+        SPDLOG_ERROR( "Failed to write savegame!" );
         return false;
     }
-    out.write( reinterpret_cast<const char*>( data.data( ) ), data.size( ) );
-    if ( out.good( ) ) {
-        out.close( );
-        return true;
-    }
-    return false;
+    return true;
 }
 
 bool SanAndreas::parse_block_zero( ) {
@@ -177,13 +179,15 @@ void SanAndreas::parse_block_five( ) {
 
 void SanAndreas::parse_block_fifteen( ) {
     auto bft_offset = block_offsets[15];
-    if ( bft_offset + 0x23 > data.size( ) ) return;
+    if ( bft_offset + 0x27 > data.size( ) ) return;
 
     std::memcpy( &money, data.data( ) + bft_offset + 4, 4 );
     std::memcpy( &money_displayed, data.data( ) + bft_offset + 0x10, 4 );
 
     max_health = data[bft_offset + 35];
     max_armor = data[bft_offset + 36];
+    free_busted_once = data[bft_offset + 0x25];
+    free_wasted_once = data[bft_offset + 0x26];
     infinite_run = data[bft_offset + 0x20];
     fast_reload = data[bft_offset + 0x21];
     fireproof = data[bft_offset + 0x22];

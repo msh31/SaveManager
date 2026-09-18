@@ -6,7 +6,7 @@ class CZipArchive {
     public:
         CZipArchive( int mode, fs::path name ) {
             int zip_error;
-            std::string zip_name = path_to_utf8( name );
+            std::string zip_name = utils::path_to_utf8( name );
             m_archive = zip_open( zip_name.c_str( ), mode, &zip_error );
 
             if ( !m_archive ) {
@@ -40,7 +40,6 @@ class CZipArchive {
 
         std::vector<std::pair<fs::path, fs::path>> m_save_files;
 
-        static std::string hash_file( const std::filesystem::path& path );
         std::string build_manifest( std::vector<std::pair<fs::path, fs::path>> paths );
         bool write_manifest_to_zip( zip_t* zip_handle, const std::string& manifest );
 

@@ -1,27 +1,19 @@
 #pragma once
-#include "utils/paths.hpp"
+#include <utils/paths.hpp>
 
 class CConfig {
     public:
-        CConfig( fs::path config_dir = paths::config_dir( ) );
+        CConfig( );
         ~CConfig( );
-        bool init( );
-        void save( );
 
-        struct WindowProperties {
-                int x = -1;
-                int y = -1;
-                int width = -1;
-                int height = -1;
-        };
+        static CConfig& get( );
 
-        struct AppConfig {
-                bool dark_mode = true;
-                bool animated_background = false;
-                bool startup_update_check = true;
+        void init( );
+        bool save( );
+        bool was_reset( ) { return m_was_reset; }
 
-                // std::vector<fs::path> watch_paths;
-        };
+        enum class KNOWN_HOST_RESULT { NEW, MATCH, MISMATCH };
+        KNOWN_HOST_RESULT verify_known_host( const std::string& addr, const std::string& fingerprint );
 
         struct DetectionSettings {
                 bool show_conflicts = false;
@@ -41,13 +33,42 @@ class CConfig {
                 std::unordered_map<std::string, std::string> known_hosts = { }; // addr, fingerprint
         };
 
+        struct AppConfig {
+                bool dark_mode = true;
+                bool animated_background = false;
+                bool startup_update_check = true;
+
+                bool use_bg = false;
+                std::string bg_name = { };
+
+                // 0 means "unset" - window_manager computes a default from the primary monitor
+                int window_w = 0;
+                int window_h = 0;
+
+                float font_scale = 1.069f;
+        };
+
         AppConfig settings;
         DetectionSettings d_settings;
         SFTPConfig sftp;
-        WindowProperties win_props;
+
+        // delete copy & move constructors since there must only be 1 instance
+        CConfig( const CConfig& ) = delete;
+        CConfig& operator=( const CConfig& ) = delete;
+        CConfig( CConfig&& ) = delete;
+        CConfig& operator=( CConfig&& ) = delete;
 
     private:
-        void load( );
+        fs::path m_config_file = paths::config_dir( ) / "config.json";
 
-        fs::path config_file = paths::config_dir( ) / "config.json";
+        bool load( );
+        bool m_load_ok = false;
+        bool m_was_reset = false;
+
+        std::recursive_mutex m_mutex;
+
+        std::string_view ubi_translation_url =
+            "https://raw.githubusercontent.com/msh31/SaveManager/refs/heads/dev/data/ubi_translations.json";
+        std::string_view pcgw_translation_url =
+            "https://raw.githubusercontent.com/msh31/savemanager-manifest/refs/heads/main/data/manifest.json";
 };

@@ -1,5 +1,6 @@
 #include "pcgw.hpp"
 #include "../detector_utils.hpp"
+#include <logger.hpp>
 
 #include <nlohmann/json.hpp>
 using json = nlohmann::json;

@@ -1,5 +1,6 @@
 #include "minecraft.hpp"
 #include "utils/paths.hpp"
+#include <logger.hpp>
 
 std::expected<std::vector<Game>, SMError> CMinecraftDetector::find( ) {
     std::vector<Game> games = { };

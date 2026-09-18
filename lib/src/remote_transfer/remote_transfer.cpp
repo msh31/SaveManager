@@ -1,11 +1,11 @@
 #include "remote_transfer/remote_transfer.hpp"
 #include "config/config.hpp"
+#include <logger.hpp>
 
 // https://libssh2.org/examples/sftp_write.html
 CRemoteTransfer::CRemoteTransfer( ) {}
 
-bool CRemoteTransfer::connect(
-    const std::string& dest_addr, CConfig& config, bool auth_pw, const std::string& key_passphrase ) {
+bool CRemoteTransfer::connect( const std::string& dest_addr, bool auth_pw, const std::string& key_passphrase ) {
 #ifdef _WIN32
     WSADATA wsadata;
     WSAStartup( MAKEWORD( 2, 2 ), &wsadata );
@@ -61,28 +61,20 @@ bool CRemoteTransfer::connect(
     }
     m_fingerprint = hex_encode( reinterpret_cast<const unsigned char*>( raw_fingerprint ), 32 );
 
-    auto it = config.sftp.known_hosts.find( dest_addr );
-    if ( it == config.sftp.known_hosts.end( ) ) {
-        SPDLOG_INFO( "Adding new host {} to known hosts (fingerprint: {})", dest_addr, m_fingerprint );
-        config.sftp.known_hosts[dest_addr] = m_fingerprint;
-        config.save( );
-    } else if ( it->second != m_fingerprint ) {
-        SPDLOG_ERROR(
-            "Host key verification failed for {}! Expected {}, got {}. The remote host key may have "
-            "changed, or this may be a man-in-the-middle attack.",
-            dest_addr, it->second, m_fingerprint );
-        return fail( );
-    }
+    // has logging internally
+    auto khres = CConfig::get( ).verify_known_host( dest_addr, m_fingerprint );
+    if ( khres == CConfig::KNOWN_HOST_RESULT::MISMATCH ) return fail( );
 
     if ( auth_pw ) {
-        if ( libssh2_userauth_password( m_session, config.sftp.username.c_str( ), config.sftp.password.c_str( ) ) ) {
+        if ( libssh2_userauth_password(
+                 m_session, CConfig::get( ).sftp.username.c_str( ), CConfig::get( ).sftp.password.c_str( ) ) ) {
             SPDLOG_ERROR( "Authentication by password failed." );
             return fail( );
         }
     } else {
         if ( libssh2_userauth_publickey_fromfile(
-                 m_session, config.sftp.username.c_str( ), config.sftp.pubkey.string( ).c_str( ),
-                 config.sftp.privkey.string( ).c_str( ),
+                 m_session, CConfig::get( ).sftp.username.c_str( ), CConfig::get( ).sftp.pubkey.string( ).c_str( ),
+                 CConfig::get( ).sftp.privkey.string( ).c_str( ),
                  key_passphrase.empty( ) ? nullptr : key_passphrase.c_str( ) ) ) {
             SPDLOG_ERROR( "Authentication by public key failed." );
             return fail( );
@@ -130,8 +122,7 @@ bool CRemoteTransfer::disconnect( ) {
     return false;
 }
 
-bool CRemoteTransfer::upload_file(
-    const fs::path& backup_path, const std::string& remote_path, const CConfig& config ) {
+bool CRemoteTransfer::upload_file( const fs::path& backup_path, const std::string& remote_path ) {
     char mem[1024 * 100];
     size_t nread;
     ssize_t nwritten;
@@ -142,24 +133,25 @@ bool CRemoteTransfer::upload_file(
         return false;
     }
 
+    std::ifstream file( backup_path, std::ios::binary );
+    if ( !file.is_open( ) ) {
+        SPDLOG_ERROR( "Could not open backup for reading: {}", backup_path.string( ) );
+        return false;
+    }
+
     std::string remote_file =
         remote_path + ( remote_path.back( ) == '/' ? "" : "/" ) + backup_path.filename( ).string( );
+    std::string remote_tmp = remote_file + ".tmp";
+
     m_sftp_handle = libssh2_sftp_open(
-        m_sftp_session, remote_file.c_str( ), LIBSSH2_FXF_WRITE | LIBSSH2_FXF_CREAT | LIBSSH2_FXF_TRUNC,
+        m_sftp_session, remote_tmp.c_str( ), LIBSSH2_FXF_WRITE | LIBSSH2_FXF_CREAT | LIBSSH2_FXF_TRUNC,
         LIBSSH2_SFTP_S_IRUSR | LIBSSH2_SFTP_S_IWUSR | LIBSSH2_SFTP_S_IRGRP | LIBSSH2_SFTP_S_IROTH );
     if ( !m_sftp_handle ) {
         SPDLOG_ERROR( "Unable to open path with SFTP {}", libssh2_sftp_last_error( m_sftp_session ) );
         return false;
     }
 
-    std::ifstream file( backup_path, std::ios::binary );
-    if ( !file.is_open( ) ) {
-        SPDLOG_ERROR( "Could not open backup path with SFTP" );
-        libssh2_sftp_close_handle( m_sftp_handle );
-        m_sftp_handle = nullptr;
-        return false;
-    }
-
+    m_bytes_transferred = { };
     m_total_bytes = fs::file_size( backup_path );
     bool failed = false;
     do {
@@ -183,14 +175,44 @@ bool CRemoteTransfer::upload_file(
         } while ( nread );
     } while ( file.gcount( ) > 0 && !failed );
 
+    if ( file.bad( ) ) {
+        SPDLOG_ERROR( "Failed to read backup while uploading: {}", backup_path.string( ) );
+        failed = true;
+    }
+
     libssh2_sftp_close_handle( m_sftp_handle );
     m_sftp_handle = nullptr;
-    if ( !failed ) SPDLOG_INFO( "File has been uploaded!" );
-    return !failed;
+    file.close( );
+
+    if ( !failed && m_bytes_transferred != m_total_bytes ) {
+        SPDLOG_ERROR( "Upload is short: sent {} of {} bytes", m_bytes_transferred.load( ), m_total_bytes.load( ) );
+        failed = true;
+    }
+
+    if ( failed ) {
+        libssh2_sftp_unlink( m_sftp_session, remote_tmp.c_str( ) );
+        m_bytes_transferred = { };
+        return false;
+    }
+
+    if ( libssh2_sftp_rename( m_sftp_session, remote_tmp.c_str( ), remote_file.c_str( ) ) < 0 ) {
+        libssh2_sftp_unlink( m_sftp_session, remote_file.c_str( ) );
+
+        if ( libssh2_sftp_rename( m_sftp_session, remote_tmp.c_str( ), remote_file.c_str( ) ) < 0 ) {
+            SPDLOG_ERROR( "Failed to move uploaded file into place: {}", libssh2_sftp_last_error( m_sftp_session ) );
+            libssh2_sftp_unlink( m_sftp_session, remote_tmp.c_str( ) );
+            m_bytes_transferred = { };
+            return false;
+        }
+    }
+
+    m_bytes_transferred = { };
+    SPDLOG_INFO( "File has been uploaded!" );
+    return true;
 }
 
-bool CRemoteTransfer::download_file( const fs::path& backup_path, const CConfig& config ) {
-    char mem[1024 * 100]; // TODO: replace this because big bad
+bool CRemoteTransfer::download_file( const fs::path& backup_path ) {
+    auto mem = std::vector<char>( 1024 * 100 );
 
     fs::path local_path = paths::backup_dir( ) / backup_path.parent_path( ).filename( ) / backup_path.filename( );
 
@@ -204,7 +226,7 @@ bool CRemoteTransfer::download_file( const fs::path& backup_path, const CConfig&
         return false;
     }
 
-    std::ofstream file( local_path, std::ios::binary );
+    std::ofstream file( local_path.string( ) + ".tmp", std::ios::binary );
     if ( !file.is_open( ) ) {
         SPDLOG_ERROR( "Could not open backup path with SFTP" );
         libssh2_sftp_close( m_sftp_handle );
@@ -221,12 +243,13 @@ bool CRemoteTransfer::download_file( const fs::path& backup_path, const CConfig&
         file.close( );
         return false;
     }
+    m_bytes_transferred = { };
     m_total_bytes = attrs.filesize;
 
     ssize_t rc = -1; // failure
     bool failed = false;
-    while ( ( rc = libssh2_sftp_read( m_sftp_handle, mem, sizeof( mem ) ) ) > 0 ) {
-        if ( !file.write( mem, rc ) ) {
+    while ( ( rc = libssh2_sftp_read( m_sftp_handle, mem.data( ), mem.size( ) ) ) > 0 ) {
+        if ( !file.write( mem.data( ), rc ) ) {
             failed = true;
             break;
         }
@@ -236,7 +259,6 @@ bool CRemoteTransfer::download_file( const fs::path& backup_path, const CConfig&
         }
         m_bytes_transferred += rc;
     }
-
     if ( rc < 0 ) {
         SPDLOG_ERROR( "SFTP read failed: {}", rc );
         failed = true;
@@ -245,9 +267,30 @@ bool CRemoteTransfer::download_file( const fs::path& backup_path, const CConfig&
     libssh2_sftp_close( m_sftp_handle );
     m_sftp_handle = nullptr;
     file.close( );
+
+    if ( m_bytes_transferred != attrs.filesize ) {
+        m_bytes_transferred = { };
+        return false;
+    }
+
     m_bytes_transferred = { };
 
-    if ( !failed ) SPDLOG_INFO( "File has been downloaded!" );
+    if ( !failed ) {
+        std::error_code ec;
+        fs::rename( local_path.string( ) + ".tmp", local_path, ec );
+        if ( ec ) {
+            SPDLOG_ERROR( "[RemoteTransfer] failed to rename downloaded file from temp path!" );
+            return false;
+        }
+        SPDLOG_INFO( "File has been downloaded!" );
+    } else {
+        std::error_code ecr;
+        fs::remove( local_path.string( ) + ".tmp", ecr );
+        if ( ecr ) {
+            SPDLOG_WARN( "[RemoteTransfer] failed to cleanup temp file after download failure" );
+        }
+    }
+
     return !failed;
 }
 

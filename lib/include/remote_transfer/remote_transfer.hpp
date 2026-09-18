@@ -9,8 +9,6 @@ struct RemoteEntry {
         bool is_directory;
 };
 
-class CConfig;
-
 // copied from
 // https://git.marco007.dev/marco/http-server/src/commit/db41ab8f0126ed57b257face7c396c08d0999da9/socket_wrapper.hpp
 #ifdef _WIN32
@@ -41,10 +39,10 @@ class CRemoteTransfer {
         CRemoteTransfer( );
         ~CRemoteTransfer( ) { disconnect( ); }
 
-        bool connect( const std::string& dest_addr, CConfig& config, bool auth_pw, const std::string& key_passphrase );
+        bool connect( const std::string& dest_addr, bool auth_pw, const std::string& key_passphrase );
         bool disconnect( );
-        bool upload_file( const fs::path& backup_path, const std::string& remote_path, const CConfig& config );
-        bool download_file( const fs::path& backup_path, const CConfig& config );
+        bool upload_file( const fs::path& backup_path, const std::string& remote_path );
+        bool download_file( const fs::path& backup_path );
         std::vector<RemoteEntry> list_directory( const std::string& path );
 
         // disable copying (prevent accidental double-cleanup)

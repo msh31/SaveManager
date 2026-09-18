@@ -1,5 +1,6 @@
 #include "unreal.hpp"
 #include "../detector_utils.hpp"
+#include <logger.hpp>
 
 namespace {
     // these are Unreal games too, but they have their own dedicated detector with a proper table entry -

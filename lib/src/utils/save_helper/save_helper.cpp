@@ -1,4 +1,5 @@
 #include "save_helper.hpp"
+#include <logger.hpp>
 #include <utils/steam/steam.hpp>
 
 fs::path save::resolve_root( SaveRoot sr ) {

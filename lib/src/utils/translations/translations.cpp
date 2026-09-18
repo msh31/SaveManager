@@ -1,5 +1,6 @@
 #include "utils/translations/translations.hpp"
 #include "utils/paths.hpp"
+#include <logger.hpp>
 
 static const std::unordered_map<std::string_view, std::string> rsg_translations = {
     { "GTA III", "Grand Theft Auto III" },
