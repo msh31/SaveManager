@@ -343,7 +343,13 @@ bool CZipArchive::extract_archive(
                         fs::last_write_time( resolved, mtime );
                     }
                 } else {
-                    fs::rename( resolved_tmp, resolved );
+                    if ( manifest.has_value( ) ) {
+                        fs::remove( resolved_tmp );
+                        failed_files.emplace_back( fileInfo.name );
+                        restore_conflict( );
+                    } else {
+                        fs::rename( resolved_tmp, resolved );
+                    }
                 }
             } catch ( std::exception& ex ) {
                 SPDLOG_WARN( "Error on '{}': {}", fileInfo.name, ex.what( ) );
@@ -360,6 +366,7 @@ bool CZipArchive::extract_archive(
         }
         return false;
     }
+
     return true;
 }
 
