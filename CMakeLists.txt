@@ -42,7 +42,7 @@ project(SaveManager
 		C
 		CXX
 	VERSION
-		1.10.0
+		1.10.1
 	DESCRIPTION
 		"The swiss army knife of save management."
 )
@@ -325,6 +325,10 @@ configure_file(
 )
 target_sources(savemanager PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/lib/include/version.cpp)
 
+if(WIN32) # windows
+	install(TARGETS savemanager DESTINATION bin COMPONENT app)
+endif()
+
 if(CMAKE_SYSTEM_NAME MATCHES "Linux") # linux
 	install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/assets/app_icon/savemanager.desktop
 	        DESTINATION share/applications)
@@ -349,12 +353,3 @@ if(CMAKE_SYSTEM_NAME MATCHES "Darwin") # macos
 	)
 	install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/SaveManager.app DESTINATION .)
 endif()
-
-install(
-	TARGETS
-		savemanager
-	DESTINATION
-		bin
-	COMPONENT
-		app
-)
