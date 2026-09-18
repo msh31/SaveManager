@@ -124,11 +124,12 @@ bool CZipArchive::extract_archive(
         return false;
     }
 
-    auto manifest = read_manifest_from_zip( m_archive );
+    bool parse_failure = false;
     bool manifest_parse_failed = false;
+    auto manifest = read_manifest_from_zip( m_archive, &parse_failure );
 
     int file_count = zip_get_num_entries( m_archive, 0 );
-    std::vector<std::string> failed_files;
+    std::vector<std::string> failed_files = { };
 
     json manifest_json;
     if ( manifest.has_value( ) ) {
@@ -140,7 +141,7 @@ bool CZipArchive::extract_archive(
         }
     }
 
-    if ( manifest_parse_failed ) {
+    if ( parse_failure || manifest_parse_failed ) {
         SPDLOG_ERROR( "[ZipArchive] Manifest present but failed to parse, refusing to extract archive" );
         return false;
     }
@@ -157,9 +158,24 @@ bool CZipArchive::extract_archive(
             if ( exclusions.contains( fileInfo.name ) ) continue;
 
             fs::path safe_base = { };
+            fs::path conflict_path = { };
+            fs::path resolved = { };
+
+            auto restore_conflict = [&] {
+                if ( !conflict_path.empty( ) ) {
+                    std::error_code ec;
+                    fs::rename( conflict_path, resolved, ec );
+                    if ( ec ) {
+                        SPDLOG_WARN(
+                            "Rename from {} to {} failed: {}", conflict_path.string( ), resolved.string( ),
+                            ec.message( ) );
+                    }
+                }
+            };
+
             try {
                 std::string name = fileInfo.name;
-                auto slash_pos = name.find( '/' );
+                auto slash_pos = name.find_first_of( "/\\" ); //compatibility with old backups pre 1.10.1 on Window
                 std::string index_str = { };
                 std::string relative_name = { };
 
@@ -213,7 +229,7 @@ bool CZipArchive::extract_archive(
                     continue;
                 }
 
-                auto resolved = fs::weakly_canonical( safe_base / relative_name );
+                resolved = fs::weakly_canonical( safe_base / relative_name );
                 if ( fs::relative( resolved, safe_base ).string( ).starts_with( ".." ) ) {
                     SPDLOG_WARN( "zip-slip attempt: {}", fileInfo.name );
                     zip_fclose( file );
@@ -230,7 +246,7 @@ bool CZipArchive::extract_archive(
                     fs::remove( resolved_tmp );
                 }
 
-                fs::path conflict_path = { };
+                
                 if ( fs::exists( resolved ) ) {
                     // SPDLOG_WARN( "{} already exists in your game directory!", resolved.filename( ).string( ) );
 
@@ -260,18 +276,6 @@ bool CZipArchive::extract_archive(
                         conflicts.emplace_back( resolved, conflict_dest );
                     }
                 }
-
-                auto restore_conflict = [&] {
-                    if ( !conflict_path.empty( ) ) {
-                        std::error_code ec;
-                        fs::rename( conflict_path, resolved, ec );
-                        if ( ec ) {
-                            SPDLOG_WARN(
-                                "Rename from {} to {} failed: {}", conflict_path.string( ), resolved.string( ),
-                                ec.message( ) );
-                        }
-                    }
-                };
 
                 std::ofstream save_file( resolved_tmp, std::ios::binary );
                 if ( !save_file.is_open( ) ) {
@@ -310,9 +314,18 @@ bool CZipArchive::extract_archive(
 
                 if ( manifest_json.contains( fileInfo.name ) ) {
                     auto& entry = manifest_json[fileInfo.name];
-                    if ( ( utils::hash_file( resolved_tmp ).compare( entry["hash"].get<std::string>( ) ) ) != 0 ) {
-                        SPDLOG_WARN(
-                            "{}'s hash does not match {}'s hash, aborting restore operation!",
+
+                    if ( !entry.contains( "hash" ) ) {
+                        SPDLOG_ERROR( "[ZipArchive] there is no hash for entry: {}", fileInfo.name );
+                        failed_files.emplace_back( fileInfo.name );
+                        fs::remove( resolved_tmp );
+
+                        restore_conflict( );
+                        continue;
+                    }
+
+                    if( utils::hash_file( resolved_tmp ).compare( entry["hash"].get<std::string>( ) ) != 0 ) {
+                        SPDLOG_WARN("{}'s hash does not match {}'s hash, aborting restore operation!",
                             resolved.filename( ).string( ), entry["hash"].get<std::string>( ) );
 
                         failed_files.emplace_back( fileInfo.name );
@@ -321,6 +334,7 @@ bool CZipArchive::extract_archive(
                         restore_conflict( );
                         continue;
                     }
+
                     fs::rename( resolved_tmp, resolved );
 
                     if ( entry.contains( "mtime" ) ) {
@@ -329,11 +343,18 @@ bool CZipArchive::extract_archive(
                         fs::last_write_time( resolved, mtime );
                     }
                 } else {
-                    fs::rename( resolved_tmp, resolved );
+                    if ( manifest.has_value( ) ) {
+                        fs::remove( resolved_tmp );
+                        failed_files.emplace_back( fileInfo.name );
+                        restore_conflict( );
+                    } else {
+                        fs::rename( resolved_tmp, resolved );
+                    }
                 }
             } catch ( std::exception& ex ) {
                 SPDLOG_WARN( "Error on '{}': {}", fileInfo.name, ex.what( ) );
                 failed_files.push_back( fileInfo.name );
+                restore_conflict( );
             }
         }
     }
@@ -345,6 +366,7 @@ bool CZipArchive::extract_archive(
         }
         return false;
     }
+
     return true;
 }
 
@@ -415,7 +437,7 @@ bool CZipArchive::write_manifest_to_zip( zip_t* zip_handle, const std::string& m
     return true;
 }
 
-std::optional<std::string> CZipArchive::read_manifest_from_zip( zip_t* zip_handle ) {
+std::optional<std::string> CZipArchive::read_manifest_from_zip( zip_t* zip_handle, bool* parse_failure ) {
     if ( zip_handle == nullptr ) {
         SPDLOG_ERROR( "invalid archive" );
         return std::nullopt;
@@ -440,6 +462,7 @@ std::optional<std::string> CZipArchive::read_manifest_from_zip( zip_t* zip_handl
         zip_file* file = zip_fopen_index( zip_handle, i, 0 );
         if ( file == nullptr ) {
             SPDLOG_WARN( "Failed to open manifest in archive" );
+            if ( parse_failure != nullptr ) *parse_failure = true;
             continue;
         }
 
@@ -451,12 +474,14 @@ std::optional<std::string> CZipArchive::read_manifest_from_zip( zip_t* zip_handl
             if ( bytes_read != static_cast<zip_int64_t>( fileInfo.size ) ) {
                 SPDLOG_WARN( "manifest read incomplete or failed ({} of {} bytes)", bytes_read, fileInfo.size );
                 zip_fclose( file );
+                if ( parse_failure != nullptr ) *parse_failure = true;
                 return std::nullopt;
             }
             zip_fclose( file );
             return content;
         }
         zip_fclose( file );
+        if(parse_failure != nullptr ) *parse_failure = true;
     }
 
     SPDLOG_WARN( "manifest.json not found in archive" );

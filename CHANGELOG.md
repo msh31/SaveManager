@@ -1,4 +1,30 @@
-## 1.10 - 2026-09-19
+## 1.10.1 - 2026-09-19
+I missed some critical bugs
+
+### Core
+- Fixed
+    - Fixed an issue where restoring an individual backup (e.g. a specific Minecraft world) always restored into the first detected save location instead of the one it was actually backed up from
+    - Fixed an issue where restoring a backup with multiple save locations on Windows could place files in the wrong location
+    - Fixed an issue where a backup manifest missing a file's hash entry could abort a restore partway through, leaving a save file renamed and not restored
+    - Fixed an issue where an exception during a backup restore did not trigger a restoration of conflict renamed files
+    - Fixed an issue where 'Free wasted once' & 'Free busted once' flags were not being serialized in the GTA:SA save editor
+    - Fixed an issue where SFTP backup uploads deleted existing remote backups on failure
+    - Fixed a crash if a backup failed partway through (e.g. a USB drive or network share disappearing mid-backup)
+
+- Changed
+    - Backups containing a manifest that fails to read/parse now also fail to extract
+    - Backups containing a manifest that does not list one of its files now blocks a restore
+
+
+### GUI
+- Fixed
+    - Fixed an issue where the backup restore modal did not clear the pending conflicts upon opening it
+
+
+---
+
+
+## 1.10 - 2026-09-18
 This update focuses on reachability and bugfixes
 
 #### Information
@@ -14,7 +40,7 @@ There are now 2 versions of SaveManager: Portable & Installer! \
     - Fixed a potential silent backup overwrite / failure by improving precision with ms timestamps
     - Fixed an issue where a download failure did not close the handle in all cases
     - Fixed an issue where tag migration failure deleted the original tags
-    - Fixed an issue where 'Free wasted once' & 'Free busted ones' toggles did nothing in the GTA:SA save editor
+    - Fixed an issue where 'Free wasted once' & 'Free busted once' toggles did nothing in the GTA:SA save editor
     - Fixed an issue where the mass backup feature ignored custom ignore files
     - Fixed an issue where minecraft saves in the mass backup silently ignored ``.dat`` files
     - Fixed an issue where SFTP downloads were not verified before written to disk which could overwrite an existing file
@@ -46,6 +72,8 @@ There are now 2 versions of SaveManager: Portable & Installer! \
 ### Development
 - Underlying code for the GUI has been upgraded to the latest version of [my template](https://github.com/msh31/desktop-app-template)
 - Dropped the CLI & Daemon for now to focus on the GUI (were not used yet)
+
+
 ---
 
 

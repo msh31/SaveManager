@@ -196,14 +196,10 @@ bool CRemoteTransfer::upload_file( const fs::path& backup_path, const std::strin
     }
 
     if ( libssh2_sftp_rename( m_sftp_session, remote_tmp.c_str( ), remote_file.c_str( ) ) < 0 ) {
-        libssh2_sftp_unlink( m_sftp_session, remote_file.c_str( ) );
-
-        if ( libssh2_sftp_rename( m_sftp_session, remote_tmp.c_str( ), remote_file.c_str( ) ) < 0 ) {
-            SPDLOG_ERROR( "Failed to move uploaded file into place: {}", libssh2_sftp_last_error( m_sftp_session ) );
-            libssh2_sftp_unlink( m_sftp_session, remote_tmp.c_str( ) );
-            m_bytes_transferred = { };
-            return false;
-        }
+        SPDLOG_ERROR( "Failed to move uploaded file into place: {}", libssh2_sftp_last_error( m_sftp_session ) );
+        libssh2_sftp_unlink( m_sftp_session, remote_tmp.c_str( ) );
+        m_bytes_transferred = { };
+        return false;
     }
 
     m_bytes_transferred = { };
