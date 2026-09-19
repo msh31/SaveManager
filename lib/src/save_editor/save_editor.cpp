@@ -75,6 +75,7 @@ bool SanAndreas::validate_file( ) {
 // finds the offsets of "BLOCK" sections within the save file data ( https://gtamods.com/wiki/Saves_(GTA_SA) )
 void SanAndreas::find_block_offsets( size_t start_offset ) {
     uint8_t block_signature[5] = { 0x42, 0x4C, 0x4F, 0x43, 0x4B }; // "BLOCK"
+    block_offsets.clear( );
 
     if ( start_offset > data.size( ) ) return;
     if ( data.size( ) < sizeof( block_signature ) ) return;
@@ -117,15 +118,32 @@ bool SanAndreas::open( fs::path path ) {
         return false;
     }
     SPDLOG_INFO( "parsing savefile: {}", path.filename( ).string( ) );
+
+
     if ( !parse_block_zero( ) ) {
         SPDLOG_ERROR( "Failed to parse BLOCK0, aborting!" );
         return false;
     }
-    parse_block_two( );
-    parse_block_five( );
-    parse_block_fifteen( );
-    parse_block_twenty( );
-    parse_block_twenty_four( );
+    if ( !parse_block_two( ) ) {
+        SPDLOG_ERROR( "Failed to parse BLOCK2, aborting!" );
+        return false;
+    }
+    if ( !parse_block_five( ) ) {
+        SPDLOG_ERROR( "Failed to parse BLOCK5, aborting!" );
+        return false;
+    }
+    if ( !parse_block_fifteen( ) ) {
+        SPDLOG_ERROR( "Failed to parse BLOCK15, aborting!" );
+        return false;
+    }
+    if ( !parse_block_twenty( ) ) {
+        SPDLOG_ERROR( "Failed to parse BLOCK20, aborting!" );
+        return false;
+    }
+    if( !parse_block_twenty_four( ) ) {
+        SPDLOG_ERROR( "Failed to parse BLOCK24, aborting!" );
+        return false;
+    }
 
     return true;
 }
@@ -161,25 +179,25 @@ bool SanAndreas::parse_block_zero( ) {
     return true;
 }
 
-void SanAndreas::parse_block_two( ) {
+bool SanAndreas::parse_block_two( ) {
     auto bt_offset = block_offsets[2];
-    if ( bt_offset + 0x28 > data.size( ) ) return;
+    if ( bt_offset + 0x28 > data.size( ) ) return false;
 
     std::memcpy( &health, data.data( ) + bt_offset + 0x04 + 0x1C, 4 );
     std::memcpy( &armor, data.data( ) + bt_offset + 0x04 + 0x20, 4 );
 }
 
-void SanAndreas::parse_block_five( ) {
+bool SanAndreas::parse_block_five( ) {
     auto bf_offset = block_offsets[5];
-    if ( bf_offset + 0x06 > data.size( ) ) return;
+    if ( bf_offset + 0x06 > data.size( ) ) return false;
 
     lose_stuff_after_wasted = data[bf_offset + 0x04];
     lose_stuff_after_busted = data[bf_offset + 0x05];
 }
 
-void SanAndreas::parse_block_fifteen( ) {
+bool SanAndreas::parse_block_fifteen( ) {
     auto bft_offset = block_offsets[15];
-    if ( bft_offset + 0x27 > data.size( ) ) return;
+    if ( bft_offset + 0x27 > data.size( ) ) return false;
 
     std::memcpy( &money, data.data( ) + bft_offset + 4, 4 );
     std::memcpy( &money_displayed, data.data( ) + bft_offset + 0x10, 4 );
@@ -193,23 +211,25 @@ void SanAndreas::parse_block_fifteen( ) {
     fireproof = data[bft_offset + 0x22];
 }
 
-void SanAndreas::parse_block_twenty( ) {
+bool SanAndreas::parse_block_twenty( ) {
     auto bty_offset = block_offsets[20];
-    if ( bty_offset + 4 > data.size( ) ) return;
+    if ( bty_offset + 4 > data.size( ) ) return false;
 
     std::memcpy( &tag_count, data.data( ) + bty_offset, 4 );
-    if ( bty_offset + 4 + tag_count > data.size( ) ) return;
+    if ( bty_offset + 4 + tag_count > data.size( ) ) return false;
     tag_statuses.resize( tag_count );
     std::memcpy( tag_statuses.data( ), data.data( ) + bty_offset + 4, tag_count );
+
+    return true;
 }
 
-void SanAndreas::parse_block_twenty_four( ) {
+bool SanAndreas::parse_block_twenty_four( ) {
     auto btyf_offset = block_offsets[24];
-    if ( btyf_offset + 4 > data.size( ) ) return;
+    if ( btyf_offset + 4 > data.size( ) ) return false;
 
     std::memcpy( &usj_count, data.data( ) + btyf_offset, 4 );
     size_t bytes_needed = 4 + static_cast<size_t>( usj_count ) * 0x44;
-    if ( btyf_offset + bytes_needed > data.size( ) ) return;
+    if ( btyf_offset + bytes_needed > data.size( ) ) return false;
 
     usj_done.resize( usj_count );
     usj_found.resize( usj_count );
@@ -219,30 +239,32 @@ void SanAndreas::parse_block_twenty_four( ) {
         usj_done[i] = data[jump_offset + 0x40];
         usj_found[i] = data[jump_offset + 0x41];
     }
+
+    return true;
 }
 
-void SanAndreas::serialize( ) {
+bool SanAndreas::serialize( ) {
     //block 0
     auto bz_offset = block_offsets[0];
-    if ( bz_offset + 4 + 100 > data.size( ) ) return;
+    if ( bz_offset + 4 + 100 > data.size( ) ) return false;
     std::memcpy(
         data.data( ) + bz_offset + 4, save_name.c_str( ), std::min( save_name.size( ), static_cast<size_t>( 100 ) ) );
 
     //block 2
     auto bt_offset = block_offsets[2];
-    if ( bt_offset + 0x04 + 0x20 > data.size( ) ) return;
+    if ( bt_offset + 0x04 + 0x20 > data.size( ) ) return false;
     std::memcpy( data.data( ) + bt_offset + 0x04 + 0x1C, &health, 4 );
     std::memcpy( data.data( ) + bt_offset + 0x04 + 0x20, &armor, 4 );
 
     //block 5
     auto bf_offset = block_offsets[5];
-    if ( bf_offset + 0x06 > data.size( ) ) return;
+    if ( bf_offset + 0x06 > data.size( ) ) return false;
     data[bf_offset + 0x04] = lose_stuff_after_wasted;
     data[bf_offset + 0x05] = lose_stuff_after_busted;
 
     //block 15
     auto bft_offset = block_offsets[15];
-    if ( bft_offset + 0x23 > data.size( ) ) return;
+    if ( bft_offset + 0x23 > data.size( ) ) return false;
     std::memcpy( data.data( ) + bft_offset + 4, &money, 4 );
     std::memcpy( data.data( ) + bft_offset + 0x10, &money_displayed, 4 );
     data[bft_offset + 35] = static_cast<uint8_t>( max_health );
@@ -255,14 +277,14 @@ void SanAndreas::serialize( ) {
 
     //block 20
     auto bty_offset = block_offsets[20];
-    if ( bty_offset + 4 + tag_count > data.size( ) ) return;
+    if ( bty_offset + 4 + tag_count > data.size( ) ) return false;
     std::memcpy( data.data( ) + bty_offset, &tag_count, 4 );
     std::memcpy( data.data( ) + bty_offset + 4, tag_statuses.data( ), tag_count );
 
     //block 24
     auto btyf_offset = block_offsets[24];
     size_t bytes_needed = 4 + static_cast<size_t>( usj_count ) * 0x44;
-    if ( btyf_offset + bytes_needed > data.size( ) ) return;
+    if ( btyf_offset + bytes_needed > data.size( ) ) return false;
     std::memcpy( data.data( ) + btyf_offset, &usj_count, 4 );
     for ( uint32_t i = 0; i < usj_count; i++ ) {
         size_t jump_offset = btyf_offset + 4 + ( i * 0x44 );
