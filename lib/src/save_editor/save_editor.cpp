@@ -155,7 +155,7 @@ void SanAndreas::close( ) {
 }
 
 bool SanAndreas::save( fs::path path ) {
-    serialize( );
+    if ( !serialize( ) ) return false;
     std::uint32_t checksum = calculate_checksum( );
     std::memcpy( data.data( ) + data.size( ) - 4, &checksum, 4 );
 
@@ -185,6 +185,8 @@ bool SanAndreas::parse_block_two( ) {
 
     std::memcpy( &health, data.data( ) + bt_offset + 0x04 + 0x1C, 4 );
     std::memcpy( &armor, data.data( ) + bt_offset + 0x04 + 0x20, 4 );
+    
+    return true;
 }
 
 bool SanAndreas::parse_block_five( ) {
@@ -193,6 +195,8 @@ bool SanAndreas::parse_block_five( ) {
 
     lose_stuff_after_wasted = data[bf_offset + 0x04];
     lose_stuff_after_busted = data[bf_offset + 0x05];
+
+    return true;
 }
 
 bool SanAndreas::parse_block_fifteen( ) {
@@ -209,6 +213,8 @@ bool SanAndreas::parse_block_fifteen( ) {
     infinite_run = data[bft_offset + 0x20];
     fast_reload = data[bft_offset + 0x21];
     fireproof = data[bft_offset + 0x22];
+
+    return true;
 }
 
 bool SanAndreas::parse_block_twenty( ) {
@@ -252,7 +258,7 @@ bool SanAndreas::serialize( ) {
 
     //block 2
     auto bt_offset = block_offsets[2];
-    if ( bt_offset + 0x04 + 0x20 > data.size( ) ) return false;
+    if ( bt_offset + 0x28 > data.size( ) ) return false;
     std::memcpy( data.data( ) + bt_offset + 0x04 + 0x1C, &health, 4 );
     std::memcpy( data.data( ) + bt_offset + 0x04 + 0x20, &armor, 4 );
 
@@ -264,7 +270,7 @@ bool SanAndreas::serialize( ) {
 
     //block 15
     auto bft_offset = block_offsets[15];
-    if ( bft_offset + 0x23 > data.size( ) ) return false;
+    if ( bft_offset + 0x27 > data.size( ) ) return false;
     std::memcpy( data.data( ) + bft_offset + 4, &money, 4 );
     std::memcpy( data.data( ) + bft_offset + 0x10, &money_displayed, 4 );
     data[bft_offset + 35] = static_cast<uint8_t>( max_health );
@@ -291,4 +297,6 @@ bool SanAndreas::serialize( ) {
         data[jump_offset + 0x40] = usj_done[i];
         data[jump_offset + 0x41] = usj_found[i];
     }
+
+    return true;
 }
