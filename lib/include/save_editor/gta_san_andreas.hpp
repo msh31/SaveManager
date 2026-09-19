@@ -1,7 +1,5 @@
 #pragma once
-#include <cstdint>
-
-namespace fs = std::filesystem;
+#include "isave_editor.hpp"
 
 struct SanAndreas {
         bool open( fs::path path );
