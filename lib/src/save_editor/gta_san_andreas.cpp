@@ -1,4 +1,6 @@
 #include <save_editor/gta_san_andreas.hpp>
+#include <logger.hpp>
+#include <utils/utils.hpp>
 
 std::uint32_t SanAndreas::calculate_checksum( ) {
     std::uint32_t sum = 0;
