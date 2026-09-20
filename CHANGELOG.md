@@ -1,3 +1,21 @@
+## 1.10.2 - 2026-09-20
+More bugfixes
+
+### Core
+- Fixed
+    - Fixed an issue where a backup with no entries did not fail the restoration process
+    - Fixed an issue where a valid GTA SA save could be rejected after you tried to open a bad one
+    - Fixed an issue where GTA SA saves with an out-of-range tag or stunt jump count were not rejected
+    - Fixed an issue where the save editor wrote its changes even if serializing failed
+    - Fixed an issue where undo last restore failed on Windows
+    - Fixed an issue where a tag load failure overwrote or deleted existing tags
+
+### GUI
+- Fixed
+    - Fixed an issue where the save editor failed to open or save, files with non-ASCII characters in the path
+---
+
+
 ## 1.10.1 - 2026-09-19
 I missed some critical bugs
 

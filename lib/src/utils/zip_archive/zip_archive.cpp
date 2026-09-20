@@ -120,7 +120,7 @@ bool CZipArchive::extract_archive(
     bool has_index_prefixes, std::unordered_set<std::string> exclusions ) {
     if ( m_archive == nullptr ) return false;
     if ( save_paths.empty( ) ) {
-        SPDLOG_ERROR( "No save paths found to extract !" );
+        SPDLOG_ERROR( "[ZipArchive] No save paths found to extract !" );
         return false;
     }
 
@@ -129,6 +129,12 @@ bool CZipArchive::extract_archive(
     auto manifest = read_manifest_from_zip( m_archive, &parse_failure );
 
     int file_count = zip_get_num_entries( m_archive, 0 );
+
+    if ( file_count <= 0 ) {
+        SPDLOG_ERROR( "[ZipArchive]: failed to find any entries in this zip, it might be corrupted!" );
+        return false;
+    }
+
     std::vector<std::string> failed_files = { };
 
     json manifest_json;

@@ -42,12 +42,12 @@ struct SanAndreas {
         void find_block_offsets( size_t start_offset = 0 );
         std::string get_version_string( size_t offset );
         bool parse_block_zero( ); // if it fails, nothing else runs
-        void parse_block_two( );
-        void parse_block_five( );
-        void parse_block_fifteen( );
-        void parse_block_twenty( );
-        void parse_block_twenty_four( );
-        void serialize( );
+        bool parse_block_two( );
+        bool parse_block_five( );
+        bool parse_block_fifteen( );
+        bool parse_block_twenty( );
+        bool parse_block_twenty_four( );
+        bool serialize( );
 
         std::vector<uint8_t> data;
         std::unordered_map<int, size_t> block_offsets;
