@@ -72,6 +72,9 @@ void CWindowManager::render_frame( ) {
 
     ImGui::Begin( "Main Window", nullptr, window_flags );
     ThemeManager::set_font_scale( font_scale );
+#ifndef NDEBUG
+    ImGui::TextColored( ImColor( 220, 40, 30, 255 ), "DEBUG" );
+#endif // NDEBUG
     m_render_fn( );
     if ( use_bg || use_shader ) ImGui::PopStyleColor( );
     ImGui::End( );
