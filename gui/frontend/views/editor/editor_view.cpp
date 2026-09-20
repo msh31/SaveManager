@@ -67,7 +67,7 @@ void CEditorView::render( ) {
             ChildGuard sa_info( "Save Information", { 0.0f, 0.0f } );
             ImGui::Text( "Save Information" );
 
-            ImGui::TextDisabled( "%s", utils::utf8_to_path( file_path ) );
+            ImGui::TextDisabled( "%s", utils::utf8_to_path( file_path ).c_str( ) );
 
             ImGui::Text( "Save Name: %s", m_san_andreas.save_name.c_str( ) );
             ImGui::Text( "Save Version: %s", m_san_andreas.save_version.c_str( ) );
