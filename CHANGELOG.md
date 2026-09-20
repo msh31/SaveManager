@@ -1,3 +1,25 @@
+## 1.11.0 - 2026-10-XX
+This update focuses on expanding the save editor
+
+### Core
+- Added 
+    - Grand Theft Auto IV save editor (PC)
+    - Grand Theft Auto Vice City save editor (PC)
+    - Grand Theft Auto 3 save editor (PC)
+    - Cyberpunk 2077 save editor (PC)
+    - Profiles system for games with mulitple accounts/profiles
+
+### GUI
+- Added
+    - Photo viewer for Grand Theft Auto V, San Andreas & Red Dead Redemption 2
+
+- Changes
+    - HomeView redesign with game list on the left & it's info / profiles / backups on the right 
+    - 
+
+---
+
+
 ## 1.10.2 - 2026-09-20
 More bugfixes
 
