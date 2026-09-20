@@ -1,9 +1,7 @@
 #include "tags_modal.hpp"
 #include <frontend/notification/notification.hpp>
 #include <utils/utils.hpp>
-
-#include <nlohmann/json.hpp>
-using json = nlohmann::json;
+#include <tags/tags.hpp>
 
 void CTagsModal::open(
     const std::string& game_name, const fs::path& backup, const std::vector<std::string>& tag_list,
@@ -46,8 +44,8 @@ void CTagsModal::render_content( ) {
     ImGui::Dummy( ImVec2( 0, 5.0f ) );
     if ( ImGui::Button( "Save" ) ) {
         std::string backup_filename_utf8 = utils::path_to_utf8( m_pending_rename_backup.filename( ) );
-        auto result = save_tags( m_pending_rename_game, backup_filename_utf8, m_pending_tags );
-        if ( result.has_value( ) && *result ) {
+        auto tag_save_res = Tags::save_tags( m_pending_rename_game, backup_filename_utf8, m_pending_tags );
+        if ( tag_save_res ) {
             m_on_saved( backup_filename_utf8, m_pending_tags );
         } else {
             Notify::show_notification( "Tags", "Failed to save tags!", 1500 );
@@ -58,48 +56,4 @@ void CTagsModal::render_content( ) {
     if ( ImGui::Button( "Cancel" ) ) {
         ImGui::CloseCurrentPopup( );
     }
-}
-
-std::unordered_map<std::string, std::vector<std::string>> CTagsModal::load_tags( const std::string& game ) {
-    std::unordered_map<std::string, std::vector<std::string>> tags;
-    std::string file_name = ( paths::backup_dir( ) / utils::sanitize_filename_path( game ) / "tags.json" ).string( );
-    if ( !fs::exists( file_name ) ) return { };
-
-    std::ifstream in( file_name );
-    if ( !in.is_open( ) ) {
-        SPDLOG_ERROR( "Failed to load tags for {}!", game );
-        return { };
-    }
-
-    json data;
-    try {
-        data = json::parse( in );
-        for ( const auto& entry : data.items( ) ) {
-            tags[entry.key( )] = entry.value( ).get<std::vector<std::string>>( );
-        }
-    } catch ( json::exception& ex ) {
-        SPDLOG_ERROR( "tag parsing error: {}", ex.what( ) );
-        return { };
-    }
-
-    return tags;
-}
-
-std::expected<bool, SMError>
-CTagsModal::save_tags( const std::string& game, const std::string& filename, const std::vector<std::string>& tags ) {
-    std::string file_name = ( paths::backup_dir( ) / utils::sanitize_filename_path( game ) / "tags.json" ).string( );
-
-    json data = load_tags( game );
-    data[filename] = tags;
-
-    if ( data[filename].empty( ) ) {
-        data.erase( filename );
-    }
-
-    if ( data.empty( ) ) {
-        fs::remove( file_name );
-        return true;
-    }
-
-    return utils::atomic_write( file_name, data.dump( 4 ) );
 }

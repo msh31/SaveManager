@@ -56,15 +56,15 @@ void Tags::migrate_labels_to_tags( ) {
     }
 }
 
-std::unordered_map<std::string, std::vector<std::string>> Tags::load_tags( const std::string& game ) {
-    std::unordered_map<std::string, std::vector<std::string>> tags;
+std::expected<TagMap, SMError> Tags::load_tags( const std::string& game ) {
+    std::unordered_map<std::string, std::vector<std::string>> tags = { };
     std::string file_name = ( paths::backup_dir( ) / utils::sanitize_filename_path( game ) / "tags.json" ).string( );
     if ( !fs::exists( file_name ) ) return { };
 
     std::ifstream in( file_name );
     if ( !in.is_open( ) ) {
         SPDLOG_ERROR( "Failed to load tags for {}!", game );
-        return { };
+        return std::unexpected( SMError::FILE_OPEN_ERROR );
     }
 
     json data;
@@ -75,17 +75,22 @@ std::unordered_map<std::string, std::vector<std::string>> Tags::load_tags( const
         }
     } catch ( json::exception& ex ) {
         SPDLOG_ERROR( "tag parsing error: {}", ex.what( ) );
-        return { };
+        return std::unexpected(SMError::TAGS_PARSE_ERROR);
     }
 
     return tags;
 }
 
-std::expected<bool, SMError>
-Tags::save_tags( const std::string& game, const std::string& filename, const std::vector<std::string>& tags ) {
+bool Tags::save_tags( const std::string& game, const std::string& filename, const std::vector<std::string>& tags ) {
     std::string file_name = ( paths::backup_dir( ) / utils::sanitize_filename_path( game ) / "tags.json" ).string( );
 
-    json data = load_tags( game );
+    auto loaded_tags = load_tags( game );
+    if ( !loaded_tags ) {
+        SPDLOG_ERROR( "[Tags] failed to load tags for: {}", game );
+        return false;
+    }
+
+    json data = loaded_tags.value( );
     data[filename] = tags;
 
     if ( data[filename].empty( ) ) {
@@ -107,7 +112,13 @@ Tags::save_tags( const std::string& game, const std::string& filename, const std
 bool Tags::delete_tags( const std::string& game, const std::string& filename ) {
     std::string file_name = ( paths::backup_dir( ) / utils::sanitize_filename_path( game ) / "tags.json" ).string( );
 
-    json data = load_tags( game );
+    auto loaded_tags = load_tags( game );
+    if ( !loaded_tags ) {
+        SPDLOG_ERROR( "[Tags] failed to load tags for: {}", game );
+        return false;
+    }
+
+    json data = loaded_tags.value( );
     data.erase( filename );
 
     if ( data.empty( ) ) {
@@ -119,18 +130,17 @@ bool Tags::delete_tags( const std::string& game, const std::string& filename ) {
 }
 
 std::unordered_map<std::string, TagCache> Tags::load_tag_cache( const std::string& game_name ) {
-    std::unordered_map<std::string, TagCache> cache;
+    std::unordered_map<std::string, TagCache> cache = { };
 
-    auto loaded_tags = Tags::load_tags( game_name );
-    std::string file_name =
-        ( paths::backup_dir( ) / utils::sanitize_filename_path( game_name ) / "tags.json" ).string( );
-
-    if ( loaded_tags.empty( ) ) {
-        if ( fs::exists( file_name ) ) SPDLOG_WARN( "Failed to load tags for: {}", game_name );
+    auto loaded_tags = load_tags( game_name );
+    if ( !loaded_tags ) {
+        SPDLOG_ERROR( "[Tags] failed to load tags for: {}", game_name );
         return { };
     }
 
-    for ( const auto& [filename, tags] : loaded_tags ) {
+    std::string file_name = ( paths::backup_dir( ) / utils::sanitize_filename_path( game_name ) / "tags.json" ).string( );
+
+    for ( const auto& [filename, tags] : loaded_tags.value( ) ) {
         TagCache tcache;
         tcache.tags = tags;
         tcache.display =

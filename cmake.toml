@@ -5,7 +5,7 @@ cmkr-include = "cmkr.cmake"
 [project]
 name = "SaveManager"
 description = "The swiss army knife of save management."
-version = "1.10.1"
+version = "1.10.2"
 languages = ["C", "CXX"]
 msvc-runtime = "dynamic"
 apple.languages = ["OBJC"]

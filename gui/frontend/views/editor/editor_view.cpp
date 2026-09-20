@@ -32,7 +32,7 @@ void CEditorView::render( ) {
             if ( result == NFD_OKAY ) {
                 std::string path( outPath );
                 NFD_FreePathU8( outPath );
-                if ( m_san_andreas.open( path ) ) {
+                if ( m_san_andreas.open( utils::utf8_to_path( path ) ) ) {
                     file_path = path;
                     Notify::show_notification( "Save Editor", "Save loaded successfully!", 3000 );
                 } else {
@@ -48,7 +48,7 @@ void CEditorView::render( ) {
     } else {
 
         if ( ImGui::Button( "Save" ) ) {
-            bool res = m_san_andreas.save( file_path );
+            bool res = m_san_andreas.save( utils::utf8_to_path( file_path ) );
             if ( res ) {
                 Notify::show_notification( "Save Editor", "Savegame changed saved succesfully!", 3000 );
             } else {
@@ -67,7 +67,7 @@ void CEditorView::render( ) {
             ChildGuard sa_info( "Save Information", { 0.0f, 0.0f } );
             ImGui::Text( "Save Information" );
 
-            ImGui::TextDisabled( "%s", utils::utf8_to_path( file_path ).string( ).c_str( ) ); // cursed
+            ImGui::TextDisabled( "%s", utils::utf8_to_path( file_path ) );
 
             ImGui::Text( "Save Name: %s", m_san_andreas.save_name.c_str( ) );
             ImGui::Text( "Save Version: %s", m_san_andreas.save_version.c_str( ) );
