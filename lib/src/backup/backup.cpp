@@ -205,7 +205,7 @@ bool Backup::restore_backup(
         fs::path undo_source = ( entries.size( ) == 1 ) ? restore_path / entries[0] : restore_path;
         fs::create_directories( restore_path );
 
-        if ( fs::exists( undo_source ) && !fs::is_empty( undo_source ) ) {
+        if ( fs::exists( undo_source ) && !fs::is_empty( undo_source ) && name.filename( ) != "undo.zip" ) {
             if ( !backup_to_path( undo_source, name.parent_path( ) / "undo.zip" ) ) {
                 SPDLOG_ERROR( "Failed to create backup before overwriting newer savefile, aborting.." );
                 return false;
