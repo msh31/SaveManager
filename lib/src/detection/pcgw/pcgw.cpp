@@ -415,6 +415,8 @@ CPCGamingWikiDetector::resolve( std::string raw_path, const SteamManifest* manif
             //             SPDLOG_WARN( "{} has no entries matching {} on the system!", result, wildcard_pattern );
             // #endif
         } else if ( fs::exists( result ) ) {
+            fs::path p( result );
+            if ( fs::is_regular_file( p ) ) return p.parent_path( );
             return fs::path( result );
         }
         // #ifndef NDEBUG
