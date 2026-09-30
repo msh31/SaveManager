@@ -68,6 +68,40 @@ void CHomeView::on_exit( ) {}
 CHomeView::~CHomeView( ) { m_queue.shutdown( ); }
 
 // private
+fs::path get_free_name(const fs::path& p) {   
+    auto copy_str = ".savemgr-copy";
+    auto ext = p.extension( );
+    auto stem = utils::path_to_utf8( p.stem( ) );
+    auto ppath = p.parent_path( );
+
+    auto pos = stem.find( ".savemgr-copy" );
+    if ( pos != std::string::npos ) {
+        stem.resize( pos );
+    }
+    auto cleaned = utils::utf8_to_path( stem );
+
+    std::string suffix{ };
+    fs::path name = cleaned;
+    name += ".savemgr-copy" + suffix;
+    name += ext;
+    auto candidate = ppath / name;
+    
+    int counter = 1;
+    std::error_code ec;
+    while ( fs::exists( candidate, ec ) ) {
+        counter += 1;
+        suffix = "-" + std::to_string( counter );
+        name = cleaned;
+        name += ".savemgr-copy" + suffix;
+        name += ext;
+        candidate = ppath / name;
+    }
+
+    if ( ec ) SPDLOG_ERROR( ec.message( ) );
+
+    return candidate;
+}
+
 void CHomeView::render_toolbar( ) {
     bool is_refreshing = CDetectionService::get( ).is_refreshing( );
     bool is_backing_up =
@@ -403,11 +437,9 @@ void CHomeView::render_backup_row(
     ImGui::SameLine( 0.0f, 4.0f );
 
     if ( ImGui::Button( "Duplicate", ImVec2( 90.0f, 0 ) ) ) { // also kinda fucked up
-        fs::path copy_name = ( backup.parent_path( ) / ( (backup.stem( ) += ".savemgr-copy") += backup.extension( ) ) ); //ugly
-
         try {
 
-            fs::copy_file( backup, copy_name );
+            fs::copy_file( backup, get_free_name(backup ));
 
             invalidate_cache( { game }, []( ) {
                 Notify::show_notification( "Backup Duplication", "Backup duplicated!", 2500 );
@@ -524,11 +556,11 @@ void CHomeView::render_save_row( const fs::path& save_file, const Game& game, co
     if ( ImGui::Button( "Duplicate", ImVec2( 90.0f, 0 ) ) ) { // also kinda fucked up
         std::error_code ec;
 
+        auto copy_name = get_free_name( save_file );
+
         if ( fs::is_directory( save_file ) ) {
-            std::string copy_name = save_file.string( ) + "-savemgr-copy";
             fs::copy( save_file, copy_name, fs::copy_options::recursive, ec );
         } else {
-            std::string copy_name = save_file.string( ) + ".savemgr-copy";
             fs::copy_file( save_file, copy_name, ec );
         }
 
