@@ -66,7 +66,7 @@ jobs:
           CC: gcc-14
           CXX: g++-14
         run: |
-          cmake --preset conan-release
+          cmake --preset conan-release -DAPP_PORTABLE=OFF
           cmake --build --preset conan-release --target savemanager -j$(nproc)
 
       - name: Package AppImage
