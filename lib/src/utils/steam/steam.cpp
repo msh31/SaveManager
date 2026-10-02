@@ -73,7 +73,13 @@ std::optional<std::string> SteamHelper::parse_steam_userid( ) {
             auto last_open = line.rfind( '"', last_close - 1 );
 
             std::string value = line.substr( last_open + 1, last_close - last_open - 1 );
-            auto time = std::stoull( value );
+
+            uint32_t time = 0;
+            try {
+                time = std::stoul( value );
+            } catch ( const std::exception& ex ) {
+                // we do not care
+            }
 
             if ( time > best_time ) {
                 best_time = time;
