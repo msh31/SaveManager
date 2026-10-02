@@ -1,8 +1,10 @@
 name: Build Test
 
 on:
-  push: branches: [ dev ]
-  pull_request: branches: [ main, dev ]
+  push: 
+    branches: [ dev ]
+  pull_request: 
+    branches: [ main, dev ]
 
 concurrency:
   group: build-test-${{ github.ref }}
