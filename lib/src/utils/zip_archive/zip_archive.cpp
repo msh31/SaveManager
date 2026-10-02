@@ -500,12 +500,16 @@ std::vector<std::string> CZipArchive::get_entry_names( ) {
     auto entries = zip_get_num_entries( m_archive, ZIP_FL_UNCHANGED );
     if ( entries <= 0 ) {
         SPDLOG_ERROR( "Failed to find file entries from archive!" );
-        return entry_names; // empty atp
+        return entry_names;
     }
 
     for ( size_t i{ }; i < entries; i++ ) {
-        std::string name = zip_get_name( m_archive, i, ZIP_FL_UNCHANGED );
-        if ( ( name.compare( "manifest.json" ) ) == 0 ) continue;
+        const char* name = zip_get_name( m_archive, i, ZIP_FL_UNCHANGED );
+        if ( name == NULL ) {
+            SPDLOG_WARN( "Failed to get filename, skipping this file" );
+            continue;
+        }
+        if ( ( static_cast <std::string>(name).compare( "manifest.json" ) ) == 0 ) continue;
 
         entry_names.emplace_back( name );
     }

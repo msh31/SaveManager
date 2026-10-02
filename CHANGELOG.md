@@ -1,3 +1,23 @@
+## 1.10.3 - 2026-10-02
+This update fixes a critical issue for Linux users
+
+### Core
+- Fixed
+    - Some games were resolving to a save file directly instead of its directory in the manifest detector
+    - Possible crash when attempting to restore a corrupted backup
+    - A malformed timestamp in Steam's loginusers.vdf file does no longer stop the game scan 
+
+### GUI
+- Changes
+    - Duplicating a save or backup now uses a counter instead of re-appending 'savemgr-copy' every time
+
+### Other
+- Fixed
+    - An issue where the AppImage since 1.10 did not get treated as the installer version causing a failure to open because the contents of an AppImage are read-only
+---
+
+---
+
 ## 1.10.2 - 2026-09-20
 More bugfixes
 
