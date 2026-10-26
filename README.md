@@ -3,6 +3,9 @@ SaveManager is a cross-platform game save manager with automatic save detection,
 
 [![Dev Build](https://github.com/msh31/SaveManager/actions/workflows/build-test.yml/badge.svg?branch=dev)](https://github.com/msh31/SaveManager/actions/workflows/build-test.yml)
 [![Version](https://img.shields.io/github/v/release/msh31/SaveManager)](https://github.com/msh31/SaveManager/releases)
+
+> [!IMPORTANT]
+> Development is currently inactive while I focus on my studies
 ---
 
 ![Pretend there is an app screenshot here](/assets/version190.png)
